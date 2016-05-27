@@ -1,0 +1,14 @@
+Package: netDx
+Title: Learns Patient Binary Classification based on Similarity Networks
+Version: 0.0.1.000
+Authors@R: person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre"))
+Description: Builds a patient classifier based on patient similarities. Gets
+    genomic data as input and organizes these into similarity networks. Uses
+    GeneMANIA to integrate association networks and machine learning for
+    feature selection of networks that predict classes
+Imports: bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
+Depends:
+    R (>= 3.1.1),bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
+License: GPL>=2.0
+LazyData: true
+RoxygenNote: 5.0.1

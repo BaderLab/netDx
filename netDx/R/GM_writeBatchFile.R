@@ -2,7 +2,7 @@
 #'
 #' @details Currently creates a single entry for network group. Future versions of this
 #' package may want to 
-#' @param netDir (char) path to dir with newtorks
+#' @param netDir (char) path to dir with networks
 #' @param netList (char) vector of network names
 #' @param outDir (char) directory to write batch file
 #' @param idFile (char) path to file with patient IDs

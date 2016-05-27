@@ -1,69 +1,28 @@
-#' Example: TCGA Breast Cancer. Two-class classification
-#' Class of interest: Luminal A
-#' Data types are gene expression and CNV
+#' TCGA Breast Cancer use-case two-class classification
+#' 
+#' @details Class of interest: Luminal A. Data types are gene expression 
+#' and CNV
 rm(list=ls())
 
-numCores <- 8L
-GMmemory <- 4
-cutoff <- 9L
-subtypes<- c("LumA")#unique(pheno$STATUS)
-TRAIN_PROP <- 0.67 # 2:1 train:test
+# Change this to a local directory where you have write permission
+outDir <- "~/tmp/TCGA_BRCA" 
 
-outDir <- "~/tmp/TCGA_BRCA"
-
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-dir.create(outDir,recursive=TRUE)
-
+numCores 	<- 1L  	# num cores available for parallel processing
+GMmemory 	<- 4L  	# java memory in Gb
+cutoff		<- 9L  	# score cutoff for feature-selected networks
+TRAIN_PROP <- 0.67 	# fraction of samples to use for training
 
 require(netDx)
+require(netDx.examples)
 
-# -------------------------------------------------------------------
-dt <- format(Sys.Date(),"%y%m%d")
-
-warning("genome build needs to be confirmed")
-
-logFile <- sprintf("%s/TCGA.log",outDir)
-sink(logFile,split=TRUE)
-tryCatch({
-
-# read in data
-pheno <- read.delim(phenoFile,sep="\t",h=T,as.is=T)
-colnames(pheno)[c(1,4)] <- c("ID","STATUS")
-pheno$ID <- gsub("-",".",pheno$ID)
-
-
-cat("* Reading RNA\n")
-xpr <- read.delim(sprintf("%s/%s",inDir,datDir[["rna"]]),sep="\t",
-				  h=T,as.is=T)
-xpr_names 	<- xpr[,1]
-xpr 		<- xpr[,-1]
-
-# make sure pheno and xpr order is the same
-common <- intersect(pheno$ID, colnames(xpr))
-xpr <- xpr[,which(colnames(xpr)%in% common)]
-pheno <- subset(pheno, ID %in% common)
-pheno <- pheno[order(pheno$ID),]
-xpr <- xpr[,order(colnames(xpr))]
-cat("check sample order\n")
-print(all.equal(colnames(xpr),pheno$ID))
-
-suppressMessages(require(PatientClassifier))
-cat("* Now reading in CNV\n")
-cnv <- read.delim(sprintf("%s/%s",inDir,datDir[["cnv"]]),sep="\t",h=T,
-				  as.is=T)
-cnv <- subset(cnv,seg.mean <= -1)
-cnv$Sample <- gsub("-",".",cnv$Sample)
-tmp <- substr(pheno$ID,1,15)
-cnv <- cnv[which(cnv$Sample %in% tmp),]
-midx <- match(cnv$Sample,tmp)
-print(all.equal(tmp[midx],cnv$Sample))
-cnv$Sample <- pheno$ID[midx]
-
-cnv_GR <- GRanges(paste("chr",cnv$chrom,sep=""),IRanges(cnv$loc.start,
-				cnv$loc.end),ID=cnv$Sample)
+data(TCGA_BRCA)
 
 # --------------------------------------------------------
 # begin patient networks work
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+dir.create(outDir)
+
+subtypes<- c("LumA")
 
 pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
 mega_TT <- rep("TRAIN",nrow(pheno))
@@ -92,6 +51,8 @@ cat(sprintf("Limiting to TRAIN patients: %i of %i\n",nrow(pheno),
 
 cat("\tMake patient networks\n")
 # make pathway list
+pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+	path.package("netDx.examples"))
 pathwayList    <- readPathways(pathFile)
 
 # create patient networks
@@ -99,14 +60,14 @@ profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 ## compare num interactions of a network by own corr vs GeneMANIA corr.
 
-netList <- unlist(makePSN_NamedMatrix(xpr, xpr_names, pathwayList,profDir,
-		verbose=FALSE,numCores=numCores,writeProfiles=TRUE))
+netList <- unlist(makePSN_NamedMatrix(xpr, rownames(xpr), pathwayList,
+		profDir,verbose=FALSE,numCores=numCores,writeProfiles=TRUE))
 
 # add CNV nets
-gene_bed    <- read.delim(geneFile,sep="\t",h=T,as.is=T)
-gene_GR     <- GRanges(gene_bed$chrom,
-					   IRanges(gene_bed$txStart,gene_bed$txEnd),
-                       name=gene_bed$name2)
+data(genes)
+gene_GR     <- GRanges(genes$chrom,
+					   IRanges(genes$txStart,genes$txEnd),
+                       name=genes$name2)
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
@@ -160,7 +121,7 @@ for (g in subtypes) {
 			m <- k
 		}
 		#only keep genes present in our data
-		g <- intersect(pathwayList[[m]],xpr_names) 
+		g <- intersect(pathwayList[[m]],rownames(xpr))
 		cat(sprintf("%s\t%s\t%s\n",k,k,paste(g,collapse="\t")),
 			file=outFile,append=TRUE)
 	}
@@ -183,7 +144,7 @@ for (g in subtypes) {
 	profDir <- sprintf("%s/profiles",pDir)
 
 	# make nets
-	netList <- unlist(makePSN_NamedMatrix(xpr_FULL,xpr_names,
+	netList <- unlist(makePSN_NamedMatrix(xpr_FULL,rownames(xpr),
 		pathwayList[which(names(pathwayList)%in% pTally)],
 		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE))
 	netList2<- makePSN_RangeSets(cnv_FULL,
@@ -225,16 +186,4 @@ cat(sprintf("Accuracy = %i of %i (%i %%)\n",tp+tn,nrow(both),
 			round(((tp+tn)/nrow(both))*100)))
 cat(sprintf("PPV = %i %%\n", round((tp/(tp+fp))*100)))
 cat(sprintf("Recall = %i %%\n", round((tp/(tp+fn))*100)))
-## performance measures
 
-## annotate DNAm
-##meth <- read.delim(sprintf("%s/%s",inDir,datDir[["meth"]]),h=T,as.is=T)
-##require(FDb.InfiniumMethylation.hg19)
-##hm450 <- get450k()
-##pnames <- rownames(meth)
-##g <- getNearestGene(hm450[pnames])
- },error=function(ex){
-print(ex)
-},finally={
-	sink(NULL)
-})

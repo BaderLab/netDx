@@ -58,6 +58,38 @@ $ R
 ```
 Say `yes` to all dependencies that need to be installed.
 
-## Run vignettes
-(code to run vignettes)
+## Install `netDx` and `netDx.examples`
+From command-line, download the git repo for these packages and install them:
 
+```
+$ git clone git@github.com:BaderLab/netDx.git
+$ cd netDx/
+$ R CMD INSTALL netDx
+$ R CMD INSTALL netDx.examples
+```
+
+## Run examples
+Each example runs as a standalone `.R` function. To run these, you need to have both `netDx` and `netDx.examples` installed. From the directory where the `netDx/` repo was downloaded:
+```
+$ cd netDx/examples/
+$ R
+R version 3.2.4 (2016-03-10) -- "Very Secure Dishes"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> source("TCGA_BRCA.R")
+```

@@ -18,11 +18,6 @@
 #' @param netSfx (char) pattern for finding network files in \code{netDir}.
 #' @param verbose (logical) print messages
 #' @param numCores (integer) num cores for parallel processing
-#' @param attrib_DF (data.frame) attribute info. NULL for no attributes.
-#' Column names: 1) attribute_group (char) attribute group name
-#' 2) attribute_name (char) attribute name
-#' 3) ID (integer) patient ID
-#' 4) attribute_value (char) attribute value
 #' @param ... params for \code{GM_writeBatchFile()}
 #' @return (list). "dbDir": path to GeneMANIA database 
 #' 	"netDir": path to directory with interaction networks. If profiles
@@ -30,8 +25,7 @@
 #' the text-based GeneMANIA generic database
 #' @export
 GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
-		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,
-		attrib_DF=NULL,...) {
+		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,,...) {
 	# tmpDir/ is where all the prepared files are stored.
 	# GeneMANIA uses tmpDir as input to create the generic database. 
 	# The database itself will be in outDir/
@@ -133,52 +127,6 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 		netList <- netList2; rm(netOutDir,netList2)
 	}
 
-	#### Step X. Writing attributes
-	# format for file obtained from:
-	# https://github.com/GeneMANIA/pipeline/wiki/GenericDb
-
-	# ATTRIBUTE_GROUPS.txt file - current default is to select attribute
-	if (!is.null(attrib_DF)) {
-	cat("Attributes provided. Processing\n")
-	attrib_group <- unique(attrib_DF$attribute_group)
-	attgroup_id <- 1:length(attrib_group)
-	names(attgroup_id) <- attrib_group
-	n <- length(attrib_group)
-	tmp <- data.frame(attgroup_id, 1,
-					  attrib_group,"",
-					  attrib_group,"","",1,"","")
-	write.table(tmp,file="ATTRIBUTE_GROUPS.txt",
-				sep="\t",col=F,row=F,quote=F)
-	tmp <- tmp[,c(1,3)]
-	colnames(tmp)<- c("group_id","attribute_group")
-	attrib_DF <- merge(x=tmp,y=attrib_DF,by="attribute_group")
-	# ATTRIBUTES.txt file
-	attrib_name <- attrib_DF[!duplicated(attrib_DF[,
-				c("group_id","attribute_group","attribute_name")]),]
-	n <- nrow(attrib_name)
-	attset <- data.frame(id=1:nrow(attrib_name),org=1,
-			group_id=attrib_name$group_id,aname=attrib_name$attribute_name,
-			attrib_name$attribute_name,attrib_name$attribute_name)
-	write.table(attset,file="ATTRIBUTES.txt",sep="\t",col=F,row=F,quote=F)
-
-	# convert to internal GENES.txt ID before writing.
-	gn <- read.delim("GENES.txt",sep="\t",h=F,as.is=T)[,c(1:2)]
-	colnames(gn) <- c("GM_ID","ID")
-	attrib_DF <- merge(x=attrib_DF,y=gn,by="ID")
-
-	# ATTRIBUTES/ dir
-	dir.create("ATTRIBUTES")
-	for (nm in 1:nrow(attset)) {
-		tmp <- subset(attrib_DF, group_id %in% attset$group_id[nm]&
-					  			 attribute_name%in% attset$aname[nm])
-		if (verbose) cat(sprintf("\t%s:%s: %i entries\n",attset[nm,3],
-			attset[nm,4],nrow(tmp)))
-		write.table(tmp[,c("GM_ID","attribute_value")],
-					file=sprintf("ATTRIBUTES/%i.txt",nm),sep="\t",col=F,
-					row=F,quote=F)
-	}
-	}
-	
 	#### Step 4. Build GeneMANIA index
 	if (verbose) cat("\t* Build GeneMANIA index\n")
 	setwd(dataDir)

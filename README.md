@@ -1,5 +1,6 @@
 # netDx
-Patient classifier based on patient similarity networks
+netDx is a method for building patient classifiers based on patient similarity networks.
+(more details to come soon here or on a web page)
 
 This repo contains two R packages, each of which need to be separately installed:
 
@@ -59,17 +60,18 @@ $ R
 Say `yes` to all dependencies that need to be installed.
 
 ## Install `netDx` and `netDx.examples`
-From command-line, download the git repo for these packages and install them:
+This section assumes you have Java, Python, R and Bioconductor installed. From command-line, download the git repo for these packages and install them. In the code below, output from intermediate steps is omitted for clarity.
 
 ```
 $ git clone git@github.com:BaderLab/netDx.git
 $ cd netDx/
-$ R CMD INSTALL netDx
-$ R CMD INSTALL netDx.examples
+$ R
+> install.packages("netDx",dependencies=TRUE)
+> install.packages("netDx.examples",dependencies=TRUE).
 ```
 
 ## Run examples
-Each example runs as a standalone `.R` function. To run these, you need to have both `netDx` and `netDx.examples` installed. From the directory where the `netDx/` repo was downloaded:
+Each example runs as a standalone `.R` function. To run these, you need to have both `netDx` and `netDx.examples` installed. From the directory where the `netDx/` repo was downloaded, here is code that runs the breast cancer example using data from The Cancer Genome Atlas (Ref 1):
 ```
 $ cd netDx/examples/
 $ R
@@ -93,3 +95,6 @@ Type 'q()' to quit R.
 
 > source("TCGA_BRCA.R")
 ```
+
+### References
+1. The Cancer Genome Atlas Network. (2012). Comprehensive molecular portraits of human breast tumours. Nature. 490:61.

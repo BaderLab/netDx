@@ -14,7 +14,7 @@
 runGeneMANIA <- function(GM_db, queryFile, resDir, parseReport=TRUE,
 	verbose=TRUE,GMmemory=6L,MAX_ATTEMPTS=3L) {
 	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",
-						 path.package("PatientClassifier"))
+						 path.package("netDx"))
 	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",GMmemory,GM_jar)
 	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s 2>&1 > %s.log",
 			GM_db, 1, resDir, queryFile,queryFile)

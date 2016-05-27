@@ -86,13 +86,13 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 	# doing so.
 	if (verbose) cat("\t* Populating database files, recoding identifiers\n")
 	dir.create("profiles")
-	procNet <- paste(path.package("PatientClassifier"),
+	procNet <- paste(path.package("netDx"),
 					 "python/process_networks.py",sep="/")
 	cmd <- sprintf("python %s batch.txt",procNet)
 	system(cmd,wait=TRUE)
 	
 	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",
-						 path.package("PatientClassifier"))
+						 path.package("netDx"))
 	#### Step 3. (optional). convert profiles to interaction networks.
 	### TODO. This step is currently inefficient. We are writing all the
 	### profile files (consumes disk space) in makePSN_NamedMatrix.R
@@ -202,7 +202,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 
 	#### Step 6. Cleanup.
 	if (verbose) cat("\t * Cleanup")
-	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("PatientClassifier"))
+	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx"))
 	system(sprintf("cp %s %s/.", GM_xml, dataDir))
 
 	}, error=function(ex) {

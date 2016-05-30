@@ -113,6 +113,8 @@ tmp <- sapply(names(predRes), function(nm){
          cex.main=0.8)
     })
 
+save(predRes,file=sprintf("%s/predictions.Rdata",outDir))
+
 # ---------------------------------------------
 # finally, predict the class of each test sample
 predClass 	<- GM_OneVAll_getClass(predRes)

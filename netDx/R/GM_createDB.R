@@ -25,7 +25,7 @@
 #' the text-based GeneMANIA generic database
 #' @export
 GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
-		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,,...) {
+		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,...) {
 	# tmpDir/ is where all the prepared files are stored.
 	# GeneMANIA uses tmpDir as input to create the generic database. 
 	# The database itself will be in outDir/

@@ -10,5 +10,5 @@ Imports: bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorB
 Depends:
     R (>= 3.1.1),bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
 License: GPL>=2.0
-LazyData: true
+LazyData: false
 RoxygenNote: 5.0.1

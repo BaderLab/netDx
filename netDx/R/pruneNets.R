@@ -1,6 +1,6 @@
 #' Prune interaction networks to keep only the networks and patients 
 #' requested
-
+#'
 #' @details This function is crucial for patient data that is highly 
 #' sparse; examples include patient CNVs indels, as opposed to full matrix
 #' measures (gene expression, questionnaire data). Each step where the pool

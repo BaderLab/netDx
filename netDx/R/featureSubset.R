@@ -14,7 +14,7 @@
 #' the output of GM_createDB.R
 #' @param pheno_DF (data.frame) pheno matrix; ID and STATUS
 #' @param predictClass (char) class label for predictor
-#' @param outDir (char) directory to story query file and GM results
+#' @param outDir (char) directory to store query file and GM results
 #' @param num2return (integer) number of training samples in total
 #' @param numCores (integer) num cores for parallel processing. Used by
 #' \code{GM_runCV_featureSet()} during the cross-validation for each 

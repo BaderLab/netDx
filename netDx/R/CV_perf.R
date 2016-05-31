@@ -1,5 +1,5 @@
 #' ROC curve for cross validation runs
-
+#'
 #' @param fList (char) list of GM result files
 #' @param pheno_DF (data.frame) ID: patient ID ; STATUS: patient STATUS
 #' @param predClass (char) class for which predictor is being built
@@ -118,17 +118,6 @@ print(auc)
 out_stats	<- matrix(NA,nrow=length(auc),ncol=4)
 colnames(out_stats) <- c("AUC","max-F1","cutoff for max-F1","AUPR")
 out_stats[,1]	<- auc
-
-#clrs	<- brewer.pal(name="Set3",n=length(fList))
-#pdf(sprintf("%s/CV_perf.pdf",outDir)) 
-#par(bty='n',las=1,cex.axis=1.3,font.axis=2)
-#plot(perf, main=sprintf("ROC Curve of CV (N=%i)\n Median AUC=%1.2f",
-#	length(fList), quantile(auc,0.5)),lwd=2)
-#abline(0,1,col="red",lwd=3)
-#
-#plot(f, main=sprintf("F1-measure (N=%i)\n",
-#	length(fList)),lwd=2)
-#dev.off()
 
 # precision recall
 cat("Precision recall F1\n----------------------\n")

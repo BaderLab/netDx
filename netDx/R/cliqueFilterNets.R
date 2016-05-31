@@ -30,12 +30,17 @@
 #' all networks
 #' @param predClass (char) see \code{getEnr()}
 #' @param tmpDir (char) path to dir where temporary work can be stored
+#' @param netGrep (char) pattern to grep for network files in netDir
+#' @param getShufResults (logical) if TRUE, returns the ENR for each
+#' permutation, for all networks. Warning: this is likely to be huge. Use
+#' this flag for debugging purposes only.
 #' @param ... parameters for \code{countIntType_batch()}. 
 #' @return (data.frame) networks stats from clique-filtering, one record per network
 #' @export
 cliqueFilterNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 	minEnr=-1,outPref="cliqueFilterNets",verbose=TRUE,setSeed=42L,
-	enrType="binary",numCores=1L,predClass,tmpDir="/tmp",...) {
+	enrType="binary",numCores=1L,predClass,tmpDir="/tmp",
+	netGrep="_cont.txt$",getShufResults=FALSE,...) {
 		
 today	<- format(Sys.Date(),"%y%m%d")
 runtime	<- format(Sys.time(),"%H%M")
@@ -60,7 +65,7 @@ registerDoParallel(cl)
 
 # get enrichment for real networks
 orig_enr <- getEnr(netDir,pheno_DF,predClass=predClass,tmpDir=tmpDir,
-				   enrType=enrType,...)
+				   enrType=enrType,netGrep=netGrep,...)
 plusID		<- orig_enr[["plusID"]]
 minusID		<- orig_enr[["minusID"]]
 orig		<- orig_enr[["orig"]]
@@ -95,6 +100,9 @@ cat("\t")
 x0 <- system.time( 
 while ((length(to_run)>0) &  (currRep <=numReps)) {
 	shuf	<- sample(both,replace=F) # shuffle case-control label
+	##cat(sprintf("%i: shuf:\"+\"has %i + and %i -\n", currRep,
+	##	sum(shuf[1:n1] %in% plusID), sum(shuf[1:n1] %in% minusID)))
+
 	# recompute pp and pm for each network
 	# this step is run in parallel
 	tmp		<- countIntType_batch(fList[to_run],
@@ -163,10 +171,14 @@ out <- data.frame(NETWORK=basename(fList),
 	Z=orig_z,pctl=orig_pct,Q=qval)
 
 write.table(out,
-			file=sprintf("%s/%s.stats.txt", outDir, outPref),
-			sep="\t",col=TRUE,row=F,quote=F)
+	file=sprintf("%s/%s.stats.txt", outDir, outPref),
+	sep="\t",col=TRUE,row=F,quote=F)
 
-return(out)
+if (getShufResults) {
+	out <- list(shufres=shuf_rat, res=out)
+} else {
+	return(out)
+}
 
 }, error=function(ex) {
 	print(ex)

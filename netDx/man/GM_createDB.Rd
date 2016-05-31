@@ -5,8 +5,7 @@
 \title{Create GeneMANIA database}
 \usage{
 GM_createDB(netDir, patientID, outDir, simMetric = "cor_pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
-  attrib_DF = NULL, ...)
+  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -25,12 +24,6 @@ profiles to interaction networks.}
 \item{verbose}{(logical) print messages}
 
 \item{numCores}{(integer) num cores for parallel processing}
-
-\item{attrib_DF}{(data.frame) attribute info. NULL for no attributes.
-Column names: 1) attribute_group (char) attribute group name
-2) attribute_name (char) attribute name
-3) ID (integer) patient ID
-4) attribute_value (char) attribute value}
 
 \item{...}{params for \code{GM_writeBatchFile()}}
 }
@@ -52,5 +45,12 @@ Profile tables have patient-by-datapoint format (e.g. patient-by-genotype)
 Interaction networks have pairwise similarity measures:
 <PatientA>	<PatientB>	<similarity>
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
+}
+\examples{
+data(TCGA_mini,pathwayList);
+# write nets in "nets" subdirectory of this directory
+n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"nets/",
+	writeProfiles=TRUE); 
+db <- GM_createDB("nets/",pheno$ID,".")
 }
 

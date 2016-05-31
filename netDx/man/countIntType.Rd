@@ -13,7 +13,18 @@ countIntType(inFile, plusID, minusID)
 
 \item{minusID}{(char) vector of - nodes}
 }
+\value{
+(numeric of length 2) Number of (+,+) interactions, and non-(+,+) interactions
+(i.e. (+,-) and (-,-) interactions)
+}
 \description{
 Counts the number of (+,+) and (+,-) interactions in a single network
+}
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",
+	path.package("netDx"))
+countIntType(sprintf("\%s/BOTH_EQUAL.txt", netDir),
+		npheno[1:100,1],npheno[101:200,1])
 }
 

@@ -30,4 +30,10 @@ of results file
 \description{
 Run a GeneMANIA query
 }
+\examples{
+GM_db <- sprintf("\%s/extdata/GM_db", path.package("netDx"))
+GM_query <- sprintf("\%s/extdata/GM_query.txt",
+	path.package("netDx"))
+runGeneMANIA(GM_db, GM_query,tmpDir)
+}
 

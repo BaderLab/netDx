@@ -35,4 +35,10 @@ NA.
 \description{
 Process GM PRANK files to get the ROC curve for the query
 }
+\examples{
+data(TCGA_mini)
+prankFile <- sprintf("\%s/extdata/GM_PRANK.txt", 
+	 path.package("netDx"))
+x <- GM_getQueryROC(prankFile, pheno, "LumA")
+}
 

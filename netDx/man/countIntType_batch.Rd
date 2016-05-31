@@ -27,4 +27,11 @@ of other edges
 \description{
 Counts number of (+,+) and (+,-) interactions in a set of networks
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",
+path.package("netDx"))
+countIntType_batch(sprintf("\%s/BOTH_EQUAL.txt", 
+netDir),npheno[1:100,1],npheno[101:200,1])
+}
 

@@ -16,4 +16,9 @@ data.frame: ID, GM_score, PRED_CLASS
 \description{
 assign patient class when ranked by multiple GM predictors
 }
+\examples{
+data(TCGA_mini,pathwayList); 
+out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
+tmpDir,writeProfiles=TRUE)
+}
 

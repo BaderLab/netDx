@@ -54,4 +54,10 @@ This function requires the specific formatting of the first column
 to assign the key name of the output list (see \code{useIDasName} 
 argument).
 }
+\examples{
+pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
+	path.package("netDx"))
+pathwayList    <- readPathways(pathFile)
+
+}
 

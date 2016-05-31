@@ -38,4 +38,13 @@ this scenario also plots the n-fold AUC curve in \code{CV_AUC.pdf}.
 \description{
 ROC curve for cross validation runs
 }
+\examples{
+data(TCGA_full)
+pDir <- sprintf("\%s/extdata/GM_PRANK",
+path.package("netDx"))
+pranks <- sprintf("\%s/\%s",pDir,
+dir(pDir,pattern="PRANK$")) # example PRANK
+x <- CV_perf(pranks,pheno_full, "LumA",".")
+x <- CV_perf(pranks,pheno_full, "LumA",justGetError=TRUE)
+}
 

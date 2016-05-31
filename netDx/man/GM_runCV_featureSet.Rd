@@ -41,4 +41,10 @@ Run GeneMANIA cross-validation with a provided subset of networks
 \details{
 Creates query files, runs GM for 10-fold cross validation.
 }
+\examples{
+data(MB_pheno)
+GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
+GM_runCV_featureSet(MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
+"~/tmp",GM_db,103L)
+}
 

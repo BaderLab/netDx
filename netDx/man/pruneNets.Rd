@@ -45,4 +45,10 @@ such networks are no longer eligible for downstream use, such as
 feature selection. This function rewrites those subnetworks of the 
 original networks that consist of eligible patients.
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+pruneNets(netDir,"~/tmp",filterIDs=npheno[1:10,],
+	netSfx="txt$")
+}
 

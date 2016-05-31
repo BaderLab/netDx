@@ -23,4 +23,8 @@ query file for each fold
 \description{
 Randomly select patients for query in cross-validation
 }
+\examples{
+data(TCGA_mini)
+x <- makeCVqueries(pheno$ID)
+}
 

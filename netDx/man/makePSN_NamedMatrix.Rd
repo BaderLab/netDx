@@ -69,4 +69,9 @@ networks. Rather, netDx uses \code{simMetric} to create interaction
 networks. Networks can be sparsified by excluding weak connections 
 (cutoff).
 }
+\examples{
+data(TCGA_mini,pathwayList); 
+out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
+	".",writeProfiles=TRUE)
+}
 

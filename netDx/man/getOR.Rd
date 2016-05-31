@@ -39,4 +39,12 @@ fraction of the predicted class indicates successful feature selection.
 To create a ROC or precision-recall curve, several calls can be made
 to this function, one per cutoff.
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+y <- getOR(x,npheno,"case",colnames(x)[1]) # should give large OR
+y <- getOR(x,npheno,"case",colnames(x)[2]) # should give OR of 0
+y <- getOR(x,npheno,"case",colnames(x)[3]) # should give OL of 1
+}
 

@@ -24,4 +24,10 @@ symmetric matrix of size N, where N is number of samples
 \description{
 Measures of patient similarity
 }
+\examples{
+data(TCGA_mini) 
+x <- getSimilarity(xpr) # similarity by Pearson corr
+mySim <- function(x) cor(x,method="kendall")
+x <- getSimilarity(xpr,customFunc=mySim) # custom similarity
+}
 

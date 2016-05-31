@@ -27,7 +27,7 @@ the output of GM_createDB.R}
 
 \item{predictClass}{(char) class label for predictor}
 
-\item{outDir}{(char) directory to story query file and GM results}
+\item{outDir}{(char) directory to store query file and GM results}
 
 \item{num2return}{(integer) number of training samples in total}
 
@@ -47,5 +47,13 @@ Feature subset selection driver function
 \details{
 Wrapper to run feature subselection methods from the FSelector 
 package
+}
+\examples{
+GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
+data(MB_pheno)
+nets <- c("DKK2_cont","EMX2_cont","TNC_cont","WIF1_cont")
+doSubsetSelection(methodName="greedy.backward",incNets=nets, 
+queryPool=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
+GM_db=GM_db,pheno_DF=MB.pheno, outDir=".",num2return=103L)
 }
 

@@ -32,4 +32,11 @@ of patient subsetting is applied (e.g. clique filtering, or train/test
 split). A matrix with patient/network membership serves as a lookup
 table to prune networks as feature selection proceeds
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",
+path.package("netDx"))
+x <- countPatientsInNet(netDir,
+dir(netDir,pattern="txt$"), npheno[,1])
+}
 

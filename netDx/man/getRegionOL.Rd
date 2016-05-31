@@ -27,4 +27,8 @@ Given a set of query GRanges, and a subject list-of-GRanges,
 updates the query with a column 'LOCUS_NAMES' containing the names of
 ranges overlapped by the query
 }
+\examples{
+data(TCGA_mini,pathway_GR)
+x <- getRegionOL(cnv_GR,pathway_GR)
+}
 

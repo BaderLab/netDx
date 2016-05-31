@@ -15,4 +15,7 @@ cleanPathwayName(curP)
 \description{
 Clean pathway name so it can be a filename.
 }
+\examples{
+cleanPathwayName("7-(3-AMINO-3-CARBOXYPROPYL)-WYOSINE BIOSYNTHESIS\%HUMANCYC\%PWY-7286") 
+}
 

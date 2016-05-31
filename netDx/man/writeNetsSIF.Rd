@@ -4,7 +4,7 @@
 \alias{writeNetsSIF}
 \title{write patient networks in Cytoscape's .sif format}
 \usage{
-writeNetsSIF(netPath, outFile)
+writeNetsSIF(netPath, outFile, netSfx = "_cont.txt")
 }
 \arguments{
 \item{netPath}{(char): vector of path to network files; file suffix
@@ -12,7 +12,9 @@ should be "_cont.txt"
 networks should be in format:    A    B    1
 where A and B are nodes, and 1 indicates an edge between them}
 
-\item{outFile:}{(char) path to .sif file}
+\item{outFile}{(char) path to .sif file}
+
+\item{netSfx}{(char) suffix for network file name}
 }
 \value{
 No value. Side effect of writing all networks to \code{outFile}
@@ -25,5 +27,10 @@ Converts a set of binary interaction networks into Cytoscape's
 sif format.
 (http://wiki.cytoscape.org/Cytoscape_User_Manual/Network_Formats)
 This utility permits visualization of feature selected networks.
+}
+\examples{
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+netFiles <- sprintf("\%s/\%s", netDir, dir(netDir,pattern="txt$"))
+writeNetsSIF(netFiles,"merged.sif",netSfx=".txt")
 }
 

@@ -6,7 +6,8 @@
 \usage{
 cliqueFilterNets(netDir, pheno_DF, outDir, numReps = 50L, minEnr = -1,
   outPref = "cliqueFilterNets", verbose = TRUE, setSeed = 42L,
-  enrType = "binary", numCores = 1L, predClass, tmpDir = "/tmp", ...)
+  enrType = "binary", numCores = 1L, predClass, tmpDir = "/tmp",
+  netGrep = "_cont.txt$", getShufResults = FALSE, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir containing all networks}
@@ -37,6 +38,12 @@ all networks}
 
 \item{tmpDir}{(char) path to dir where temporary work can be stored}
 
+\item{netGrep}{(char) pattern to grep for network files in netDir}
+
+\item{getShufResults}{(logical) if TRUE, returns the ENR for each
+permutation, for all networks. Warning: this is likely to be huge. Use
+this flag for debugging purposes only.}
+
 \item{...}{parameters for \code{countIntType_batch()}.}
 }
 \value{
@@ -60,5 +67,12 @@ ENR(network N) = ((num (+,+) edges) - (num other edges))/(num edges).
 A p-value for per-network ENR is obtained non-parametrically by
 measuring a null distribution for ENR following multiple permutations
 of case-control labels.
+}
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+x <- cliqueFilterNets(netDir,npheno,".",predClass="case",netGrep="txt$",numReps=500)
+print(x)
+
 }
 

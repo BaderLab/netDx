@@ -8,7 +8,7 @@ GM_writeBatchFile(netDir, netList, outDir, idFile, orgName = "predictor",
   orgDesc = "my_predictor", orgAlias = "my_predictor", taxID = 1339)
 }
 \arguments{
-\item{netDir}{(char) path to dir with newtorks}
+\item{netDir}{(char) path to dir with networks}
 
 \item{netList}{(char) vector of network names}
 

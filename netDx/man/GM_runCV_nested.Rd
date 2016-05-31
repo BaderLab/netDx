@@ -35,4 +35,11 @@ Runs two-tier cross validation by calling
 \code{GM_runCV_featureSet()} for the inner loop. Computes patient
 ranking and network tally
 }
+\examples{
+data(MB_pheno)
+GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
+GM_runCV_nested(outDir=".",pheno_DF=MB.pheno, predictClass="WNT",
+	trainID_pred=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
+	numTrainSamps=103L,GM_db=GM_db)
+}
 

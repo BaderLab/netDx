@@ -34,4 +34,8 @@ as been assigned to the test set.
 \description{
 Split samples into training and testing set
 }
+\examples{
+data(TCGA_mini)
+x <- splitTestTrain(pheno,predClass="LumA")
+}
 

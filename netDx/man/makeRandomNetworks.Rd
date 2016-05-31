@@ -36,4 +36,9 @@ Generates random binary interaction networks
 Used as a control to assess the robustness of GeneMANIA to 
 random cliques.
 }
+\examples{
+data(TCGA_mini); 
+x <- makeRandomNetworks(pheno$ID, numNets=10L,
+outDir=tmpDir)
+}
 

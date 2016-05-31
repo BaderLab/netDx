@@ -46,4 +46,10 @@ each network contains at least two patients and only patients in
 networks are retained. In other words, it keeps pheno_DF and p_net in 
 sync.
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+netmat <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+ updateNets(netmat, npheno,writeNewNets=FALSE)
+}
 

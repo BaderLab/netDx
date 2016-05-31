@@ -23,4 +23,9 @@ least once in \code{fList}.
 \description{
 Tally the score of networks through cross-validation
 }
+\examples{
+netDir <- sprintf("\%s/extdata/GM_NRANK",path.package("netDx"))
+netFiles <- sprintf("\%s/\%s", netDir,dir(netDir,pattern="NRANK$"))
+pTally <- GM_networkTally(netFiles)
+}
 

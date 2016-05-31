@@ -26,4 +26,8 @@ No value. Side effect of writing the query file to
 \description{
 Wrapper to write GeneMANIA query file
 }
+\examples{
+data(TCGA_mini)
+GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
+}
 

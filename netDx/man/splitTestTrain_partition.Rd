@@ -42,4 +42,8 @@ and negative classes are represented in all the resamplings (i.e. it
 avoids the situation where one resampling has too many positives and 
 another has too few).
 }
+\examples{
+data(TCGA_mini) 
+x <- splitTestTrain_partition(pheno,predClass="LumA")
+}
 

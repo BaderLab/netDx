@@ -22,4 +22,8 @@ prauc (numeric between 0 and 1): AUC of overall precision-recall curve
 Computes variety of predictor evaluation measures based on the confusion
 matrix
 }
+\examples{
+data(confmat)
+x <- perfCalc(confmat)
+}
 

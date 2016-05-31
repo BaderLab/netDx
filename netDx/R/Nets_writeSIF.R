@@ -9,14 +9,15 @@
 #' should be "_cont.txt" 
 #' networks should be in format:	A	B	1
 #' where A and B are nodes, and 1 indicates an edge between them
-#' @param outFile: (char) path to .sif file 
+#' @param outFile (char) path to .sif file 
+#' @param netSfx (char) suffix for network file name
 #' @return No value. Side effect of writing all networks to \code{outFile}
 #' @export
-writeNetsSIF <- function(netPath,outFile){
+writeNetsSIF <- function(netPath,outFile,netSfx="_cont.txt"){
 	
 	system(sprintf("cat /dev/null > %s",outFile))
 	for (n in netPath) {
-		netName <- sub("_cont.txt","",basename(n))
+		netName <- sub(netSfx,"",basename(n))
 		cat(sprintf("%s\n", netName))
 
 		dat <- read.delim(n,sep="\t",h=F,as.is=T)

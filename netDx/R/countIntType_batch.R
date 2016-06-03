@@ -10,6 +10,14 @@
 #' If \code{enrType="binary"}, number of (+,+) and other interactions
 #' Otherwise if \code{enrType="corr"} mean edge weight of (+,+) edges and
 #' of other edges
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",
+#'		path.package("netDx"))
+#' # registerDoSEQ() ## run this if you get a 
+#' # 'summary.connection(connection) invalid connection' error
+#' countIntType_batch(sprintf("%s/BOTH_EQUAL.txt", netDir),
+#' 		npheno[1:100,1],npheno[101:200,1])
 #' @export
 countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 	   enrType="binary"){

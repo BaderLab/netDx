@@ -24,7 +24,6 @@
 #' shared CNV overlap)
 #' 2) corr: 0.5*((mean weight of (+,+) edges)-(mean weight of other edges))
 #' @param ... arguments for \code{countIntType_batch}
-#' @examples getEnr(".", phenoFile="pheno.txt", predClass="case")
 #' @return (list):
 #' 1) plusID (char) vector of + nodes
 #' 2) minusID (char) vector of - nodes
@@ -33,6 +32,12 @@
 #' 5) orig (data.frame) output of \code{countIntType_batch} for input
 #' networks
 #' @export
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' x <- getEnr(netDir, npheno, "case",netGrep=".txt$")
+#' print(x$orig_rat) 
+#'
 getEnr	<- function(netDir, pheno_DF,predClass,netGrep="_cont.txt$",
 	enrType="binary",...) {
 if (missing(predClass)) stop("predClass must be supplied.\n")

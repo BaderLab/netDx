@@ -33,6 +33,12 @@
 #' any genes in any feature-selected pathways, the value for that CNV is 
 #' "NA".
 #' @export
+#' @examples
+#' data(TCGA_mini,pathway_GR,pathwayList)
+#' x <- getRegionOL(cnv_GR,pathway_GR)
+#' y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
+#' y <- fetch_NetUnits(x,pathwayList, names(pathwayList),
+#' 	trackMapping_detail=TRUE)
 fetch_NetUnits <- function(pat_GR, netList, whichNets,
 	trackMapping_detail=FALSE,verbose=FALSE) {
 	netg <- NULL

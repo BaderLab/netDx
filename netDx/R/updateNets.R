@@ -25,6 +25,11 @@
 #' in the updated p_net. p_net will contain only those networks with 
 #' 2+ patients and those patients present in 1+ network.
 #' @export
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' netmat <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+#' x <- updateNets(netmat, npheno,writeNewNets=FALSE)
 updateNets <- function(p_net, pheno_DF,writeNewNets=TRUE,
 	oldNetDir,newNetDir,verbose=TRUE,...) {
 	idx <- which(colSums(p_net)>=2); p_net   <- p_net[,idx];

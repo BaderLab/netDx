@@ -9,6 +9,9 @@
 #' auc (numeric between 0 and 1): AUC of overall ROC curve
 #' prauc (numeric between 0 and 1): AUC of overall precision-recall curve
 #' @importFrom pracma trapz
+#' @examples
+#' data(confmat)
+#' x <- perfCalc(confmat)
 #' @export
 perfCalc <- function(dat) {
 	dat <- na.omit(dat)

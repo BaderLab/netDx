@@ -9,6 +9,11 @@
 #'
 #' @return RangeList. keys are names of \code{rangeList}, values are GRanges
 #' @import GenomicRanges
+#' @examples 
+#' data(genes,pathwayList); 
+#' gene_GR<- GRanges(genes$chrom,
+#'	IRanges(genes$txStart,genes$txEnd),name=genes$name2)
+#' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 #' @export
 mapNamedRangesToSets <- function(gr,rangeList,verbose=FALSE){ 
     out <- list()

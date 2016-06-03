@@ -23,6 +23,11 @@
 #' @param verbose (logical) print messages
 #' @return (no value). Side effect of writing pruned network files to 
 #' \code{newDir}
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' pruneNets(netDir,"~/tmp",filterIDs=npheno[1:10,],
+#' 	netSfx="txt$")
 #' @export
 pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 	netSfx="_cont.txt$",verbose=TRUE) {

@@ -16,6 +16,11 @@
 #' @param numCores (logical) num parallel threads for cross-validation
 #' @param GMmemory (integer) memory for GeneMANIA run, in Gb.
 #' @param ... args for \code{makeCVqueries()}
+#' @examples
+#' data(MB_pheno)
+#' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
+#' GM_runCV_featureSet(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
+#'	"~/tmp",GM_db,103L)
 #' @export
 GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps, 
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,

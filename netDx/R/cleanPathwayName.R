@@ -2,6 +2,8 @@
 #' 
 #' @param curP (char) pathway name
 #' @export
+#' @examples
+#' cleanPathwayName("7-(3-AMINO-3-CARBOXYPROPYL)-WYOSINE BIOSYNTHESIS%HUMANCYC%PWY-7286") 
 #' @return (char) Cleaned pathway name
 cleanPathwayName <- function(curP) {
 	pforfile	<- gsub(" ","_",curP)

@@ -12,6 +12,10 @@
 #' @param outFile (char) path to .sif file 
 #' @param netSfx (char) suffix for network file name
 #' @return No value. Side effect of writing all networks to \code{outFile}
+#' @examples
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' netFiles <- sprintf("%s/%s", netDir, dir(netDir,pattern="txt$"))
+#' writeNetsSIF(netFiles,"merged.sif",netSfx=".txt")
 #' @export
 writeNetsSIF <- function(netPath,outFile,netSfx="_cont.txt"){
 	

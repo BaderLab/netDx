@@ -36,6 +36,13 @@
 #' this flag for debugging purposes only.
 #' @param ... parameters for \code{countIntType_batch()}. 
 #' @return (data.frame) networks stats from clique-filtering, one record per network
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' x <- cliqueFilterNets(netDir,npheno,".",predClass="case",netGrep="txt$",
+#' 	numReps=500)
+#' print(x)
+#' 
 #' @export
 cliqueFilterNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 	minEnr=-1,outPref="cliqueFilterNets",verbose=TRUE,setSeed=42L,

@@ -40,6 +40,11 @@
 #' @param verbose (logical) print messages
 #' @return No value. Writes sparsified matrix to \code{outFile}
 #' @export
+#' @examples
+#' require(reshape2) # for melt()
+#' data(TCGA_mini)
+#' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
+#' sparsifyNet(x,outFile="tmp.txt")
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
 		numPatients=100L,keepTies=TRUE,verbose=TRUE){
 if (class(net)=="data.frame") {

@@ -8,6 +8,9 @@
 #' @param orgName (char) organism name 
 #' @return No value. Side effect of writing the query file to
 #' \code{outFile}
+#' @examples
+#' data(TCGA_mini)
+#' GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 #' @export
 GM_writeQueryFile <- function(qSamps, incNets, numReturn=1L, outFile, 
   orgName="predictor") {

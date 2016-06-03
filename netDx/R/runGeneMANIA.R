@@ -10,6 +10,11 @@
 #' giving up.
 #' @return path to GeneMANIA query result file
 #' of results file
+#' @examples
+#' GM_db <- sprintf("%s/extdata/GM_db", path.package("netDx"))
+#' GM_query <- sprintf("%s/extdata/GM_query.txt",
+#'		path.package("netDx"))
+#' runGeneMANIA(GM_db, GM_query,"/tmp")
 #' @export
 runGeneMANIA <- function(GM_db, queryFile, resDir, parseReport=TRUE,
 	verbose=TRUE,GMmemory=6L,MAX_ATTEMPTS=3L) {

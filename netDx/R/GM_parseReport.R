@@ -5,6 +5,12 @@
 #' same directory as resFile. Suffixes filename with PRANK and NRANK 
 #' respectively
 #' @export
+#' @examples
+#' GM_db <- sprintf("%s/extdata/GM_db", path.package("netDx"))
+#' GM_query <- sprintf("%s/extdata/GM_query.txt",path.package("netDx"))
+#' x <- runGeneMANIA(GM_db,GM_query,"/tmp")
+#' GM_parseReport(x)
+#' 
 GM_parseReport <- function(resFile) {
 	os <- Sys.info()['sysname']
 	# use OS/X version of tail

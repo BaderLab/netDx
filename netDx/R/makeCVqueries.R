@@ -7,9 +7,11 @@
 #' @param verbose (logical) print messages
 #' @return (list) of length \code{nFold}, containing names of patients in
 #' query file for each fold
+#' @examples 
+#' data(TCGA_mini)
+#' x <- makeCVqueries(pheno$ID)
 #' @export
 makeCVqueries <- function(incPat, nFold=10L,setSeed=42L,verbose=TRUE) {
-
 if (!is.null(setSeed)) {
 	cat(sprintf("Setting seed for reproducibility: %i\n",setSeed))
 	set.seed(setSeed); # make reproducible

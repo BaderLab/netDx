@@ -9,6 +9,12 @@
 #' can take additional argument. It should return a symmetric matrix of 
 #' pairwise patient similarities.
 #' @return symmetric matrix of size N, where N is number of samples
+#' @examples
+#' data(TCGA_mini) 
+#' x <- getSimilarity(xpr) # similarity by Pearson corr
+#' mySim <- function(x) cor(x,method="kendall")
+#' x <- getSimilarity(xpr,customFunc=mySim) # custom similarity
+
 #' @export
 getSimilarity <- function(x, type="pearson",customFunc,...) {
 	switch(type, 

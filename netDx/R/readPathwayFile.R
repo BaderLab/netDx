@@ -33,7 +33,7 @@
 #' pathway name as key, vector of genes as value. If TRUE, returns list of
 #' length two, (1) geneSets: pathway-gene mappings as default, 
 #' (2) pNames: data.frame with original and cleaned names.
-#' @examples pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+#' @examples pathFile <- sprintf("%s/extdata/pathways.gmt",
 #'		path.package("netDx"))
 #'	pathwayList    <- readPathways(pathFile)
 #' 

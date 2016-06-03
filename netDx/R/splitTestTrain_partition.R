@@ -22,6 +22,9 @@
 #' @param verbose (logical) print messages
 #' @return (list) of length nFold, each with char vector of length 
 #' nrow(pheno_DF). Values of "TRAIN" or "TEST"
+#' @examples
+#' data(TCGA_mini) 
+#' x <- splitTestTrain_partition(pheno,predClass="LumA")
 #' @export
 splitTestTrain_partition <- function(pheno_DF, nFold=3L, setSeed=42L,
  	predClass,verbose=FALSE){

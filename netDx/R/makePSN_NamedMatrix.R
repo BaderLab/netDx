@@ -42,6 +42,12 @@
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
 #' Side effect of writing interaction networks in \code{outDir}
+#' @examples data(TCGA_mini,pathwayList); 
+#' # you may get a warning message that the output directory already
+#' # exists; ignore it
+#' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
+#' 	".",writeProfiles=TRUE)
+
 #' @export
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson", cutoff=0.3,verbose=TRUE,

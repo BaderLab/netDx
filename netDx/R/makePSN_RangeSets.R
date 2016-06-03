@@ -27,6 +27,9 @@
 #' @param quorum (integer) minimum number of patients in a network for the 
 #' network to be constructed
 #' @return Vector of network filenames
+#' @examples
+#' data(pathway_GR,TCGA_mini)
+#' netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 #' @export
 #' @import GenomicRanges
 #' @import bigmemory

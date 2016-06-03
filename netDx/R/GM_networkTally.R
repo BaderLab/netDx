@@ -8,6 +8,11 @@
 #' @param verbose (logical) print messages
 #' @return (named integer) Vector of scores for networks that occur at 
 #' least once in \code{fList}.
+#' @examples
+#' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx"))
+#' netFiles <- sprintf("%s/%s", netDir,dir(netDir,pattern="NRANK$"))
+#' pTally <- GM_networkTally(netFiles)
+#' print(head(pTally))
 #' @export
 GM_networkTally <- function(fList,filter_WtSum=100,verbose=FALSE) {
 

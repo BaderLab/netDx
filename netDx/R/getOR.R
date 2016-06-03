@@ -19,6 +19,13 @@
 #' @param verbose (logical) print messages
 #' @return List. 1) stats: statistics on group overlap with netList,
 #' 2) relEnr: relative enrichment of \code{predClass} over other
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+#' getOR(x,npheno,"case",colnames(x)[1]) # should give large RelEnr
+#' getOR(x,npheno,"case",colnames(x)[2]) # should give RelEnr of 0
+#' getOR(x,npheno,"case",colnames(x)[3]) # should give RelEnr of 1
 #' @export
 getOR <- function(pNetworks, pheno_DF, predClass, netList,verbose=TRUE) {
 # TODO this function only makes sense in the context of structural

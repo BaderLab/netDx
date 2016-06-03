@@ -17,6 +17,11 @@
 #' @return No value. Side effect of writing batch file to 
 #' \code{<outDir>/batch.txt}.
 #' @export
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' netList <- dir(netDir,pattern="txt$")
+#' GM_writeBatchFile(netDir,netList, "~/tmp", npheno$ID)
 GM_writeBatchFile <- function(netDir,netList,outDir,idFile,
 	orgName="predictor",orgDesc="my_predictor",orgAlias="my_predictor",
 	taxID=1339) {

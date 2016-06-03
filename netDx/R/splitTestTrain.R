@@ -18,6 +18,9 @@
 #' "TRAIN" or "TEST". The order corresponds to pheno_DF; a patient labelled
 #' "TRAIN" has been assigned to the training set, and one labelled "TEST"
 #' as been assigned to the test set.
+#' @examples
+#' data(TCGA_mini)
+#' x <- splitTestTrain(pheno,predClass="LumA")
 #' @export
 splitTestTrain <- function(pheno_DF,pctT=0.7,setSeed=42,predClass) { 
 

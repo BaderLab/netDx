@@ -3,6 +3,8 @@
 #' @param resSet (list) output of GM_getQueryROC, each key for a different
 #' predictor. names(resSet) contain predictor label
 #' @return data.frame: ID, GM_score, PRED_CLASS
+#' @examples 
+#' data(predRes); predClass <- GM_OneVAll_getClass(predRes)
 #' @export
 GM_OneVAll_getClass <- function(resSet) {
 	type_rank <- NULL

@@ -18,6 +18,14 @@
 #' Else returns nothing, but has the side effect of printing the AUC
 #' for all folds to the output file CV_stats.txt in \code{outDir}. In 
 #' this scenario also plots the n-fold AUC curve in \code{CV_AUC.pdf}.
+#' @examples
+#' data(TCGA_full)
+#' pDir <- sprintf("%s/extdata/GM_PRANK",
+#'	path.package("netDx"))
+#' pranks <- sprintf("%s/%s",pDir,
+#'	dir(pDir,pattern="PRANK$")) # example PRANK
+#' x <- CV_perf(pranks,pheno_full, "LumA",".")
+#' x <- CV_perf(pranks,pheno_full, "LumA",justGetError=TRUE)
 #' @export
 #' @import ROCR
 #' @importFrom pracma trapz
@@ -122,6 +130,11 @@ out_stats[,1]	<- auc
 # precision recall
 cat("Precision recall F1\n----------------------\n")
 for (i in 1:nrow(out_stats)) {
+	if (length(fstat[[i]])==1) {
+		if (is.na(fstat[[i]])) {
+		out_stats[i,2:4] <- c(NA,NA,NA)
+		}
+	} else {
 	maxInd	<- which.max(fstat[[i]]@y.values[[1]])
 	fmax	<- fstat[[i]]@y.values[[1]][maxInd]
 	cutoff	<- fstat[[i]]@x.values[[1]][maxInd]
@@ -133,6 +146,7 @@ for (i in 1:nrow(out_stats)) {
 						 trapz(precall[[i]]@x.values[[1]][-1],
 							   precall[[i]]@y.values[[1]][-1])
 						 )
+	}
 }
 cat("\nmax F1 for each fold:\n")
 print(out_stats[,2])

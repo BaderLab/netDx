@@ -15,6 +15,10 @@
 #' @param netName (char) prefix for network name. 
 #' @param outDir (char) output directory
 #' @return char vector of network names
+#' @examples 
+#' data(TCGA_mini); 
+#' x <- makeRandomNetworks(pheno$ID, numNets=10L,
+#'	outDir="/tmp")
 #' @export
 makeRandomNetworks <- function(id, numNets=100L, minNodes=2L, 
 	maxNodes=20L,sizeProb="exp",netName="RANDOM",outDir=".",setSeed=42L) {

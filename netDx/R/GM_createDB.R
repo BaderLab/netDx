@@ -9,7 +9,8 @@
 #' <PatientA>	<PatientB>	<similarity>
 #' Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 #' @param netDir (char) path to dir with input networks/profiles. All
-#' networks in this directory will be added to the GM database
+#' networks in this directory will be added to the GM database. Note:
+#' This needs to be an absolute path, not relative.
 #' @param patientID (char) vector of patient IDs.
 #' @param outDir (char) path to dir in which GeneMANIA database is created. 
 #' The database will be under \code{outDir/dataset}.
@@ -23,6 +24,13 @@
 #' 	"netDir": path to directory with interaction networks. If profiles
 #' are provided, this points to the INTERACTIONS/ subdirectory within 
 #' the text-based GeneMANIA generic database
+#' @examples
+#' data(TCGA_mini,pathwayList);
+#' # note: the paths in the calls below need to be absolute. If you 
+#' # do not have write access to /tmp, change to a different directory.
+#'	n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
+#'		writeProfiles=TRUE); 
+#'	db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
 #' @export
 GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,...) {

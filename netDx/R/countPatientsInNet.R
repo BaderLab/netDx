@@ -15,6 +15,11 @@
 #' @param ids (char) patient IDs to look for
 #' @return (matrix) Size P by N, where P is num patients and N is 
 #' number of networks networks; a[i,j] =1 if patient i in network j, else 0
+#' @examples
+#' data(npheno)
+#' netDir <- sprintf("%s/extdata/example_nets",
+#'	path.package("netDx"))
+#' x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
 #' @export
 countPatientsInNet	<- function(netDir,fList, ids) {
 

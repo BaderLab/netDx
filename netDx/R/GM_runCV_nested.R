@@ -14,6 +14,12 @@
 #' @param ... parameters for GM_runCV_featureSet()
 #' @return (char) vector of paths to directories where result for each
 #' outer loop is stored.
+#' @examples
+#' data(MB_pheno)
+#' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
+#' GM_runCV_nested(outDir=".",pheno_DF=MB.pheno, predictClass="WNT",
+#' 	trainID_pred=MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
+#' 	numTrainSamps=103L,GM_db=GM_db)
 #' @export
 GM_runCV_nested <- function(nOuterLoop=10L, setOloopSeed=42L,outDir,
 	pheno_DF, predictClass,...) {
@@ -25,6 +31,7 @@ GM_runCV_nested <- function(nOuterLoop=10L, setOloopSeed=42L,outDir,
 
 	seedSet <- sample(1:1000, nOuterLoop,replace=FALSE)
 	out <- list()
+	ctr <- 1
 	for (seedLevel in seedSet) {
 		fileSfx <- sprintf("CV_%i",seedLevel)
 		newOut <- sprintf("%s/%s",outDir,fileSfx)

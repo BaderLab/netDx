@@ -20,7 +20,7 @@ parses GeneMANIA query report into the PRANK and NRANK tables
 \examples{
 GM_db <- sprintf("\%s/extdata/GM_db", path.package("netDx"))
 GM_query <- sprintf("\%s/extdata/GM_query.txt",path.package("netDx"))
-x <- runGeneMANIA(GM_db,GM_query,tmpDir)
+x <- runGeneMANIA(GM_db,GM_query,"/tmp")
 GM_parseReport(x)
 
 }

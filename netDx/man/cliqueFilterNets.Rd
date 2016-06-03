@@ -71,7 +71,8 @@ of case-control labels.
 \examples{
 data(npheno)
 netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
-x <- cliqueFilterNets(netDir,npheno,".",predClass="case",netGrep="txt$",numReps=500)
+x <- cliqueFilterNets(netDir,npheno,".",predClass="case",netGrep="txt$",
+	numReps=500)
 print(x)
 
 }

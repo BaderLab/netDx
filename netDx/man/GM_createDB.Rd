@@ -9,7 +9,8 @@ GM_createDB(netDir, patientID, outDir, simMetric = "cor_pearson",
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
-networks in this directory will be added to the GM database}
+networks in this directory will be added to the GM database. Note:
+This needs to be an absolute path, not relative.}
 
 \item{patientID}{(char) vector of patient IDs.}
 
@@ -48,9 +49,10 @@ Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
 data(TCGA_mini,pathwayList);
-# write nets in "nets" subdirectory of this directory
-n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"nets/",
+# note: the paths in the calls below need to be absolute. If you 
+# do not have write access to /tmp, change to a different directory.
+n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
 	writeProfiles=TRUE); 
-db <- GM_createDB("nets/",pheno$ID,".")
+db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
 }
 

@@ -25,7 +25,10 @@ Returns overlapping named ranges for input ranges
 \details{
 Given a set of query GRanges, and a subject list-of-GRanges,
 updates the query with a column 'LOCUS_NAMES' containing the names of
-ranges overlapped by the query
+ranges overlapped by the query. One application is to map structural
+variants, such as CNVs, to genes in pathways of interest. In this 
+scenario \code{gr} would contain the patient CNVs, and \code{rngList}
+would be a list of GenomicRanges objects, one per cellular pathway.
 }
 \examples{
 data(TCGA_mini,pathway_GR)

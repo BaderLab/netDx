@@ -43,8 +43,8 @@ to this function, one per cutoff.
 data(npheno)
 netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
-y <- getOR(x,npheno,"case",colnames(x)[1]) # should give large OR
-y <- getOR(x,npheno,"case",colnames(x)[2]) # should give OR of 0
-y <- getOR(x,npheno,"case",colnames(x)[3]) # should give OL of 1
+getOR(x,npheno,"case",colnames(x)[1]) # should give large RelEnr
+getOR(x,npheno,"case",colnames(x)[2]) # should give RelEnr of 0
+getOR(x,npheno,"case",colnames(x)[3]) # should give RelEnr of 1
 }
 

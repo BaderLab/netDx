@@ -39,4 +39,10 @@ Write batch.txt file required to create GeneMANIA database
 Currently creates a single entry for network group. Future versions of this
 package may want to
 }
+\examples{
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+netList <- dir(netDir,pattern="txt$")
+GM_writeBatchFile(netDir,netList, "~/tmp", npheno$ID)
+}
 

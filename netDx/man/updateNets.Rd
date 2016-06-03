@@ -50,6 +50,6 @@ sync.
 data(npheno)
 netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 netmat <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
- updateNets(netmat, npheno,writeNewNets=FALSE)
+x <- updateNets(netmat, npheno,writeNewNets=FALSE)
 }
 

@@ -53,6 +53,10 @@ no (+,+) interactions has an ENR=-1; a network with a balance of the two
 has ENR=0.
 }
 \examples{
-getEnr(".", phenoFile="pheno.txt", predClass="case")
+data(npheno)
+netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+x <- getEnr(netDir, npheno, "case",netGrep=".txt$")
+print(x$orig_rat) 
+
 }
 

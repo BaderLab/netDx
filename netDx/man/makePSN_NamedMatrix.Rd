@@ -71,6 +71,8 @@ networks. Networks can be sparsified by excluding weak connections
 }
 \examples{
 data(TCGA_mini,pathwayList); 
+# you may get a warning message that the output directory already
+# exists; ignore it
 out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
 	".",writeProfiles=TRUE)
 }

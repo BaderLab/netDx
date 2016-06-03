@@ -1,14 +1,14 @@
 # netDx
 netDx is a method for building patient classifiers based on patient similarity networks.
 
-**(more details about the method to come soon here or on a web page)**
-
 This repo contains two R packages, each of which need to be separately installed:
 
 1. `netDx/`: Software implementing the netDx method
 2. `netDx.examples/`: Data for use cases
 
 The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
+
+For more on this project, visit **[http://netdx.org]**
 
 ## Installation
 

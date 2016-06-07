@@ -1,0 +1,218 @@
+\documentclass{article}
+\usepackage{caption}
+
+\begin{document}
+
+\title{netDx use case: Integrate gene expression and CNV to classify breast tumour as "Luminal A" or not}
+\author{Shraddha Pai}
+\date{Last updated: 6 June, 2016}
+
+\section{Introduction}
+In this application, we build a new classifier to classify a breast tumour as being either of type "Luminal A" or not.  integrate two different types of patient data, gene-level RNA and DNA copy number variants. This example illustrates the following capabilities of netDx:
+\begin{itemize}
+\item Feature selection on training samples
+\item Assess performance on test samples
+\item Generate patient similarity networks from multiple types of data
+\end{itemize}
+
+\par
+The workflow is shown in Figure 1. The algorithm proceeds in two steps:
+\begin{enumerate}
+\item \textit{Feature selection:} Two-thirds of the samples from each class are designated as training samples. Feature selection is carried out twice, once for LumA samples and once for non-LumA samples. 
+\item \textit{Predicting classes of test samples}: The other one-third of samples in each class are designed as test samples. For each of the classes (LumA and not-LumA), we construct one GeneMANIA network. The GeneMANIA network for each class contains the networks feature-selected in the previous step. Classes for test patients are assigned based on which GeneMANIA network ranks them higher. 
+\end{enumerate}
+
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{tcga_brca.png}
+\caption{netDx workflow for building a binary classifier: LumA vs not Lum-A}
+\end{center}
+\end{figure}
+
+\section{Set up environment}
+
+<<cache=TRUE>>=
+rm(list=ls())
+
+# Change this to a local directory where you have write permission
+outDir <- "~/tmp/TCGA_BRCA" 
+
+numCores 	<- 1L  	# num cores available for parallel processing
+GMmemory 	<- 4L  	# java memory in Gb
+cutoff		<- 9L  	# score cutoff for feature-selected networks
+TRAIN_PROP <- 0.67 	# fraction of samples to use for training
+@
+
+Load the netDx software and data packages. Finally, load the breast cancer dataset.
+<<cache=TRUE>>=
+require(netDx)
+require(netDx.examples)
+data(TCGA_BRCA)
+@
+
+\section{Split data into training and test sets}
+<<cache=TRUE>>=
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+dir.create(outDir)
+
+subtypes<- c("LumA")
+
+pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
+mega_TT <- rep("TRAIN",nrow(pheno))
+# first separate the test samples
+for (uq in unique(pheno$STATUS)) {
+	idx <- which(pheno$STATUS %in% uq)
+	vec <- rep("TRAIN",length(idx))
+	k <- floor((1-TRAIN_PROP)*length(idx))
+	vec[sample(1:length(idx),k,F)]<- "TEST"
+	mega_TT[idx] <- vec
+}
+@
+
+Make sure the splits are as we want them to be:
+<<cache=TRUE>>=
+cat("Train/test splits\n")
+pheno$TT_STATUS <- mega_TT
+print(table(pheno[,c("STATUS","TT_STATUS")]))
+subtypes <- c(subtypes,"other") # add residual
+@
+
+Finally, limit CNV and gene expression data to the samples for which we have labels
+<<cache=TRUE>>=
+pheno_FULL	<- pheno
+xpr_FULL 	<- xpr
+cnv_FULL	<- cnv_GR
+pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
+xpr			<- xpr[,which(colnames(xpr)%in% pheno$ID)]
+cnv_GR		<- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
+@
+
+\section{Create patient similarity networks}
+
+\subsection{Lists of pathways}
+First, we create a list of pathways from a gmt file containing pathway definitions from curated databases (Reactome, HumanCyc, Panther,etc.,)
+<<eval=TRUE,cache=TRUE>>=
+# make pathway list
+pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", path.package("netDx.examples"))
+pathwayList    <- readPathways(pathFile)
+@
+
+\subsection{Gene expression data}
+
+
+<<>>=
+# create patient networks
+profDir <- sprintf("%s/profiles",outDir)
+netDir <- sprintf("%s/networks",outDir)
+## compare num interactions of a network by own corr vs GeneMANIA corr.
+
+netList <- unlist(makePSN_NamedMatrix(xpr, rownames(xpr), pathwayList,
+		profDir,verbose=FALSE,numCores=numCores,writeProfiles=TRUE))
+@
+
+\subsection{Copy number variants}
+<<cache=TRUE>>=
+# add CNV nets
+data(genes)
+gene_GR     <- GRanges(genes$chrom,
+   IRanges(genes$txStart,genes$txEnd),
+   name=genes$name2)
+path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
+## warning: this step can take a couple minutes
+netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
+cat(sprintf("CNV: Got %i networks\n",length(netList2)))
+@
+
+Let's take a look at CNV-based networks:
+<<cache=TRUE>>=
+print(head(unlist(netList2)))
+@
+
+\subsection{Create GeneMANIA database}
+Once we have defined all our patient networks, we can construct a single GeneMANIA database for feature selection.
+
+<<>>=
+# now create database
+dbDir	<- GM_createDB(profDir, pheno$ID, outDir,numCores=numCores)
+@
+
+\section{Feature selection}
+<<>>=
+
+## repeat process for "LumA" and
+## not-LumA
+for (g in subtypes) {
+    pDir <- sprintf("%s/%s",outDir,g)
+    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
+	dir.create(pDir)
+
+	cat(sprintf("Subtype %s\n",g))
+	pheno_subtype <- pheno
+	
+	## label patients not in the current class as "other"
+	pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "other"
+	## sanity check
+	print(table(pheno_subtype$STATUS,useNA="always"))
+    
+	resDir    <- sprintf("%s/GM_results",pDir)
+	## query for feature selection comprises of training samples from the class of interest
+	trainPred <- pheno$ID[which(pheno$STATUS %in% g)]
+	
+	## *** This is the function that performs the cross-validation
+	GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir, 
+		nrow(pheno_subtype),verbose=T, numCores=numCores,
+		GMmemory=GMmemory)
+	
+	prank <- dir(path=resDir,pattern="PRANK$")
+	nrank <- dir(path=resDir,pattern="NRANK$")
+	cat(sprintf("Got %i prank files\n",length(prank)))
+	
+	## TODO Not sure GMres is required
+	GMres <- list()
+	for (f in prank)  {
+		GMres[[f]] <- GM_getQueryROC(sprintf("%s/%s",resDir,f),
+									   pheno_subtype,g)
+	}
+	outFile <- sprintf("%s/GM_perf.Rdata",pDir)
+	save(GMres,file=outFile)
+		rm(GMres)
+		
+    ## Finally compile the CV scores of networks.
+	pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
+	head(pTally)
+	
+	tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
+	write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+	fs<- pTally[which(pTally[,2]>=cutoff),]
+	fs[,1]<-sub(".profile","",fs[,1])
+	fs[,1] <- sub("_cont","",fs[,1])
+
+	### TODO Not sure this chunk is needed
+	outFile <-sprintf("%s/%s_cutoff%i_nets.gmt",resDir,g,cutoff)
+	system(sprintf("cat /dev/null > %s",outFile))
+	for (k in fs[,1]) {
+		if (any(grep("^CNV_",k))) {
+			m <- sub("CNV_","",k)
+		} else {
+			m <- k
+		}
+		#only keep genes present in our data
+		g <- intersect(pathwayList[[m]],rownames(xpr))
+		cat(sprintf("%s\t%s\t%s\n",k,k,paste(g,collapse="\t")),
+			file=outFile,append=TRUE)
+	}
+}
+@
+
+SP stopped after feature selection
+
+\section{sessionInfo}
+<<cache=TRUE>>=
+sessionInfo()
+@
+
+\section{References}
+1. The Cancer Genome Atlas (2012). \underline{Comprehensive molecular portraits of human breast tumours} \textit{Nature} \textbf{490}:61-70.
+
+\end{document}

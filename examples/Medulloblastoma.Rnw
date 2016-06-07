@@ -2,7 +2,7 @@
 
 \begin{document}
 
-\title{netDx use case: 4-way clssification: Medulloblastoma tumour subtype}
+\title{netDx use case: 4-way classification: Medulloblastoma tumour subtype}
 \author{Shraddha Pai}
 \date{Last updated: 3 June, 2016}
 

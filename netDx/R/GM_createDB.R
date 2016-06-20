@@ -125,8 +125,8 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 		}
 		))
 		stopCluster(cl)
-		netList2 <- dir(path=netOutDir,pattern=netSfx)
 		netSfx=".txt"
+		netList2 <- dir(path=netOutDir,pattern=netSfx)
 
 		cat(sprintf("Got %i networks from %i profiles\n", length(netList2),
 			length(netList)))
@@ -153,7 +153,6 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 	cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS"
 				   , tmpDir)
 	cmd <- sprintf("%s %s %s",cmd1,cmd2,cmd3)
-	print(cmd)
 	system(cmd)
 
 	#### Step 6. Cleanup.

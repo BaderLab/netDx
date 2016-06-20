@@ -103,5 +103,6 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		}
 		oFile
 	}
+	stopCluster(cl)
 	outFiles
 }

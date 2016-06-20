@@ -63,12 +63,15 @@ Say `yes` to all dependencies that need to be installed.
 ## Install `netDx` and `netDx.examples`
 This section assumes you have Java, Python, R and Bioconductor installed. From command-line, download the git repo for these packages and install them. In the code below, output from intermediate steps is omitted for clarity.
 
+*Note: For now, R package dependencies must be separately installed using the install.packages() call as shown below. netDx will be submitted to CRAN following publication; thereafter, dependencies can be automatically installed with the call to install netDx.*
+
 ```
 $ git clone git@github.com:BaderLab/netDx.git
 $ cd netDx/
 $ R
-> install.packages("netDx",dependencies=TRUE)
-> install.packages("netDx.examples",dependencies=TRUE).
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2"))
+> install.packages("netDx",type="source",repos=NULL)
+> install.packages("netDx.examples",type="source",repos=NULL)
 ```
 
 ## Run examples

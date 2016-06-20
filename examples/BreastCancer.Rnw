@@ -5,7 +5,7 @@
 
 \title{netDx use case \linebreak Integrate gene expression and CNV for \linebreak binary classification of breast tumour}
 \author{Shraddha Pai}
-\date{Last updated: 17 June, 2016}
+\date{Last updated: 20 June, 2016}
 
 \maketitle
 
@@ -39,13 +39,13 @@ The workflow is shown in Figure 1. The algorithm proceeds in two steps:
 
 A multi-core compute node is highly recommended. 
 
-<<cache=FALSE,eval=TRUE>>=
+<<set-params,cache=FALSE,eval=TRUE>>=
 rm(list=ls())
 
 # Change this to a local directory where you have write permission
 outDir <- "~/tmp/TCGA_BRCA" 
 
-numCores 	<- 1L  	# num cores available for parallel processing
+numCores 	<- 8L  	# num cores available for parallel processing
 GMmemory 	<- 4L  	# java memory in Gb
 cutoff		<- 9L  	# score cutoff for feature-selected networks
 TRAIN_PROP <- 0.67 	# fraction of samples to use for training
@@ -55,14 +55,14 @@ dir.create(outDir)
 @
 
 Load the netDx software and data packages. Finally, load the breast cancer dataset.
-<<cache=FALSE,eval=TRUE>>=
+<<load-packages, cache=FALSE,eval=TRUE>>=
 require(netDx)
 require(netDx.examples)
 data(TCGA_BRCA)
 @
 
 \section{Split data into training and test sets}
-<<cache=FALSE,eval=TRUE>>=
+<<split-test-train, cache=FALSE,eval=TRUE>>=
 
 subtypes<- c("LumA")
 pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
@@ -77,7 +77,7 @@ pheno$TT_STATUS <- splitTestTrain(pheno,
 Figure 1A shows the workflow for this step. The goal is to create input networks for all possible predictors, before proceeding to feature selection (next section). Note that as our goal is feature selection, only the training samples are used to generate input networks here.
 
 We limit CNV and gene expression data to the samples for which we have labels and keep only the data for training samples.
-<<cache=FALSE,eval=TRUE>>=
+<<clean-pheno-xpr, cache=FALSE,eval=TRUE>>=
 pheno_FULL	<- pheno
 xpr_FULL 	<- xpr
 cnv_FULL	<- cnv_GR
@@ -88,7 +88,7 @@ cnv_GR		<- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
 
 \subsection{Lists of pathways}
 First we create a list of pathways using a \texttt{.gmt} file with pathway definitions from curated databases (Reactome, HumanCyc, Panther,etc.,)
-<<cache=FALSE,eval=TRUE>>=
+<<read-pathways, cache=FALSE,eval=TRUE>>=
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
     path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
@@ -101,7 +101,7 @@ From gene expression data, we create one network per cellular pathway. Similarit
 \par
 The function that generates the networks from submatrices of the gene expression data is \texttt{makePSN\_NamedMatrix()}. In this case, we are generating ``profiles'', or simply writing submatrices corresponding to the pathways (note the \texttt{writeProfiles=TRUE} argument). As these profiles will create completely connected networks with \texttt{(N choose 2)} edges, weaker edges will first be pruned for computational feasibility. We use GeneMANIA to ``sparsify'' the networks in the \texttt{GM\_createDB()} subroutine. Note that \texttt{netList} contains the names of networks, rather than the contents; the profiles are written to \texttt{profDir}. Profile file names end with \texttt{.profile}.
 
-<<eval=TRUE>>=
+<<make-xpr-psn, eval=TRUE>>=
 profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 
@@ -117,7 +117,7 @@ Similarly, we construct networks based on shared overlap of CNVs. For each cellu
 \par
 Genomic events need to first be mapped to unit variables before being grouped into sets or pathways; here, ranges of CNV ``events'' need to be labelled by the gene which these overlap. This mapping is achieved by \texttt{mapNamedRangesToSets()}. The function used to construct networks from genomic events is \texttt{makePSN\_RangeSets()}. As with the gene-expression nets, CNV nets are written to \texttt{profDir}. All input networks must be in the same directory. Interaction network names end with \texttt{\_cont.txt}.
 
-<<cache=FALSE,eval=TRUE>>=
+<<make-cnv-psn, cache=FALSE,eval=TRUE>>=
 data(genes)
 gene_GR     <- GRanges(genes$chrom,
    IRanges(genes$txStart,genes$txEnd),
@@ -131,14 +131,14 @@ cat(sprintf("CNV: Got %i networks\n",length(netList2)))
 @
 
 Let's take a look at CNV-based networks:
-<<cache=FALSE,eval=TRUE>>=
+<<cnv-psn-look, cache=FALSE,eval=TRUE>>=
 head(unlist(netList2))
 @
 
 \subsection{Create GeneMANIA database}
 Once all our patient networks are constructed, these are integrated into a single GeneMANIA database for feature selection.
 
-<<eval=TRUE>>=
+<<create-gm-db, eval=TRUE>>=
 # now create database
 dbDir	<- GM_createDB(profDir, pheno$ID, outDir,numCores=numCores)
 @
@@ -152,7 +152,7 @@ The key functions are:
 \item{\texttt{GM\_networkTally()}, which loops over all network rank files (or NRANK files) and computes the network score}
 \end{itemize}
 
-<<cache=FALSE,eval=FALSE>>=
+<<feature-selection,cache=FALSE,eval=FALSE>>=
 ## repeat process for each class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
@@ -208,7 +208,7 @@ The following code block does all these steps:
 \item \texttt{GM\_getQueryROC}: Get patient rankings
 \end{enumerate}
 
-<<eval=FALSE>>=
+<<class-prediction, eval=FALSE>>=
 # now create GM databases for each class
 # should contain train + test patients
 # and be limited to nets that pass feature selection
@@ -251,14 +251,14 @@ for (g in subtypes) {
 \section{Assign labels to test patients}
 In the last section, we obtained two similarity ranks for each test patient. Here we use \texttt{GM\_OneVAll\_getClass()} to label patients by max rank. 
 
-<<eval=FALSE,cache=FALSE>>=
+<<label-predictions, eval=FALSE,cache=FALSE>>=
 predClass <- GM_OneVAll_getClass(predRes)
 cat("Predicted classes\n")
 @
 
 Finally, we evaluate the performance of the classifier.
 
-<<eval=FALSE,cache=FALSE>>=
+<<eval-perf, eval=FALSE,cache=FALSE>>=
 both <- merge(x=pheno,y=predClass,by="ID")
 print(table(both[,c("STATUS","PRED_CLASS")]))
 pos <- (both$STATUS %in% "LumA")
@@ -284,3 +284,4 @@ sessionInfo()
 3. The Cancer Genome Atlas (2012). \underline{Comprehensive molecular portraits of human breast tumours} \textit{Nature} \textbf{490}:61-70.
 
 \end{document}
+

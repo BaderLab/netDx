@@ -61,6 +61,8 @@ require(netDx.examples)
 data(TCGA_BRCA)
 @
 
+\newpage
+
 \section{Split data into training and test sets}
 <<split-test-train, cache=FALSE,eval=TRUE>>=
 
@@ -86,6 +88,7 @@ xpr			<- xpr[,which(colnames(xpr)%in% pheno$ID)]
 cnv_GR		<- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
 @
 
+\newpage
 \subsection{Lists of pathways}
 First we create a list of pathways using a \texttt{.gmt} file with pathway definitions from curated databases (Reactome, HumanCyc, Panther,etc.,)
 <<read-pathways, cache=FALSE,eval=TRUE>>=
@@ -95,6 +98,7 @@ pathwayList <- readPathways(pathFile)
 head(pathwayList)
 @
 
+\newpage
 \subsection{Gene expression data}
 
 From gene expression data, we create one network per cellular pathway. Similarity between two patients is defined as the Pearson correlation of the expression vector; each network is limited to genes for the corresponding pathway. 
@@ -135,7 +139,7 @@ Let's take a look at CNV-based networks:
 head(unlist(netList2))
 @
 
-\subsection{Create GeneMANIA database}
+\subsection{Integrate input nets into GeneMANIA database}
 Once all our patient networks are constructed, these are integrated into a single GeneMANIA database for feature selection.
 
 <<create-gm-db, eval=TRUE>>=
@@ -152,14 +156,14 @@ The key functions are:
 \item{\texttt{GM\_networkTally()}, which loops over all network rank files (or NRANK files) and computes the network score}
 \end{itemize}
 
-<<feature-selection,cache=FALSE,eval=FALSE>>=
+<<feature-selection,cache=FALSE,eval=TRUE>>=
 ## repeat process for each class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
     if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
 	dir.create(pDir)
 
-	cat(sprintf("Subtype %s\n",g))
+	cat(sprintf("\n******\nSubtype %s\n",g))
 	pheno_subtype <- pheno
 	
 	## label patients not in the current class as a residual
@@ -208,7 +212,7 @@ The following code block does all these steps:
 \item \texttt{GM\_getQueryROC}: Get patient rankings
 \end{enumerate}
 
-<<class-prediction, eval=FALSE>>=
+<<class-prediction, eval=TRUE>>=
 # now create GM databases for each class
 # should contain train + test patients
 # and be limited to nets that pass feature selection
@@ -251,14 +255,14 @@ for (g in subtypes) {
 \section{Assign labels to test patients}
 In the last section, we obtained two similarity ranks for each test patient. Here we use \texttt{GM\_OneVAll\_getClass()} to label patients by max rank. 
 
-<<label-predictions, eval=FALSE,cache=FALSE>>=
+<<label-predictions, eval=TRUE,cache=FALSE>>=
 predClass <- GM_OneVAll_getClass(predRes)
 cat("Predicted classes\n")
 @
 
 Finally, we evaluate the performance of the classifier.
 
-<<eval-perf, eval=FALSE,cache=FALSE>>=
+<<eval-perf, eval=TRUE,cache=FALSE>>=
 both <- merge(x=pheno,y=predClass,by="ID")
 print(table(both[,c("STATUS","PRED_CLASS")]))
 pos <- (both$STATUS %in% "LumA")
@@ -273,8 +277,9 @@ cat(sprintf("Recall = %i %%\n", round((tp/(tp+fn))*100)))
 
 @
 
+\newpage
 \section{sessionInfo}
-<<cache=FALSE,eval=FALSE>>=
+<<sessioninfo,cache=FALSE,eval=TRUE>>=
 sessionInfo()
 @
 

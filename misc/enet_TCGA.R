@@ -9,11 +9,19 @@
 # Random forest: http://bigcomputing.blogspot.ca/2014/10/an-example-of-using-random-forest-in.html
 rm(list=ls())
 
-outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results"
+
+outDir <- "~/tmp/netDX/results"
 method2use <- "RandomForest" ###ElasticNet | RandomForest
 rmMissing  <- TRUE
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
+
+if (!file.exists(outDir)) dir.create(outDir,recursive=TRUE)
+
+require(foreach)
+require(doParallel)
+cl <- makeCluster(8)
+registerDoParallel(cl)
 
 # ---------------------------------------------------
 # setup
@@ -129,6 +137,7 @@ save(out,file=sprintf("%s.Rdata",fPrefix))
 	print(ex)
 },finally={
 	sink(NULL)
+	stopCluster(cl)
 })
 
 

@@ -11,7 +11,7 @@ rm(list=ls())
 
 outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results"
 method2use <- "RandomForest" ###ElasticNet | RandomForest
-rmMissing  <- TRUE
+rmMissing  <- FALSE
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
 
@@ -38,6 +38,7 @@ data(TCGA_BRCA)
 
 sink(logFile,split=TRUE)
 tryCatch({
+print(Sys.time())
 
 # read in preassigned train/test split
 inTrain <- read.delim(sprintf("%s/trainID.txt",outDir),sep="\t",h=F,as.is=T)
@@ -128,6 +129,7 @@ save(out,file=sprintf("%s.Rdata",fPrefix))
 },error=function(ex){
 	print(ex)
 },finally={
+	print(Sys.time())
 	sink(NULL)
 })
 

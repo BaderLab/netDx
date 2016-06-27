@@ -45,21 +45,42 @@ cat("*** Excluding missing data\n")
 xpr <- na.omit(xpr)
 cat(sprintf("%i of %i genes excluded\n",nr-nrow(xpr), nr))
 
+# fix gene name with slash
+idx <- grep("NOP5/NOP58",rownames(xpr))
+rownames(xpr)[idx] <- "NOP58"
+
 ## ----read-pathways, cache=FALSE,eval=TRUE--------------------------------
 cat("* Creating gene-sets, each with one gene\n")
 pathwayList <- as.list(rownames(xpr))
 names(pathwayList) <- rownames(xpr)
 
 head(pathwayList)
-browser()
 
 ## ----make-xpr-psn, eval=TRUE---------------------------------------------
 profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 
+geneSim <- function(x) {
+    if (nrow(x)>=1) x <- x[1,]
+    nm <- colnames(x)
+    x <- as.numeric(x)
+    n <- length(x)
+    rngX  <- max(x)-min(x)
+    
+    out <- matrix(NA,nrow=n,ncol=n);
+    # weight between i and j is
+    # wt(i,j) = 1 - (abs(g[i]-g[j])/(max(g)-min(g)))
+    # where g is the eMB.xpression vector for each gene
+    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+    rownames(out) <- nm; colnames(out)<- nm
+    out
+}
+
 netList <- makePSN_NamedMatrix(xpr, rownames(xpr), 
-        pathwayList,profDir,verbose=FALSE,
-        numCores=numCores,writeProfiles=TRUE)
+        pathwayList,profDir,verbose=TRUE,
+        numCores=numCores,
+		simMetric="custom", customFunc=geneSim,
+		sparsify=TRUE)
 netList <- unlist(netList)
 head(netList)
 
@@ -144,7 +165,9 @@ for (g in subtypes) {
 	# prepare nets for new db
 	tmp <- makePSN_NamedMatrix(xpr_FULL,rownames(xpr),
 		pathwayList[which(names(pathwayList)%in% pTally)],
-		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
+		profDir,verbose=F,numCores=numCores,
+		simMetric="custom",customFunc=geneSim, 
+		sparsify=TRUE)
 	###tmp <- makePSN_RangeSets(cnv_FULL,
 	###	path_GRList[which(names(path_GRList)%in% pTally)],
 	###		profDir,verbose=FALSE)
@@ -152,7 +175,8 @@ for (g in subtypes) {
 	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
 
 	# query of all training samples for this class
-	qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
+	qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
+							 pheno$TT_STATUS%in%"TRAIN")]
 	qFile <- sprintf("%s/%s_query",pDir,g)
 	GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 	

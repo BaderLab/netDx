@@ -16,6 +16,7 @@
 #' @return (list) keys are cluster names, and values are mean shortest path for subnetworks that 
 #' contain only the edges where source and target both belong to the corresponding cluster. In 
 #' addition, there is an "overall" entry for the mean shortest distance for the entire network.
+#' @export
 compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 	colnames(net) <- c("source","target","weight")
 
@@ -23,15 +24,16 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		tmp <- mat[upper.tri(mat,diag=FALSE)]
 		idx <- which(is.infinite(tmp))
 		if (any(idx)) tmp <- tmp[-idx]
-		cat(sprintf("N=%i distances\n", length(tmp)))
+		if (verbose) cat(sprintf("N=%i distances\n", length(tmp)))
 		mean(tmp,na.rm=TRUE)
 	}
 	
-	g <- graph_from_data_frame(net, vertices=pheno$ID)
-	d_overall <- shortest.paths(g,algorithm="dijkstra")
-	cat(sprintf("Overall shortest path = %2.3f\n",.getAvgD(d_overall)))
+	g <- igraph::graph_from_data_frame(net, vertices=pheno$ID)
+	d_overall <- igraph::shortest.paths(g,algorithm="dijkstra")
+	if (verbose)
+		cat(sprintf("Overall shortest path = %2.3f\n",.getAvgD(d_overall)))
 	if (showNetDist) {
-		heatmap.2(t(d_overall),trace='none',scale='none',
+			gplots::heatmap.2(t(d_overall),trace='none',scale='none',
 			dendrogram='none',main="node-level shortest path")
 	}
 	
@@ -39,15 +41,16 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 	dset <- list()
 	for (curr_cl in cnames) {
 		cl <- pheno$ID[which(pheno$GROUP%in% curr_cl)]
-		cat(sprintf("\n%s: N=%i nodes\n", curr_cl,length(cl)))
+		if (verbose) cat(sprintf("\n%s: N=%i nodes\n", curr_cl,length(cl)))
 
 		#subgraph with intra-cluster connections
-		g2 <- graph_from_data_frame(
+		g2 <- igraph::graph_from_data_frame(
 			d=net[which(net[,1]%in%cl & net[,2]%in%cl),],
 			vertices=cl)
-		tmp <- shortest.paths(g2,algorithm="dijkstra")
+		tmp <- igraph::shortest.paths(g2,algorithm="dijkstra")
 		dset[[curr_cl]] <- .getAvgD(tmp)
-		cat(sprintf("\tShortest dist = %2.3f\n", dset[[curr_cl]]))
+		if (verbose) 
+			cat(sprintf("\tShortest dist = %2.3f\n", dset[[curr_cl]]))
 	}
 
 	dset[["overall"]] <- .getAvgD(d_overall)

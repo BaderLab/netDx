@@ -10,7 +10,7 @@ makePSN_RangeSets(gr, rangeSet, netDir, simMetric = "coincide", quorum = 2L,
 \arguments{
 \item{gr}{(GRanges) patient ranges. Metadata should contain:
 ID: (char) unique patient ID
-name: (comma-separated char) named ranges overlapped}
+LOCUS_NAME: (comma-separated char) named ranges overlapped}
 
 \item{rangeSet}{(list) list of GRanges, one entry per range set.
     Key is the name of the range set, and value is a GRanges object with

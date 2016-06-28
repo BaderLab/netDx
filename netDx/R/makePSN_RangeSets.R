@@ -12,7 +12,7 @@
 #' are related in a network N if they both overlap elements of set N.
 #' @param gr (GRanges) patient ranges. Metadata should contain:
 #'	ID: (char) unique patient ID
-#'	name: (comma-separated char) named ranges overlapped
+#'	LOCUS_NAME: (comma-separated char) named ranges overlapped
 #' @param rangeSet (list) list of GRanges, one entry per range set.
 #' 	Key is the name of the range set, and value is a GRanges object with
 #' corresponding ranges

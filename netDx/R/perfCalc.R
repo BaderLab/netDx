@@ -1,7 +1,8 @@
 #' Computes variety of predictor evaluation measures based on the confusion
 #' matrix
 #'
-#' @param dat (data.frame): 4 columns: tp, fp, tn, fn. One row per cutoff
+#' @param dat (data.frame): 5 columns: score, tp, fp, tn, fn. 
+#' One row per cutoff
 #' score for feature selection
 #' @return (list)
 #' stats (data.frame): score, f1, ppv, precision and recall. One row

@@ -8,7 +8,8 @@ matrix}
 perfCalc(dat)
 }
 \arguments{
-\item{dat}{(data.frame): 4 columns: tp, fp, tn, fn. One row per cutoff
+\item{dat}{(data.frame): 5 columns: score, tp, fp, tn, fn. 
+One row per cutoff
 score for feature selection}
 }
 \value{

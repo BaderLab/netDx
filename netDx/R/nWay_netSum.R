@@ -41,7 +41,7 @@
 #' as NULL.
 #' @importFrom reshape2 melt
 #' @export
-Nway_netSum <- function(netmat, phenoDF,predClass,outDir,netDir,splitN=3L,
+Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,splitN=3L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,numCores=1L,
 	useAttributes=NULL) {
 	

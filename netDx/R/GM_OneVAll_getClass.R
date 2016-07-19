@@ -8,8 +8,8 @@
 #' @export
 GM_OneVAll_getClass <- function(resSet) {
 	type_rank <- NULL
-	for (k in 1:length(predRes)){
-    x   <- predRes[[k]]$fullmat
+	for (k in 1:length(resSet)){
+    x   <- resSet[[k]]$fullmat
     if (is.null(type_rank)) 
         type_rank <- x[,c("ID","GM_score")]
     else {
@@ -18,7 +18,7 @@ GM_OneVAll_getClass <- function(resSet) {
         }
         type_rank <- cbind(type_rank, x[,"GM_score"])
     }
-        rnkCol <- paste(names(predRes)[k],"SCORE",sep="_") 
+        rnkCol <- paste(names(resSet)[k],"SCORE",sep="_") 
         colnames(type_rank)[ncol(type_rank)] <- rnkCol
  }
 

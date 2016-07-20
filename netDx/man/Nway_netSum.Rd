@@ -4,7 +4,7 @@
 \alias{Nway_netSum}
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
-Nway_netSum(netmat, phenoDF, predClass, outDir, netDir, splitN = 3L,
+Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
   cliqueFilter = TRUE, cliquePthresh = 0.07, cliqueReps = 2500L,
   numCores = 1L, useAttributes = NULL)
 }

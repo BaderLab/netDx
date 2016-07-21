@@ -155,75 +155,37 @@ cat("* Feature selection complete\n")
 # now create GM databases for each class
 # should contain train + test patients
 # and be limited to nets that pass feature selection at all thresholds
-pheno <- pheno_FULL
-predRes <- list() 	## predRes[[cutoff]] contains predictions for 
-					## score >= cutoff.
 maxScore <- numResamples * nFoldCV
-for (cutoff in 1:maxScore) predRes[[cutoff]] <- list()
-# get patient rankings at each cutoff
+
+##  pathways by subtype
+netScores <- list()
 for (g in subtypes) {
-	pDir <- sprintf("%s/%s",outDir,g)
 	pTally <- read.delim(
 		sprintf("%s/%s_pathwayScore.txt",pDir,g),
 		sep="\t",h=T,as.is=T)
 	pTally <- pTally[which(pTally[,2]>=1),]
-	cat(sprintf("%s: %i pathways\n",g,nrow(pTally)))
+	pTally[,1] <- sub(".profile","",pTally[,1])
+	netScores[[g]] <- pTally
+}
 
-	# create new db
-	profDir <- sprintf("%s/profiles",pDir)
-	cleanName <- sub(".profile","",pTally[,1])
-	cleanName <- sub("_cont","",cleanName)
-	tmp <- makePSN_NamedMatrix(pdat_FULL,rownames(pdat),
-		unitSets[which(names(unitSets)%in% cleanName)],
-		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE,...)
-	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
-
-	# query of all training samples for this class
-	qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
-							 pheno$TT_STATUS%in%"TRAIN")]
-	
-	cl <- makeCluster(numCores)
-	registerDoParallel(cl)
-	foreach(cutoff=1:maxScore, .packages="netDx") %dopar% {
-		cat(sprintf("\tCutoff = %i\n",cutoff))
-		qFile <- sprintf("%s/%s_cutoff%i",pDir,g,cutoff)
-		curr_p <- pTally[which(pTally[,2]>=cutoff),1]
-		if (length(curr_p)>0){
-			netDx::GM_writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
-			resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
-			system(sprintf("unlink %s", resFile))
-		}
-	}
-	stopCluster(cl)
-
-	# collect rankings
-	for (cutoff in 1:maxScore) {
-		resFile <- sprintf("%s/%s_cutoff%i-results.report.txt.PRANK",
-			pDir,g,cutoff)
-		predRes[[cutoff]][[g]] <- GM_getQueryROC(resFile,pheno,g)
-	}
+perf_resamp <- list()
+for (rep in 1:numResamples) {
+	## set pheno so that query is limited to samples that were training
+	## for resampling i
+	## make sure that pdat is limited to samples in pheno (Should be all
+	## training samples)
+	perfDir <- sprintf("%s/part%i/eval",outDir,rep)
+	if (file.exists(perfDir)) unlink(perfDir,recursive=TRUE)
+	dir.create(perfDir)
+	perf_resamp <- GM_predClass_cutoffs(pheno_fix,xpr_fix, 
+		predClass=predClass,netScores=netScores,unitSets=unitSets,
+		maxScore=maxScore,outDir=perfDir,numCores=numCores)
 }
 
 save(predRes, pheno,file=sprintf("%s/predictionResults.Rdata",outDir))
 
-# compile performance at each cutoff
-outClass <- list()
-outmat <- matrix(NA, nrow=maxScore, ncol=9)
-colnames(outmat) <- c("score","tp","tn","fp","fn","tpr","fpr",
-					  "accuracy","ppv")
-for (cutoff in 1:maxScore) {
-	outClass[[cutoff]] <- GM_OneVAll_getClass(predRes[[cutoff]])
-	both <- merge(x=pheno,y=outClass[[cutoff]],by="ID")
-	print(table(both[,c("STATUS","PRED_CLASS")]))
-	pos <- (both$STATUS %in% predClass)
-	tp <- sum(both$PRED_CLASS[pos]==predClass)
-	fp <- sum(both$PRED_CLASS[!pos]==predClass)
-	tn <- sum(both$PRED_CLASS[!pos]=="other")
-	fn <- sum(both$PRED_CLASS[pos]=="other")
-	acc <- (tp+tn)/nrow(both)
-	ppv <- tp/(tp+fp)
-	outmat[cutoff,] <- c(cutoff,tp,tn,fp,fn,tp/(tp+fn), fp/(fp+tn),acc,ppv)
-}
+### TODO - now that you have the cutoff, predict for test samples.
+pheno <- pheno_FULL
 
 cat("* Predictions complete!\n")
 out <- list(pheno=pheno_FULL,TT_STATUS=resampTT,netScore=featNets,

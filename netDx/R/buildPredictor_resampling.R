@@ -25,6 +25,14 @@
 #' @param overwrite (logical) Overwrite existing results in outDir? By 
 #' default, no, return warning; but set to TRUE if outDir should be deleted
 #' and populated with fresh results from this function.
+#' @param seed_trainTest (integer) RNG seed for initial train/test split.
+#' Set to NULL to use current state of RNG. Set to a constant for 
+#' reproducibility
+#' @param seed_resampling (integer) RNG seed for training assignment for
+#' of the resamplings (splitTrainTest_partition() method)
+#' @param seed_CVqueries (integer) RNG seed for queries in k-fold cross
+#' validation (used by makeCVqueries() which is called by 
+#' GM_runCV_featureSet())
 #' @param ... parameters for makePSN_NamedMatrix()
 #' @return (list) Includes:
 #' * pheno: (data.frame) phenotype matrix as used by predictor
@@ -38,7 +46,8 @@
 #' @export
 buildPredictor_resampling <- function(pheno, pdat, predClass, unitSets,
 	pctT=0.7,numResamples=3L, nFoldCV=10L,numCores=1L,GMmemory=4L,
-	outDir=".",overwrite=FALSE,...) {
+	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=103L,
+	seed_CVqueries=42L,...) {
 DEBUG_FLAG <- TRUE
 
 if (file.exists(outDir)) {
@@ -51,7 +60,7 @@ pheno$STATUS[which(!pheno$STATUS %in% predClass)] <- "other"
 subtypes <- c(predClass,"other")
 
 pheno$TT_STATUS <- splitTestTrain(pheno,
-    	pctT = pctT,setSeed=42,predClass=predClass)
+    	pctT = pctT,setSeed=seed_trainTest,predClass=predClass)
 
 pheno_FULL	<- pheno
 pdat_FULL 	<- pdat
@@ -71,7 +80,7 @@ for (g in subtypes) {
 
 	cat(sprintf("\n ********** \nClass: %s\n ********** \n",g))
 	TT_STATUS <- splitTestTrain_partition(
-		pheno,nFold=numResamples, predClass=g,setSeed=103)
+		pheno,nFold=numResamples, predClass=g,setSeed=seed_resampling)
 	save(TT_STATUS, file=sprintf("%s/TT_STATUS_resampling.Rdata",pDir))
 	resampTT[[g]] <- TT_STATUS
 	
@@ -110,7 +119,7 @@ for (g in subtypes) {
 		trainPred <- pheno_subtype$ID[isg]
 		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir, 
 			nrow(pheno_subtype),verbose=T, numCores=numCores,
-			GMmemory=GMmemory,nFold=nFoldCV)
+			GMmemory=GMmemory,nFold=nFoldCV,setSeed=seed_CVqueries)
 		
 	    # Compute network score
 		nrank <- dir(path=resDir,pattern="NRANK$")

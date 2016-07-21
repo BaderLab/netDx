@@ -6,7 +6,8 @@
 \usage{
 buildPredictor_resampling(pheno, pdat, predClass, unitSets, pctT = 0.7,
   numResamples = 3L, nFoldCV = 10L, numCores = 1L, GMmemory = 4L,
-  outDir = ".", overwrite = FALSE, ...)
+  outDir = ".", overwrite = FALSE, seed_trainTest = 42L,
+  seed_resampling = 103L, seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) patient IDs (ID) and class of interest (STATUS)}
@@ -36,6 +37,17 @@ resampling}
 \item{overwrite}{(logical) Overwrite existing results in outDir? By 
 default, no, return warning; but set to TRUE if outDir should be deleted
 and populated with fresh results from this function.}
+
+\item{seed_trainTest}{(integer) RNG seed for initial train/test split.
+Set to NULL to use current state of RNG. Set to a constant for 
+reproducibility}
+
+\item{seed_resampling}{(integer) RNG seed for training assignment for
+of the resamplings (splitTrainTest_partition() method)}
+
+\item{seed_CVqueries}{(integer) RNG seed for queries in k-fold cross
+validation (used by makeCVqueries() which is called by 
+GM_runCV_featureSet())}
 
 \item{...}{parameters for makePSN_NamedMatrix()}
 }

@@ -67,23 +67,21 @@ pdat_FULL 	<- pdat
 pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
 pdat		<- pdat[,which(colnames(pdat)%in% pheno$ID)]
 
-# ############################
-# Feature selection
+# --------------------------------------------------
+# Phase 1. Feature selection, assigning net scores
+# --------------------------------------------------
 
 # run feature selection with resamplings, once per class
 featNets <- list()
-resampTT <- list()
+resampTT <- splitTestTrain_partition(
+	pheno,nFold=numResamples, predClass=g,setSeed=seed_resampling)
+save(resampTT, file=sprintf("%s/TT_STATUS_resampling.Rdata",outDir))
 for (g in subtypes) {
 	pDir <- sprintf("%s/%s",outDir,g)
     	if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
 	dir.create(pDir)
 
 	cat(sprintf("\n ********** \nClass: %s\n ********** \n",g))
-	TT_STATUS <- splitTestTrain_partition(
-		pheno,nFold=numResamples, predClass=g,setSeed=seed_resampling)
-	save(TT_STATUS, file=sprintf("%s/TT_STATUS_resampling.Rdata",pDir))
-	resampTT[[g]] <- TT_STATUS
-	
 	for (repNum in 1:numResamples) {
 		cat(sprintf("\nResampling %i ***********\n",repNum))
 		pheno_subtype <- pheno
@@ -91,7 +89,7 @@ for (g in subtypes) {
 	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
 		dir.create(pDir)
 	
-		pheno_subtype$INNER_TT_STATUS <- TT_STATUS[[repNum]]
+		pheno_subtype$INNER_TT_STATUS <- resampTT[[repNum]]
 		pheno_subtype <- subset(pheno_subtype, 
 					INNER_TT_STATUS%in% "TRAIN")
 		cat(sprintf("\t%i training\n",nrow(pheno_subtype)))
@@ -151,44 +149,37 @@ cat("* Feature selection complete\n")
 
 # ############################
 # Class prediction
-
-# now create GM databases for each class
-# should contain train + test patients
-# and be limited to nets that pass feature selection at all thresholds
 maxScore <- numResamples * nFoldCV
 
 ##  pathways by subtype
 netScores <- list()
 for (g in subtypes) {
 	pTally <- read.delim(
-		sprintf("%s/%s_pathwayScore.txt",pDir,g),
+		sprintf("%s/%s_pathwayScore.txt",outDir,g),
 		sep="\t",h=T,as.is=T)
 	pTally <- pTally[which(pTally[,2]>=1),]
 	pTally[,1] <- sub(".profile","",pTally[,1])
 	netScores[[g]] <- pTally
 }
 
-perf_resamp <- list()
-for (rep in 1:numResamples) {
-	## set pheno so that query is limited to samples that were training
-	## for resampling i
-	## make sure that pdat is limited to samples in pheno (Should be all
-	## training samples)
-	perfDir <- sprintf("%s/part%i/eval",outDir,rep)
-	if (file.exists(perfDir)) unlink(perfDir,recursive=TRUE)
-	dir.create(perfDir)
-	perf_resamp <- GM_predClass_cutoffs(pheno_fix,xpr_fix, 
-		predClass=predClass,netScores=netScores,unitSets=unitSets,
-		maxScore=maxScore,outDir=perfDir,numCores=numCores)
-}
+# --------------------------------------------------
+# Phase 2. Cutoff selection from average of resampling "test"
+# --------------------------------------------------
+
+##### TODO -- Put in code from buildPredictor_test.R here for picking 
+##### the cutoff
 
 save(predRes, pheno,file=sprintf("%s/predictionResults.Rdata",outDir))
 
-### TODO - now that you have the cutoff, predict for test samples.
+
+# --------------------------------------------------
+# Phase 3. Model evaluation on the blind test samples
+# --------------------------------------------------
+
 pheno <- pheno_FULL
 
 cat("* Predictions complete!\n")
-out <- list(pheno=pheno_FULL,TT_STATUS=resampTT,netScore=featNets,
+out <- list(pheno=pheno_FULL,resampTT=resampTT,netScore=featNets,
 		confmat=outmat,predRanks=outClass)
 
 out

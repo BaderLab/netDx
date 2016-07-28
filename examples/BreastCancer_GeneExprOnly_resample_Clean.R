@@ -25,7 +25,7 @@ tryCatch({
 	pathwayList <- readPathways(pathFile)
 
 	out <- buildPredictor_resampling(pheno=ph,pdat=xpr,predClass="LumA",
-		nFoldCV=10L, numResamples=3L,
+		nFoldCV=3L, numResamples=2L,
 		unitSets=pathwayList,numCores=8L,outDir=outDir,overwrite=TRUE)
 }, error=function(ex) {
 	print(ex)

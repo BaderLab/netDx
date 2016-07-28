@@ -16,8 +16,10 @@
 #' @param maxScore (integer) maximum score achievable by a network
 #' @param outDir (char) directory to store results in
 #' @param numCores (integer) num cores for parallel processing
+#' @param ... params for makePSN_NamedMatrix
+#' @export
 GM_predClass_cutoffs <- function(pheno,pdat,predClass,netScores,unitSets,
-	maxScore,outDir,numCores=1L) {
+	maxScore,outDir,numCores=1L,...) {
 
 predRes <- list() 	## predRes[[cutoff]] contains predictions for 
 					## score >= cutoff.
@@ -28,6 +30,7 @@ cat(sprintf("Got %i subtypes: { %s }\n", length(subtypes),
 
 for (g in subtypes) {
 	pDir <- sprintf("%s/%s",outDir,g)
+	dir.create(pDir)
 	pTally <- netScores[[g]]
 	pTally <- pTally[which(pTally[,2]>=1),]
 	cat(sprintf("%s: %i pathways\n",g,nrow(pTally)))
@@ -36,7 +39,7 @@ for (g in subtypes) {
 	profDir <- sprintf("%s/profiles",pDir)
 	tmp <- makePSN_NamedMatrix(pdat,rownames(pdat),
 		unitSets[which(names(unitSets)%in% pTally[,1])],
-		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE,...)
+		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE ,...)
 	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
 
 	# query of all training samples for this class
@@ -49,8 +52,9 @@ for (g in subtypes) {
 		cat(sprintf("\tCutoff = %i\n",cutoff))
 		qFile <- sprintf("%s/%s_cutoff%i",pDir,g,cutoff)
 		curr_p <- pTally[which(pTally[,2]>=cutoff),1]
+		curr_p <- paste(curr_p,".profile",sep="")
 		if (length(curr_p)>0){
-			netDx::GM_writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
+			GM_writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
 			resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
 			system(sprintf("unlink %s", resFile))
 		}
@@ -85,7 +89,7 @@ for (cutoff in 1:maxScore) {
 	outmat[cutoff,] <- c(cutoff,tp,tn,fp,fn,tp/(tp+fn), fp/(fp+tn),acc,ppv)
 }
 
-out <- list(predRes=predRes,predLabels=predLabels,confmat=outmat)
+out <- list(predRes=predRes,predLabels=outClass,confmat=outmat)
 save(out, file=sprintf("%s/predictionResults.Rdata", outDir))
 
 out

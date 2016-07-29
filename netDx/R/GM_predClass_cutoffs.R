@@ -76,6 +76,7 @@ colnames(outmat) <- c("score","tp","tn","fp","fn","tpr","fpr",
 					  "accuracy","ppv")
 
 for (cutoff in 1:maxScore) {
+	
 	outClass[[cutoff]] <- GM_OneVAll_getClass(predRes[[cutoff]])
 	both <- merge(x=pheno,y=outClass[[cutoff]],by="ID")
 	print(table(both[,c("STATUS","PRED_CLASS")]))

@@ -74,7 +74,7 @@ pdat		<- pdat[,which(colnames(pdat)%in% pheno$ID)]
 # run feature selection with resamplings, once per class
 featNets <- list()
 resampTT <- splitTestTrain_partition(
-	pheno,nFold=numResamples, predClass=g,setSeed=seed_resampling)
+	pheno,nFold=numResamples, predClass=predClass,setSeed=seed_resampling)
 save(resampTT, file=sprintf("%s/TT_STATUS_resampling.Rdata",outDir))
 for (g in subtypes) {
 	pDir <- sprintf("%s/%s",outDir,g)
@@ -142,14 +142,9 @@ for (g in subtypes) {
 	}
 	df <- data.frame(PATHWAY_NAME=names(pathScore), SCORE=unlist(pathScore))
 	featNets[[g]] <- df
-	write.table(df,file=sprintf("%s/%s/%s_pathwayScore.txt", outDir,
-			g,g),sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+	write.table(df,file=sprintf("%s/%s_pathwayScore.txt", outDir,
+			g),sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 }
-cat("* Feature selection complete\n")
-
-# ############################
-# Class prediction
-maxScore <- numResamples * nFoldCV
 
 ##  pathways by subtype
 netScores <- list()
@@ -162,26 +157,70 @@ for (g in subtypes) {
 	netScores[[g]] <- pTally
 }
 
+cat("* Net scores computed\n")
+
 # --------------------------------------------------
 # Phase 2. Cutoff selection from average of resampling "test"
 # --------------------------------------------------
+maxScore <- numResamples * nFoldCV
+for (g in names(netScores)) 
+		maxScore <- min(maxScore,max(netScores[[g]][,2]))
+cat(sprintf("maxScore = %i\n", maxScore))
+perf_resamp <- list()
+for (rep in 1:numResamples) {
+	perfDir <- sprintf("%s/eval/part%i",outDir,rep)
+	if (file.exists(perfDir)) unlink(perfDir,recursive=TRUE)
+	dir.create(perfDir,recursive=TRUE)
+	pheno_cur <- pheno
+	pheno_cur$TT_STATUS <- resampTT[[rep]]
+	print(table(pheno_cur[,c("STATUS","TT_STATUS")]))
+	perf_resamp[[rep]] <- GM_predClass_cutoffs(pheno_cur,pdat,
+		predClass=predClass,netScores=netScores,unitSets=unitSets,
+		maxScore=maxScore,outDir=perfDir,numCores=numCores)
+}
+save(perf_resamp,file=sprintf("%s/resamplingPerf.Rdata",outDir))
 
-##### TODO -- Put in code from buildPredictor_test.R here for picking 
-##### the cutoff
+# pick cutoff with best mean performance across resamplings
+cat("* Picking best cutoff from resampling test\n")
 
-save(predRes, pheno,file=sprintf("%s/predictionResults.Rdata",outDir))
+perfmat <- matrix(NA, 
+	nrow=nrow(perf_resamp[[1]][["confmat"]]),
+	ncol=4*length(perf_resamp))
+colnames(perfmat) <- rep(c("tpr","fpr","accuracy","ppv"),
+	 length(perf_resamp))
 
+ctr <- 1
+for (k in 1:length(perf_resamp)) {
+	perfmat[,ctr:(ctr+3)] <- perf_resamp[[k]][["confmat"]][,6:9]
+	ctr <- ctr+4
+}
+
+mu <- matrix(NA,nrow=nrow(perfmat),ncol=4)
+for (k in 1:4) {
+	print(seq(k,ncol(perfmat),4))
+	mu[,k] <- rowMeans(perfmat[,seq(k,ncol(perfmat),4)])
+}
+colnames(mu) <- c("tpr","fpr","accuracy","ppv")
+
+# cutoff is the one with best accuracy
+bestIdx <- which.max(mu[,3]) 
+bestCutoff <- perf_resamp[[1]][["confmat"]][bestIdx,1]
+cat(sprintf("Best cutoff = %i ; TPR=%1.2f; FPR=%1.2f; Accuracy=%1.2f; PPV=%1.2f\n",
+	bestCutoff, mu[bestIdx,1],mu[bestIdx,2],mu[bestIdx,3],mu[bestIdx,4]))
 
 # --------------------------------------------------
 # Phase 3. Model evaluation on the blind test samples
 # --------------------------------------------------
-
-pheno <- pheno_FULL
+cat("\n\n* Model evaluation\n")
+finalDir <- sprintf("%s/test", outDir)
+finalNets <- lapply(netScores, function(x) x[which(x[,2]>=bestCutoff),1])
+testRes <- GM_predClass_once(pheno_FULL,pdat_FULL,predClass,unitSets,
+	patNets=finalNets,outDir=finalDir,numCores=numCores)
 
 cat("* Predictions complete!\n")
 out <- list(pheno=pheno_FULL,resampTT=resampTT,netScore=featNets,
-		confmat=outmat,predRanks=outClass)
-
+		perfResamp=perfResamp, bestCutoff=bestCutoff, testRes=testRes)
+		
 out
 }
 

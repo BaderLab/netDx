@@ -219,7 +219,7 @@ testRes <- GM_predClass_once(pheno_FULL,pdat_FULL,predClass,unitSets,
 
 cat("* Predictions complete!\n")
 out <- list(pheno=pheno_FULL,resampTT=resampTT,netScore=featNets,
-		perfResamp=perfResamp, bestCutoff=bestCutoff, testRes=testRes)
+		perfResamp=perf_resamp, bestCutoff=bestCutoff, testRes=testRes)
 		
 out
 }

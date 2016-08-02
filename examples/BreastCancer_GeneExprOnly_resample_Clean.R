@@ -14,7 +14,7 @@ require(netDx.examples)
 data(TCGA_BRCA)
 ph <- pheno; rm(pheno)
 
-sink("BreastCancer_GeneExprOnly.log",split=TRUE)
+sink(sprintf("%s/BreastCancer_GeneExprOnly.log",outDir),split=TRUE)
 tryCatch({
 	cat("Start time\n")
 	print(Sys.time())
@@ -26,7 +26,8 @@ tryCatch({
 	### TODO Should be able to pass GM memory setting.
 	out <- buildPredictor_resampling(pheno=ph,pdat=xpr,predClass="LumA",
 		nFoldCV=10L, numResamples=3L,
-		unitSets=pathwayList,numCores=8L,outDir=outDir,overwrite=TRUE)
+		unitSets=pathwayList,numCores=8L,outDir=outDir,overwrite=TRUE,
+		seed_trainTest=42L, seed_resampling=103L)
 	save(out,file=sprintf("%s/FinalResults.Rdata",outDir))
 }, error=function(ex) {
 	print(ex)

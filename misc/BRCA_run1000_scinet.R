@@ -47,7 +47,8 @@ tryCatch({
 	save(out,file=sprintf("%s/FinalResults.Rdata",outDir))
 
     ### now clean up intermediate files 
-    system("rm -r LumA other eval test dataset")
+    system(sprintf("rm -r %s/LumA %s/other %s/eval %s/test %s/dataset %s/tmp",
+		outDir,outDir,outDir,outDir,outDir,outDir))
     
 
 }, error=function(ex) {

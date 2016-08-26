@@ -82,8 +82,8 @@ $ R
 > require(knitr)
 > knit2pdf("Medulloblastoma.Rnw")
 ```
-This should generate `Medulloblastoma.pdf` in the `examples/` directory.
-Alternatively, if you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`.
+This should generate `Medulloblastoma.pdf` in the `examples/` directory. 
+Alternatively, if you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. If you are getting an error saying that R cannot find `/usr/bin/texti2dvi`, install the `texinfo` package.
 
 ### References
 1. The Cancer Genome Atlas Network. (2012). Comprehensive molecular portraits of human breast tumours. Nature. 490:61.

@@ -25,7 +25,6 @@ require(doParallel)
 cl <- makeCluster(8)
 registerDoParallel(cl)
 
-
 # ---------------------------------------------------
 # setup
 dt <- format(Sys.Date(),"%y%m%d")

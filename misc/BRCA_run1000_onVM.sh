@@ -4,9 +4,9 @@
 resDir=/home/spai/tmp/TCGA_BRCA_runMany
 
 numRuns=250
-for (( k=5; k<=$numRuns; k++ )); do
+for (( k=120; k<=$numRuns; k++ )); do
     outDir=${resDir}/R${k}
-	#chmod -R u+w $outDir; rm -r $outDir;
+	chmod -R u+w $outDir; rm -r $outDir;
 	mkdir $outDir
     seed1=$((10 * $k))
     seed2=$((15 * $k))

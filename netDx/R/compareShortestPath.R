@@ -1,24 +1,33 @@
 #' compare intra-cluster shortest distance to overall shortest distance of the network
 #'
-#' @details Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with infinite distances
-#' are excluded before computing average shortest path for a network.
-#' This function requires the igraph package to be installed. The showNetDist option requires the 
-#' gplots package to be installed.
-#' @param net (data.frame). network on which to compute shortest path. SOURCE, TARGET, WEIGHTS. 
-#' Column names are ignored but expects a header row. Distances will be computed based on the third
-#' column
-#' @param pheno (data.frame) Node information. ID (node name) and GROUP (cluster name)
-#' @param showNetDist (logical) show distance heatmap (requires gplots library)
+#' @details Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
+#' infinite distances are excluded before computing average shortest path 
+#' for a network. This function requires the igraph package to be installed. 
+#' The showNetDist option requires the gplots package to be installed.
+#' @param net (data.frame) network on which to compute shortest path. 
+#' SOURCE, TARGET, WEIGHTS. 
+#' Column names are ignored but expects a header row. Distances will be 
+#' computed based on the third column
+#' @param pheno (data.frame) Node information. ID (node name) and GROUP
+#' (cluster name)
+#' @param showNetDist (logical) show distance heatmap (requires gplots 
+#' library)
 #' @param verbose (logical) print messages
 #' @examples data(silh); 
 #' colnames(silh$net)[3] <- "weight"
 #' compareShortestPath(silh$net, silh$groups)
-#' @return (list) keys are cluster names, and values are mean shortest path for subnetworks that 
-#' contain only the edges where source and target both belong to the corresponding cluster. In 
-#' addition, there is an "overall" entry for the mean shortest distance for the entire network.
+#' @return (list) keys are cluster names, and values are mean shortest path 
+#' for subnetworks that contain only the edges where source and target both 
+#' belong to the corresponding cluster. In addition, there is an "overall" 
+#' entry for the mean shortest distance for the entire network.
 #' @export
 compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 	colnames(net) <- c("source","target","weight")
+
+	if (verbose) {
+		cat("Weight distribution:\n")
+		print(summary(net[,3]))
+	}
 
 	.getAvgD <- function(mat) {
 		tmp <- mat[upper.tri(mat,diag=FALSE)]

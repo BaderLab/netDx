@@ -7,29 +7,33 @@
 compareShortestPath(net, pheno, showNetDist = FALSE, verbose = TRUE)
 }
 \arguments{
-\item{net}{(data.frame). network on which to compute shortest path. SOURCE, TARGET, WEIGHTS. 
-Column names are ignored but expects a header row. Distances will be computed based on the third
-column}
+\item{net}{(data.frame) network on which to compute shortest path. 
+SOURCE, TARGET, WEIGHTS. 
+Column names are ignored but expects a header row. Distances will be 
+computed based on the third column}
 
-\item{pheno}{(data.frame) Node information. ID (node name) and GROUP (cluster name)}
+\item{pheno}{(data.frame) Node information. ID (node name) and GROUP
+(cluster name)}
 
-\item{showNetDist}{(logical) show distance heatmap (requires gplots library)}
+\item{showNetDist}{(logical) show distance heatmap (requires gplots 
+library)}
 
 \item{verbose}{(logical) print messages}
 }
 \value{
-(list) keys are cluster names, and values are mean shortest path for subnetworks that 
-contain only the edges where source and target both belong to the corresponding cluster. In 
-addition, there is an "overall" entry for the mean shortest distance for the entire network.
+(list) keys are cluster names, and values are mean shortest path 
+for subnetworks that contain only the edges where source and target both 
+belong to the corresponding cluster. In addition, there is an "overall" 
+entry for the mean shortest distance for the entire network.
 }
 \description{
 compare intra-cluster shortest distance to overall shortest distance of the network
 }
 \details{
-Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with infinite distances
-are excluded before computing average shortest path for a network.
-This function requires the igraph package to be installed. The showNetDist option requires the 
-gplots package to be installed.
+Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
+infinite distances are excluded before computing average shortest path 
+for a network. This function requires the igraph package to be installed. 
+The showNetDist option requires the gplots package to be installed.
 }
 \examples{
 data(silh); 

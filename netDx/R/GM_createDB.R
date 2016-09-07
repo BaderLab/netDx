@@ -24,6 +24,8 @@
 #' 	"netDir": path to directory with interaction networks. If profiles
 #' are provided, this points to the INTERACTIONS/ subdirectory within 
 #' the text-based GeneMANIA generic database
+#' If the DB creation process results in an erorr, these values return 
+#' NA
 #' @examples
 #' data(TCGA_mini,pathwayList);
 #' # note: the paths in the calls below need to be absolute. If you 
@@ -162,6 +164,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 
 	}, error=function(ex) {
 		print(ex)
+		return(NA)
 	}, finally={
 		setwd(curwd)
 	})

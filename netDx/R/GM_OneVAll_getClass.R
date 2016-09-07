@@ -8,8 +8,8 @@
 #' @export
 GM_OneVAll_getClass <- function(resSet) {
 	type_rank <- NULL
-	for (k in 1:length(predRes)){
-    x   <- predRes[[k]]$fullmat
+	for (k in 1:length(resSet)){
+    x   <- resSet[[k]]$fullmat
     if (is.null(type_rank)) 
         type_rank <- x[,c("ID","GM_score")]
     else {
@@ -18,12 +18,13 @@ GM_OneVAll_getClass <- function(resSet) {
         }
         type_rank <- cbind(type_rank, x[,"GM_score"])
     }
-        rnkCol <- paste(names(predRes)[k],"SCORE",sep="_") 
+        rnkCol <- paste(names(resSet)[k],"SCORE",sep="_") 
         colnames(type_rank)[ncol(type_rank)] <- rnkCol
  }
 
 na_sum <- rowSums(is.na(type_rank[,-1]))
-if (any(na_sum>0)) cat(sprintf("*** %i rows have an NA prediction\n",
+if (any(na_sum>0)) 
+	cat(sprintf("*** %i rows have an NA prediction (probably query samples that were not not ranked\n",
 			sum(na_sum>0)))
 type_rank <- na.omit(type_rank)
 

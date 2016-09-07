@@ -11,13 +11,19 @@
 # Random forest: http://bigcomputing.blogspot.ca/2014/10/an-example-of-using-random-forest-in.html
 rm(list=ls())
 
-outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results/avgXprByPathway"
+###outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results/avgXprByPathway"
+outDir <- "~/tmp/netDX/results/avgXprByPathway"
 if (!file.exists(outDir)) dir.create(outDir)
 
-method2use <- "ElasticNet" ###ElasticNet | RandomForest
+method2use <- "RandomForest" ###ElasticNet | RandomForest
 rmMissing  <- TRUE
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
+
+require(foreach)
+require(doParallel)
+cl <- makeCluster(8)
+registerDoParallel(cl)
 
 # ---------------------------------------------------
 # setup
@@ -84,6 +90,7 @@ for (k in 1:length(pathwayList)) {
 	}
 }
 xpr <- xpr2
+print(dim(xpr))
 
 
 # train() expects patients in rows,genes in columns

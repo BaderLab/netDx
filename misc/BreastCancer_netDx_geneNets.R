@@ -20,6 +20,12 @@ require(netDx)
 require(netDx.examples)
 data(TCGA_BRCA)
 
+cat("**** Recoding patient ID for smaller profile files\n")
+idx <- which(colnames(pheno)=="ID")
+colnames(pheno)[idx] <- "NAME"
+pheno$ID <- paste("X",1:nrow(pheno),sep="")
+colnames(xpr) <- pheno$ID
+
 sink(sprintf("%s/BreastCancer_GeneExprOnly.log",outDir),split=TRUE)
 tryCatch({
 
@@ -32,22 +38,24 @@ subtypes <- c(subtypes,"other") # add residual
 pheno$TT_STATUS <- splitTestTrain(pheno,
     pctT = TRAIN_PROP,setSeed = 42,predClass = "LumA" )
 
-## ----clean-pheno-xpr, cache=FALSE,eval=TRUE------------------------------
-pheno_FULL	<- pheno
-xpr_FULL 	<- xpr
-###cnv_FULL	<- cnv_GR
-pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
-xpr			<- xpr[,which(colnames(xpr)%in% pheno$ID)]
-###cnv_GR		<- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
-
 nr <- nrow(xpr)
 cat("*** Excluding missing data\n")
-xpr <- na.omit(xpr)
+tmp <- apply(xpr,1,function(x) {sum(is.na(x))})
+xpr <- xpr[-which(tmp>0),]
 cat(sprintf("%i of %i genes excluded\n",nr-nrow(xpr), nr))
 
 # fix gene name with slash
 idx <- grep("NOP5/NOP58",rownames(xpr))
 rownames(xpr)[idx] <- "NOP58"
+
+## ----subset-train, cache=FALSE,eval=TRUE------------------------------
+pheno_FULL	<- pheno
+xpr_FULL 	<- xpr
+###cnv_FULL	<- cnv_GR
+idx			<- which(pheno_FULL$TT_STATUS %in% "TRAIN")
+pheno		<- pheno[idx,]
+xpr			<- xpr[,idx]
+###cnv_GR		<- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
 
 ## ----read-pathways, cache=FALSE,eval=TRUE--------------------------------
 cat("* Creating gene-sets, each with one gene\n")
@@ -73,6 +81,7 @@ geneSim <- function(x) {
     # where g is the eMB.xpression vector for each gene
     for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
     rownames(out) <- nm; colnames(out)<- nm
+	out	<- round(out,digits=5)
     out
 }
 

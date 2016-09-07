@@ -33,6 +33,8 @@ profiles to interaction networks.}
 	"netDir": path to directory with interaction networks. If profiles
 are provided, this points to the INTERACTIONS/ subdirectory within 
 the text-based GeneMANIA generic database
+If the DB creation process results in an erorr, these values return 
+NA
 }
 \description{
 Create GeneMANIA database

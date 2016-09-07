@@ -75,30 +75,15 @@ $ R
 ```
 
 ## Run examples
-Each example runs as a standalone `.R` function. To run these, you need to have both `netDx` and `netDx.examples` installed. From the directory where the `netDx/` repo was downloaded, here is code that runs the breast cancer example using data from The Cancer Genome Atlas (Ref 1):
+Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed, and `knitr` to reproduce the results. From the directory where the `netDx/` repo was downloaded, here is code that runs the breast cancer example using data from The Cancer Genome Atlas (Ref 1):
 ```
 $ cd netDx/examples/
 $ R
-R version 3.2.4 (2016-03-10) -- "Very Secure Dishes"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin13.4.0 (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-  Natural language support but running in an English locale
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-> source("TCGA_BRCA.R")
+> require(knitr)
+> knit2pdf("Medulloblastoma.Rnw")
 ```
+This should generate `Medulloblastoma.pdf` in the `examples/` directory. 
+Alternatively, if you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. If you are getting an error saying that R cannot find `/usr/bin/texti2dvi`, install the `texinfo` package.
 
 ### References
 1. The Cancer Genome Atlas Network. (2012). Comprehensive molecular portraits of human breast tumours. Nature. 490:61.

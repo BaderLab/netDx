@@ -25,6 +25,7 @@ The netDx workflow is shown in Figure 1. We use gene signatures identified by pr
 <<eval=TRUE>>=
 # change this to a directory to which you have write access
 outDir <-  "~/tmp/MB"
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 
 numCores    <- 2L	# number of cores for parallel processing
@@ -61,6 +62,7 @@ For this example we manually separate samples from each of the 4 subtypes into 7
 # split dataset into train/test in group-wise manner. Note that we 
 # include patients not in any particular group because they serve
 # as negatives
+set.seed(42) # make reproducible
 TT_STATUS <- character(nrow(MB.pheno))
 for (g in unique(MB.pheno$STATUS)) {
     idx <- which(MB.pheno$STATUS %in% g)
@@ -114,7 +116,6 @@ predRes <- list()
 ## for each subtype
 for (g in names(groupSig)){
     pDir <- sprintf("%s/%s",outDir,g)
-    if (file.exists(pDir)) unlink(pDir)
     dir.create(pDir)
     
     # each gene has its own PSN
@@ -127,7 +128,6 @@ for (g in names(groupSig)){
     cat(sprintf("Subtype : %s { %s } => %i measures\n",
                 g, paste(groupSig[[g]],collapse=","), length(idx)))
     netDir  <- sprintf("%s/networks",pDir)
-    if (file.exists(netDir)) unlink(netDir)
     
     # this function call creates the PSN
     netList <- makePSN_NamedMatrix(MB.xpr[idx,], MB.xpr_names[idx], 

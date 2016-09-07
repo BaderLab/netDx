@@ -4,7 +4,7 @@
 
 \title{netDx use case: 4-way classification: Medulloblastoma tumour subtype}
 \author{Shraddha Pai}
-\date{Last updated: 3 June, 2016}
+\date{Last updated: 7 September, 2016}
 
 \maketitle
 
@@ -13,11 +13,16 @@ Northcott et al. (2011) identified four subtypes of primary medulloblastoma tumo
 \par
 The netDx workflow is shown in Figure 1. We use gene signatures identified by previous research and omit the feature selection step. Instead, GeneMANIA (GM) is used to predict tumour labels. For each of the 4 subtypes, we construct a GM database that contains genes part of the corresponding gene signature. Samples from each subtype are split into training (70\%) and test (30\%). One query is run for each of the four subtypes, using the training samples for the corresponding subtypes as a query. In this way, each test sample is ranked by all 4 databases. After test samples have been ranked by all four GeneMANIA queries , each set of ranks is normalized to range between 0 and 1.  The patient is assigned to the class with the highest rank.
 
-\includegraphics[width=1.0\textwidth]{mblastoma.png}
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\textwidth]{mblastoma.png}
+\caption{netDx workflow for a 4-way classification of medulloblastoma tumour from known gene signatures. \newline A. A GeneMANIA database is built for each subtype. The networks are at the gene-level, with a custom similarity metric (see Section 3); each subtype-specific database contains networks for the genes in the corresponding subtype signature. The networks and database contain all training and test patients. \newline B. A sample is classified by running four GeneMANIA queries, one per subtype. In each case, the query comprises of training samples for that subtype. The query results in subtype-specific similarity ranking. After such ranks have been obtained for all four subtypes, the sample is assigned to the class for which it has the highest rank.}
+\end{center}
+\end{figure}
 
 \section{Set up}
 \subsection{Set up working environment}
-<<>>=
+<<eval=TRUE>>=
 # change this to a directory to which you have write access
 outDir <-  "~/tmp/MB"
 dir.create(outDir)
@@ -30,14 +35,14 @@ require(netDx.examples)
 @
 
 Load the example data
-<<>>=
+<<eval=TRUE>>=
 # Load the Medulloblastoma dataset
 data(MBlastoma)
 @
 
 \subsection{Define gene signatures}
 
-<<>>=
+<<eval=TRUE>>=
 # subtypes and genes predictive of these. From Table 1 of PMC3306784
 # http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3306784/table/Tab1/
 groupSig <- list(
@@ -51,7 +56,7 @@ groupSig <- list(
 \subsection{Split samples into train and test}
 
 For this example we manually separate samples from each of the 4 subtypes into 70\% training and 30\% test
-<<>>=
+<<eval=TRUE>>=
 # ---------------------------------------------
 # split dataset into train/test in group-wise manner. Note that we 
 # include patients not in any particular group because they serve
@@ -69,13 +74,13 @@ MB.pheno <- cbind(MB.pheno, TT_STATUS=TT_STATUS)
 \section{Build predictor for each subtype}
 In this example, we skip feature selection and move straight to predicting subtypes for test tumours, based on similarity to training samples.
 
-<<>>=
+<<eval=TRUE>>=
 MB.pheno_train <- subset(MB.pheno, TT_STATUS %in% "TRAIN")
 @
 
-For each subtype, we build a GeneMANIA database consisting of features for that subtype.  Each database contains all 103 samples. Features are at the levels of genes. The similarity measure is a custom-defined one, here seen in the geneSim function.
+For each subtype, we build a GeneMANIA database consisting of features for that subtype.  Each database contains all 103 samples. Features are at the levels of genes. The similarity measure is a custom-defined one, here seen in the \texttt{geneSim()} function.
 
-<<>>=
+<<eval=TRUE>>=
 # custom similarity measure
 geneSim <- function(x) {
     if (nrow(x)>=1) x <- x[1,]
@@ -94,7 +99,16 @@ geneSim <- function(x) {
 }
 @
 
-<<>>=
+For each subtype, the loop combines the following steps:
+\begin{itemize}
+\item \texttt{makePSN\_NamedMatrix()}: Function that creates the patient networks from the expression vector. Here we supply the custom similarity-computing function via the \texttt{customFunc} argument. The interaction networks are written in the directory \texttt{netDir}.
+\item \texttt{GM\_createDB()}: All the input networks in \texttt{netDir} are integrated into a single GeneMANIA database.
+\item \texttt{GM\_writeQueryFile()}: Write a GeneMANIA query file; the GeneMANIA query will obtain a similarity ranking for test patients
+\item \texttt{runGeneMANIA()}: Runs a GeneMANIA query
+\item \texttt{GM\_getQueryROC()}: Process the patient ranking output file (the \texttt{.prank} file)
+\end{itemize}
+
+<<eval=TRUE>>=
 # directories with group-specific predictors
 predRes <- list()
 ## for each subtype
@@ -113,7 +127,7 @@ for (g in names(groupSig)){
     cat(sprintf("Subtype : %s { %s } => %i measures\n",
                 g, paste(groupSig[[g]],collapse=","), length(idx)))
     netDir  <- sprintf("%s/networks",pDir)
-    if (!file.exists(netDir)) unlink(netDir)
+    if (file.exists(netDir)) unlink(netDir)
     
     # this function call creates the PSN
     netList <- makePSN_NamedMatrix(MB.xpr[idx,], MB.xpr_names[idx], 
@@ -142,7 +156,7 @@ for (g in names(groupSig)){
 Once we have run GeneMANIA on all 4 subclasses, the patient gets assigned to the class for which it has the highest ranking.
 
 Take a look at the ROC curves.
-<<>>=
+<<eval=TRUE>>=
 par(mfrow=c(2,2))
 tmp <- sapply(names(predRes), function(nm){
     x <- predRes[[nm]]
@@ -157,13 +171,15 @@ save(predRes,file=sprintf("%s/predictions.Rdata",outDir))
 
 
 Finally, predict the class of each test sample
-<<>>=
+<<eval=TRUE>>=
 predClass 	<- GM_OneVAll_getClass(predRes)
 testSamps 	<- merge(x=MB.pheno,y=predClass,by="ID")
+testSamps	<- testSamps[-which(!testSamps$STATUS %in% c("WNT","SHH",
+				"Group3","Group4")),]
 @
 
 Compute class match accuracy
-<<>>=
+<<eval=TRUE>>=
 rightClass <- testSamps$STATUS == testSamps$PRED_CLASS
 numCor <- sum(rightClass); ln <- nrow(testSamps)
 cat(sprintf("Overall classifier accuracy = %i of %i  (%i%%)",
@@ -171,7 +187,7 @@ cat(sprintf("Overall classifier accuracy = %i of %i  (%i%%)",
 @
 
 Examine class-specific accuracy:
-<<>>=
+<<eval=TRUE>>=
 for (g in names(groupSig)){
     idx <- which(testSamps$STATUS %in% g)
     numCor <- sum(rightClass[idx]); ln <- length(idx)
@@ -181,7 +197,7 @@ for (g in names(groupSig)){
 @
 
 \section{sessionInfo}
-<<>>=
+<<eval=TRUE>>=
 sessionInfo()
 @
 

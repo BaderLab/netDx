@@ -5,8 +5,8 @@
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
 Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
-  cliqueFilter = TRUE, cliquePthresh = 0.07, cliqueReps = 2500L,
-  numCores = 1L, useAttributes = NULL)
+  nFoldCV = 10L, cliqueFilter = TRUE, cliquePthresh = 0.07,
+  cliqueReps = 2500L, numCores = 1L, useAttributes = NULL)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet()}
@@ -28,6 +28,9 @@ in the dataset. This function will subset these networks to generate
 networks consisting e.g. only of training samples.}
 
 \item{splitN}{(integer) number of data resamplings to use}
+
+\item{nFoldCV}{(integer) number of folds in the inner cross-validation
+loop}
 
 \item{cliqueFilter}{(logical) if TRUE, applies clique filtering to train
 networks}

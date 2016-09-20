@@ -30,6 +30,8 @@
 #' in the dataset. This function will subset these networks to generate
 #' networks consisting e.g. only of training samples.
 #' @param splitN (integer) number of data resamplings to use
+#' @param nFoldCV (integer) number of folds in the inner cross-validation
+#' loop
 #' @param cliqueFilter (logical) if TRUE, applies clique filtering to train
 #' networks
 #' @param cliquePthresh (numeric between 0 and 1) networks with clique-
@@ -41,7 +43,8 @@
 #' as NULL.
 #' @importFrom reshape2 melt
 #' @export
-Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,splitN=3L,
+Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
+	splitN=3L,nFoldCV=10L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,numCores=1L,
 	useAttributes=NULL) {
 	
@@ -109,24 +112,11 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,splitN=3L,
 		# create networks for cross-validation
 		attrib_DF <- NULL
 		if (!is.null(useAttributes)) {
-			attrib_DF <- subset(phenoDF, ID%in% rownames(p_train))
-			attrib_DF <- attrib_DF[,c("ID",useAttributes)]
-			tmp <- melt(attrib_DF,id.vars="ID")
-			colnames(tmp)[2:3] <- c("attribute_name","attribute_value")
-			tmp$attribute_group <- "attgroup1"
-			attrib_DF <- tmp
-			attrib_DF$attribute_name <- as.character(attrib_DF$attribute_name)
-			attrib_DF$attribute_group <- as.character(attrib_DF$attribute_group)
-			attrib_DF$ID <- as.character(attrib_DF$ID)
-			attrib_DF$attribute_value <- as.integer(as.factor(
-					attrib_DF$attribute_value))
-
-			cat(sprintf("%i unique attribute names\n",
-					length(unique(attrib_DF$attribute_name))))
-
+				cat("not yet implemented")
+				browser()
 		}
-		x <- GM_createDB(trainNetDir, rownames(p_train), newOut,
-					attrib_DF=attrib_DF)
+		x <- GM_createDB(trainNetDir, rownames(p_train), newOut)
+					
 		
 		# we query for training samples of the predictor class
 		trainPred <- pheno_train$ID[
@@ -134,7 +124,8 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,splitN=3L,
 		resDir    <- sprintf("%s/GM_results",newOut)
 		GM_db     <- sprintf("%s/dataset",newOut)
 		GM_runCV_featureSet(trainPred, resDir, GM_db, 
-				nrow(p_train),verbose=TRUE,numCores=numCores-1)
+				nrow(p_train),verbose=TRUE,numCores=numCores-1,
+				nFold=nFoldCV)
 		
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),

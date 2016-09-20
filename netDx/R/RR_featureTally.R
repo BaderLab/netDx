@@ -47,7 +47,7 @@ RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
 	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L) {
 
 # tally pathway score across resamplings
-testMode <- TRUE # when true doesn't write files.
+testMode <- FALSE # when true doesn't write files.
 
 pTally 			<- list()
 for (k in 1:length(TT_STATUS)) {

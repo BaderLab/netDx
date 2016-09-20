@@ -24,6 +24,7 @@
 #' genes that don't share a pathway (or, more accurately, a named-set 
 #' grouping) would not be related. The edge weight is therefore binary.
 #' @param verbose (logical) print detailed messages
+#' @param numCores (integer) num cores for parallel processing
 #' @param quorum (integer) minimum number of patients in a network for the 
 #' network to be constructed
 #' @return Vector of network filenames
@@ -36,7 +37,7 @@
 #' @import foreach
 #' @import parallel
 makePSN_RangeSets <- function(gr, rangeSet, netDir, simMetric="coincide",
-  quorum=2L,verbose=TRUE) {
+  quorum=2L,verbose=TRUE,numCores=1L) {
 if (!file.exists(netDir)) dir.create(netDir)
 
 TEST_MODE <- FALSE # for debugging
@@ -71,37 +72,51 @@ pgMat   <- big.matrix(0,
 pgDesc  <- describe(pgMat)
 cat("\n")
 
-x <- foreach (k=1:length(uq_patients)) %do% {
-    inner_mat 	<- attach.big.matrix(pgDesc)
-	idx			<- which(gr$ID %in% uq_patients[k])
-    myloci		<- unlist(strsplit(gr$LOCUS_NAMES[idx],","))
-	myloci		<- setdiff(myloci,"")
+cl <- makeCluster(numCores,outfile="")
+registerDoParallel(cl)
 
-	if (length(myloci)>0) {
-        inner_mat[k, which(uq_loci %in% myloci)] <- 1L
-    }
-    if (k %% 100==0) cat(".")
+num <- length(uq_patients)
+ckSize <- 50
+t0 <- Sys.time()
+x <- foreach (spos=seq(1,num,ckSize)) %dopar% {
+    inner_mat 	<- bigmemory::attach.big.matrix(pgDesc)
+	epos <- spos+(ckSize-1)
+	for (k in spos:epos) {
+		idx			<- which(gr$ID %in% uq_patients[k])
+    	myloci		<- unlist(strsplit(gr$LOCUS_NAMES[idx],","))
+		myloci		<- setdiff(myloci,"")
+
+		if (length(myloci)>0) {
+        	inner_mat[k, which(uq_loci %in% myloci)] <- 1L
+    	}
+    	if (k %% 100==0) cat(".")
+	}
 }
+t1 <- Sys.time()
+print(t1-t0)
 
 hit_p 		<- integer(length(rangeSet))
 
 # binary vector indicating if this network was included
-inc_status	<-  integer(length(rangeSet))
+## inc_status	<-  integer(length(rangeSet))
 # patients that have at least one interaction in one network
 inc_patients <- integer(length(uq_patients));
 names(inc_patients) <- uq_patients
 
 # now group set-by-set
-outFiles	<- character()
-for (idx in 1:length(rangeSet)) {
-	curP 		<- names(rangeSet)[idx]
+cat("* Writing networks\n")
+t0 <- Sys.time()
+outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
+	curP<- names(rangeSet)[idx]
     if (verbose) cat(sprintf("\t%s: ", curP))
+
+    inner_mat 	<- bigmemory::attach.big.matrix(pgDesc)
 
     locus_idx 	<- which(uq_loci %in% rangeSet[[idx]]$name)
 	if (length(locus_idx)>=2) {
-    	hit_pathway <- rowSums(pgMat[,locus_idx])
+    	hit_pathway <- rowSums(inner_mat[,locus_idx])
 	} else { # one-locus pathway, probably risk locus
-		hit_pathway	<- pgMat[,locus_idx]
+		hit_pathway	<- inner_mat[,locus_idx]
 	}
 
     hit_p[idx]	<- sum(hit_pathway>0)
@@ -109,34 +124,45 @@ for (idx in 1:length(rangeSet)) {
 		hit_p[idx]))
 
 	pScore	<- 1	# similarity score for default binary option
+	outFile <- ""
 	# pathway included in analysis
     if (hit_p[idx]>=quorum) {
 		if (verbose) cat(sprintf("\n\t\tlength=%i; score = %1.2f",
 								 length(rangeSet[[idx]]), pScore))
 		if (!TEST_MODE) {
 		inc_patients[hit_pathway>0] <-  inc_patients[hit_pathway>0]+1;
-		pat_pairs <- t(combn(uq_patients[hit_pathway>0],2))
+		pat_pairs <- t(combinat::combn(uq_patients[hit_pathway>0],2))
 		pat_pairs <- cbind(pat_pairs,pScore);
 
 		# write network for pathway
 		outFile		<- sprintf("%s/%s_cont.txt",netDir,curP)
 		write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)
-		outFiles 	<- c(outFiles, basename(outFile))
+		outFile <- basename(outFile)
+	##	outFiles 	<- c(outFiles, basename(outFile))
+		
 		}
-		status	<- 1;
-    } else {
-		status	<- 0;
-	}
+	##	status	<- 1;
+    } ## else {
+	  ##status	<- 0;
+	##		outFile <- ""
+	## }
     if (idx %% 100==0) cat(".")
     if (verbose) cat("\n")
-	inc_status[idx] <- status
+	##inc_status[idx] <- status
 	
 	if (!verbose) {
 		if (idx %% 100 == 0) cat(".")
 		if (idx %% 1000 == 0) cat("\n")
 	}
+
+	outFile
 }
+t1 <- Sys.time()
+print(t1-t0)
+stopCluster(cl)
+outFiles <- unlist(outFiles)
+outFiles <- outFiles[which(outFiles!="")]
 
 outFiles
 

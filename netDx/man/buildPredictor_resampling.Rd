@@ -59,7 +59,7 @@ GM_runCV_featureSet())}
 networks and scores following feature selection. Nets with score>0 are
 shown.
 * confmat: (matrix) confusion matrix with one row per cutoff
-* predRanks: (list) GM rankings of test sampels for each network cutoff
+* predRanks: (list) GM rankings of test samples for each network cutoff
 In addition, all the intervening work will be stored in <outDir>
 }
 \description{

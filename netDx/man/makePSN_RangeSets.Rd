@@ -5,7 +5,7 @@
 \title{Create patient similarity interaction networks based on range sets}
 \usage{
 makePSN_RangeSets(gr, rangeSet, netDir, simMetric = "coincide", quorum = 2L,
-  verbose = TRUE)
+  verbose = TRUE, numCores = 1L)
 }
 \arguments{
 \item{gr}{(GRanges) patient ranges. Metadata should contain:
@@ -29,6 +29,8 @@ grouping) would not be related. The edge weight is therefore binary.}
 network to be constructed}
 
 \item{verbose}{(logical) print detailed messages}
+
+\item{numCores}{(integer) num cores for parallel processing}
 }
 \value{
 Vector of network filenames

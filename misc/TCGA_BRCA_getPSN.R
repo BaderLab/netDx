@@ -22,6 +22,7 @@ require(netDx)
 
 cutoff <-10 
 corrThresh <-0.7 
+aggFun <- "MAX"
 
 # run for LumA
 cat("\nLumA\n")
@@ -32,9 +33,9 @@ colnames(pTally) <- c("NETWORK","WEIGHT")
 aggNetFile <- netDx::writeWeightedNets(geneFile,netFile,netDir,
 				pTally,outDir,
 				filterEdgeWt=corrThresh,
-				writeAggNet="MAX",verbose=F)
+				writeAggNet=aggFun,verbose=TRUE)
 
-aggNetFile <- "/home/spai/tmp/TCGA_BRCA/LumA/output_nets_score10/aggregateNet_filterEdgeWt0.70_MAX.txt"
+aggNetFile <- sprintf("/home/spai/tmp/TCGA_BRCA/LumA/output_nets_score10/aggregateNet_filterEdgeWt%1.2f_%s.txt",corrThresh,aggFun)
 aggNet<- read.delim(aggNetFile,sep="\t",h=T,as.is=T)[,1:3]
 colnames(aggNet)[3] <- "weight"
 

@@ -55,6 +55,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		numInt <- matrix(0,nrow=numPat,ncol=numPat)
 		if (writeAggNet %in% "MAX") {
 			intColl <- matrix(NA,nrow=numPat,ncol=numPat)
+			maxNet <- matrix(NA,nrow=numPat, ncol=numPat)
 		}
 	}
 	for (i in 1:nrow(nets)) {
@@ -71,22 +72,28 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				intColl[midx] <- intColl[midx] + ints[,3]#*nets$WEIGHT[i])
 				numInt[midx] <- numInt[midx] + 1
 			} else if (writeAggNet=="MAX"){
-				intColl[midx] <- max(intColl[midx],ints[,3],na.rm=TRUE)
+					### cannot run max() like that
+				intColl[midx] <- pmax(intColl[midx],ints[,3],na.rm=TRUE)
 				numInt[midx] <- numInt[midx] + 1
+				maxNet[midx] <- nets$NET_ID[i]
+				if (verbose) cat(sprintf("%i: %i interactions added\n",
+							i, nrow(midx)))
+				print(table(maxNet))
+				print(summary(as.numeric(intColl)))
 			}
 	
 			# resolve to patient name
 			midx <- match(ints[,1],pid$GM_ID)
 			if (all.equal(pid$GM_ID[midx],ints[,1])!=TRUE) {
 				cat("column 1 doesn't match\n")
-			browser()
+				browser()
 			}
 			ints$SOURCE <- pid$ID[midx]; rm(midx)
 			
 			midx <- match(ints[,2],pid$GM_ID)
 			if (all.equal(pid$GM_ID[midx],ints[,2])!=TRUE) {
 				cat("column 2 doesn't match\n")
-			browser()
+				browser()
 			}
 			ints$TARGET <- pid$ID[midx]
 	

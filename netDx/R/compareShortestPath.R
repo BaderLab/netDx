@@ -45,7 +45,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 			gplots::heatmap.2(t(d_overall),trace='none',scale='none',
 			dendrogram='none',main="node-level shortest path")
 	}
-	
+
 	cnames <- unique(pheno$GROUP)
 	dset <- list()
 	for (curr_cl in cnames) {
@@ -59,7 +59,8 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		tmp <- igraph::shortest.paths(g2,algorithm="dijkstra")
 		dset[[curr_cl]] <- .getAvgD(tmp)
 		if (verbose) 
-			cat(sprintf("\tShortest dist = %2.3f\n", dset[[curr_cl]]))
+			cat(sprintf("\tShortest dist (%s-%s)= %2.3f\n", 
+						curr_cl,curr_cl,dset[[curr_cl]]))
 	}
 
 	dset[["overall"]] <- .getAvgD(d_overall)

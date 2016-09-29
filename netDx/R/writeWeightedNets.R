@@ -18,6 +18,8 @@
 #' 1) NONE: does not write aggregate network
 #' 2) MEAN: average of weighted edges (raw x netDx score)
 #' 3) MAX: max of raw edge weight
+#' @param limitToTop (integer) limit to top strongest connections. Set to
+#' Inf to list all connections
 #' @param writeSingleNets (logical) keep/delete individual recoded nets.
 #' TRUE results in each written to its own file; FALSE does not.
 #' @param verbose (logical) print messages if TRUE
@@ -33,7 +35,8 @@
 #' 4) weight similarity for the network (WT_SIM)
 #' @export
 writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
-	filterEdgeWt=0,writeAggNet="MAX",writeSingleNets=TRUE,verbose=FALSE){
+	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,
+	writeSingleNets=FALSE,verbose=FALSE){
 
 	pid		<- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)[,1:2]
 	colnames(pid)[1:2] <- c("GM_ID","ID")
@@ -78,8 +81,8 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				maxNet[midx] <- nets$NET_ID[i]
 				if (verbose) cat(sprintf("%i: %i interactions added\n",
 							i, nrow(midx)))
-				print(table(maxNet))
-				print(summary(as.numeric(intColl)))
+				##print(table(maxNet))
+				##print(summary(as.numeric(intColl)))
 			}
 	
 			# resolve to patient name
@@ -118,14 +121,39 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (writeAggNet=="MEAN") tmp <- intColl/numInt # take mean
 		else tmp <- intColl # max value is already in
 
+		if (limitToTop >= ncol(intColl)) limitToTop <- Inf
+		if (!is.infinite(limitToTop)){
+			cat(sprintf("* Limiting to top %i edges per patient",
+				limitToTop))
+			for (k in 1:ncol(intColl)) {
+				mytop <- order(tmp[k,],decreasing=TRUE)
+				tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+			}
+		}
+
 		require(reshape2)
-		tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
+		if (is.infinite(limitToTop)) {
+			tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
+		}
+
 		ints	<- melt(tmp)
-		print(dim(ints))
-		cat(sprintf("%i pairs have no interactions\n", 
+		cat(sprintf("\n\t%i pairs have no edges\n", 
 					sum(is.nan(ints$value))+sum(is.na(ints$value))))
 		ints	<- na.omit(ints)
-		print(dim(ints))
+
+		if (!is.infinite(limitToTop)) {
+			x <- paste(ints[,1],ints[,2],sep=".")
+			y <- paste(ints[,2],ints[,1],sep=".")
+			dup <- intersect(x,y)  # A->B and B->A 
+			if (length(dup)>0) {
+				cat(sprintf("\tRemoving %i duplicate edges\n",
+					length(dup)))
+				ints <- ints[-which(y %in% dup),]
+			}
+		}
+		den <- choose(ncol(intColl),2)
+		cat(sprintf("\tSparsity = %i/%i (%i %%)\n",
+			nrow(ints), den, round((nrow(ints)/den)*100)))
 
 		# resolve to patient name
 		midx <- match(ints[,1],pid$GM_ID)
@@ -143,6 +171,9 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		
 		outF <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt",
 						outDir,filterEdgeWt,writeAggNet)
+		if (!is.infinite(limitToTop)) {
+			outF <- sub(".txt",sprintf("top%i.txt",limitToTop),outF)
+		}
 		write.table(ints,file=outF,sep="\t",col=T,row=F,quote=F)
 		
 		return(outF)

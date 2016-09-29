@@ -32,7 +32,7 @@ compare intra-cluster shortest distance to overall shortest distance of the netw
 \details{
 Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
 infinite distances are excluded before computing average shortest path 
-for a network. This function requires the igraph package to be installed. 
+for a network. This function requires the igraph package to be installed.
 The showNetDist option requires the gplots package to be installed.
 }
 \examples{

@@ -5,8 +5,8 @@
 \title{Write an integrated similarity network consisting of selected networks.}
 \usage{
 writeWeightedNets(geneFile, netInfo, netDir, keepNets, outDir,
-  filterEdgeWt = 0, writeAggNet = "MAX", writeSingleNets = TRUE,
-  verbose = FALSE)
+  filterEdgeWt = 0, writeAggNet = "MAX", limitToTop = 50L,
+  writeSingleNets = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{geneFile}{(char) path to GENES.txt file created during the making
@@ -33,6 +33,9 @@ this filter being applied before the multiplier is applied.}
 1) NONE: does not write aggregate network
 2) MEAN: average of weighted edges (raw x netDx score)
 3) MAX: max of raw edge weight}
+
+\item{limitToTop}{(integer) limit to top strongest connections. Set to
+Inf to list all connections}
 
 \item{writeSingleNets}{(logical) keep/delete individual recoded nets.
 TRUE results in each written to its own file; FALSE does not.}

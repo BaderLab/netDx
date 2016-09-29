@@ -2,17 +2,17 @@
 rm(list=ls())
 
 # patients
-geneFile	<- "/home/spai/tmp/TCGA_BRCA/LumA/tmp/GENES.txt"
+geneFile	<- "/home/spai/tmp/TCGA_BRCA_freeze160826/LumA/tmp/GENES.txt"
 # net names
-netFile		<- "/home/spai/tmp/TCGA_BRCA/LumA/tmp/NETWORKS.txt"
+netFile		<- "/home/spai/tmp/TCGA_BRCA_freeze160826/LumA/tmp/NETWORKS.txt"
 # binary nets
-netDir		<- "/home/spai/tmp/TCGA_BRCA/LumA/tmp/INTERACTIONS"
+netDir		<- "/home/spai/tmp/TCGA_BRCA_freeze160826/LumA/tmp/INTERACTIONS"
 # we are going to take union of FS pathways for each class so we need
 # the pathway scores for each class
-pTFile_LumA	<- "/home/spai/tmp/TCGA_BRCA/LumA/GM_results/LumA_pathway_CV_score.txt"
-pTFile_other<- "/home/spai/tmp/TCGA_BRCA/other/GM_results/other_pathway_CV_score.txt"
+pTFile_LumA	<- "/home/spai/tmp/TCGA_BRCA_freeze160826/LumA/GM_results/LumA_pathway_CV_score.txt"
+pTFile_other<- "/home/spai/tmp/TCGA_BRCA_freeze160826/other/GM_results/other_pathway_CV_score.txt"
 # where the integrated net will be written
-outDir		<- "/home/spai/tmp/TCGA_BRCA/LumA/output_nets_score10"
+outDir		<- "/home/spai/tmp/TCGA_BRCA_freeze160826/LumA/output_nets_score10"
 
 # -------
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
@@ -32,10 +32,11 @@ cat(sprintf("%i networks with score >=%i\n",nrow(pTally),cutoff))
 colnames(pTally) <- c("NETWORK","WEIGHT")
 aggNetFile <- netDx::writeWeightedNets(geneFile,netFile,netDir,
 				pTally,outDir,
-				filterEdgeWt=corrThresh,
+				filterEdgeWt=corrThresh,limitToTop=25,
 				writeAggNet=aggFun,verbose=TRUE)
 
-aggNetFile <- sprintf("/home/spai/tmp/TCGA_BRCA/LumA/output_nets_score10/aggregateNet_filterEdgeWt%1.2f_%s.txt",corrThresh,aggFun)
+#aggNetFile <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt",
+#					  outDir,corrThresh,aggFun)
 aggNet<- read.delim(aggNetFile,sep="\t",h=T,as.is=T)[,1:3]
 colnames(aggNet)[3] <- "weight"
 

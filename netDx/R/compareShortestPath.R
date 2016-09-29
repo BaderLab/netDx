@@ -33,9 +33,9 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		tmp <- mat[upper.tri(mat,diag=FALSE)]
 		idx <- which(is.infinite(tmp))
 		if (any(idx)) tmp <- tmp[-idx]
-		if (verbose) cat(sprintf("\tN=%i distances\n", length(tmp)))
+		##if (verbose) cat(sprintf("\tN=%i distances\n", length(tmp)))
 
-		c(mean(tmp,na.rm=TRUE), sd(tmp,na.rm=TRUE))
+		c(mean(tmp,na.rm=TRUE), sd(tmp,na.rm=TRUE),length(tmp))
 	}
 	
 	g <- igraph::graph_from_data_frame(net, vertices=pheno$ID)
@@ -43,8 +43,8 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 	cat(sprintf("Overall: %i nodes\n",length(pheno$ID)))
 	tmp <- .getAvgD(d_overall)
 	if (verbose)
-		cat(sprintf("All-all shortest path = %2.3f (SD=%2.3f)\n",
-					tmp[1],tmp[2]))
+		cat(sprintf("All-all shortest path = %2.3f (SD=%2.3f) (N=%i distances)\n",
+					tmp[1],tmp[2],tmp[3]))
 	if (showNetDist) {
 			gplots::heatmap.2(t(d_overall),trace='none',scale='none',
 			dendrogram='none',main="node-level shortest path")
@@ -64,12 +64,13 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		dset[[curr_cl]] <- .getAvgD(tmp)
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
-			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)\n", 
-						curr_cl,curr_cl,tmp[1],tmp[2]))
+			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
+						curr_cl,curr_cl,tmp[1],tmp[2],tmp[3]))
 	}
 
 	# now repeat for all pairwise classes
 	cpairs <- as.matrix(combinat::combn(cnames,2))
+	cat("Pairwise classes:\n")
 	for (k in 1:ncol(cpairs)) {
 		type1 <- pheno$ID[which(pheno$GROUP %in% cpairs[1,k])]
 		type2 <- pheno$ID[which(pheno$GROUP %in% cpairs[2,k])]
@@ -83,8 +84,8 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		dset[[curr_cl]] <- .getAvgD(tmp)
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
-			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)\n", 
-						cpairs[1,k],cpairs[2,k],tmp[1],tmp[2]))
+			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
+						cpairs[1,k],cpairs[2,k],tmp[1],tmp[2],tmp[3]))
 	}
 
 	dset[["overall"]] <- .getAvgD(d_overall)

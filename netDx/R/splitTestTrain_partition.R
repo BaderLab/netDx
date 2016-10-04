@@ -41,10 +41,10 @@ plus_csize 	<- floor((1/nFold)*length(plus_idx))
 other_csize <- floor((1/nFold)*length(other_idx))
 
 if (verbose) {
-cat(sprintf("+ : %i total ; %i per chunk\n",
-			length(plus_idx),plus_csize))
-cat(sprintf("- : %i total ; %i per chunk\n",
-			length(other_idx),other_csize))
+cat(sprintf("\t(+) %s : %i total ; %i per resample\n",
+			predClass, length(plus_idx),plus_csize))
+cat(sprintf("\t(-) (!%s): %i total ; %i per resample\n",
+			predClass, length(other_idx),other_csize))
 }
 
 # randomize order for test assignment
@@ -61,8 +61,8 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(plus_idx)
 
 	if (verbose) 
-			cat(sprintf("\t%i (+): %i test (%i-%i);\n", 
-						k, eidx-sidx+1, sidx,eidx))
+		cat(sprintf("\t%i (+): %i test (%i-%i);\n", 
+			k, eidx-sidx+1, sidx,eidx))
 	status[plus_order[sidx:eidx]] <- "TEST"
 
 	# then for - samples
@@ -71,8 +71,7 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(other_idx)
 
 	if (verbose) 
-			cat(sprintf("\t\t%i (-): %i test (%i-%i);\n", 
-						k, eidx-sidx+1, sidx,eidx))
+			cat(sprintf("\t\t%i (-): %i test\n",k, eidx-sidx+1))
 	status[other_order[sidx:eidx]] <- "TEST"
 	
 	out[[k]] <- status

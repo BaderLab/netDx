@@ -89,6 +89,5 @@ Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
 			splitN=numResamples,nFoldCV=nFoldCV,...)
 t1 <- Sys.time()
 print(t1-t0)
-browser()
 
 }

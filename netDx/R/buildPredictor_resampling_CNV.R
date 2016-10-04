@@ -59,7 +59,7 @@ pheno$TT_STATUS <- splitTestTrain(pheno,
 pheno_FULL	<- pheno
 pGR_FULL 	<- p_GR
 pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
-pGR_FULL	<- p_GR[which(p_GR$ID %in% pheno$ID)]
+p_GR		<- p_GR[which(p_GR$ID %in% pheno$ID)]
 
 cat("Training samples\n")
 print(table(pheno$STATUS))
@@ -71,17 +71,24 @@ cat("* Make CNV-based patient networks\n")
 netDir <- sprintf("%s/networks_orig",outDir)
 print(numCores)
 netList <- makePSN_RangeSets(p_GR, unitSet_GR,netDir,verbose=FALSE,
-							 numCores=numCores)
+	 numCores=numCores)
 
+cat("* Counting patients in net\n")
+t0 <- Sys.time()
 p 	<- countPatientsInNet(netDir,netList, pheno$ID)
+t1 <- Sys.time()
+print(t1-t0)
 tmp	<- updateNets(p,pheno,writeNewNets=FALSE)
 p		<- tmp[[1]]
 pheno	<- tmp[[2]] 
 
-Nway_netSum(p,pheno,predClass=predictClass,outDir,netDir,
+cat("* Running N-way resampling for feature scores\n")
+t0 <- Sys.time()
+Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
 			cliqueReps=cliqueReps,numCores=numCores,
 			splitN=numResamples,nFoldCV=nFoldCV,...)
-
+t1 <- Sys.time()
+print(t1-t0)
 browser()
 
 }

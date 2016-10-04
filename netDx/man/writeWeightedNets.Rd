@@ -6,7 +6,7 @@
 \usage{
 writeWeightedNets(geneFile, netInfo, netDir, keepNets, outDir,
   filterEdgeWt = 0, writeAggNet = "MAX", limitToTop = 50L,
-  writeSingleNets = TRUE, verbose = FALSE)
+  writeSingleNets = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{geneFile}{(char) path to GENES.txt file created during the making

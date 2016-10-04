@@ -38,6 +38,10 @@
 #' filtering p-value below this threshold  pass clique-filtering
 #' @param cliqueReps (integer) number of permutations for clique filtering
 #' @param numCores (integer) num cores for parallel processing
+#' @param GM_numCores (integer) num cores for running GM. If NULL, is set
+#' to max(1,numCores-1). Set to a lower value if the default setting
+#' gives out-of-memory error. This may happen if networks are denser than
+#' expected
 #' @param useAttributes (char) vector of attribute names to be used in 
 #' executing GM queries. Note: Not currently well-tested, suggest leaving
 #' as NULL.
@@ -46,14 +50,17 @@
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 	splitN=3L,nFoldCV=10L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,numCores=1L,
-	useAttributes=NULL) {
+	GM_numCores=NULL,useAttributes=NULL) {
+
+		if (is.null(GM_numCores)) GM_numCores <- max(1,numCores-1)
 	
 	# split into testing and training - resampling mode
+	cat("* Resampling train/test samples\n")
 	TT_STATUS 	<- splitTestTrain_partition(phenoDF, nFold=splitN,
 		predClass=predClass, verbose=TRUE)
-
 	p_full 		<- netmat
 	pheno_full	<- phenoDF
+	pheno_full <- pheno_full[,-which(colnames(pheno_full)%in%"TT_STATUS")]
 
 	pScore		<- list()
 	cliqueNets	<- list()
@@ -62,7 +69,9 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		pheno 	<- pheno_full
 	
 		pheno  <- cbind(pheno, TT_STATUS=TT_STATUS[[k]])
-		cat(sprintf("K = %i\n", k))
+		cat("----------------------------------------\n")
+		cat(sprintf("Resampling round %i\n", k))
+		cat("----------------------------------------\n")
 		print(table(pheno[,c("STATUS","TT_STATUS")]))
 	
 		newOut <- sprintf("%s/part%i",outDir,k)
@@ -123,9 +132,13 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 			which(pheno_train$STATUS %in% predClass)]
 		resDir    <- sprintf("%s/GM_results",newOut)
 		GM_db     <- sprintf("%s/dataset",newOut)
+		t0 <- Sys.time()
 		GM_runCV_featureSet(trainPred, resDir, GM_db, 
-				nrow(p_train),verbose=TRUE,numCores=numCores-1,
+				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
 				nFold=nFoldCV)
+		t1 <- Sys.time()
+		cat("Time to run inner CV loop:\n")
+		print(t1-t0)
 		
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),

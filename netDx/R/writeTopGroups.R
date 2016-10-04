@@ -17,7 +17,7 @@
 #' @export
 writeTopGroups <- function(groupList, scores, cutoff,units="*",outFile) {
 	pnames <- scores[which(scores$SCORE>=cutoff),1]
-	cat(sprintf("%i of %i groups selected\n", length(pnames),nrow(scores)))
+	cat(sprintf("%i of %i groups selected\n", length(pnames),length(groupList)))
 
 	system(sprintf("cat /dev/null > %s",outFile))
 	for (p in pnames) {

@@ -8,7 +8,7 @@ This repo contains two R packages, each of which need to be separately installed
 
 The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
 
-For more information and FAQ, visit **[http://netdx.org]**
+For more information and FAQ, visit **http://netdx.org**
 
 * [Installation](#installation)
 * [Test functionality](#test-functionality)
@@ -114,7 +114,7 @@ Step 3. Now, in the terminal check the value of `echo $PATH`. Make sure that `/u
 However, if you find yourself having to mess with the PATH variable, try reinstalling the [MacTex](http://tug.org/mactex/) package.
 
 ## Run BreastCancer LumA example
-This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. We do not recommend running it on a machine with less than 8Gb RAM.
+This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature.* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. We do not recommend running it on a machine with less than 8Gb RAM.
 
 ```
 $ cd netDx/examples/

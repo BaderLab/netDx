@@ -25,6 +25,7 @@ You must have Java, Python and R installed. Within R, you must have BioConductor
 of these you need to install. If you already have all these, skip to the next section.
 
 #### Java (1.8+ recommended, but will probably work on 1.6+)
+netDx uses the GeneMANIA algorithm to integrate patient networks and recommend patients by similarity (Mostafavi and Morris (2008). *Genome Biol* 9:Suppl 1). GeneMANIA is currently implemented in Java, making this interpreter a requirement for netDx. 
 
 At command line, run `java --version`. You should see output like this:
 ```
@@ -35,6 +36,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.31-b07, mixed mode)
 If you don't see this kind of output, you may need to first [install java](https://java.com/en/).
 
 #### Python (2.7 recommended)
+netDx uses legacy Python scripts in creating the GeneMANIA database, so for now a Python interpreter is required to run netDx. Future versions of netDx will not have this requirement.
 
 At command line, run `python --version`. You should see output like this:
 

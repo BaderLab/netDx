@@ -10,13 +10,13 @@ The `examples/` folder contains R code that should just run once both `netDx/` a
 
 For more information and FAQ, visit **http://netdx.org**
 
-* [Installation](#installation)
+* [Install netDx](#install-netdx)
 * [Test functionality](#test-functionality)
   * [Known issues with compiling pdfs](#known-issues-with-compiling-pdfs)
 * [Run breastcancer LumA example](#run-breastcancer-luma-example)
 
 
-## Installation
+## Install netDx
 
 ### Prerequisites
 **netDx has been tested on Mac OS/X and on Linux systems. For now we recommend you run netDx on these operating systems.** Future versions of netDx will have Windows support.

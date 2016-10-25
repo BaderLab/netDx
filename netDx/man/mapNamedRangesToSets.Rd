@@ -25,7 +25,7 @@ corresponding to genes or regulatory elements, and we wish to group
 these ranges based on metabolic pathway.
 }
 \examples{
-data(genes,pathwayList); 
+data(genes_mini,pathwayList); 
 gene_GR<- GRanges(genes$chrom,
 IRanges(genes$txStart,genes$txEnd),name=genes$name2)
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)

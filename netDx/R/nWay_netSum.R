@@ -37,6 +37,7 @@
 #' @param cliquePthresh (numeric between 0 and 1) networks with clique-
 #' filtering p-value below this threshold  pass clique-filtering
 #' @param cliqueReps (integer) number of permutations for clique filtering
+#' @param minEnr (integer -1 to 1) minEnr param in cliqueFilterNets()
 #' @param numCores (integer) num cores for parallel processing
 #' @param GM_numCores (integer) num cores for running GM. If NULL, is set
 #' to max(1,numCores-1). Set to a lower value if the default setting
@@ -45,12 +46,13 @@
 #' @param useAttributes (char) vector of attribute names to be used in 
 #' executing GM queries. Note: Not currently well-tested, suggest leaving
 #' as NULL.
+#' @param ... params for GM_runCV_featureSet()
 #' @importFrom reshape2 melt
 #' @export
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 	splitN=3L,nFoldCV=10L,
-	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,numCores=1L,
-	GM_numCores=NULL,useAttributes=NULL) {
+	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,minEnr=-1,
+	numCores=1L,GM_numCores=NULL,useAttributes=NULL,...) {
 
 		if (is.null(GM_numCores)) GM_numCores <- max(1,numCores-1)
 	
@@ -135,7 +137,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		t0 <- Sys.time()
 		GM_runCV_featureSet(trainPred, resDir, GM_db, 
 				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
-				nFold=nFoldCV)
+				nFold=nFoldCV,...)
 		t1 <- Sys.time()
 		cat("Time to run inner CV loop:\n")
 		print(t1-t0)

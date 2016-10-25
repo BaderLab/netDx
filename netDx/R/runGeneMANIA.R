@@ -35,7 +35,7 @@ runGeneMANIA <- function(GM_db, queryFile, resDir, parseReport=TRUE,
 	# in the /dataset/user directory. SP attributes to a race condition
 	# when GM is executed in parallel. However, the problem did not seem
 	# to occur in Feb 2016 on the VM but does occur in April 2016. 
-	# however, this while-loop exists to ensure that all GM queries run.
+	# This while-loop exists to ensure that all GM queries run.
 	while ((!file.exists(resFile)) & (attempt <= MAX_ATTEMPTS)) {
 			cat(sprintf("* Attempt %i : %s\n", attempt,
 						basename(queryFile)))

@@ -50,7 +50,7 @@
 #' * predRanks: (list) GM rankings of test samples for each network cutoff
 #' In addition, all the intervening work will be stored in <outDir>
 #' @export
-buildPredictor_resampling <- function(pheno, pdat, predClass, unitSets,
+buildPredictor_resampling_Mixed <- function(pheno, pdat, predClass, unitSets,
 	p_GR, unitSet_GR, 
 	pctT=0.7,numResamples=3L, nFoldCV=10L,numCores=1L,GMmemory=4L,
 	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=103L,

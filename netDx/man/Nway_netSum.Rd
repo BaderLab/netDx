@@ -6,8 +6,8 @@
 \usage{
 Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
   nFoldCV = 10L, cliqueFilter = TRUE, cliquePthresh = 0.07,
-  cliqueReps = 2500L, numCores = 1L, GM_numCores = NULL,
-  useAttributes = NULL)
+  cliqueReps = 2500L, minEnr = -1, numCores = 1L, GM_numCores = NULL,
+  useAttributes = NULL, ...)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet()}
@@ -41,6 +41,8 @@ filtering p-value below this threshold  pass clique-filtering}
 
 \item{cliqueReps}{(integer) number of permutations for clique filtering}
 
+\item{minEnr}{(integer -1 to 1) minEnr param in cliqueFilterNets()}
+
 \item{numCores}{(integer) num cores for parallel processing}
 
 \item{GM_numCores}{(integer) num cores for running GM. If NULL, is set
@@ -51,6 +53,8 @@ expected}
 \item{useAttributes}{(char) vector of attribute names to be used in 
 executing GM queries. Note: Not currently well-tested, suggest leaving
 as NULL.}
+
+\item{...}{params for GM_runCV_featureSet()}
 }
 \description{
 Performs feature selection using multiple resamplings of the data

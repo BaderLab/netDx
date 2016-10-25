@@ -9,13 +9,14 @@
 # Instructions for use of methods were obtained from the following pages:
 # Elastic net: http://www.r-bloggers.com/kaggle-competition-walkthrough-fitting-a-model/
 # Random forest: http://bigcomputing.blogspot.ca/2014/10/an-example-of-using-random-forest-in.html
-rm(list=ls())
+
+args <- commandArgs(TRUE)
+method2use <- args[1] ###ElasticNet | RandomForest
 
 ###outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results/avgXprByPathway"
 outDir <- "~/tmp/netDX/results/avgXprByPathway"
 if (!file.exists(outDir)) dir.create(outDir)
 
-method2use <- "RandomForest" ###ElasticNet | RandomForest
 rmMissing  <- TRUE
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
@@ -36,8 +37,8 @@ logFile <- sprintf("%s.log",fPrefix)
 require(caret)
 
 # load the data
-require(netDx.examples)
 require(netDx)
+require(netDx.examples)
 data(TCGA_BRCA)
 
 # get pathways 
@@ -46,17 +47,19 @@ pathFile 	<- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
 pathwayList <- readPathways(pathFile)
 pathGenes	<- unlist(pathwayList)
 
-
-#### create partition once.
-###inTrain <- createDataPartition(
-###    y=pheno$STATUS,p=0.67, list=FALSE)
-###write.table(inTrain,file=sprintf("%s/trainID.txt",outDir),sep="\t",
-###			col=F,row=F,quote=F)
-###return(T)
+data(genes)
+gene_GR     <- GRanges(genes$chrom,
+   IRanges(genes$txStart,genes$txEnd),
+   name=genes$name2)
+path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 
 sink(logFile,split=TRUE)
 tryCatch({
 print(Sys.time())
+
+cat("Average xpr by pathway\n")
+cat(sprintf("Method= %s\n", method2use))
 
 # read in preassigned train/test split
 inTrain <- read.delim(sprintf("%s/trainID.txt",outDir),sep="\t",h=F,as.is=T)
@@ -83,21 +86,69 @@ cat(sprintf(" %i --> %i left\n", tmp,nrow(xpr)))
 
 cat("**** Computing average of pathway-level expression\n")
 xpr2 <- matrix(NA, nrow=length(pathwayList),ncol=ncol(xpr))
+colnames(xpr2) <- colnames(xpr)
+t0 <- Sys.time()
 for (k in 1:length(pathwayList)) {
 	idx <- which(rownames(xpr) %in% pathwayList[[k]])
 	if (any(idx)) {
 		xpr2[k,] <- colMeans(xpr[idx,,drop=FALSE])
 	}
 }
-xpr <- xpr2
-print(dim(xpr))
+print(Sys.time()-t0)
 
+# add cnv data
+# create matrix with binary variables, one per pathway
+# xpr3[i,j]=1 if patient j has cnv in pathway i; else 0
+require(foreach)
+require(parallel)
+require(bigmemory)
+cl <- makeCluster(8) # add outfile="" to print all worker output to stdout
+registerDoParallel(cl)
+bkFile <- sprintf("%s/tmp.bk",outDir)
+if (file.exists(bkFile)) unlink(bkFile)
+xpr3 <- big.matrix(NA,nrow=length(path_GRList),ncol=ncol(xpr),
+				   type="integer",backingfile="tmp.bk",
+				   backingpath=outDir,descriptorfile="tmp.desc",
+				   dimnames=list(NULL,colnames(xpr)))
+
+t0 <- Sys.time()
+x <- foreach (k=1:length(path_GRList), .packages=c("GenomicRanges")) %dopar% {
+	seqlevels(path_GRList[[k]], force=TRUE) <- seqlevels(cnv_GR)
+	ol <- findOverlaps(cnv_GR, path_GRList[[k]])
+	ol <- ol@queryHits
+	if (length(ol)>0) {
+		samps <- which(colnames(xpr) %in% unique(cnv_GR$ID[ol]))
+		cat(sprintf("%s: %i overlaps\n", names(pathwayList)[k],length(ol)))
+		m <- bigmemory::attach.big.matrix(sprintf("%s/tmp.desc",outDir))
+		m[k,] <- 0L
+		m[k,samps] <- 1L
+	}
+}
+print(Sys.time()-t0)
+stopCluster(cl)
+registerDoSEQ()
+xpr3 <- as.matrix(xpr3)
+xpr3 <- na.omit(xpr3)
 
 # train() expects patients in rows,genes in columns
-xpr <- as.data.frame(t(xpr)) 
-xpr$STATUS <- as.factor(pheno$STATUS)
+xpr2 <- t(xpr2)
+xpr3 <- t(xpr3)
+if (all.equal(rownames(xpr2),rownames(xpr3))!=TRUE) {
+	cat("rowname mismatch\n")
+	browser()
+}
+
+xpr <- cbind(xpr2,xpr3)
+xpr <- as.data.frame(xpr)
                 
-print(all.equal(rownames(xpr),pheno$ID))
+if (all.equal(rownames(xpr),pheno$ID)!=TRUE) {
+	cat("pheno, xpr rownames don't match");
+	browser()
+}
+xpr$STATUS <- as.factor(pheno$STATUS)
+
+cat("Final matrix submitted for ML:\n")
+print(dim(xpr))
 
 # ---------------------------------------------------
 # model fitting
@@ -115,17 +166,21 @@ if (method2use == "ElasticNet") {
 	    summaryFunction=twoClassSummary)
 	# train elastic net and include parameter tuning
 	cat("* Running elastic net model builder ...\n")
+	t0 <- Sys.time()
 	mod <- train(STATUS~., data=training,
 	    method="glmnet",metric="ROC",trControl=trControl)
 	cat("done\n")
+	print(Sys.time()-t0)
 	
 ## random forest
 } else if (method2use=="RandomForest") {
 	cat("* Training random forest\n")
+	t0 <- Sys.time()
 	mod <- train(STATUS~., data=training, 
 		method="rf",
 		trControl=trainControl(method="repeatedCV",number=10,repeats=3),
 		prox=TRUE,allowParallel=TRUE);
+	print(Sys.time()-t0)
 }
 
 # -----------------------------------------------------

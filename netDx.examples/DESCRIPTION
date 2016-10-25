@@ -7,5 +7,5 @@ Depends:
     R (>= 3.1)
 Requires: netDx
 License: What license is it under?
-LazyData: true
+LazyData: false
 RoxygenNote: 5.0.1

@@ -9,13 +9,13 @@
 # Instructions for use of methods were obtained from the following pages:
 # Elastic net: http://www.r-bloggers.com/kaggle-competition-walkthrough-fitting-a-model/
 # Random forest: http://bigcomputing.blogspot.ca/2014/10/an-example-of-using-random-forest-in.html
-rm(list=ls())
+args <- commandArgs(TRUE)
+method2use <- args[1] ###ElasticNet | RandomForest
 
 #outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results/genes_in_pathways"
 outDir <- "~/tmp/netDX/results/genes_in_pathways"
 if (!file.exists(outDir)) dir.create(outDir)
 
-method2use <- "RandomForest" ###ElasticNet | RandomForest
 rmMissing  <- TRUE
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
@@ -36,8 +36,8 @@ logFile <- sprintf("%s.log",fPrefix)
 require(caret)
 
 # load the data
-require(netDx.examples)
 require(netDx)
+require(netDx.examples)
 data(TCGA_BRCA)
 
 # get pathways 
@@ -45,7 +45,6 @@ pathFile 	<- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
     path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 pathGenes	<- unlist(pathwayList)
-
 
 #### create partition once.
 ###inTrain <- createDataPartition(
@@ -79,14 +78,83 @@ if (rmMissing) {
 cat("**** Limiting to genes in pathways: ")
 tmp	<- nrow(xpr)
 xpr <- xpr[which(rownames(xpr) %in% pathGenes),]
-cat(sprintf(" %i --> %i left\n", tmp,nrow(xpr)))
+cat(sprintf("gene xpr: genes in pathways %i --> %i after filter\n", 
+			tmp,nrow(xpr)))
 
+# add CNV data 
+names(pathGenes) <- NULL
+pathGenes <- unique(pathGenes)
+data(genes)
+genes <- subset(genes, name2 %in% pathGenes)
+# combine coordinates for multiple gene isoforms on the same chromosome
+# so that the extent is as wide as possible
+x <- aggregate(genes$txStart,
+			   by=list(gene=genes$name2,chrom=genes$chrom),
+			   FUN=min)
+y <- aggregate(genes$txEnd, 
+			   by=list(gene=genes$name2,chrom=genes$chrom), 
+			   FUN=max)
+z <- merge(x,y,by=c("gene","chrom"))
+cat(sprintf("After merging, %i genes -> %i merged\n", nrow(genes),nrow(z)))
+genes <- z; rm(x,y,z)
+
+gene_GR     <- GRanges(genes$chrom,
+   IRanges(genes$x.x,genes$x.y),name=genes$gene)
+# limit genes to those on chroms for which cnvs exist
+seqlevels(gene_GR,force=TRUE) <- seqlevels(cnv_GR)
+cat(sprintf("after dropping extra levels, have %i genes\n",length(gene_GR)))
+
+# add cnv data
+# create matrix with binary variables, one per pathway
+# xpr3[i,j]=1 if patient j has cnv in pathway i; else 0
+require(foreach)
+require(parallel)
+require(bigmemory)
+cl <- makeCluster(6) # add outfile="" to print all worker output to stdout
+registerDoParallel(cl)
+bkFile <- sprintf("%s/tmp.bk",outDir)
+if (file.exists(bkFile)) unlink(bkFile)
+xpr3 <- big.matrix(NA,nrow=length(gene_GR),ncol=ncol(xpr),
+				   type="integer",backingfile="tmp.bk",
+				   backingpath=outDir,descriptorfile="tmp.desc",
+				   dimnames=list(NULL,colnames(xpr)))
+t0 <- Sys.time()
+x <- foreach (k=1:length(gene_GR), .packages=c("GenomicRanges")) %dopar% {
+	seqlevels(gene_GR[k], force=TRUE) <- seqlevels(cnv_GR)
+	ol <- findOverlaps(cnv_GR, gene_GR[k])
+	ol <- ol@queryHits
+	if (length(ol)>0) {
+		samps <- which(colnames(xpr) %in% unique(cnv_GR$ID[ol]))
+		m <- bigmemory::attach.big.matrix(sprintf("%s/tmp.desc",outDir))
+		m[k,] <- 0L
+		m[k,samps] <- 1L
+	}
+}
+print(Sys.time()-t0)
+stopCluster(cl)
+registerDoSEQ()
+xpr3 <- as.matrix(xpr3)
+xpr3 <- na.omit(xpr3)
+cat(sprintf("gene-level CNV: Added %i terms\n", nrow(xpr3)))
 
 # train() expects patients in rows,genes in columns
-xpr <- as.data.frame(t(xpr)) 
+xpr <- t(xpr)
+xpr3 <- t(xpr3)
+if (all.equal(rownames(xpr),rownames(xpr3))!=TRUE) {
+	cat("rownames don't match\n")
+	browser()
+}
+xpr <- cbind(xpr,xpr3)
+xpr <- as.data.frame(xpr)
+
+if (all.equal(rownames(xpr),pheno$ID)!=TRUE) {
+	cat("pheno, xpr rownames don't match");
+	browser()
+}
 xpr$STATUS <- as.factor(pheno$STATUS)
                 
-print(all.equal(rownames(xpr),pheno$ID))
+cat("Final matrix submitted for ML:\n")
+print(dim(xpr))
 
 # ---------------------------------------------------
 # model fitting
@@ -104,18 +172,22 @@ if (method2use == "ElasticNet") {
 	    summaryFunction=twoClassSummary)
 	# train elastic net and include parameter tuning
 	cat("* Running elastic net model builder ...\n")
+	t0 <- Sys.time()
 	mod <- train(STATUS~., data=training,
 	    method="glmnet",metric="ROC",trControl=trControl)
 	cat("done\n")
+	print(Sys.time()-t0)
 	
 ## random forest
 } else if (method2use=="RandomForest") {
 
 	cat("* Training random forest\n")
+	t0 <- Sys.time()
 	mod <- train(STATUS~., data=training, 
 		method="rf",
 		trControl=trainControl(method="repeatedCV",number=10,repeats=3),
 		prox=TRUE,allowParallel=TRUE);
+	print(Sys.time()-t0)
 }
 
 # -----------------------------------------------------

@@ -4,8 +4,8 @@ rm(list=ls())
 
 resDir <- "~/tmp/TCGA_BRCA_runMany"
 #dirList <- dir(path=resDir,pattern="R")
-dirList <- paste("R",1:130,sep="")
-dirList <- setdiff(dirList,"R29")
+dirList <- paste("R",1:200,sep="")
+dirList <- setdiff(dirList,c("R29","R134","R135"))
 
 outmat <- matrix(nrow=length(dirList),ncol=6)
 colnames(outmat) <- c("tp","fp","tn","fn","acc","ppv")

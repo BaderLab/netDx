@@ -4,8 +4,8 @@
 \alias{buildPredictor_resampling_Mixed}
 \title{Build predictor with n-way resampling}
 \usage{
-buildPredictor_resampling_Mixed(pheno, pdat, predClass, unitSets, p_GR,
-  unitSet_GR, pctT = 0.7, numResamples = 3L, nFoldCV = 10L,
+buildPredictor_resampling_Mixed(pheno, pdat, predClass, unitSets, p_GR = NULL,
+  unitSet_GR = NULL, pctT = 0.7, numResamples = 3L, nFoldCV = 10L,
   numCores = 1L, GMmemory = 4L, outDir = ".", overwrite = FALSE,
   seed_trainTest = 42L, seed_resampling = 103L, seed_CVqueries = 42L, ...)
 }
@@ -22,7 +22,8 @@ in the STATUS column of the pheno param}
 its own patient similarity network.}
 
 \item{p_GR}{(GRanges) GRanges of patient CNVs. Has ID column in
-metadata, containing patient IDs}
+metadata, containing patient IDs. If NULL, assumes there is no
+patient-range type data}
 
 \item{unitSet_GR}{(list) sets of GRanges to group CNVs (e.g.
 could have one GRanges per pathway, corresponding to regions in that 

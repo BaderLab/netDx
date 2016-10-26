@@ -17,7 +17,8 @@
 #' @param unitSets (list) unit groupings, each of which will be converted to
 #' its own patient similarity network. 
 #' @param p_GR (GRanges) GRanges of patient CNVs. Has ID column in
-#' metadata, containing patient IDs
+#' metadata, containing patient IDs. If NULL, assumes there is no
+#' patient-range type data
 #' @param unitSet_GR (list) sets of GRanges to group CNVs (e.g.
 #' could have one GRanges per pathway, corresponding to regions in that 
 #' pathway
@@ -51,11 +52,10 @@
 #' In addition, all the intervening work will be stored in <outDir>
 #' @export
 buildPredictor_resampling_Mixed <- function(pheno, pdat, predClass, unitSets,
-	p_GR, unitSet_GR, 
+	p_GR=NULL, unitSet_GR=NULL, 
 	pctT=0.7,numResamples=3L, nFoldCV=10L,numCores=1L,GMmemory=4L,
 	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=103L,
 	seed_CVqueries=42L,...) {
-DEBUG_FLAG <- TRUE
 
 if (file.exists(outDir)) {
 	if (!overwrite) stop("output directory exists. Choices: provide path to non-existing directory, set overwrite option to TRUE, or manually delete this directory")
@@ -71,11 +71,14 @@ pheno$TT_STATUS <- splitTestTrain(pheno,
 
 pheno_FULL	<- pheno
 pdat_FULL 	<- pdat
-pGR_FULL 	<- p_GR
 pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
 pdat		<- pdat[,which(colnames(pdat)%in% pheno$ID)]
-p_GR		<- p_GR[which(p_GR$ID %in% pheno$ID)]
 
+if (!is.null(p_GR)) {
+	cat("* Patient range-sets are provided\n")
+	pGR_FULL 	<- p_GR
+	p_GR		<- p_GR[which(p_GR$ID %in% pheno$ID)]
+}
 # --------------------------------------------------
 # Phase 1. Feature selection, assigning net scores
 # --------------------------------------------------
@@ -122,10 +125,12 @@ for (g in subtypes) {
 		netList <- unlist(netList)
 		cat(sprintf("Matrix: Got %i networks\n",length(netList)))
 
+		if (!is.null(p_GR)) {
 		# GRanges nets
 		netList2 <- makePSN_RangeSets(p_GR_tmp, unitSet_GR,
 				profDir,verbose=FALSE)
 		cat(sprintf("Ranges: Got %i networks\n",length(netList2)))
+		}
 	
 		dbDir	<- GM_createDB(profDir, pheno_subtype$ID, outDir,
 							numCores=numCores)

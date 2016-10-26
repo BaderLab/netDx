@@ -8,9 +8,9 @@ args    <- commandArgs(TRUE)
 # Change this to a local directory where you have write permission
 
 #runMe <- function(outDir,seed1,seed2) {
-outDir          <- args[1]
-seed_trainTest  <- as.integer(args[2])
-seed_resampling <- as.integer(args[3])
+outDir          <- "~/TCGA_BRCA_xprCNV" #args[1]
+seed_trainTest  <- 5#as.integer(args[2])
+seed_resampling <- 15 #as.integer(args[3])
 #outDir          <- args[1]
 #seed_trainTest  <- seed1
 #seed_resampling <- seed2
@@ -48,10 +48,11 @@ tryCatch({
 	names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 
 	### TODO Should be able to pass GM memory setting.
-	out <- buildPredictor_resampling_CNV(pheno=ph,pdat=xpr,predClass="LumA",
-		p_GR=cnv_GR, unitset_GR=path_GRList,
-		nFoldCV=10L, numResamples=3L,
-		unitSets=pathwayList,numCores=8L,outDir=outDir,overwrite=TRUE,
+	out <- buildPredictor_resampling_Mixed(pheno=ph,pdat=xpr,
+		predClass="LumA",
+		p_GR=cnv_GR, unitSet_GR=path_GRList,
+		nFoldCV=3L, numResamples=2L,
+		unitSets=pathwayList,numCores=4L,outDir=outDir,overwrite=TRUE,
 		seed_trainTest=seed_trainTest, seed_resampling=seed_resampling)
 	save(out,file=sprintf("%s/FinalResults.Rdata",outDir))
 
@@ -67,4 +68,3 @@ tryCatch({
 	print(Sys.time())
 	sink(NULL)
 })
-}

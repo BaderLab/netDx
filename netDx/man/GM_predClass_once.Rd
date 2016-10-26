@@ -4,8 +4,8 @@
 \alias{GM_predClass_once}
 \title{wrapper to build PSN + GM database + run query + get rankings for N-way}
 \usage{
-GM_predClass_once(pheno, pdat, predClass, unitSets, patNets, outDir,
-  numCores = 1L)
+GM_predClass_once(pheno, pdat, predClass, unitSets, p_GR = NULL,
+  unitSet_GR = NULL, patNets, outDir, numCores = 1L)
 }
 \arguments{
 \item{pheno}{(data.frame) patient metadata. ID, class labels (STATUS),
@@ -19,6 +19,13 @@ are patients. Rows and columns must be named.}
 
 \item{unitSets}{(list) groupings of unit variables; each grouping will
 be converted into its own PSN.}
+
+\item{p_GR}{(GRanges) GRanges of patient CNVs. Has ID column in
+metadata, containing patient IDs}
+
+\item{unitSet_GR}{(list) sets of GRanges to group CNVs (e.g.
+could have one GRanges per pathway, corresponding to regions in that 
+pathway}
 
 \item{patNets}{(list of chars) for each class (key), subset of "unitSets"
 for which patient nets must be created. e.g. feature-selected networks

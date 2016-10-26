@@ -15,6 +15,11 @@
 #' @param predClass (char) class of interest to predict.
 #' @param unitSets (list) groupings of unit variables; each grouping will
 #' be converted into its own PSN. 
+#' @param p_GR (GRanges) GRanges of patient CNVs. Has ID column in
+#' metadata, containing patient IDs
+#' @param unitSet_GR (list) sets of GRanges to group CNVs (e.g.
+#' could have one GRanges per pathway, corresponding to regions in that 
+#' pathway
 #' @param patNets (list of chars) for each class (key), subset of "unitSets"
 #' for which patient nets must be created. e.g. feature-selected networks
 #' for the corresponding patient subtype.
@@ -24,8 +29,8 @@
 #' 2. predClass: predicted patient labels 
 #' 3. perfStats (list): model performance stats: tp,fp,tn,fn,accuracy,ppv
 #' @export
-GM_predClass_once <- function(pheno,pdat,predClass,unitSets,patNets,outDir,
-	numCores=1L) {
+GM_predClass_once <- function(pheno,pdat,predClass,unitSets,p_GR=NULL,
+		unitSet_GR=NULL,patNets,outDir,numCores=1L) {
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)	
 
@@ -41,6 +46,11 @@ for (g in subtypes) {
 	tmp <- makePSN_NamedMatrix(pdat,rownames(pdat),
 		unitSets[which(names(unitSets)%in% pTally)],
 		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE) 
+	if (!is.null(p_GR)) {
+		netList2 <- makePSN_RangeSets(p_GR, unitSet_GR,
+				profDir,verbose=FALSE)
+
+	}
 	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
 
 		# query of all training samples for this class

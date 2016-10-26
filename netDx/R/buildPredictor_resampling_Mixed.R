@@ -76,7 +76,7 @@ pdat		<- pdat[,which(colnames(pdat)%in% pheno$ID)]
 
 if (!is.null(p_GR)) {
 	cat("* Patient range-sets are provided\n")
-	pGR_FULL 	<- p_GR
+	p_GR_FULL 	<- p_GR
 	p_GR		<- p_GR[which(p_GR$ID %in% pheno$ID)]
 }
 # --------------------------------------------------
@@ -239,6 +239,7 @@ cat("\n\n* Model evaluation\n")
 finalDir <- sprintf("%s/test", outDir)
 finalNets <- lapply(netScores, function(x) x[which(x[,2]>=bestCutoff),1])
 testRes <- GM_predClass_once(pheno_FULL,pdat_FULL,predClass,unitSets,
+	p_GR=p_GR_FULL, unitSet_GR=unitSet_GR,
 	patNets=finalNets,outDir=finalDir,numCores=numCores)
 
 cat("* Predictions complete!\n")

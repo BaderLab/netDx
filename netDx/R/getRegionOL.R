@@ -35,10 +35,12 @@ getRegionOL <- function(gr, rngList) {
 	# could be made more efficient.
 	ol_nm <- rng$name[ol[,2]]
 	LOCUS_NAMES <- rep("", length(gr))
+	t0 <- Sys.time()
 	for (k in unique(ol[,1])) {
 		idx <- which(ol[,1] == k)
 		LOCUS_NAMES[k] <- paste(unique(ol_nm[idx]),collapse=",")
 	}
+	print(Sys.time()-t0)
 	gr$LOCUS_NAMES=LOCUS_NAMES
 
 	gr

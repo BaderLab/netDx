@@ -26,7 +26,7 @@
 #' x <- GM_getQueryROC(prankFile, pheno, "LumA")
 GM_getQueryROC <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
    verbose=FALSE) {
-	dat <- read.table(pFile, sep="\t",header=T,as.is=T)
+	dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T)
 
 	# 1 is what we predict, 0 is the other class
 	pheno_DF$STATUS <- as.integer(pheno_DF$STATUS==predClass)

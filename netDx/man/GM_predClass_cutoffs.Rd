@@ -4,8 +4,8 @@
 \alias{GM_predClass_cutoffs}
 \title{Evaluate model performance for various network cutoffs}
 \usage{
-GM_predClass_cutoffs(pheno, pdat, predClass, netScores, unitSets, maxScore,
-  outDir, numCores = 1L, ...)
+GM_predClass_cutoffs(pheno, pdat, p_GR, unitSet_GR, predClass, netScores,
+  unitSets, maxScore, outDir, numCores = 1L, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) patient metadata. Patient ID (ID), subtypes
@@ -14,6 +14,14 @@ patients with TT_STATUS=train will be part of GM query)}
 
 \item{pdat}{(matrix) patient data to build networks from. Rows are 
 patients, columns are unit measures}
+
+\item{p_GR}{(GRanges) GRanges of patient CNVs. Has ID column in
+metadata, containing patient IDs. If NULL, assumes there is no
+patient-range type data}
+
+\item{unitSet_GR}{(list) sets of GRanges to group CNVs (e.g.
+could have one GRanges per pathway, corresponding to regions in that 
+pathway}
 
 \item{netScores}{(list) scores of individual networks for each patient
 label. Key is patient label; value is data.frame with two columns, 

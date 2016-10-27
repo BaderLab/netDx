@@ -7,7 +7,11 @@
 args    <- commandArgs(TRUE)
 # Change this to a local directory where you have write permission
 
+
 #runMe <- function(outDir,seed1,seed2) {
+rm(list=ls())
+DEBUG_MODE <- FALSE
+
 outDir          <- "~/tmp/TCGA_BRCA_xprCNV" #args[1]
 seed_trainTest  <- 5#as.integer(args[2])
 seed_resampling <- 15 #as.integer(args[3])
@@ -18,8 +22,8 @@ seed_resampling <- 15 #as.integer(args[3])
 # ---------------------------------------------------
 # do work
 
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-dir.create(outDir)
+#if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+#dir.create(outDir)
 
 numCores 	<- 8L  	# num cores available for parallel processing
 GMmemory 	<- 4L  	# java memory in Gb
@@ -43,26 +47,39 @@ tryCatch({
 	gene_GR     <- GRanges(genes$chrom,
   						IRanges(genes$txStart,genes$txEnd),
    						name=genes$name2)
-	
+
+	cat("* Limiting to pathway genes\n")
 	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 	names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 
-	### TODO Should be able to pass GM memory setting.
+	predDir <- sprintf("%s/predictor",outDir)
+
+	if (DEBUG_MODE) {
+		warning("** in debug mode **")
+		Sys.sleep(2)
+		nFold <- 2L
+		numResamp <- 2L
+		num <- round(0.2*length(pathwayList))
+		pathwayList <- pathwayList[1:num]
+	} else {
+		nFold <- 10L
+		numResamp <- 3L
+	}
+
+	cat("* Mapping CNV to genes\n")
+	cnv_GR <- getRegionOL(cnv_GR, path_GRList)
+
+	cat("* Running predictor\n")
 	t0 <- Sys.time()
 	out <- buildPredictor_resampling_Mixed(pheno=ph,pdat=xpr,
 		predClass="LumA",
 		p_GR=cnv_GR, unitSet_GR=path_GRList,
-		nFoldCV=10L, numResamples=3L,
-		unitSets=pathwayList,numCores=numCores,outDir=outDir,overwrite=TRUE,
-		GMmemory=GMmemory,
+		nFoldCV=nFold, numResamples=numResamp,
+		unitSets=pathwayList,numCores=numCores,outDir=predDir,
+		overwrite=TRUE,GMmemory=GMmemory,
 		seed_trainTest=seed_trainTest, seed_resampling=seed_resampling)
 	save(out,file=sprintf("%s/FinalResults.Rdata",outDir))
 	print(Sys.time()-t0)
-
-    ### now clean up intermediate files 
-    system(sprintf("rm -r %s/LumA %s/other %s/eval %s/test %s/dataset %s/tmp",
-		outDir,outDir,outDir,outDir,outDir,outDir))
-    
 
 }, error=function(ex) {
 	print(ex)

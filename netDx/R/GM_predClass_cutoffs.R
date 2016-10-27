@@ -8,6 +8,12 @@
 #' patients with TT_STATUS=train will be part of GM query)
 #' @param pdat (matrix) patient data to build networks from. Rows are 
 #' patients, columns are unit measures
+#' @param p_GR (GRanges) GRanges of patient CNVs. Has ID column in
+#' metadata, containing patient IDs. If NULL, assumes there is no
+#' patient-range type data
+#' @param unitSet_GR (list) sets of GRanges to group CNVs (e.g.
+#' could have one GRanges per pathway, corresponding to regions in that 
+#' pathway
 #' @param netScores (list) scores of individual networks for each patient
 #' label. Key is patient label; value is data.frame with two columns, 
 #' PATHWAY_NAME and SCORE. PATHWAY_NAME should match names in unitSets
@@ -18,7 +24,8 @@
 #' @param numCores (integer) num cores for parallel processing
 #' @param ... params for makePSN_NamedMatrix
 #' @export
-GM_predClass_cutoffs <- function(pheno,pdat,predClass,netScores,unitSets,
+GM_predClass_cutoffs <- function(pheno,pdat,p_GR,unitSet_GR,
+	predClass,netScores,unitSets,
 	maxScore,outDir,numCores=1L,...) {
 
 predRes <- list() 	## predRes[[cutoff]] contains predictions for 
@@ -40,6 +47,19 @@ for (g in subtypes) {
 	tmp <- makePSN_NamedMatrix(pdat,rownames(pdat),
 		unitSets[which(names(unitSets)%in% pTally[,1])],
 		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE ,...)
+
+	if (!is.null(p_GR)) {
+		cat("Got patient ranges - creating range-set nets\n")
+		idx <- which(names(unitSet_GR) %in% sub("_cont","",pTally[,1]))
+		if (length(idx)>0) {
+			# note that range-sets with < 2 patients 
+			# automatically don't get included
+			netList2 <- makePSN_RangeSets(p_GR, 
+				unitSet_GR[idx],profDir,verbose=FALSE)
+		} else {
+			cat("Not making any range-related nets\n")
+		}
+	}
 	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
 
 	# query of all training samples for this class
@@ -52,7 +72,10 @@ for (g in subtypes) {
 		cat(sprintf("\tCutoff = %i\n",cutoff))
 		qFile <- sprintf("%s/%s_cutoff%i",pDir,g,cutoff)
 		curr_p <- pTally[which(pTally[,2]>=cutoff),1]
-		curr_p <- paste(curr_p,".profile",sep="")
+		idx <- grep("_cont$", curr_p,invert=TRUE)
+		if (length(idx)>0) {
+			curr_p[idx] <- paste(curr_p[idx],".profile",sep="")
+		}
 		if (length(curr_p)>0){
 			GM_writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
 			resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)

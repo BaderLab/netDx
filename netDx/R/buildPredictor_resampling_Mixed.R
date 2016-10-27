@@ -71,6 +71,11 @@ pheno$TT_STATUS <- splitTestTrain(pheno,
 
 pheno_FULL	<- pheno
 pdat_FULL 	<- pdat
+
+# save patient ID and TT_STATUS to enable running individual steps
+# later 
+save(pheno_FULL,file=sprintf("%s/pheno_FULL.Rdata",outDir))
+
 pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
 pdat		<- pdat[,which(colnames(pdat)%in% pheno$ID)]
 
@@ -88,6 +93,7 @@ featNets <- list()
 resampTT <- splitTestTrain_partition(
 	pheno,nFold=numResamples, predClass=predClass,setSeed=seed_resampling)
 save(resampTT, file=sprintf("%s/TT_STATUS_resampling.Rdata",outDir))
+
 for (g in subtypes) {
 	pDir <- sprintf("%s/%s",outDir,g)
     	if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
@@ -106,7 +112,7 @@ for (g in subtypes) {
 					INNER_TT_STATUS%in% "TRAIN")
 		cat(sprintf("\t%i training\n",nrow(pheno_subtype)))
 		
-		## label patients not in the current class as a residual
+		## label patients not in the current class as residual
 		tmp <- which(!pheno_subtype$STATUS %in% g)
 		pheno_subtype$STATUS[tmp]<-"nonpred"
 		print(table(pheno_subtype$STATUS,useNA="always"))
@@ -180,6 +186,7 @@ for (g in subtypes) {
 	pTally[,1] <- sub(".profile","",pTally[,1])
 	netScores[[g]] <- pTally
 }
+save(netScores, file=sprintf("%s/netScores.Rdata",outDir))
 
 cat("* Net scores computed\n")
 
@@ -198,54 +205,46 @@ for (rep in 1:numResamples) {
 	pheno_cur <- pheno
 	pheno_cur$TT_STATUS <- resampTT[[rep]]
 	print(table(pheno_cur[,c("STATUS","TT_STATUS")]))
+
+	# databases are created with all training samples
+	# queries correspond to TRAIN for particular resampling
+	# patients ranked correspond to TEST for particular resampling
 	perf_resamp[[rep]] <- GM_predClass_cutoffs(pheno_cur,pdat,
+		p_GR=p_GR,unitSet_GR=unitSet_GR,
 		predClass=predClass,netScores=netScores,unitSets=unitSets,
 		maxScore=maxScore,outDir=perfDir,numCores=numCores)
 }
 save(perf_resamp,file=sprintf("%s/resamplingPerf.Rdata",outDir))
 
-# pick cutoff with best mean performance across resamplings
-cat("* Picking best cutoff from resampling test\n")
-
-perfmat <- matrix(NA, 
-	nrow=nrow(perf_resamp[[1]][["confmat"]]),
-	ncol=4*length(perf_resamp))
-colnames(perfmat) <- rep(c("tpr","fpr","accuracy","ppv"),
-	 length(perf_resamp))
-
-ctr <- 1
-for (k in 1:length(perf_resamp)) {
-	perfmat[,ctr:(ctr+3)] <- perf_resamp[[k]][["confmat"]][,6:9]
-	ctr <- ctr+4
-}
-
-mu <- matrix(NA,nrow=nrow(perfmat),ncol=4)
-for (k in 1:4) {
-	print(seq(k,ncol(perfmat),4))
-	mu[,k] <- rowMeans(perfmat[,seq(k,ncol(perfmat),4)])
-}
-colnames(mu) <- c("tpr","fpr","accuracy","ppv")
-
-# cutoff is the one with best accuracy
-bestIdx <- which.max(mu[,3]) 
-bestCutoff <- perf_resamp[[1]][["confmat"]][bestIdx,1]
-cat(sprintf("Best cutoff = %i ; TPR=%1.2f; FPR=%1.2f; Accuracy=%1.2f; PPV=%1.2f\n",
-	bestCutoff, mu[bestIdx,1],mu[bestIdx,2],mu[bestIdx,3],mu[bestIdx,4]))
+# pick cutoff with best mean test performance across resamplings
+cutoffPerf <- resampling_pickBestCutoff(perf_resamp)
+# write results to file
+tmpF <- sprintf("%s/cutoff_performance_full.txt",outDir)
+write.table(cutoffPerf$perfmat,file=tmpF,sep="\t",col=T,row=F,quote=F)
+tmpF <- sprintf("%s/cutoff_performance_average.txt",outDir)
+write.table(cutoffPerf$mu,file=tmpF,sep="\t",col=T,row=F,quote=F)
 
 # --------------------------------------------------
 # Phase 3. Model evaluation on the blind test samples
 # --------------------------------------------------
 cat("\n\n* Model evaluation\n")
 finalDir <- sprintf("%s/test", outDir)
-finalNets <- lapply(netScores, function(x) x[which(x[,2]>=bestCutoff),1])
-testRes <- GM_predClass_once(pheno_FULL,pdat_FULL,predClass,unitSets,
-	p_GR=p_GR_FULL, unitSet_GR=unitSet_GR,
-	patNets=finalNets,outDir=finalDir,numCores=numCores)
-
 cat("* Predictions complete!\n")
-out <- list(pheno=pheno_FULL,resampTT=resampTT,netScore=featNets,
-		perfResamp=perf_resamp, bestCutoff=bestCutoff, testRes=testRes)
+# for this phase, database should contain all training and all test
+# training samples comprise the query; test samples are ranked.
+# this is why we use the *_FULL variables, because they are the only
+# ones that contain the blind test samples
+res <- resampling_modelEval(pheno_FULL,pdat_FULL,predClass,unitSets,
+	p_GR=p_GR_FULL, unitSet_GR=unitSet_GR,
+	bestCutoff=cutoffPerf$bestCutoff,
+	dataDir=outDir,outDir=finalDir,netScores=netScores, numCores) 
+save(res,file=sprintf("%s/modelEval.Rdata",outDir))
 		
+out <- list(pheno=pheno_FULL,resampTT=resampTT,netScore=featNets,
+		perfResamp=perf_resamp, 
+		bestCutoff=cutoffPerf$bestCutoff, 
+		testRes=res$testRes)
+
 out
 }
 

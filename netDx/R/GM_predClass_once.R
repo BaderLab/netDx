@@ -47,9 +47,14 @@ for (g in subtypes) {
 		unitSets[which(names(unitSets)%in% pTally)],
 		profDir,verbose=F,numCores=numCores,writeProfiles=TRUE) 
 	if (!is.null(p_GR)) {
-		netList2 <- makePSN_RangeSets(p_GR, unitSet_GR,
-				profDir,verbose=FALSE)
-
+		cat("Got patient ranges - creating range-set nets\n")
+		idx <- which(names(unitSet_GR) %in% sub("_cont","",pTally))
+		if (length(idx)>0) {
+			netList2 <- makePSN_RangeSets(p_GR, 
+				unitSet_GR[idx],profDir,verbose=FALSE)
+		} else {
+			cat("Not making any range-related nets\n")
+		}
 	}
 	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
 
@@ -59,7 +64,10 @@ for (g in subtypes) {
 	
 	# run query , get rankings
 	qFile <- sprintf("%s/%s_testQuery",pDir,g)
-	pTally <- paste(pTally,".profile",sep="")
+	idx <- grep("_cont$", pTally,invert=TRUE)
+	if (length(idx)>0) {
+		pTally <- paste(pTally[idx],".profile",sep="")
+	}
 	GM_writeQueryFile(qSamps,pTally,nrow(pheno),qFile)
 
 	resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)

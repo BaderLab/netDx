@@ -124,3 +124,4 @@ $ R
 > require(knitr)
 > knit2pdf("BreastCancer.Rnw")
 ```
+**NOTE:** The vignette will generate a pdf file. All intermediate files will be stored in the `TCGA_BRCA/` subdirectory of the examples directory.

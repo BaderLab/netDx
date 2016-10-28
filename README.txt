@@ -124,3 +124,4 @@ $ R
 > require(knitr)
 > knit2pdf("BreastCancer.Rnw")
 ```
+**NOTE:** Results will be stored in the `TCGA_BRCA/` subdirectory of the examples directory.

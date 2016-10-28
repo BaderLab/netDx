@@ -43,7 +43,8 @@ A multi-core compute node is highly recommended.
 rm(list=ls())
 
 # Change this to a local directory where you have write permission
-outDir <- "~/tmp/TCGA_BRCA" 
+outDir <- sprintf("%s/TCGA_BRCA",getwd())
+cat(sprintf("All intermediate files are stored in:\n%s\n",outDir))
 
 numCores 	<- 8L  	# num cores available for parallel processing
 GMmemory 	<- 4L  	# java memory in Gb

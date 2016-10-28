@@ -76,7 +76,7 @@ This section assumes you have Java, Python, R and Bioconductor installed. From c
 *Note: For now, R package dependencies must be separately installed using the install.packages() call as shown below. netDx will be submitted to CRAN following publication; thereafter, dependencies can be automatically installed with the call to install netDx.*
 
 ```
-$ cd netDx/
+$ cd netDx-master/
 $ R
 > install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2"))
 > install.packages("netDx",type="source",repos=NULL)

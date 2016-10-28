@@ -23,8 +23,7 @@ The netDx workflow is shown in Figure 1. We use gene signatures identified by pr
 \section{Set up}
 \subsection{Set up working environment}
 <<eval=TRUE>>=
-# change this to a directory to which you have write access
-outDir <-  "~/tmp/MB"
+outDir <-  sprintf("%s/MB",getwd())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 

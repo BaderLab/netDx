@@ -30,7 +30,8 @@ getRegionOL <- function(gr, rngList) {
 					 as.character(seqlevels(gr)))]
 	seqlevels(rng) <- seqlevels(gr)
 
-	ol <- as.matrix(findOverlaps(gr, rng))
+	ol <- findOverlaps(gr, rng)
+	ol <- cbind(queryHits(ol),subjectHits(ol))
 
 	# could be made more efficient.
 	ol_nm <- rng$name[ol[,2]]

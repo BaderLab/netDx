@@ -5,16 +5,14 @@
 #' 2. (integer) seed for train/test split
 #' 3. (integer) seed for resampling split 
 args    <- commandArgs(TRUE)
-# Change this to a local directory where you have write permission
+print(args)
 
 
-#runMe <- function(outDir,seed1,seed2) {
-rm(list=ls())
 DEBUG_MODE <- FALSE
 
-outDir          <- "~/tmp/TCGA_BRCA_xprCNV" #args[1]
-seed_trainTest  <- 5#as.integer(args[2])
-seed_resampling <- 15 #as.integer(args[3])
+outDir          <- args[1]
+seed_trainTest  <- as.integer(args[2])
+seed_resampling <- as.integer(args[3])
 #outDir          <- args[1]
 #seed_trainTest  <- seed1
 #seed_resampling <- seed2

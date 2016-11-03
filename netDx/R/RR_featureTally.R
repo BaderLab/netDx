@@ -42,6 +42,17 @@
 #' \code{<outDir>/RR_changeNetSum_stats_denCliqueNets.txt}: format same
 #' as the previous file. However, the denominator here is limited to
 #' patients present in networks that pass clique filtering. 
+#' 4) breakdown of performance for each of the resamplings, at each of the 
+#' cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
+#' one for cliqueNets. The value is a matrix with (resamp * 7) columns and S rows,
+#' one row per score. The columns contain the followin information per resampling:
+#' 1) pred_total: total num patients of predClass
+#' 2) pred_OL: num of pred_total with a CNV in the selected net
+#' 3) pred_OL_pct: 2) divided by 1) (percent)
+#' 4) other_total: total num patients of other class(non-predClass)
+#' 5) other_OL: num of other_total with CNV in selected net
+#' 6) other_OL_pct: 5) divided by 4) (percent)
+#' 7) relEnr: 6) divided by 3).
 #' @export 
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
 	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L) {
@@ -96,6 +107,8 @@ predContr		<- rep("",length(scoreColl))
 otherContr		<- rep("",length(scoreColl))
 predContr_cl	<- rep("",length(scoreColl))
 otherContr_cl	<- rep("",length(scoreColl))
+resampPerf <- list(allNets=list(),cliqueNets=list())
+
 for (setScore in scoreColl){
 	selPath <- pathDF[which(pathDF[,2]>=setScore),1]
 	## uncomment to test with original pathways
@@ -112,6 +125,7 @@ for (setScore in scoreColl){
 	otherCurr	<- ""
 	predCurr_cl <- ""
 	otherCurr_cl <- ""
+
 	for (k in 1:length(TT_STATUS)) {
 		cat(sprintf("\t(k = %i)",k))
 		# --------------------------------------------------------------
@@ -133,6 +147,7 @@ for (setScore in scoreColl){
 		x <- tmp$stats
 		currmat[k,] <- c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],
 						tmp$relEnr)
+
 
 		rm(x,tmp,pheno_test,p_test)
 
@@ -187,7 +202,12 @@ for (setScore in scoreColl){
 			c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],tmp$relEnr)
 		}
 
-	}
+	} # end loop over k resamplings for a given score
+
+	# store resampling-wise info before averaging
+	resampPerf[["allNets"]][[setScore]] <- currmat
+	resampPerf[["cliqueNets"]][[setScore]] <- currmat_clique
+
 	predCurr 	<- unique(predCurr)
 	otherCurr	<- unique(otherCurr) 
 	cat(sprintf("\t# contrib: %i pred ; %i other\n",
@@ -229,43 +249,58 @@ cat("\n")
 
 	ctr <- ctr+1
 	cat("\n")
+} # end loop over score cutoffs
+
+numresamp <- nrow(resampPerf[[1]][[1]])
+for (k in 1:length(resampPerf)) {
+	tmp <- lapply(resampPerf[[k]], function(x) {as.numeric(t(x))})
+	tmp <- do.call(rbind,tmp)
+	x <- rep(c("pred_total","pred_OL","pred_OL_pct",
+				"other_total","other_OL","other_OL_pct","relEnr"),
+			numresamp)
+	colnames(tmp) <- paste(x,rep(1:numresamp,each=7),sep="_")
+	rownames(tmp) <- scoreColl
+	resampPerf[[k]] <- tmp
 }
+
+save(resampPerf,file=sprintf("%s/resamplingPerf.Rdata",outDir))
+
+# add IDs of contributing samples
+outdf <- data.frame(outdf)
+outdf <- cbind(outdf, CONTRIBUT_PRED=predContr,
+			   CONTRIBUT_OTHER=otherContr)
+
+outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets.txt",
+				   outDir)
+if (!testMode){
+write.table(outdf,file=outFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+}
+
+outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets_train.txt",
+				   outDir)
+if (!testMode){
+write.table(outdf_train,file=outFile,sep="\t",
+			col=TRUE,row=FALSE,quote=FALSE)
+}
+
+if (cliqueFilter) {
 	# add IDs of contributing samples
-	outdf <- data.frame(outdf)
-	outdf <- cbind(outdf, CONTRIBUT_PRED=predContr,
-				   CONTRIBUT_OTHER=otherContr)
-
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets.txt",
-					   outDir)
+	outdf_clique <- data.frame(outdf_clique)
+	outdf_clique <- cbind(outdf_clique, CONTRIBUT_PRED=predContr_cl,
+			   CONTRIBUT_OTHER=otherContr_cl)
+	
+	outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets.txt",
+				   outDir)
 	if (!testMode){
-	write.table(outdf,file=outFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+	write.table(outdf_clique,file=outFile,sep="\t",
+		col=TRUE,row=FALSE,quote=FALSE)
 	}
 
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets_train.txt",
-					   outDir)
+	outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets_train.txt",
+				   outDir)
 	if (!testMode){
-	write.table(outdf_train,file=outFile,sep="\t",
-				col=TRUE,row=FALSE,quote=FALSE)
+	write.table(outdf_clique_tr,file=outFile,sep="\t",
+		col=TRUE,row=FALSE,quote=FALSE)
 	}
-
-	if (cliqueFilter) {
-		# add IDs of contributing samples
-		outdf_clique <- data.frame(outdf_clique)
-		outdf_clique <- cbind(outdf_clique, CONTRIBUT_PRED=predContr_cl,
-				   CONTRIBUT_OTHER=otherContr_cl)
-		
-		outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets.txt",
-					   outDir)
-		if (!testMode){
-		write.table(outdf_clique,file=outFile,sep="\t",
-			col=TRUE,row=FALSE,quote=FALSE)
-		}
-
-		outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets_train.txt",
-					   outDir)
-		if (!testMode){
-		write.table(outdf_clique_tr,file=outFile,sep="\t",
-			col=TRUE,row=FALSE,quote=FALSE)
-		}
-	}
+}
 }

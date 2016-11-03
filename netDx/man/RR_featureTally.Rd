@@ -49,7 +49,18 @@ resamplings (other_pct_max)
 3) positive, negative calls at each cutoff ; clique filtering option:  
 \code{<outDir>/RR_changeNetSum_stats_denCliqueNets.txt}: format same
 as the previous file. However, the denominator here is limited to
-patients present in networks that pass clique filtering.
+patients present in networks that pass clique filtering. 
+4) breakdown of performance for each of the resamplings, at each of the 
+cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
+one for cliqueNets. The value is a matrix with (resamp * 7) columns and S rows,
+one row per score. The columns contain the followin information per resampling:
+1) pred_total: total num patients of predClass
+2) pred_OL: num of pred_total with a CNV in the selected net
+3) pred_OL_pct: 2) divided by 1) (percent)
+4) other_total: total num patients of other class(non-predClass)
+5) other_OL: num of other_total with CNV in selected net
+6) other_OL_pct: 5) divided by 4) (percent)
+7) relEnr: 6) divided by 3).
 }
 \description{
 Computes positive and negative calls upon changing stringency of 

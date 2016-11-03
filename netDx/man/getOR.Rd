@@ -24,6 +24,8 @@ passing feature selection)}
 }
 \value{
 List. 1) stats: statistics on group overlap with netList,
+This is a 2xK matrix, where rows are classes (predClass,other), and 
+columns are: total samples, samples overlapping nets, % overlap
 2) relEnr: relative enrichment of \code{predClass} over other
 }
 \description{

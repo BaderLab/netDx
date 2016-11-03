@@ -61,6 +61,7 @@ pGR_FULL 	<- p_GR
 pheno		<- subset(pheno,TT_STATUS %in% "TRAIN")
 p_GR		<- p_GR[which(p_GR$ID %in% pheno$ID)]
 
+
 cat("Training samples\n")
 print(table(pheno$STATUS))
 
@@ -82,6 +83,13 @@ tmp	<- updateNets(p,pheno,writeNewNets=FALSE)
 p		<- tmp[[1]]
 pheno	<- tmp[[2]] 
 
+pheno_train_in_nets <- pheno
+dat <- list(
+	pheno_FULL=pheno_FULL,
+	pheno_training_in_nets=pheno,
+	netmat_training=p)
+save(dat,file=sprintf("%s/pheno_main.Rdata",outDir))
+
 cat("* Running N-way resampling for feature scores\n")
 t0 <- Sys.time()
 Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
@@ -89,5 +97,41 @@ Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
 			splitN=numResamples,nFoldCV=nFoldCV,...)
 t1 <- Sys.time()
 print(t1-t0)
+
+# --------------------------------------------------
+# Phase 2. Get cutoff with best accuracy
+# --------------------------------------------------
+
+# note that the patients overlapping called nets has already been calculated by
+# nWay_netSum::RR_featureTally(). We are reading this output and computing
+# accuracy for each cutoff
+#
+# TODO - nWay_netSum should just pass the resampPerf data as output
+# instead of this function having to load an output file.
+load(sprintf("%s/resamplingPerf.Rdata",outDir))
+
+pdf(sprintf("%s/train_accuracy.pdf",outRoot))
+tryCatch({
+    res <- resampling_pickBestCutoff_CNV(resampPerf[["cliqueNets"]])
+},error=function(ex) {
+    print(ex)
+},finally={
+    dev.off()
+})
+
+# --------------------------------------------------
+# Phase 3. Compute accuracy for test patients
+# --------------------------------------------------
+rm(pheno,p_GR)
+
+pheno <- subset(pheno_FULL, TT_STATUS %in% "TEST")
+p_GR <- p_GR[which(p_GR$ID %in% pheno$ID)]
+
+cat(sprintf("Test: %i patients ; %i ranges\n", nrow(pheno),length(p_GR)))
+cat("Class breakdown:\n")
+print(table(pheno[,c("STATUS")]))
+
+# call resampling_predTest_CNV
+
 
 }

@@ -152,7 +152,8 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		pScore[[k]]	<- pathwayRank
 	}
 
-	outDat <- sprintf("%s/savedDat.Rdata",outDir)
+	phenoDF$TT_STATUS <- NULL
+	outDat <- sprintf("%s/resampling_savedDat.Rdata",outDir)
 	save(netmat,phenoDF,TT_STATUS,predClass,pScore,outDir,cliqueFilter,
 		 cliqueNets, file=outDat)
 # Measure performance based on pathway tally across splits

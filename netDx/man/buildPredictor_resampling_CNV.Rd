@@ -4,10 +4,10 @@
 \alias{buildPredictor_resampling_CNV}
 \title{Build predictor with n-way resampling, for CNV-based nets}
 \usage{
-buildPredictor_resampling_CNV(pheno, p_GR, predClass, unitSet_GR, pctT = 0.7,
-  numResamples = 3L, cliqueReps = 500L, nFoldCV = 10L, numCores = 1L,
-  GMmemory = 4L, outDir = ".", overwrite = FALSE, seed_trainTest = 42L,
-  seed_resampling = 103L, seed_CVqueries = 42L, ...)
+buildPredictor_resampling_CNV(pheno, p_GR, predClass, unitSet_GR, unit_GR,
+  pctT = 0.7, numResamples = 3L, cliqueReps = 500L, nFoldCV = 10L,
+  numCores = 1L, GMmemory = 4L, outDir = ".", overwrite = FALSE,
+  seed_trainTest = 42L, seed_resampling = 103L, seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) patient IDs (ID) and class of interest (STATUS)}
@@ -20,6 +20,9 @@ in the STATUS column of the pheno param}
 
 \item{unitSet_GR}{(list) unit groupings, each of which will be 
 converted to its own patient similarity network.}
+
+\item{unit_GR}{(GRanges) genomic locations of units (e.g. genes).
+Provided data in this form speeds test evaluation}
 
 \item{pctT}{(numeric 0 to 1) fraction of samples for training}
 
@@ -57,13 +60,14 @@ GM_runCV_featureSet())}
 \value{
 (list) Includes:
 * pheno: (data.frame) phenotype matrix as used by predictor
-* TT_STATUS: initial train/test split assignment
-* netScores: (list) keys are classes, value is a data.frame with 
-networks and scores following feature selection. Nets with score>0 are
-shown.
-* confmat: (matrix) confusion matrix with one row per cutoff
-* predRanks: (list) GM rankings of test samples for each network cutoff
-In addition, all the intervening work will be stored in <outDir>
+* netScores: (data.frame) networks and scores following feature 
+selection. Nets with score>0 are shown.
+* resamplingResults (list) performance of resampling rounds. Output of
+resampling_pickBestCutoff_CNV()
+* cliqueNets (char) vector of nets that pass clique filtering in 1+
+round of resampling
+* testRes (list) results of evaluating performance on the test partition.
+output of resampling_predTest_CNV()
 }
 \description{
 Build predictor with n-way resampling, for CNV-based nets

@@ -4,7 +4,8 @@
 \alias{resampling_predTest_CNV}
 \title{evaluate test performance for CNV-based predictor}
 \usage{
-resampling_predTest_CNV(testPheno, test_p_GR, selFeature_GR, outDir)
+resampling_predTest_CNV(testPheno, test_p_GR, selFeature_GR, predClass,
+  cliqueNetGenes = NULL, verbose = TRUE)
 }
 \arguments{
 \item{testPheno}{(data.frame) sample metadata table with ID and STATUS}
@@ -13,11 +14,25 @@ resampling_predTest_CNV(testPheno, test_p_GR, selFeature_GR, outDir)
 that maps an event to a patient, and LOCUS_NAMES with comma-separated names
 of units (e.g. genes) that the ranges overlap}
 
-\item{selFeature_GR}{(list of GRanges) genomic ranges for selected features
+\item{selFeature_GR}{(GRanges) genomic ranges for selected features
 NOTE: These are the features over which patients will be evaluated so 
-limit to nets that pass feature selection}
+limit to nets that pass feature selection. An example is the set of genes
+belonging to feature-selected pathways}
 
-\item{outDir}{(char) root directory in which data must be saved}
+\item{predClass}{(char) label for positve class}
+
+\item{cliqueNetGenes}{(GRanges) optional. If provided, universe is 
+limited to patients overlapping ranges in this set. e.g. the set of genes
+in all pathways that pass feature selection}
+
+\item{verbose}{(logical) print messages}
+}
+\value{
+(list) 
+1) pos (char): vector of patients called +
+2) neg (char): vector of patients called -
+3-6) tp,tn,acc,ppv (numeric): num true pos, num true neg, accuracy and
+positive predictive value
 }
 \description{
 evaluate test performance for CNV-based predictor

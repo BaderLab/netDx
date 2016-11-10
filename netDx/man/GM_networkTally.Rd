@@ -10,7 +10,7 @@ GM_networkTally(fList, filter_WtSum = 100, verbose = FALSE)
 \item{fList}{(char) Vector of paths to GeneMANIA NRANK files}
 
 \item{filter_WtSum}{(numeric between 5-100) Limit to top-ranked 
-networks such that cumulative weight is less that this parameter. 
+networks such that cumulative weight is less than this parameter. 
 e.g. If filter_WtSum=20, first order networks by decreasing weight; 
 then keep those whose cumulative weight <= 20.}
 

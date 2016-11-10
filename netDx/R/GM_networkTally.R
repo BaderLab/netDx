@@ -2,7 +2,7 @@
 #'
 #' @param fList (char) Vector of paths to GeneMANIA NRANK files
 #' @param filter_WtSum (numeric between 5-100) Limit to top-ranked 
-#' networks such that cumulative weight is less that this parameter. 
+#' networks such that cumulative weight is less than this parameter. 
 #' e.g. If filter_WtSum=20, first order networks by decreasing weight; 
 #' then keep those whose cumulative weight <= 20.
 #' @param verbose (logical) print messages

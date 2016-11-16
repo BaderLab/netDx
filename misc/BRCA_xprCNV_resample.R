@@ -36,6 +36,8 @@ sink(sprintf("%s/BreastCancer_GeneExprOnly.log",outDir),split=TRUE)
 tryCatch({
 	cat("Start time\n")
 	print(Sys.time())
+	cat(sprintf("RNG seeds: Train-test split = %i ; Resampling = %i\n",
+		seed_trainTest, seed_resampling))
 
 	pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
  	   path.package("netDx.examples"))

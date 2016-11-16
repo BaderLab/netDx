@@ -22,7 +22,7 @@
 
 outRoot=/home/spai/tmp/BRCA_xprCNV
 
-for k in 2; do
+for k in {201..250}; do
 	seed1=$k
 	seed2=$(( k * 10 ))
 	echo "seed1=${k} ; seed2=${k}"
@@ -30,6 +30,8 @@ for k in 2; do
 	echo $odir
 	mkdir -p $odir
 	Rscript BRCA_xprCNV_resample.R $odir $seed1 $seed2
+	rm -r ${odir}/predictor
+	chmod u-w ${odir}/*.*
 done
 
 

@@ -19,6 +19,7 @@
 #' @param netSfx (char) pattern for finding network files in \code{netDir}.
 #' @param verbose (logical) print messages
 #' @param numCores (integer) num cores for parallel processing
+#' @param GMmemory (integer) Memory for GeneMANIA (in Gb)
 #' @param ... params for \code{GM_writeBatchFile()}
 #' @return (list). "dbDir": path to GeneMANIA database 
 #' 	"netDir": path to directory with interaction networks. If profiles
@@ -35,7 +36,8 @@
 #'	db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
 #' @export
 GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
-		netSfx="_cont.txt$",verbose=TRUE,numCores=1L,...) {
+	netSfx="_cont.txt$",verbose=TRUE,numCores=1L,
+	GMmemory=4L, ...) {
 	# tmpDir/ is where all the prepared files are stored.
 	# GeneMANIA uses tmpDir as input to create the generic database. 
 	# The database itself will be in outDir/
@@ -110,7 +112,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 		cl	<- makeCluster(numCores)
 		registerDoParallel(cl)
 
-		cmd1 <- sprintf("java -Xmx10G -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", GM_jar)
+		cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", GMmemory,GM_jar)
 		cmd3 <- "-proftype continuous -cor PEARSON"
 		cmd5 <- "-threshold off -maxmissing 100.0"
 		profDir <- sprintf("%s/profiles",tmpDir)

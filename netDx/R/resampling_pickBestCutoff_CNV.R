@@ -33,7 +33,7 @@ resampling_pickBestCutoff_CNV <- function(resampPerf) {
 	plot(0,0,xlim=c(0,num_x+1),ylim=c(0,1),type='n',
 		xlab="score",ylab="accuracy",
 		main="CNV predictor\nAccuracy over resamplings")
-	clrs <- brewer.pal(name="Dark2",n=3)
+	clrs <- brewer.pal(name="Dark2",n=ncol(acc))
 	for (k in 1:ncol(acc)) {
 		points(1:num_x,acc[,k],col=clrs[k],
 			type='o',pch=16)

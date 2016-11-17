@@ -15,6 +15,9 @@
 #' @param verbose (logical) print messages
 #' @param numCores (logical) num parallel threads for cross-validation
 #' @param GMmemory (integer) memory for GeneMANIA run, in Gb.
+#' @param seed_CVqueries (integer) RNG seed for inner cross validation loop.
+#' Makes deterministic samples held-out for each GeneMANIA query (see
+#' makeCVqueries())
 #' @param ... args for \code{makeCVqueries()}
 #' @examples
 #' data(MB_pheno)
@@ -24,14 +27,15 @@
 #' @export
 GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps, 
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
-	numCores=2L,GMmemory=6L,...) {	
+	numCores=2L,GMmemory=6L,seed_CVqueries=42L,...) {	
 	
 	#TODO if results already exist, what do we do? Delete with a warning?
 	if (!file.exists(outDir)) dir.create(outDir)
 
 	# get query names 
 	if (verbose) cat("\tWriting GM queries: ")
-	qSamps <- makeCVqueries(trainID_pred,verbose=verbose,...)
+	qSamps <- makeCVqueries(trainID_pred,verbose=verbose,
+		setSeed=seed_CVqueries,...)
 
 	# write query files
 	for (m in 1:length(qSamps)) {

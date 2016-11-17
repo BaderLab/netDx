@@ -98,12 +98,16 @@ dat <- list(
 save(dat,file=sprintf("%s/pheno_main.Rdata",outDir))
 rm(dat)
 
+# compute net scores over resampled training data
 cat("*** WARNING: Not running predictor for now! ***")
 cat("* Running N-way resampling for feature scores\n")
 t0 <- Sys.time()
 Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
 			cliqueReps=cliqueReps,numCores=numCores,
-			splitN=numResamples,nFoldCV=nFoldCV,...)
+			splitN=numResamples,seed_resampling=seed_resampling,
+			nFoldCV=nFoldCV,
+			seed_CVqueries=seed_CVqueries,
+			...)
 t1 <- Sys.time()
 print(t1-t0)
 } else {
@@ -191,6 +195,9 @@ testRes <- resampling_predTest_CNV(pheno,p_GR,selFeature_GR=selGR_genes,
 bestCutoff <- resamplingRes$bestCutoff
 save(testRes,pheno,p_GR,cNetGenes,selGR_genes,bestCutoff,pTally,
 	file=sprintf("%s/testPerformance.Rdata",outDir))
+
+cat(sprintf("Test performance: Cutoff=%i; Acc=%1.2f ; PPV=%1.2f\n",
+	bestCutoff, testRes$acc, testRes$ppv))
 
 out <- list(
 	pheno=pheno_FULL,

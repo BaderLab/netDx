@@ -5,9 +5,9 @@
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
 Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
-  nFoldCV = 10L, cliqueFilter = TRUE, cliquePthresh = 0.07,
-  cliqueReps = 2500L, minEnr = -1, numCores = 1L, GM_numCores = NULL,
-  useAttributes = NULL, ...)
+  seed_resampling = 103L, nFoldCV = 10L, cliqueFilter = TRUE,
+  cliquePthresh = 0.07, cliqueReps = 2500L, minEnr = -1, numCores = 1L,
+  GM_numCores = NULL, useAttributes = NULL, seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet()}
@@ -29,6 +29,9 @@ in the dataset. This function will subset these networks to generate
 networks consisting e.g. only of training samples.}
 
 \item{splitN}{(integer) number of data resamplings to use}
+
+\item{seed_resampling}{(integer) RNG seed for deciding hold-out sets
+while resampling.}
 
 \item{nFoldCV}{(integer) number of folds in the inner cross-validation
 loop}
@@ -53,6 +56,9 @@ expected}
 \item{useAttributes}{(char) vector of attribute names to be used in 
 executing GM queries. Note: Not currently well-tested, suggest leaving
 as NULL.}
+
+\item{seed_CVqueries}{(integer) RNG seed for inner cross-validation
+loop}
 
 \item{...}{params for GM_runCV_featureSet()}
 }

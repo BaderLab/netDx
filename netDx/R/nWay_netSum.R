@@ -30,6 +30,8 @@
 #' in the dataset. This function will subset these networks to generate
 #' networks consisting e.g. only of training samples.
 #' @param splitN (integer) number of data resamplings to use
+#' @param seed_resampling (integer) RNG seed for deciding hold-out sets
+#' while resampling.
 #' @param nFoldCV (integer) number of folds in the inner cross-validation
 #' loop
 #' @param cliqueFilter (logical) if TRUE, applies clique filtering to train
@@ -46,20 +48,23 @@
 #' @param useAttributes (char) vector of attribute names to be used in 
 #' executing GM queries. Note: Not currently well-tested, suggest leaving
 #' as NULL.
+#' @param seed_CVqueries (integer) RNG seed for inner cross-validation
+#' loop
 #' @param ... params for GM_runCV_featureSet()
 #' @importFrom reshape2 melt
 #' @export
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
-	splitN=3L,nFoldCV=10L,
+	splitN=3L,seed_resampling=103L, nFoldCV=10L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,minEnr=-1,
-	numCores=1L,GM_numCores=NULL,useAttributes=NULL,...) {
+	numCores=1L,GM_numCores=NULL,useAttributes=NULL,
+	seed_CVqueries=42L,...) {
 
-		if (is.null(GM_numCores)) GM_numCores <- max(1,numCores-1)
+	if (is.null(GM_numCores)) GM_numCores <- max(1,numCores-1)
 	
 	# split into testing and training - resampling mode
 	cat("* Resampling train/test samples\n")
 	TT_STATUS 	<- splitTestTrain_partition(phenoDF, nFold=splitN,
-		predClass=predClass, verbose=TRUE)
+		predClass=predClass, setSeed=seed_resampling, verbose=TRUE)
 	p_full 		<- netmat
 	pheno_full	<- phenoDF
 	pheno_full <- pheno_full[,-which(colnames(pheno_full)%in%"TT_STATUS")]
@@ -137,7 +142,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		t0 <- Sys.time()
 		GM_runCV_featureSet(trainPred, resDir, GM_db, 
 				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
-				nFold=nFoldCV,...)
+				nFold=nFoldCV,seed_CVqueries=seed_CVqueries,...)
 		t1 <- Sys.time()
 		cat("Time to run inner CV loop:\n")
 		print(t1-t0)

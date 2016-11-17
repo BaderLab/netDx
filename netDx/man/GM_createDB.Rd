@@ -5,7 +5,8 @@
 \title{Create GeneMANIA database}
 \usage{
 GM_createDB(netDir, patientID, outDir, simMetric = "cor_pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L, ...)
+  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L, GMmemory = 4L,
+  ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -25,6 +26,8 @@ profiles to interaction networks.}
 \item{verbose}{(logical) print messages}
 
 \item{numCores}{(integer) num cores for parallel processing}
+
+\item{GMmemory}{(integer) Memory for GeneMANIA (in Gb)}
 
 \item{...}{params for \code{GM_writeBatchFile()}}
 }

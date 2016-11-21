@@ -1,8 +1,14 @@
-This file describes the content of detailed output by the netDx algorithm.
+# netDx output
 
+This file describes netDx output files and formats
+
+* [Overall directory tree](#overall_directory_tree)
+* File formats: \[[.profile](#.profile)\][\_cont.txt][.NRANK][.PRANK][.query][pathway_CV_score.txt or pathway_cumTally.txt]
+
+## Overall directory tree
 Assume the base directory for the dataset is `outRoot`.
 
-## Example 1: BRCA LumA from gene expression and CNV: No resampling
+### Example 1: BRCA LumA from gene expression and CNV: No resampling
 Here we see the output in the case where the predictor is run once, with a single round of 10-fold cross validation. An example is the vignette building a predictor for Luminal A type of breast cancer from TCGA data.
 
 See code snippet 1 below for the full set of output files generated in this example. Let `N` be the total number of patients in the dataset, and let `N'` be number of training samples.
@@ -18,25 +24,28 @@ outRoot
 		- ... # (other files the user will not need)
 	- dataset/ # location of indexed GeneMANIA database, not human-readable
 	- LumA/ # results for class 1
-		- GM_results ### GeneMANIA rea
+		- GM_results 
 			- CV_*.query # GM query file for a fold of CV 
 			- CV_*.query-results.report.txt.PRANK # GM results file, patient ranking
 			- CV_*.query-results.report.txt.NRANK # GM results file, network table
-			- LumA_pathway_CV_score.txt # cumulative network score over entire CV
+			- LumA_pathway_CV_score.txt # cumulative network score for 'LumA' predictive 
+						    # value over entire CV
 	- other/ # results for class 2
 			- CV_*.query
 			- CV_*.query-results.report.txt.PRANK
 			- CV_*.query-results.report.txt.NRANK
-			- other_pathway_CV_score.txt
+			- other_pathway_CV_score.txt # cumulative network score for 'other' predictive
+							# value over entire CV
 ```
-In this example, we:
-1. split data into train and test
-### Patient nets from all training samples
-`outRoot/tmp`
-	* Build a master GM database with these input nets (`outRoot/tmp` and `outRoot/dataset`
-3. apply feature selection once for each of the two classes, `LumA` and `other` (results in the `LumA` and `other` directory respectively)
-4. following feature selection, we classify test patients by ranking them against two class-specific databa
 
-Then after running netDx, the data directory looks like this:
+## File formats
 
+### cont.txt
 
+### .NRANK
+
+### .PRANK
+
+### .profile
+
+### .query

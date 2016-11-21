@@ -2,10 +2,10 @@
 
 This file describes netDx output files and formats
 
-* [Overall directory tree](#overall_directory_tree)
-* **File formats:** \[<a name="#profile">.profile</a>\][\_cont.txt][.NRANK][.PRANK][.query][pathway_CV_score.txt or pathway_cumTally.txt]
+* [Overall directory tree](#overall_dir)
+* **File formats:** \[<a href="#profile">.profile</a>\]\[<a href="#intfile">\_cont.txt</a>][<a href="#nrank">.NRANK</a>\]\[<a href="#prank">.PRANK</a>\]\[<a href="#query">.query</a>]\[<a href="#cvscore">pathway_CV_score.txt or pathway_cumTally.txt</a>\]
 
-<a name="overall_directory_tree"></a>
+<a name="overall_dir"></a>
 ## Overall directory tree
 Assume the base directory for the dataset is `outRoot`.
 
@@ -39,15 +39,50 @@ outRoot
 							# value over entire CV
 ```
 
+### Example 2: Predictor with 3 resamplings
+The directory structure is similar to the previous example, with two notable differences:
+1. results for each resampling are stored in their own subdirectory (e.g. `part1/`, `part2/`, etc.,)
+2. there are different main directories for training vs test data.  Training results are stored in `feature_select/` while test are stored in `networks_test/`.
+
+In this example, we have a binary classifier and feature selection is only run for the class in question (rather than for A and not-A).
+
+```
+outRoot
+	- feature_select/ # training results
+		- part1/  # results for first round of resampling
+			- GM_results/ # GeneMANIA input/output files
+				- CV_*.query  # query file for a fold of cross-validation
+				- CV_*.query-results.report.txt.PRANK # GM output: patient ranking
+				- CV_*.query-results.report.txt.NRANK # GM output: network weights
+				- pathwayScore.txt # cumulative net score for current resampling
+			- networks/   # interaction nets
+			- networksCliqueFilt/ # subset of networks that pass clique filtering
+			- cliqueFilterNets.stats.txt # net score for clique-filtering
+			- tmp/ # input files to create GM database
+			- dataset/ # indexed GM database on which queries are run (not human-readable)
+		- part2/ # same structure as part1
+		- part3/ # same structure as part1
+		- pathway_cumTally.txt # cumulative net score for predictive class
+```
+
 ## File formats
+<a name="intfile"></a>
+#### cont.txt
 
-### cont.txt
+<a name="nrank"></a>
+#### .NRANK
 
-### .NRANK
+<a name="prank"></a>
+#### .PRANK
 
-### .PRANK
+<a name="profile"></a>
+#### .profile
 
-<a name="#profile"></a>
-### .profile
+<a name="query"></a>
+#### .query
+GeneMANIA query file. 
 
-### .query
+<a name="cvscore"></a>
+#### pathway_CV_score.txt or pathway_cumTally.txt
+
+

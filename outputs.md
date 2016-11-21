@@ -3,8 +3,9 @@
 This file describes netDx output files and formats
 
 * [Overall directory tree](#overall_directory_tree)
-* File formats: \[[.profile](#.profile)\][\_cont.txt][.NRANK][.PRANK][.query][pathway_CV_score.txt or pathway_cumTally.txt]
+* **File formats:** \[<a name="#profile">.profile</a>\][\_cont.txt][.NRANK][.PRANK][.query][pathway_CV_score.txt or pathway_cumTally.txt]
 
+<a name="overall_directory_tree"></a>
 ## Overall directory tree
 Assume the base directory for the dataset is `outRoot`.
 
@@ -46,6 +47,7 @@ outRoot
 
 ### .PRANK
 
+<a name="#profile"></a>
 ### .profile
 
 ### .query

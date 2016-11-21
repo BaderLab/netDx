@@ -5,7 +5,7 @@ This file describes netDx output files and formats
 * [Overall directory tree](#overall_dir)
 	* [Example 1: Luminal A prediction from gene expresion and CNV: No resampling](#ex1)
 	* [Example 2: Predictor with three resamplings](#ex2)
-* **File formats:** \[<a href="#intfile">\_cont.txt</a>][<a href="#nrank">.NRANK</a>\]\[<a href="#prank">.PRANK</a>\]\[<a href="#cvscore">pathway_CV_score.txt or pathway_cumTally.txt</a>\]\[<a href="#profile">.profile</a>\]\[<a href="#query">.query</a>\]
+* **File formats:** \[<a href="#intfile">\*\_cont.txt</a>][<a href="#nrank">\*.NRANK</a>\]\[<a href="#prank">\*.PRANK</a>\]\[<a href="#cvscore">pathway_CV_score.txt or pathway_cumTally.txt</a>\]\[<a href="#profile">\*.profile</a>\]\[<a href="#query">\*.query</a>\]
 
 <a name="overall_dir"></a>
 ## Overall directory tree

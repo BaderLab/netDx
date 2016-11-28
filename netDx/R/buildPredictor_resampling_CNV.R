@@ -15,6 +15,10 @@
 #' clique filtering
 #' @param nFoldCV (integer) number of folds for cross-validation within each
 #' resampling
+#' @param filter_WtSum (numeric between 5-100) Limit to top-ranked 
+#' networks such that cumulative weight is less than this parameter. 
+#' e.g. If filter_WtSum=20, first order networks by decreasing weight; 
+#' then keep those whose cumulative weight <= 20.
 #' @param numCores (integer) number of parallel processing jobs
 #' @param GMmemory (integer) memory (Gb) for GeneMANIA to run.
 #' @param outDir (char) path to output directory
@@ -43,8 +47,8 @@
 #' @export
 buildPredictor_resampling_CNV <- function(pheno, p_GR, predClass, 
     unitSet_GR,unit_GR,pctT=0.7,numResamples=3L, cliqueReps=500L,
-	nFoldCV=10L,numCores=1L,GMmemory=4L,
-	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=103L,
+	nFoldCV=10L,filter_WtSum=100L, numCores=1L,GMmemory=4L,
+	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=42L,
 	seed_CVqueries=42L,...) {
 	
 TEST_MODE <- FALSE
@@ -60,8 +64,13 @@ dir.create(outDir)
 pheno$STATUS[which(!pheno$STATUS %in% predClass)] <- "other"
 subtypes <- c(predClass,"other")
 
+if (pctT < 1) {
 pheno$TT_STATUS <- splitTestTrain(pheno,
     	pctT=pctT,setSeed=seed_trainTest,predClass=predClass)
+} else {
+	warning("No test partition. Entire dataset will be used to compute test scores");
+	pheno$TT_STATUS <- "TRAIN"
+}
 
 pheno_FULL	<- pheno
 pGR_FULL 	<- p_GR
@@ -99,13 +108,12 @@ save(dat,file=sprintf("%s/pheno_main.Rdata",outDir))
 rm(dat)
 
 # compute net scores over resampled training data
-cat("*** WARNING: Not running predictor for now! ***")
 cat("* Running N-way resampling for feature scores\n")
 t0 <- Sys.time()
 Nway_netSum(p,pheno,predClass=predClass,outDir,netDir,
 			cliqueReps=cliqueReps,numCores=numCores,
 			splitN=numResamples,seed_resampling=seed_resampling,
-			nFoldCV=nFoldCV,
+			nFoldCV=nFoldCV,filter_WtSum=filter_WtSum,
 			seed_CVqueries=seed_CVqueries,
 			...)
 t1 <- Sys.time()
@@ -140,24 +148,11 @@ tryCatch({
 resamplingRes <- res
 cat(sprintf("Best cutoff is: %i\n", res$bestCutoff))
 
-# --------------------------------------------------
-# Phase 3. Compute accuracy for test patients
-# --------------------------------------------------
-pheno <- subset(pheno_FULL, TT_STATUS %in% "TEST")
-p_GR <- pGR_FULL[which(pGR_FULL$ID %in% pheno$ID)]
-
-cat(sprintf("Test: %i patients ; %i ranges\n", nrow(pheno),length(p_GR)))
-cat("Class breakdown:\n")
-print(table(pheno[,c("STATUS")]))
-
 # load feature-selected net names
 # TODO this should be provided by nWay_netSum
 pTally <- read.delim(sprintf("%s/pathway_cumTally.txt",outDir),
 	sep="\t",h=T,as.is=T)
 pTally_full <- pTally
-pTally <- pTally[which(pTally[,2]>=res$bestCutoff),1]
-pTally <- sub("_cont.txt","",pTally)
-cat(sprintf("\t%i pathways\n", length(pTally)))
 
 # fetch cliqueNets
 # TODO this should be provided by nWay_netSum
@@ -168,42 +163,78 @@ cliqueNets <- get('cliqueNets', e1)
 rm(e1)
 cliqueNets <- unique(unlist(cliqueNets))
 cliqueNets <- sub("_cont.txt","",cliqueNets)
-idx <- which(names(unitSet_GR)%in% cliqueNets)
-if (length(idx)<length(cliqueNets)) {
-    cat("some cliqueNets not located\n")
-    browser()
-}
-cNetGenes <- lapply(unitSet_GR[idx],function(x) { x$name })
-cNetGenes <- unit_GR[which(unit_GR$name %in% unlist(cNetGenes))]
-cat(sprintf("\t%i units in clique-filtered nets\n",length(cNetGenes)))
 
-# fetch selFeature_GR
-# now also get genes in feature-selected pathways
-idx <- which(names(unitSet_GR) %in% pTally)
-if (length(idx) < length(pTally)) {
-    cat("some pTally not located\n")
-    browser()
+if (pctT == 1) {
+	cat("No TEST partition. Returning results\n")
+	out <- list(
+		pheno=pheno_FULL,
+		netScores=pTally_full,
+		resamplingResults=resamplingRes,
+	##	bestCutoff=bestCutoff,
+		cliqueNets=cliqueNets
+	)
+	return(out)
 }
-selGR_genes <- lapply(unitSet_GR[idx], function(x) {x$name})
-selGR_genes <- unit_GR[which(unit_GR$name %in% unlist(selGR_genes))]
-cat(sprintf("\t%i units in feature-selected nets\n",length(selGR_genes))) 
 
-# count predClass/other overlapping feature selected pathways
-testRes <- resampling_predTest_CNV(pheno,p_GR,selFeature_GR=selGR_genes,
-    predClass=predClass,
-    cliqueNetGenes=cNetGenes)
-bestCutoff <- resamplingRes$bestCutoff
-save(testRes,pheno,p_GR,cNetGenes,selGR_genes,bestCutoff,pTally,
+# --------------------------------------------------
+# Phase 3. Compute accuracy for test patients
+# --------------------------------------------------
+pheno <- subset(pheno_FULL, TT_STATUS %in% "TEST")
+p_GR <- pGR_FULL[which(pGR_FULL$ID %in% pheno$ID)]
+
+cat(sprintf("Test: %i patients ; %i ranges\n", nrow(pheno),length(p_GR)))
+cat("Class breakdown:\n")
+print(table(pheno[,c("STATUS")]))
+
+testRes <- list() # performance of test for each cutoff
+
+for (curr_cutoff in 1:max(pTally[,2])) {
+	cat(sprintf("Test: score=%i\n", curr_cutoff))
+	pTally <- pTally_full
+	pTally <- pTally[which(pTally[,2]>=curr_cutoff),1]
+	pTally <- sub("_cont.txt","",pTally)
+	cat(sprintf("\t%i pathways\n", length(pTally)))
+
+	idx <- which(names(unitSet_GR)%in% cliqueNets)
+	if (length(idx)<length(cliqueNets)) {
+    	cat("some cliqueNets not located\n")
+    	browser()
+	}
+	cNetGenes <- lapply(unitSet_GR[idx],function(x) { x$name })
+	cNetGenes <- unit_GR[which(unit_GR$name %in% unlist(cNetGenes))]
+	cat(sprintf("\t%i units in clique-filtered nets\n",length(cNetGenes)))
+
+	# fetch selFeature_GR
+	# now also get genes in feature-selected pathways
+	idx <- which(names(unitSet_GR) %in% pTally)
+	if (length(idx) < length(pTally)) {
+   	 cat("some pTally not located\n")
+   	 browser()
+	}	
+	selGR_genes <- lapply(unitSet_GR[idx], function(x) {x$name})
+	selGR_genes <- unit_GR[which(unit_GR$name %in% unlist(selGR_genes))]
+	cat(sprintf("\t%i units in feature-selected nets\n",length(selGR_genes))) 
+
+	# count predClass/other overlapping feature selected pathways
+	testRes[[curr_cutoff]] <- resampling_predTest_CNV(
+		pheno,p_GR,
+		selFeature_GR=selGR_genes,predClass=predClass,
+    	cliqueNetGenes=cNetGenes)
+##	bestCutoff <- resamplingRes$bestCutoff
+
+	#cat(sprintf("Test performance: Cutoff=%i; Acc=%1.2f ; PPV=%1.2f\n",
+	#	bestCutoff, testRes$acc, testRes$ppv))
+	rm(cNetGenes,selGR_genes,pTally)
+}
+	save(testRes,file="testPerformance.Rdata")
+	save(testRes,pheno,p_GR,cliqueNets,
 	file=sprintf("%s/testPerformance.Rdata",outDir))
-
-cat(sprintf("Test performance: Cutoff=%i; Acc=%1.2f ; PPV=%1.2f\n",
-	bestCutoff, testRes$acc, testRes$ppv))
 
 out <- list(
 	pheno=pheno_FULL,
 	netScores=pTally_full,
 	resamplingResults=resamplingRes,
-	bestCutoff=bestCutoff,
+##	bestCutoff=bestCutoff,
 	cliqueNets=cliqueNets,
 	testRes=testRes
 )

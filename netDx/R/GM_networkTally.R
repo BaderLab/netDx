@@ -29,18 +29,19 @@ for (fName in fList) {
 	dat <- try(read.delim(fName,sep="\t",h=T,as.is=T),silent=TRUE)
 	ctr <- ctr+1
 
-#print(summary(dat))
-	
 	if (!inherits(dat,"try-error")) { # file not empty
 		# remove first group related line
 		dat <- dat[-1,]
+		cat("Net weight distribution:\n")
+		print(summary(dat$Weight))
+	
 		dat <- dat[order(dat$Weight,decreasing=TRUE),]
 	
 		cs			<- cumsum(dat$Weight)
 		keep_max	<- which.min(abs(cs-filter_WtSum))
+		
 		dat			<- dat[1:keep_max,]
-		if (verbose) cat(sprintf(
-				"filter_WtSum = %1.1f; %i of %i networks left\n",
+		cat(sprintf("filter_WtSum = %1.1f; %i of %i networks left\n",
 				filter_WtSum, nrow(dat),length(cs)))
 		
 		for (k in dat[,2]) {

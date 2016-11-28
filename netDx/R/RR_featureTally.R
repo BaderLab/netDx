@@ -75,6 +75,7 @@ for (k in 1:length(TT_STATUS)) {
 pathDF <- data.frame(PATHWAY_NAME=names(pTally),SCORE=unlist(pTally))
 pathDF[,2] <- as.integer(as.character(pathDF[,2]))
 pathDF[,1] <- paste(as.character(pathDF[,1]),".txt",sep="")
+pathDF <- pathDF[order(pathDF[,2],decreasing=TRUE),]
 
 tmpOut <- sprintf("%s/pathway_cumTally.txt",outDir)
 if (!testMode){

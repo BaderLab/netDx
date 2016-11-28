@@ -142,7 +142,7 @@ for (g in subtypes) {
 		}
 	
 		dbDir	<- GM_createDB(profDir, pheno_subtype$ID, outDir,
-							numCores=numCores)
+							numCores=numCores,GMmemory=GMmemory)
 		resDir	<- sprintf("%s/GM_results",pDir)
 
 		## cross validation using training samples from predClass

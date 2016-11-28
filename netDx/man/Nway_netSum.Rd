@@ -5,9 +5,10 @@
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
 Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
-  seed_resampling = 103L, nFoldCV = 10L, cliqueFilter = TRUE,
-  cliquePthresh = 0.07, cliqueReps = 2500L, minEnr = -1, numCores = 1L,
-  GM_numCores = NULL, useAttributes = NULL, seed_CVqueries = 42L, ...)
+  seed_resampling = 103L, nFoldCV = 10L, filter_WtSum = 100L,
+  cliqueFilter = TRUE, cliquePthresh = 0.07, cliqueReps = 2500L,
+  minEnr = -1, numCores = 1L, GM_numCores = NULL, useAttributes = NULL,
+  seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet()}
@@ -35,6 +36,11 @@ while resampling.}
 
 \item{nFoldCV}{(integer) number of folds in the inner cross-validation
 loop}
+
+\item{filter_WtSum}{(numeric between 5-100) Limit to top-ranked 
+networks such that cumulative weight is less than this parameter. 
+e.g. If filter_WtSum=20, first order networks by decreasing weight; 
+then keep those whose cumulative weight <= 20.}
 
 \item{cliqueFilter}{(logical) if TRUE, applies clique filtering to train
 networks}

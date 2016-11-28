@@ -6,8 +6,9 @@
 \usage{
 buildPredictor_resampling_CNV(pheno, p_GR, predClass, unitSet_GR, unit_GR,
   pctT = 0.7, numResamples = 3L, cliqueReps = 500L, nFoldCV = 10L,
-  numCores = 1L, GMmemory = 4L, outDir = ".", overwrite = FALSE,
-  seed_trainTest = 42L, seed_resampling = 103L, seed_CVqueries = 42L, ...)
+  filter_WtSum = 100L, numCores = 1L, GMmemory = 4L, outDir = ".",
+  overwrite = FALSE, seed_trainTest = 42L, seed_resampling = 103L,
+  seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) patient IDs (ID) and class of interest (STATUS)}
@@ -33,6 +34,11 @@ clique filtering}
 
 \item{nFoldCV}{(integer) number of folds for cross-validation within each
 resampling}
+
+\item{filter_WtSum}{(numeric between 5-100) Limit to top-ranked 
+networks such that cumulative weight is less than this parameter. 
+e.g. If filter_WtSum=20, first order networks by decreasing weight; 
+then keep those whose cumulative weight <= 20.}
 
 \item{numCores}{(integer) number of parallel processing jobs}
 

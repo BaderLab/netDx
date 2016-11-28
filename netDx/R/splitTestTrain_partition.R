@@ -29,7 +29,7 @@
 splitTestTrain_partition <- function(pheno_DF, nFold=3L, setSeed=42L,
  	predClass,verbose=FALSE){
 if (!is.null(setSeed)) {
-	cat(sprintf("Setting seed for reproducibility: %i\n",setSeed))
+	cat(sprintf("Resampling split: set seed: %i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 
@@ -40,11 +40,14 @@ other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)
 plus_csize 	<- floor((1/nFold)*length(plus_idx))
 other_csize <- floor((1/nFold)*length(other_idx))
 
+plus_tsize <- length(plus_idx)-plus_csize
+other_tsize <- length(other_idx)-other_csize
+
 if (verbose) {
-cat(sprintf("\t(+) %s : %i total ; %i per resample\n",
-			predClass, length(plus_idx),plus_csize))
-cat(sprintf("\t(-) (!%s): %i total ; %i per resample\n",
-			predClass, length(other_idx),other_csize))
+cat(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n",
+			predClass, length(plus_idx), plus_tsize, plus_csize))
+cat(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n",
+			predClass, length(other_idx),other_tsize, other_csize))
 }
 
 # randomize order for test assignment

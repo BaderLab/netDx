@@ -30,7 +30,7 @@ if (!is.null(cliqueNetGenes)) {
 	testPheno <- subset(testPheno,ID %in% id)
 	
 }
-	
+
 # get overlap of patients with genes in pathway
 has_ol <- rep(0,nrow(testPheno))
 names(has_ol) <- testPheno$ID
@@ -48,14 +48,14 @@ tn <- intersect(called_neg,
 tn <- length(tn)
 
 acc <- (tp+tn)/nrow(testPheno)
-ppv <- tp/length(pos)
+ppv <- tp/length(called_pos)
 real_pos <- sum(testPheno$STATUS %in% predClass)
 real_neg <- sum(!testPheno$STATUS %in% predClass)
 tpr <- tp/real_pos
-fpr <- (length(pos)-tp)/real_neg
+fpr <- (length(called_pos)-tp)/real_neg
 
 
-out <- list(called_pos=pos,called_neg=neg,
+out <- list(called_pos=called_pos,called_neg=called_neg,
 			pos=real_pos,neg=real_neg,
 			tp=tp,tn=tn,tpr=tpr,fpr=fpr,
 			acc=acc,ppv=ppv)

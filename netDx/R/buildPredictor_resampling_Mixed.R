@@ -37,6 +37,9 @@
 #' reproducibility
 #' @param seed_resampling (integer) RNG seed for training assignment for
 #' of the resamplings (splitTrainTest_partition() method)
+#' @param filter_WtSum (numeric between 0 and 100) Limits networks whose tally is 
+#' increased by 1 in the inner cross-validation loop. Limits nets so that cumulative
+#' weight is less than this parameter. See GM_networkTally()
 #' @param seed_CVqueries (integer) RNG seed for queries in k-fold cross
 #' validation (used by makeCVqueries() which is called by 
 #' GM_runCV_featureSet())
@@ -55,7 +58,7 @@ buildPredictor_resampling_Mixed <- function(pheno, pdat, predClass, unitSets,
 	p_GR=NULL, unitSet_GR=NULL, 
 	pctT=0.7,numResamples=3L, nFoldCV=10L,numCores=1L,GMmemory=4L,
 	outDir=".",overwrite=FALSE,seed_trainTest=42L,seed_resampling=103L,
-	seed_CVqueries=42L,...) {
+	filter_WtSum=100,seed_CVqueries=42L,...) {
 
 if (file.exists(outDir)) {
 	if (!overwrite) stop("output directory exists. Choices: provide path to non-existing directory, set overwrite option to TRUE, or manually delete this directory")
@@ -139,7 +142,7 @@ for (g in subtypes) {
 		}
 	
 		dbDir	<- GM_createDB(profDir, pheno_subtype$ID, outDir,
-							numCores=numCores)
+							numCores=numCores,GMmemory=GMmemory)
 		resDir	<- sprintf("%s/GM_results",pDir)
 
 		## cross validation using training samples from predClass
@@ -151,7 +154,8 @@ for (g in subtypes) {
 		
 	    # Compute network score
 		nrank <- dir(path=resDir,pattern="NRANK$")
-		pTally	<- GM_networkTally(paste(resDir,nrank,sep="/"))
+		pTally	<- GM_networkTally(paste(resDir,nrank,sep="/"),
+				filter_WtSum=filter_WtSum)
 		# write to file
 		tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 		write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)

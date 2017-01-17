@@ -1,4 +1,7 @@
 #' LumA binary classification with resampling.
+#' Work which loops over different levels of network exclusion in inner
+#' cross validation loop.
+#' 
 #' Set to run multiple times on scinet via command-line args
 #' Arguments:
 #' 1. (char) outDir path to output directory
@@ -7,16 +10,15 @@
 args    <- commandArgs(TRUE)
 print(args)
 
-
-DEBUG_MODE <- TRUE
+DEBUG_MODE <- FALSE
 
 outDir          <- args[1]
 seed_trainTest  <- as.integer(args[2])
 seed_resampling <- as.integer(args[3])
-
-#outDir <- "/home/spai/tmp/BRCA_xprCNV/test"
-#seed_trainTest <- 86
-#seed_resampling <- 860
+filter_WtSum	<- as.integer(args[4])
+#outDir          <- args[1]
+#seed_trainTest  <- seed1
+#seed_resampling <- seed2
 
 # ---------------------------------------------------
 # do work
@@ -24,7 +26,7 @@ seed_resampling <- as.integer(args[3])
 #if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 #dir.create(outDir)
 
-numCores 	<- 4L  	# num cores available for parallel processing
+numCores 	<- 8L  	# num cores available for parallel processing
 GMmemory 	<- 4L  	# java memory in Gb
 trainProp	<- 0.67 # fraction of samples to use for training
 
@@ -39,6 +41,7 @@ tryCatch({
 	print(Sys.time())
 	cat(sprintf("RNG seeds: Train-test split = %i ; Resampling = %i\n",
 		seed_trainTest, seed_resampling))
+	cat(sprintf("Filter wt sum = %i\n", filter_WtSum))
 
 	pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
  	   path.package("netDx.examples"))
@@ -78,7 +81,8 @@ tryCatch({
 		nFoldCV=nFold, numResamples=numResamp,
 		unitSets=pathwayList,numCores=numCores,outDir=predDir,
 		overwrite=TRUE,GMmemory=GMmemory,
-		seed_trainTest=seed_trainTest, seed_resampling=seed_resampling)
+		seed_trainTest=seed_trainTest, seed_resampling=seed_resampling,
+		filter_WtSum=filter_WtSum)
 	save(out,file=sprintf("%s/FinalResults.Rdata",outDir))
 	print(Sys.time()-t0)
 

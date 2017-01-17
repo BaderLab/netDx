@@ -7,7 +7,8 @@
 buildPredictor_resampling_Mixed(pheno, pdat, predClass, unitSets, p_GR = NULL,
   unitSet_GR = NULL, pctT = 0.7, numResamples = 3L, nFoldCV = 10L,
   numCores = 1L, GMmemory = 4L, outDir = ".", overwrite = FALSE,
-  seed_trainTest = 42L, seed_resampling = 103L, seed_CVqueries = 42L, ...)
+  seed_trainTest = 42L, seed_resampling = 103L, filter_WtSum = 100,
+  seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) patient IDs (ID) and class of interest (STATUS)}
@@ -52,6 +53,10 @@ reproducibility}
 
 \item{seed_resampling}{(integer) RNG seed for training assignment for
 of the resamplings (splitTrainTest_partition() method)}
+
+\item{filter_WtSum}{(numeric between 0 and 100) Limits networks whose tally is 
+increased by 1 in the inner cross-validation loop. Limits nets so that cumulative
+weight is less than this parameter. See GM_networkTally()}
 
 \item{seed_CVqueries}{(integer) RNG seed for queries in k-fold cross
 validation (used by makeCVqueries() which is called by 

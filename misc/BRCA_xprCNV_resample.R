@@ -8,14 +8,15 @@ args    <- commandArgs(TRUE)
 print(args)
 
 
-DEBUG_MODE <- FALSE
+DEBUG_MODE <- TRUE
 
 outDir          <- args[1]
 seed_trainTest  <- as.integer(args[2])
 seed_resampling <- as.integer(args[3])
-#outDir          <- args[1]
-#seed_trainTest  <- seed1
-#seed_resampling <- seed2
+
+#outDir <- "/home/spai/tmp/BRCA_xprCNV/test"
+#seed_trainTest <- 86
+#seed_resampling <- 860
 
 # ---------------------------------------------------
 # do work
@@ -23,7 +24,7 @@ seed_resampling <- as.integer(args[3])
 #if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 #dir.create(outDir)
 
-numCores 	<- 8L  	# num cores available for parallel processing
+numCores 	<- 4L  	# num cores available for parallel processing
 GMmemory 	<- 4L  	# java memory in Gb
 trainProp	<- 0.67 # fraction of samples to use for training
 

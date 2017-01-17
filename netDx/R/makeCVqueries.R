@@ -13,7 +13,7 @@
 #' @export
 makeCVqueries <- function(incPat, nFold=10L,setSeed=42L,verbose=TRUE) {
 if (!is.null(setSeed)) {
-	cat(sprintf("Setting seed for reproducibility: %i\n",setSeed))
+	cat(sprintf("Inner CV loop:set seed: %i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 

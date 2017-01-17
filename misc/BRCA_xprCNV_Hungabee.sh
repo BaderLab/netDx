@@ -15,7 +15,7 @@
 #PBS -m abe
 #PBS -M shraddha.pai@utoronto.ca
 
-module load application/jdk/1.8.0_92
+#module load application/jdk/1.8.0_92
 
 Rscript=/home/spai/software/R-3.2.5/bin/Rscript
 cd /home/spai/software/netDx/misc
@@ -24,7 +24,7 @@ cd /home/spai/software/netDx/misc
 
 outRoot=/data/spai/BaderLab/netDx/BRCA_xprCNV
 
-for k in 1; do
+for k in 2; do
 	seed1=$k
 	seed2=$(( k * 10 ))
 	echo "seed1=${k} ; seed2=${k}"

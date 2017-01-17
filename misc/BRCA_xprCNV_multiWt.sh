@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # run netDx predictor for BRCA xpr+cnv once on hungabee.westgrid.ca
+### Loop over different filter_WtSum values
 
 ### from https://www.westgrid.ca/support/quickstart/hungabee:
 ### It is usually easiest to keep pmem=8190mb and adjust procs to insure that there is sufficient total memory available. For example, if you need 2000000mb of memory, 2000000/8192=244.1. However, procs needs to be a multiple of 16 so procs should be 256.
@@ -20,18 +21,27 @@
 
 # --------------
 
-outRoot=/home/spai/tmp/BRCA_xprCNV
+outRoot=/home/spai/tmp/BRCA_xprCNV_multiSeed
+mkdir -p $outRoot
 
-for k in {201..250}; do
+wt=(100 90 75 50);
+
+for k in {200..204}; do
 	seed1=$k
 	seed2=$(( k * 10 ))
 	echo "seed1=${k} ; seed2=${k}"
-	odir=${outRoot}/R${k}
-	echo $odir
-	mkdir -p $odir
-	Rscript BRCA_xprCNV_resample.R $odir $seed1 $seed2
-	rm -r ${odir}/predictor
-	chmod u-w ${odir}/*.*
+	omain=${outRoot}/R${k}
+	echo $omain
+	mkdir -p $omain
+	## loop over different net weight inclusions
+	for w in ${wt[@]};do
+		odir=${omain}/wt${w}
+		mkdir -p $odir
+		Rscript BRCA_xprCNV_resample_changeWtSum.R \
+			$odir $seed1 $seed2 $w
+		rm -r ${odir}/predictor
+		chmod u-w ${odir}/*.*
+	done
 done
 
 

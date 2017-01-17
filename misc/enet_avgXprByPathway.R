@@ -13,28 +13,30 @@
 args <- commandArgs(TRUE)
 method2use <- args[1] ###ElasticNet | RandomForest
 
-###outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/Papers/netDX/results/avgXprByPathway"
+### AHMAD TODO: change this 
 outDir <- "~/tmp/netDX/results/avgXprByPathway"
 if (!file.exists(outDir)) dir.create(outDir)
 
 rmMissing  <- TRUE
+
+#### AHMAD TODO: this can be an input param from a caller script.
+#### see the loop in 
+#### https://github.com/BaderLab/netDx/blob/master/misc/BRCA_xprCNV_VM2.sh
+#### that calls BRCA_xprCNV_resample.R 
 rngSeed <- 102
 set.seed(rngSeed) # make reproducible
 
-require(foreach)
-require(doParallel)
-cl <- makeCluster(8)
-registerDoParallel(cl)
+#### This is probably not needed.
+###require(foreach)
+###require(doParallel)
+###cl <- makeCluster(8)
+###registerDoParallel(cl)
 
 # ---------------------------------------------------
 # setup
 dt <- format(Sys.Date(),"%y%m%d")
 fPrefix <- sprintf("%s/%s_rmMiss%s_%s", outDir, method2use, rmMissing,dt)
 logFile <- sprintf("%s.log",fPrefix)
-
-# caret is the wrapper package with functions to streamline
-# model building
-require(caret)
 
 # load the data
 require(netDx)
@@ -61,16 +63,6 @@ print(Sys.time())
 cat("Average xpr by pathway\n")
 cat(sprintf("Method= %s\n", method2use))
 
-# read in preassigned train/test split
-inTrain <- read.delim(sprintf("%s/trainID.txt",outDir),sep="\t",h=F,as.is=T)
-inTrain <- inTrain[,1]
-
-# convert into binary problem
-pheno$STATUS[which(!pheno$STATUS %in% "LumA")] <- "other"
-mega_TT 			<- rep("TEST",nrow(pheno))
-mega_TT[inTrain] 	<- "TRAIN" ## pre-assigned
-pheno$TT_STATUS 	<- mega_TT
-print(table(pheno[,c("STATUS","TT_STATUS")]))
 
 if (rmMissing) {
 	nr <- nrow(xpr)
@@ -96,55 +88,82 @@ for (k in 1:length(pathwayList)) {
 }
 print(Sys.time()-t0)
 
-# add cnv data
-# create matrix with binary variables, one per pathway
-# xpr3[i,j]=1 if patient j has cnv in pathway i; else 0
-require(foreach)
-require(parallel)
-require(bigmemory)
-cl <- makeCluster(8) # add outfile="" to print all worker output to stdout
-registerDoParallel(cl)
-bkFile <- sprintf("%s/tmp.bk",outDir)
-if (file.exists(bkFile)) unlink(bkFile)
-xpr3 <- big.matrix(NA,nrow=length(path_GRList),ncol=ncol(xpr),
-				   type="integer",backingfile="tmp.bk",
-				   backingpath=outDir,descriptorfile="tmp.desc",
-				   dimnames=list(NULL,colnames(xpr)))
+#### >>>>>
+##### SP commented out CNV section 
+#### add cnv data
+#### create matrix with binary variables, one per pathway
+#### xpr3[i,j]=1 if patient j has cnv in pathway i; else 0
+###require(foreach)
+###require(parallel)
+###require(bigmemory)
+###cl <- makeCluster(8) # add outfile="" to print all worker output to stdout
+###registerDoParallel(cl)
+###bkFile <- sprintf("%s/tmp.bk",outDir)
+###if (file.exists(bkFile)) unlink(bkFile)
+###xpr3 <- big.matrix(NA,nrow=length(path_GRList),ncol=ncol(xpr),
+###				   type="integer",backingfile="tmp.bk",
+###				   backingpath=outDir,descriptorfile="tmp.desc",
+###				   dimnames=list(NULL,colnames(xpr)))
+###
+###t0 <- Sys.time()
+###x <- foreach (k=1:length(path_GRList), .packages=c("GenomicRanges")) %dopar% {
+###	seqlevels(path_GRList[[k]], force=TRUE) <- seqlevels(cnv_GR)
+###	ol <- findOverlaps(cnv_GR, path_GRList[[k]])
+###	ol <- ol@queryHits
+###	if (length(ol)>0) {
+###		samps <- which(colnames(xpr) %in% unique(cnv_GR$ID[ol]))
+###		cat(sprintf("%s: %i overlaps\n", names(pathwayList)[k],length(ol)))
+###		m <- bigmemory::attach.big.matrix(sprintf("%s/tmp.desc",outDir))
+###		m[k,] <- 0L
+###		m[k,samps] <- 1L
+###	}
+###}
+###print(Sys.time()-t0)
+###stopCluster(cl)
+###registerDoSEQ()
+###xpr3 <- as.matrix(xpr3)
+###xpr3 <- na.omit(xpr3)
 
-t0 <- Sys.time()
-x <- foreach (k=1:length(path_GRList), .packages=c("GenomicRanges")) %dopar% {
-	seqlevels(path_GRList[[k]], force=TRUE) <- seqlevels(cnv_GR)
-	ol <- findOverlaps(cnv_GR, path_GRList[[k]])
-	ol <- ol@queryHits
-	if (length(ol)>0) {
-		samps <- which(colnames(xpr) %in% unique(cnv_GR$ID[ol]))
-		cat(sprintf("%s: %i overlaps\n", names(pathwayList)[k],length(ol)))
-		m <- bigmemory::attach.big.matrix(sprintf("%s/tmp.desc",outDir))
-		m[k,] <- 0L
-		m[k,samps] <- 1L
-	}
-}
-print(Sys.time()-t0)
-stopCluster(cl)
-registerDoSEQ()
-xpr3 <- as.matrix(xpr3)
-xpr3 <- na.omit(xpr3)
+#### train() expects patients in rows,genes in columns
+###xpr2 <- t(xpr2)
+###xpr3 <- t(xpr3)
+###if (all.equal(rownames(xpr2),rownames(xpr3))!=TRUE) {
+###	cat("rowname mismatch\n")
+###	browser()
+###}
 
-# train() expects patients in rows,genes in columns
+###xpr <- cbind(xpr2,xpr3)
+###xpr <- as.data.frame(xpr)
+#### <<<<
+
 xpr2 <- t(xpr2)
-xpr3 <- t(xpr3)
-if (all.equal(rownames(xpr2),rownames(xpr3))!=TRUE) {
-	cat("rowname mismatch\n")
-	browser()
-}
-
-xpr <- cbind(xpr2,xpr3)
-xpr <- as.data.frame(xpr)
+xpr <- as.data.frame(xpr2)
                 
 if (all.equal(rownames(xpr),pheno$ID)!=TRUE) {
 	cat("pheno, xpr rownames don't match");
 	browser()
 }
+
+# caret is the wrapper package with functions to streamline
+# model building
+require(caret)
+
+### partitions into training so that all five classes are split 2:1.
+inTrain <- createDataPartition(y=pheno$STATUS,p=0.66,list=FALSE)
+
+
+##### AHMAD TODO: Check, but you may need to create a loop run 5-way
+##### classification here. Right now this is binary, with LumA-other.
+##### Or maybe caret has a quick way to do 5-way classification with the
+#### right param choices.
+
+# convert into binary problem
+pheno$STATUS[which(!pheno$STATUS %in% "LumA")] <- "other"
+mega_TT 			<- rep("TEST",nrow(pheno))
+mega_TT[inTrain] 	<- "TRAIN" ## pre-assigned
+pheno$TT_STATUS 	<- mega_TT
+print(table(pheno[,c("STATUS","TT_STATUS")]))
+
 xpr$STATUS <- as.factor(pheno$STATUS)
 
 cat("Final matrix submitted for ML:\n")

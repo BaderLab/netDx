@@ -7,7 +7,7 @@
 buildPredictor_resampling_CNV(pheno, p_GR, predClass, unitSet_GR, unit_GR,
   pctT = 0.7, numResamples = 3L, cliqueReps = 500L, nFoldCV = 10L,
   filter_WtSum = 100L, numCores = 1L, GMmemory = 4L, outDir = ".",
-  overwrite = FALSE, seed_trainTest = 42L, seed_resampling = 103L,
+  overwrite = FALSE, seed_trainTest = 42L, seed_resampling = 42L,
   seed_CVqueries = 42L, ...)
 }
 \arguments{

@@ -12,7 +12,7 @@
 #' data(TCGA_mini)
 #' GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 #' @export
-GM_writeQueryFile <- function(qSamps, incNets, numReturn=1L, outFile, 
+GM_writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile, 
   orgName="predictor") {
 	cat(sprintf("%s\n",orgName), file=outFile)			# org name
 	cat(sprintf("%s\n",

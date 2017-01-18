@@ -4,7 +4,7 @@
 \alias{splitTestTrain}
 \title{Split samples into training and testing set}
 \usage{
-splitTestTrain(pheno_DF, pctT = 0.7, setSeed = 42, predClass)
+splitTestTrain(pheno_DF, pctT = 0.7, setSeed = 42, verbose = FALSE)
 }
 \arguments{
 \item{pheno_DF}{(data.frame) patient information
@@ -21,9 +21,7 @@ set}
 \item{setSeed}{(integer) Random number generator seed for splitting
 the training and test set. If not NULL, seed will be set to this value.}
 
-\item{predClass}{(char) name of the patient class for which the 
-predictor should be built. Should match a value in the STATUS column of
-\code{pheno_DF}}
+\item{verbose}{(logical) print messages}
 }
 \value{
 (char) vector of length \code{nrow(pheno_DF)}, with values of 
@@ -36,6 +34,6 @@ Split samples into training and testing set
 }
 \examples{
 data(TCGA_mini)
-x <- splitTestTrain(pheno,predClass="LumA")
+x <- splitTestTrain(pheno)
 }
 

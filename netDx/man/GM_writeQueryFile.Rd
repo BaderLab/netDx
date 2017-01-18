@@ -4,7 +4,7 @@
 \alias{GM_writeQueryFile}
 \title{Wrapper to write GeneMANIA query file}
 \usage{
-GM_writeQueryFile(qSamps, incNets, numReturn = 1L, outFile,
+GM_writeQueryFile(qSamps, incNets = "all", numReturn = 1L, outFile,
   orgName = "predictor")
 }
 \arguments{

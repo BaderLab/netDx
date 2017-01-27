@@ -44,18 +44,6 @@ IS_TRAIN <- factor(IS_TRAIN,levels=c("TRAIN","TEST"))
 pheno_DF	<- cbind(pheno_DF,IS_TRAIN=IS_TRAIN)
 print(table(pheno_DF[,c("STATUS","IS_TRAIN")]))
 
-if (verbose) {
-	tmp <- subset(pheno_DF, IS_TRAIN %in% "TRAIN")
-	cat(sprintf("# training: N=%i (%s = %i, (other) = %i)\n", 
-		nrow(tmp), predClass, sum(tmp$STATUS %in% predClass), 
-		sum(!tmp$STATUS %in% predClass)))
-	
-	tmp <- subset(pheno_DF, IS_TRAIN %in% "TEST")
-	cat(sprintf("# test: N=%i (%s = %i, (other) = %i)\n", 
-		nrow(tmp), predClass, sum(tmp$STATUS %in% predClass), 
-		sum(!tmp$STATUS %in% predClass)))
-	rm(tmp)
-}
 
 return(IS_TRAIN)
 }

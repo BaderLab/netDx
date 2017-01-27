@@ -4,7 +4,7 @@ rm(list=ls())
 require(netDx)
 
 #inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_ADNI/output/run170119"
-inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_ADNI/output/Q3_170125"
+inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_ADNI/output/featSel_170125_test2"
 
 combSet <- "all" #c("clinical","genetic","imaging","all")
 cols <- c(brewer.pal(n=3,name="Dark2"),"red")
@@ -68,6 +68,8 @@ for (rngSeed in 1){  #:10) {
 
 		
 		out[[cur]] <- perfCalc_multiClass(dat$STATUS,dat$PRED_CLASS)*100
+		overall_acc <- c(overall_acc, 
+				 sum(dat$STATUS==dat$PRED_CLASS)/nrow(dat)*100)
 
 		browser()
 		#out[[cur]] <- perfCalc(tmp)
@@ -81,8 +83,6 @@ for (rngSeed in 1){  #:10) {
 		#out[[cur]]$aucpr <- list(same=prauc(outRes$same$precall),
 		#						 worse=prauc(outRes$worse$precall))
 		#out[[cur]]$aucpr$comb <- mean(unlist(out[[cur]]$aucpr))
-		overall_acc <- c(overall_acc, 
-				 sum(dat$STATUS==dat$PRED_CLASS)/nrow(dat)*100)
 	}
 	names(overall_acc) <- combSet
 	mega[[rngSeed]] <- list(out=out,overall_acc=overall_acc,

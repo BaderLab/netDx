@@ -50,6 +50,7 @@ sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
 if (class(net)=="data.frame") {
 	dat <- net
 } else if (class(net)=="character"){
+	netFile <- net
 	dat <- read.delim(netFile,sep="\t",as.is=T,h=F)
 }
 dat <- dat[order(dat[,1]),]
@@ -59,6 +60,7 @@ sidx <- 1; eidx <- NA;
 ctr <- 1
 
 newCt <- 0
+t0 <- Sys.time()
 system(sprintf("cat /dev/null > %s",outFile))
 while ((ctr < nrow(dat))) {
 	nextPat <- dat[ctr+1,1]
@@ -121,5 +123,7 @@ write.table(df,file=outFile,sep="\t",append=TRUE,col=F,row=F,quote=F)
 
 cat(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 
 			nrow(dat), newCt,(newCt/nrow(dat))*100))
+cat("Time taken:\n")
+print(Sys.time()-t0)
 
 }

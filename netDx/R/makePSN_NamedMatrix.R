@@ -39,6 +39,7 @@
 #' If FALSE, uses  getSimilarity() and writes interaction networks.
 #' @param sparsify (logical) sparsify networks by calling sparsifyNets()
 #' with default parameters. Only used when writeProfiles=FALSE
+#' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
 #' Side effect of writing interaction networks in \code{outDir}
@@ -52,9 +53,11 @@
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson", cutoff=0.3,verbose=TRUE,
 	numCores=1L,writeProfiles=FALSE,
-	sparsify=FALSE,...){
-	if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
-	dir.create(outDir)
+	sparsify=FALSE,append=FALSE,...){
+	if (!append) {
+		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
+		dir.create(outDir)
+	}
 
 	cl	<- makeCluster(numCores)
 	registerDoParallel(cl)

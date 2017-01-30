@@ -53,12 +53,12 @@ colnames(dat)[1:7] <- c("ID","AGE","IS_MALE","PTEDUCAT",
 colnames(dat)[8:ncol(dat)] <- paste("MRI_",8:ncol(dat),sep="")
 rownames(dat) <- dat[,1]
 
-# remove MMSE
-idx <- which(colnames(dat)%in% "MMSE")
-dat <- dat[,-idx]
 
 # clinical/genetic networks have similarity by normalized distance.
 alldat <- t(dat[,-c(1,7)])
+# remove MMSE
+idx <- which(rownames(alldat)%in% "MMSE")
+alldat <- alldat[-idx,]
 
 pheno <- dat[,c("ID","STATUS")]
 tmp <- rep(NA,nrow(pheno))

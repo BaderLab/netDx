@@ -37,8 +37,8 @@ GM_getQueryROC <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 							 nrow(dat)))
 
 	# match the pheno matrix to the labels
-	midx <- match(dat[,1], pheno_DF[,1])
-	if (all.equal(pheno_DF[midx,1],dat[,1])!=TRUE) {
+	midx <- match(dat[,1], pheno_DF$ID)
+	if (all.equal(pheno_DF$ID[midx],dat[,1])!=TRUE) {
 		cat("\t IDs in GM results don't match pheno\n"); browser()
 	}
 	curlbl <- pheno_DF[midx,,drop=FALSE]

@@ -114,6 +114,8 @@ subtypes <- unique(pheno$STATUS)
 
 # ---------------------------------------------------------------------
 # run test for different train/test splits
+sink(sprintf("%s/log.txt",outDir),split=TRUE)
+tryCatch({
 for (setSeed in seq(10,100,10)) {
 	curd <- sprintf("%s/RNG%i",outDir,setSeed)
 	dir.create(curd)
@@ -159,6 +161,10 @@ for (setSeed in seq(10,100,10)) {
 		print(Sys.time()-t0)
 	}
 }
+},error=function(ex){
+	print(ex)
+},finally={
+	sink(NULL)
+})
 
-browser
 

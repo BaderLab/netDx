@@ -50,7 +50,7 @@ rootDir<-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_SKCM/input"
 
 tarPfx <- "jhu-usc.edu_SKCM.HumanMethylation450.Level_3"
 
-for (k in 1:7) {
+for (k in 2:7) {
 	curAr <- sprintf("%s.%i.9.0",tarPfx,k)
 	cat(sprintf("k = %i - extracting\n",k))
 	# get mid-level archive
@@ -85,6 +85,7 @@ for (k in 1:7) {
 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
 	system(sprintf("rm -r %s/%s",rootDir,curAr))
 	system(sprintf("unlink %s.tar.gz",curAr))
+	rm(out)
 }
 
 

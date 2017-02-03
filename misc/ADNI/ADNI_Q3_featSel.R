@@ -78,7 +78,7 @@ rm(pheno,dat,alldat)
 
 # ---------------------------------------------------------
 # feature selection
-for (setSeed in seq(5,100,5)) {
+for (setSeed in seq(70,100,5)) {
 	cat("-------------------------------------------\n")
 	cat(sprintf("RNG seed = %i\n",setSeed))
 	cat("-------------------------------------------\n")
@@ -188,6 +188,8 @@ for (setSeed in seq(5,100,5)) {
 		nrow(out), acc*100))
 	
 	rm(pheno_all,dat_all) # cleanup.
+	system(sprintf("rm -r %s/tmp %s/dataset %s/networks", outDir,
+		outDir,outDir))
 }
 
 },error=function(ex){

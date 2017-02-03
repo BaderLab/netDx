@@ -140,7 +140,7 @@ subtypes <- unique(pheno$STATUS)
 sink(sprintf("%s/log.txt",outDir),split=TRUE)
 tryCatch({
 
-for (runNum in 1) {
+for (runNum in 11:100) {
 	curd <- sprintf("%s/run%i",outDir,runNum)
 	dir.create(curd)
 	cat(sprintf("Run %i\n", runNum))

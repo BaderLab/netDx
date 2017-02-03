@@ -3,7 +3,7 @@
 rm(list=ls())
 require(netDx)
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_OV/output/integrate_170202"
+inDir <- "/mnt/data2/BaderLab/PanCancer_OV/output/integrate_170203"
 
 combSet <- c("clinical","clinicalArna","clinicalAmir","clinicalArppa","all")
 cols <- c(brewer.pal(n=4,name="Dark2"),"red")
@@ -47,7 +47,7 @@ prauc <- function(dat) {
 cat(sprintf("Got %i combs\n", length(combSet)))
 
 mega <- list()
-for (rngSeed in seq(1)) {
+for (rngSeed in 1:100) {
 	out <- list()
 	overall_acc <- numeric()
 	curRoc	<- list()
@@ -223,5 +223,29 @@ tryCatch({
 	dev.off()
 })
 
+cat("Best performance:\n")
+out <- list()
+for (nm in names(stats)) {
+	cur <- stats[[nm]];
+	x <- unlist(sapply(1:ncol(cur), function(x) max(cur[,x])))
+	names(x) <- colnames(cur)
+	out[[nm]] <- x
+}
+maxstat <- do.call("rbind",out)
+print(signif(maxstat,2))
 
+pullROC <- function(str) {
+	z <- lapply(mega, function(x) { y <- x$roc; y[[str]]})
+	z
+}
+
+pdf("OV_aggROC.pdf",width=10,height=5)
+source("plotROC_multi.R"); 
+par(mfrow=c(2,3))
+for (str in colnames(maxstat)) {
+	x <- pullROC(str)
+	plotROC_multi(x,which.max(stats[["AUCROC"]][,str]))
+	title(str)
+}
+dev.off()
 

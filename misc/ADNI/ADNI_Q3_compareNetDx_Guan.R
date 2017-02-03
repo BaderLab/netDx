@@ -3,6 +3,7 @@ rm(list=ls())
 
 guanDir <- "/home/spai/BaderLab/DREAM_AD/output/guan"
 netDir <- "/home/spai/BaderLab/DREAM_AD/output/featSel20RNG_170127"
+#netDir <- "/home/spai/BaderLab/DREAM_AD/output/featSel20RNG_noMMSE_170130"
 
 netF <- 
 guanD <- list()
@@ -42,7 +43,9 @@ for (setSeed in setSeeds) {
 }
 
 # plot mean and sd
-par(las=1,cex.axis=1.3,cex.lab=1.3,mfrow=c(2,2))
+pdf("netDx_Guan_compare_incMMSE.pdf",width=11,height=6)
+tryCatch({
+par(las=1,cex.axis=1.3,cex.lab=1.3,mfrow=c(1,4))
 for (k in c(5,7,9,11)) {
 	a <- k; b <- k+1
 	mu <- colMeans(acc[,a:b])
@@ -52,4 +55,10 @@ for (k in c(5,7,9,11)) {
 	x <- barplot(mu,ylim=c(0,1),
 		ylab=sprintf("diagnosis %s", ttl))
 	segments(x0=x,x1=x,y0=mu-stdev,y1=mu+stdev)
+	abline(h=0.5,lty=3,col='red')
 }
+},error=function(ex){
+	print(ex)
+},finally={
+	dev.off()
+})

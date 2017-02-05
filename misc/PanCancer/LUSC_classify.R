@@ -128,23 +128,20 @@ netSets <- lapply(dats, function(x) rownames(x))
 require(netDx)
 netDir <- sprintf("%s/networks",outDir)
 dir.create(netDir)
-tmp <- makePSN_NamedMatrix(alldat, rownames(alldat),netSets[1:3],
+cat("about to make nets\n")
+tmp <- makePSN_NamedMatrix(alldat, rownames(alldat),netSets,
 	   netDir,verbose=FALSE, numCores=numCores,
 	   writeProfiles=TRUE)
-
-tmp2 <- makePSN_NamedMatrix(dats$clinical,"age",netSets[4],netDir,
-			simMetric="custom",customFunc=normDiff,sparsify=TRUE,
-			verbose=TRUE,numCores=numCores,append=TRUE)
-
+cat("about to make db\n")
 # create a single GM database with training and test samples
 dbDir 	<- GM_createDB(netDir,pheno$ID,outDir,numCores=numCores)
 
 # datatype combinations to try.
 combList <- list(
-	clinical="clinical_cont",
-	clinicalArna=c("clinical_cont","rna.profile"),
-	clinicalAmir=c("clinical_cont","mir.profile"),
-	clinicalArppa=c("clinical_cont","rppa.profile"),
+	clinical="clinical.profile",
+	clinicalArna=c("clinical.profile","rna.profile"),
+	clinicalAmir=c("clinical.profile","mir.profile"),
+	clinicalArppa=c("clinical.profile","rppa.profile"),
 	all="all")
 
 subtypes <- unique(pheno$STATUS)

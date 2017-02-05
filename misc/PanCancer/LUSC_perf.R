@@ -47,7 +47,7 @@ prauc <- function(dat) {
 cat(sprintf("Got %i combs\n", length(combSet)))
 
 mega <- list()
-for (rngSeed in 1:1) {
+for (rngSeed in 1:100) {
 	out <- list()
 	overall_acc <- numeric()
 	curRoc	<- list()
@@ -139,7 +139,11 @@ require(reshape2)
 pvalues <- numeric()
 if (nrow(f1)>=2) {
 for (nm in names(stats)) {
+	if (nrow(f1)<20) {
 	barplot(stats[[nm]],beside=TRUE,main=nm,ylab="")
+	} else {
+		plot(0,0,type='n')
+	}
 	tmp <- melt(stats[[nm]])
 	colnames(tmp)[2] <- "datatype"
 
@@ -223,5 +227,29 @@ tryCatch({
 	dev.off()
 })
 
+cat("Best performance:\n")
+out <- list()
+for (nm in names(stats)) {
+	cur <- stats[[nm]];
+	x <- unlist(sapply(1:ncol(cur), function(x) max(cur[,x])))
+	names(x) <- colnames(cur)
+	out[[nm]] <- x
+}
+maxstat <- do.call("rbind",out)
+print(signif(maxstat,2))
 
+pullROC <- function(str) {
+	z <- lapply(mega, function(x) { y <- x$roc; y[[str]]})
+	z
+}
+
+pdf("LUSC_aggROC.pdf",width=10,height=5)
+source("plotROC_multi.R"); 
+par(mfrow=c(2,3))
+for (str in colnames(maxstat)) {
+	x <- pullROC(str)
+	plotROC_multi(x,which.max(stats[["AUCROC"]][,str]))
+	title(str)
+}
+dev.off()
 

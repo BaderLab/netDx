@@ -3,7 +3,7 @@
 rm(list=ls())
 require(netDx)
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_OV/output/integrate_170203"
+inDir <- "/mnt/data2/BaderLab/PanCancer_OV/output/ownTrain_170205"
 
 combSet <- c("clinical","clinicalArna","clinicalAmir","clinicalArppa","all")
 cols <- c(brewer.pal(n=4,name="Dark2"),"red")
@@ -139,7 +139,11 @@ require(reshape2)
 pvalues <- numeric()
 if (nrow(f1)>=2) {
 for (nm in names(stats)) {
-	barplot(stats[[nm]],beside=TRUE,main=nm,ylab="")
+	if (nrow(f1)<20) {
+		barplot(stats[[nm]],beside=TRUE,main=nm,ylab="")
+	} else {
+		plot(0,0,type='n')
+	}	
 	tmp <- melt(stats[[nm]])
 	colnames(tmp)[2] <- "datatype"
 
@@ -192,7 +196,7 @@ x <- barplot(t(mu2),col=cols,beside=TRUE,
 		#ylab="delta clinical",
 		main="Mean (normalized to first category)",ylab="",
 		#ylim=c(-.1,+0.05),cex.main=1.1,cex.lab=1.2)
-		cex.main=1.1,cex.lab=1.2,ylim=c(-0.1,0.1))
+		cex.main=1.1,cex.lab=1.2,ylim=c(-0.05,0.05))
 for (i in 1:5) {
 	sds <- lapply(stats2,function(x) sd(x[,i]))
 	sds <- do.call("rbind",sds)
@@ -234,6 +238,9 @@ for (nm in names(stats)) {
 maxstat <- do.call("rbind",out)
 print(signif(maxstat,2))
 
+#extracts ROC curve from each of the iterations
+#' @param str (char) type of input data (key to mega[[x]][["roc"]])
+#' one of clinical, clinicalArna... etc,
 pullROC <- function(str) {
 	z <- lapply(mega, function(x) { y <- x$roc; y[[str]]})
 	z

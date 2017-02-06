@@ -3,7 +3,7 @@
 rm(list=ls())
 require(netDx)
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_LUSC/output/integrate_170203"
+inDir <- "/mnt/data2/BaderLab/PanCancer_LUSC/output/ownTrain_170205"
 
 combSet <- c("clinical","clinicalArna","clinicalAmir","clinicalArppa","all")
 cols <- c(brewer.pal(n=4,name="Dark2"),"red")

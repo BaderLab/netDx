@@ -166,7 +166,7 @@ for (runNum in 1:100) {
 	#TT_STATUS <- rep(NA,nrow(pheno))
 	#TT_STATUS[which(pheno$ID %in% train[,runNum])] <- "TRAIN"
 	#TT_STATUS[which(pheno$ID %in% test[,runNum])] <- "TEST"
-	TT_STATUS <- splitTestTrain(pheno$ID,pctTrain=0.8,setseed=runNum*10);
+	TT_STATUS <- splitTestTrain(pheno,pctT=0.8,setSeed=runNum*10);
 	pheno$TT_STATUS <- TT_STATUS
 	print(table(pheno[c("STATUS","TT_STATUS")],useNA="always"))
 	is_na <- which(is.na(pheno$TT_STATUS))

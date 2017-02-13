@@ -11,6 +11,7 @@ inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
 outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
+megaDir <- sprintf("%s/featSel_noMut_%s",outRoot,dt)
 # ----------------------------------------------------------------
 # helper functions
 
@@ -89,7 +90,6 @@ pheno_all <- pheno; rm(pheno,pheno_nosurv)
 # build classifier
 require(netDx)
 require(netDx.examples)
-megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
 numCores <- 8L
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)

@@ -1,18 +1,22 @@
 #' feature selection for GBM from PanCancer survival dataset
 #' 10-fold CV predictor design with clinical and mRNA data
 rm(list=ls())
+require(netDx)
+require(netDx.examples)
 
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-#inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
-#outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
-inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/input"
-outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/output"
+inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
+outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
+#inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/input"
+#outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
+megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
+
 # ----------------------------------------------------------------
 # helper functions
 
@@ -39,7 +43,7 @@ inFiles <- list(
 	clinical=sprintf("%s/GBM_clinical_core.txt",inDir),
 	survival=sprintf("%s/GBM_binary_survival.txt",inDir),
 	rna=sprintf("%s/GBM_mRNA_core.txt",inDir),
-	mut=sprintf("%s/GBM_core_somatic_mutations.txt",
+	mut=sprintf("%s/from_firehose/GBM_core_somatic_mutations.txt",
 		inDir)
 )
 
@@ -69,24 +73,23 @@ clinical$performance_score <- strtoi(clinical$performance_score)
 clinical <- t(clinical)
 dats$clinical <- clinical; rm(clinical)
 
+# RNA
+cat("\t* RNA\n")
+rna <- read.delim(inFiles$rna,sep="\t",h=T,as.is=T)
+rna <- t(rna)
+colnames(rna) <- rna[1,]; rna <- rna[-1,]; 
+rna <- rna[-nrow(rna),]
+class(rna) <- "numeric"
+rownames(rna) <- sub("mRNA_","",rownames(rna))
+dats$rna <- rna; rm(rna)
 
-#### RNA
-###cat("\t* RNA\n")
-###rna <- read.delim(inFiles$rna,sep="\t",h=T,as.is=T)
-###rna <- t(rna)
-###colnames(rna) <- rna[1,]; rna <- rna[-1,]; 
-###rna <- rna[-nrow(rna),]
-###class(rna) <- "numeric"
-###rownames(rna) <- sub("mRNA_","",rownames(rna))
-###dats$rna <- rna; rm(rna)
-###
-#### include only data for patients in classifier
-###dats <- lapply(dats, function(x) { x[,which(colnames(x)%in%pheno$ID)]})
-###dats <- lapply(dats, function(x) { 
-###	midx <- match(pheno$ID,colnames(x))
-###	x <- x[,midx]
-###	x
-###})
+# include only data for patients in classifier
+dats <- lapply(dats, function(x) { x[,which(colnames(x)%in%pheno$ID)]})
+dats <- lapply(dats, function(x) { 
+	midx <- match(pheno$ID,colnames(x))
+	x <- x[,midx]
+	x
+})
 
 # somatic mutations
 cat("\t* Somatic mutations\n")
@@ -94,16 +97,18 @@ mut <- read.delim(inFiles$mut,sep="\t",h=T,as.is=T)
 # next steps: convert into GRanges with LOCUS_NAMES column.
 # call makePSN_NamedRanges() to make pathway-level nets.
 # run training.
-browser()
+pat_GR <- GRanges(paste("chr",mut$Chromosome,sep=""),
+	IRanges(mut$Start_position,mut$End_position))
+pat_GR$LOCUS_NAMES<-mut$Hugo_Symbol
+pat_GR$ID <- mut$ID
 
+pheno_all <- pheno; 
+pat_GR_all <- pat_GR;
 
-pheno_all <- pheno; rm(pheno,pheno_nosurv)
+rm(pheno,pheno_nosurv,pat_GR,mut)
 
 # ----------------------------------------------------------
 # build classifier
-require(netDx)
-require(netDx.examples)
-megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
 numCores <- 8L
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
@@ -111,14 +116,13 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:50) {
+for (rngNum in 1:30) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
 	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
 	dir.create(outDir)
 
-	setSeed <- 102
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 											  setSeed=rngNum*5)
 	# --------------------------------------------
@@ -126,6 +130,7 @@ for (rngNum in 1:50) {
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
 	dats_train <- lapply(dats,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
+	pat_GR_train <- pat_GR_all[which(pat_GR_all$ID %in% pheno$ID)]
 	
 	# create nets 
 	netDir <- sprintf("%s/networks",outDir) 
@@ -137,6 +142,7 @@ for (rngNum in 1:50) {
 	  	name=genes$name2)
 	cat("* Limiting to pathway genes\n")
 	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
 	
 	# group by pathway
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
@@ -151,8 +157,13 @@ for (rngNum in 1:50) {
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
 	cat("Made clinical nets\n")
-	
-	netList <- unlist(c(netList,netList2)) 
+
+	# add somatic mutations at pathway-level
+	netList3 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
+		numCores=numCores)
+	cat("Made somatic mutation pathway nets\n")
+
+	netList <- unlist(c(netList,netList2,netList3)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
 	# now create database
@@ -222,6 +233,10 @@ for (rngNum in 1:50) {
 		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+
+		# add somatic mutations at pathway-level
+		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
+			numCores=numCores)
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)

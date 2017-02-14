@@ -66,7 +66,7 @@ subtypes <- c(predClass,"other")
 
 if (pctT < 1) {
 pheno$TT_STATUS <- splitTestTrain(pheno,
-    	pctT=pctT,setSeed=seed_trainTest,predClass=predClass)
+    	pctT=pctT,setSeed=seed_trainTest)
 } else {
 	warning("No test partition. Entire dataset will be used to compute test scores");
 	pheno$TT_STATUS <- "TRAIN"

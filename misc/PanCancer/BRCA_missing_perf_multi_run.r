@@ -4,11 +4,12 @@ rm(list=ls())
 require(netDx)
 require(RColorBrewer)
 
-rngRange <- 1:10 # number of train/test split iterations run
+rngRange <- 1:13 # number of train/test split iterations run
 
 inDir <- "/mnt/data2/BaderLab/TCGA_BRCA/output/msng_170213"
+inFull <- "/mnt/data2/BaderLab/TCGA_BRCA/output/xpr_170213"
 
-combSet <- paste("miss",c(10,50,70,85,90,95,99),sep="")
+combSet <- paste("miss",c(0,10,50,70,85,90,95,99),sep="")
 cols <- c(brewer.pal(n=length(combSet),name="Blues"), "darkblue")
 
 cat(sprintf("Got %i combs\n", length(combSet)))
@@ -19,7 +20,7 @@ all_f1 <- list()
 all_acc <- list()
 all_ppv <- list()
 for (rngSeed in rngRange) {
-	cat(sprintf("RNG %i\n",rngSeed))
+	#cat(sprintf("RNG %i\n",rngSeed))
     out <- list()
     overall_acc <- numeric()
     pctMiss <- numeric()
@@ -27,16 +28,22 @@ for (rngSeed in rngRange) {
     curRoc	<- list()
 
     for (cur in combSet) {
-        inf <- sprintf("%s/rng%i/%s/predictionResults.txt",
-                       inDir,rngSeed,cur)
-		cat(sprintf("\t%s ", cur))
+
+		if (cur == "miss0") {
+			inf <- sprintf("%s/rng%i/predictionResults.txt",
+				inFull,rngSeed)
+		} else {
+        	inf <- sprintf("%s/rng%i/%s/predictionResults.txt",
+				inDir,rngSeed,cur)
+		}
+	#	cat(sprintf("\t%s ", cur))
         dat <- read.delim(inf,sep="\t",h=T,as.is=T)
         dat <- dat[-which(dat$STATUS %in% "Normal"),]
         out[[cur]] <- perfCalc_multiClass(dat$STATUS,dat$PRED_CLASS)*100
         overall_acc <- c(overall_acc, 
                          sum(dat$STATUS==dat$PRED_CLASS)/nrow(dat)*100)
     }
-	cat("\n")
+	#cat("\n")
     names(overall_acc) <- combSet
 
     tot <- unlist(lapply(out,function(x) sum(x[1,1:4])/100))
@@ -104,9 +111,9 @@ pdf("BRCA_missing.pdf",width=8,height=4)
 tryCatch({
 
 # mean pairwise F1
-f1_plot <- barplot(overall_avg_f1,main="mean F1",col=cols,
-	ylab="F1",ylim=c(0,100),las =2, cex.names=0.75)
-
+f1_plot <- barplot(overall_avg_f1,
+	main=sprintf("mean F1 (N=%i)",length(rngRange)),
+	col=cols,ylab="F1",ylim=c(0,100),las =2, cex.names=0.75)
 bottom_f1 <- overall_avg_f1 - overall_sd_f1
 top_f1 <- overall_avg_f1 + overall_sd_f1
 names(bottom_f1) <- NULL
@@ -116,9 +123,11 @@ arrows(f1_plot, bottom_f1, f1_plot,
        code = 3, length = 0.05)
 
 # mean pairwise accuracy
-acc_plot <- barplot(overall_avg_acc,main="mean accuracy",col=cols,
-	ylab="accuracy",ylim=c(0,100),las =2, cex.names=0.75)
-abline(h=c(50,85),col='red',lwd=2,lty=2)
+acc_plot <- barplot(overall_avg_acc,
+	main=sprintf("mean accuracy (N=%i)",length(rngRange)),
+	col=cols,ylab="accuracy",ylim=c(0,100),las =2, cex.names=0.75)
+abline(h=25,col='red',lwd=2,lty=2)
+abline(h=overall_avg_acc[1],col='grey50',lwd=2)
 bottom_acc <- overall_avg_acc - overall_sd_acc
 top_acc <- overall_avg_acc + overall_sd_acc
 names(bottom_acc) <- NULL
@@ -128,9 +137,11 @@ arrows(acc_plot, bottom_acc, acc_plot,
        code = 3, length = 0.05)
 
 #ppv 
-ppv_plot <- barplot(overall_avg_ppv,main="mean PPV",col=cols,ylab="PPV",
-	ylim=c(0,100),las =2, cex.names=0.75)
+ppv_plot <- barplot(overall_avg_ppv,
+	main=sprintf("mean PPV (N=%i)",length(rngRange)),
+	col=cols,ylab="PPV",ylim=c(0,100),las =2, cex.names=0.75)
 abline(h=50,col='red',lwd=2,lty=2)
+abline(h=overall_avg_ppv[1],col='grey50',lwd=2)
 bottom_ppv<- overall_avg_ppv - overall_sd_ppv
 top_ppv <- overall_avg_ppv + overall_sd_ppv
 names(bottom_ppv) <- NULL
@@ -140,9 +151,11 @@ arrows(ppv_plot, bottom_ppv, ppv_plot,
        code = 3, length = 0.05)
 
 # plot overall accuracy
-overall_acc_plot <- barplot(overall_avg_overall_acc,main="Accuracy",col=cols,
-	ylab="accuracy",ylim=c(0,100),las =2, cex.names=0.75)
-abline(h=c(50,85),col='red',lwd=2,lty=2)
+overall_acc_plot <- barplot(overall_avg_overall_acc,
+	main=sprintf("Accuracy (N=%i)",length(rngRange)),
+	col=cols,ylab="accuracy",ylim=c(0,100),las =2, cex.names=0.75)
+abline(h=25,col='red',lwd=2,lty=2)
+abline(h=overall_avg_overall_acc[1],col='grey50',lwd=2)
 bottom_oall<- overall_avg_overall_acc - overall_sd_overall_acc
 top_oall <- overall_avg_overall_acc + overall_sd_overall_acc
 names(bottom_oall) <- NULL

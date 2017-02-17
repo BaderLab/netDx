@@ -2,7 +2,8 @@
 % Please edit documentation in R/compareShortestPath.R
 \name{compareShortestPath}
 \alias{compareShortestPath}
-\title{compare intra-cluster shortest distance to overall shortest distance of the network}
+\title{compare intra-cluster shortest distance to overall shortest distance of the
+ network}
 \usage{
 compareShortestPath(net, pheno, showNetDist = FALSE, verbose = TRUE)
 }
@@ -21,13 +22,16 @@ library)}
 \item{verbose}{(logical) print messages}
 }
 \value{
-(list) keys are cluster names, and values are mean shortest path 
+(list) Two lists, "avg" and "all". keys are cluster names. 
+values for "avg" are mean shortest path ; for "all", are all pairwise
+shortest paths
 for subnetworks that contain only the edges where source and target both 
 belong to the corresponding cluster. In addition, there is an "overall" 
 entry for the mean shortest distance for the entire network.
 }
 \description{
-compare intra-cluster shortest distance to overall shortest distance of the network
+compare intra-cluster shortest distance to overall shortest distance of the
+ network
 }
 \details{
 Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with

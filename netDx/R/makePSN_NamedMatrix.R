@@ -86,7 +86,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 									p2=colnames(sim)[ij[,2]], 
 									similarity=sim[idx])
 
-				too_weak    <- which(pat_pairs[,3] < cutoff)
+				too_weak    <- which(pat_pairs[,3] < cutoff | 
+									is.na(pat_pairs[,3]))
 				if (any(too_weak)) {
 					if (verbose) 
 						cat(sprintf("\t%i weak connections\n", 

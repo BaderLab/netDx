@@ -7,7 +7,10 @@
 #' @param netDir (char) path to directory containing interaction networks.
 #' Note that these are networks where the node IDs have been recoded by 
 #' GeneMANIA (e.g. 1,2,3)
-#' @param keepNets (data.frame) networks to retain in the final network
+#' @param keepNets (char or data.frame) networks to include in integrated net
+#' If data.frame must be in "NETWORK" column,other columns will be
+#' ignored. Mainly included as convenience so pathway scores can passed
+#' in table format
 #' (NETWORK), and a multiplier constant for edges in that network (WEIGHT)
 #' @param outDir (char) path to directory where network files should be 
 #' written
@@ -38,12 +41,18 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,
 	writeSingleNets=FALSE,verbose=FALSE){
 
+	if (class(keepNets)=="character") {
+		keepNets <- data.frame(NETWORK=keepNets,WEIGHT=1)
+		keepNets[,1] <- as.character(keepNets[,1])
+	}
+
 	pid		<- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)[,1:2]
 	colnames(pid)[1:2] <- c("GM_ID","ID")
 	netid	<- read.delim(netInfo,sep="\t",header=FALSE,as.is=TRUE)
 	colnames(netid)[1:2] <- c("NET_ID", "NETWORK")
 	nets	<- merge(x=netid,y=keepNets,by="NETWORK")
 	nets	<- nets[,c("NETWORK","NET_ID","WEIGHT")]
+	nets$NET_ID <- as.character(nets$NET_ID)
 
 	# clean name
 	x <- sub(".profile$","",nets$NETWORK)
@@ -61,9 +70,9 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			maxNet <- matrix(NA,nrow=numPat, ncol=numPat)
 		}
 	}
+
 	for (i in 1:nrow(nets)) {
-		nf<- sprintf("%s/1.%i.txt", netDir,nets$NET_ID[i])
-		if (verbose) print(basename(nf))
+		nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
 		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
 		if (nrow(ints)>=1) {
@@ -79,8 +88,8 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				intColl[midx] <- pmax(intColl[midx],ints[,3],na.rm=TRUE)
 				numInt[midx] <- numInt[midx] + 1
 				maxNet[midx] <- nets$NET_ID[i]
-				if (verbose) cat(sprintf("%i: %i interactions added\n",
-							i, nrow(midx)))
+				if (verbose) cat(sprintf("\t%s: %i: %i interactions added\n",
+							basename(nf),i, nrow(midx)))
 				##print(table(maxNet))
 				##print(summary(as.numeric(intColl)))
 			}
@@ -114,10 +123,11 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			}
 		}
 	}
+	if (verbose) cat(sprintf("Total of %i nets merged\n", nrow(nets)))
 
 	# write average PSN
 	if (writeAggNet!="NONE") {
-		cat("Writing aggregate PSN\n")
+		cat("\nWriting aggregate PSN\n")
 		if (writeAggNet=="MEAN") tmp <- intColl/numInt # take mean
 		else tmp <- intColl # max value is already in
 

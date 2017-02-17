@@ -1,4 +1,5 @@
-#' compare intra-cluster shortest distance to overall shortest distance of the network
+#' compare intra-cluster shortest distance to overall shortest distance of the
+#'  network
 #'
 #' @details Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
 #' infinite distances are excluded before computing average shortest path 
@@ -16,12 +17,14 @@
 #' @examples data(silh); 
 #' colnames(silh$net)[3] <- "weight"
 #' compareShortestPath(silh$net, silh$groups)
-#' @return (list) keys are cluster names, and values are mean shortest path 
+#' @return (list) Two lists, "avg" and "all". keys are cluster names. 
+#' values for "avg" are mean shortest path ; for "all", are all pairwise
+#' shortest paths
 #' for subnetworks that contain only the edges where source and target both 
 #' belong to the corresponding cluster. In addition, there is an "overall" 
 #' entry for the mean shortest distance for the entire network.
 #' @export
-compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
+compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){	
 	colnames(net) <- c("source","target","weight")
 
 	if (verbose) {
@@ -36,6 +39,13 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		##if (verbose) cat(sprintf("\tN=%i distances\n", length(tmp)))
 
 		c(mean(tmp,na.rm=TRUE), sd(tmp,na.rm=TRUE),length(tmp))
+	}
+
+	.getAllD <- function(mat) {
+		tmp <- mat[upper.tri(mat,diag=FALSE)]
+		idx <- which(is.infinite(tmp))
+		if (any(idx)) tmp <- tmp[-idx]
+		tmp
 	}
 	
 	g <- igraph::graph_from_data_frame(net, vertices=pheno$ID)
@@ -52,6 +62,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 
 	cnames <- unique(pheno$GROUP)
 	dset <- list()
+	dall <- list()
 	for (curr_cl in cnames) {
 		cl <- pheno$ID[which(pheno$GROUP%in% curr_cl)]
 		if (verbose) cat(sprintf("\n%s: N=%i nodes\n", curr_cl,length(cl)))
@@ -62,6 +73,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 			vertices=cl)
 		tmp <- igraph::shortest.paths(g2,algorithm="dijkstra")
 		dset[[curr_cl]] <- .getAvgD(tmp)
+		dall[[curr_cl]] <- .getAllD(tmp)
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
 			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
@@ -79,9 +91,11 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 		idx <- c(idx,idx2)
 		g <- igraph::graph_from_data_frame(d=net[idx,])
 		tmp <- igraph::shortest.paths(g,algorithm="dijkstra")
-		cur <- sprintf("%s-%s\n", cpairs[1,k],cpairs[2,k])
+		cur <- sprintf("%s-%s", cpairs[1,k],cpairs[2,k])
 		dset[[cur]] <- .getAvgD(tmp)
 		dset[[curr_cl]] <- .getAvgD(tmp)
+		dall[[cur]] <- .getAllD(tmp)
+		
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
 			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
@@ -89,6 +103,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE) {
 	}
 
 	dset[["overall"]] <- .getAvgD(d_overall)
-	return(dset)
+	dall[["overall"]] <- .getAllD(d_overall)
+	return(list(avg=dset,all=dall))
 
 }

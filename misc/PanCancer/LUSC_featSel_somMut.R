@@ -10,13 +10,13 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_LUSC/input"
-outRoot <-"/mnt/data2/BaderLab/PanCancer_LUSC/output"
+inDir <- "/home/spai/BaderLab/PanCancer_LUSC/input"
+outRoot <-"/home/spai/BaderLab/PanCancer_LUSC/output"
 #inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_LUSC/input"
 #outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_LUSC/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_incMut_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_incMutRPPA_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -44,6 +44,7 @@ inFiles <- list(
 	clinical=sprintf("%s/LUSC_clinical_core.txt",inDir),
 	survival=sprintf("%s/LUSC_binary_survival.txt",inDir),
 	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
+	rppa=sprintf("%s/LUSC_RPPA_core.txt",inDir),
 	mut=sprintf("%s/from_firehose/LUSC_core_somatic_mutations.txt",
 		inDir)
 )
@@ -82,6 +83,20 @@ dats$clinical <- clin; rm(clin)
 #### change this for current tumour type
 clinList <- list(age="age",stage="stage")
 
+# Proteomics
+cat("\t* RPPA\n")
+rppa <- read.delim(inFiles$rppa,sep="\t",h=T,as.is=T)
+rppa <- t(rppa)
+colnames(rppa) <- rppa[1,]; rppa <- rppa[-1,]; 
+rppa <- rppa[-nrow(rppa),]
+class(rppa) <- "numeric"
+nm <- sub("RPPA_","",rownames(rppa))
+dpos <- regexpr("\\.",nm)
+nm <- substr(nm,1,dpos-1)
+rownames(rppa) <- nm
+
+dats$rppa <- rppa; rm(rppa)
+
 # RNA
 cat("\t* RNA\n")
 rna <- read.delim(inFiles$rna,sep="\t",h=T,as.is=T)
@@ -114,7 +129,7 @@ pat_GR$ID <- mut$ID
 pheno_all <- pheno; 
 pat_GR_all <- pat_GR;
 
-rm(pheno,pheno_nosurv,pat_GR,mut)
+rm(pheno,pat_GR,mut)
 
 # ----------------------------------------------------------
 # build classifier
@@ -125,7 +140,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:1) {
+for (rngNum in 63:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -146,6 +161,9 @@ for (rngNum in 1:1) {
 	pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
 	   path.package("netDx.examples"))
 	pathwayList <- readPathways(pathFile)
+	PROT_pathwayList <- pathwayList
+	names(PROT_pathwayList) <- paste("PROT", names(pathwayList),sep="_")
+
 	data(genes)
 	gene_GR     <- GRanges(genes$chrom,IRanges(genes$txStart,genes$txEnd),
 	  	name=genes$name2)
@@ -158,20 +176,26 @@ for (rngNum in 1:1) {
 								   pathwayList,netDir,verbose=FALSE, 
 								   numCores=numCores,writeProfiles=TRUE) 
 	cat("Made RNA pathway nets\n")
+
+	# group by pathway
+	netList2 <- makePSN_NamedMatrix(dats_train$rppa, rownames(dats_train$rppa),
+   	     PROT_pathwayList,netDir,verbose=FALSE, 
+   	     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
+	cat("Made protein pathway nets\n")
 	
 	# each clinical var is its own net
-	netList2 <- makePSN_NamedMatrix(dats_train$clinical, 
+	netList3 <- makePSN_NamedMatrix(dats_train$clinical, 
 									rownames(dats_train$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
 	cat("Made clinical nets\n")
 
 	# add somatic mutations at pathway-level
-	netList3 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
+	netList4 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
 		numCores=numCores)
 	cat("Made somatic mutation pathway nets\n")
 
-	netList <- unlist(c(netList,netList2,netList3)) 
+	netList <- unlist(c(netList,netList2,netList3,netList4)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
 	# now create database
@@ -245,6 +269,13 @@ for (rngNum in 1:1) {
 		# add somatic mutations at pathway-level
 		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
 			numCores=numCores)
+
+		# proteomics group by pathway
+		netList4 <- makePSN_NamedMatrix(dats$rppa, 
+			rownames(dats$rppa),
+   		     PROT_pathwayList,netDir,verbose=FALSE, 
+   		     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
+		cat("Made protein pathway nets\n")
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
@@ -277,6 +308,8 @@ for (rngNum in 1:1) {
 	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
 		outDir,outDir))
 	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
+		outDir,outDir))
+	system(sprintf("rm -r %s/SURVIVEYES/tmp %s/SURVIVENO/tmp",
 		outDir,outDir))
 
 }}, error=function(ex){

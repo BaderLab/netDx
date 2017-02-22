@@ -76,9 +76,10 @@ clin <- t(clin[,2,drop=FALSE])
 dats$clinical <- clin; rm(clin)
 
 # methylation
-###cat("\t* Methylation\n")
+cat("\t* DNA methylation\n")
 meth <- read.delim(inFiles$meth,sep="\t",h=T,as.is=T)
 dats$meth <- meth; rm(meth)
+colnames(dats$meth) <- gsub("\\.","-",colnames(dats$meth))
 
 ### done once, don't repeat.
 ###rownames(meth) <- meth[,1]; meth <- meth[,-1]
@@ -113,10 +114,11 @@ rownames(rna) <- sub("mRNA_","",rownames(rna))
 dats$rna <- rna; rm(rna)
 
 # include only data for patients in classifier
-dats <- lapply(dats, function(x) { x[,which(colnames(x)%in%pheno$ID)]})
+dats <- lapply(dats, function(x) { x[,which(colnames(x)%in%pheno$ID),
+	drop=FALSE]})
 dats <- lapply(dats, function(x) { 
 	midx <- match(pheno$ID,colnames(x))
-	x <- x[,midx]
+	x <- x[,midx,drop=FALSE]
 	x
 })
 
@@ -145,7 +147,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:1) {
+for (rngNum in 1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -201,8 +203,8 @@ for (rngNum in 1:1) {
 
 	# methylation BRCA1/2 only
 	netList5 <- makePSN_NamedMatrix(dats_train$meth, rownames(dats_train$meth),
-								   methList,netDir,verbose=FALSE, 
-								   numCores=numCores,writeProfiles=TRUE) 
+			methList,netDir,verbose=FALSE,append=TRUE, 
+		  	numCores=numCores,writeProfiles=TRUE) 
 
 	netList <- unlist(c(netList,netList2,netList3,netList4,netList5)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))

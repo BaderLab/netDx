@@ -105,6 +105,8 @@ colnames(rna) <- rna[1,]; rna <- rna[-1,];
 rna <- rna[-nrow(rna),]
 class(rna) <- "numeric"
 rownames(rna) <- sub("mRNA_","",rownames(rna))
+dpos <- regexpr("\\.", rownames(rna))
+rownames(rna) <- substr(rownames(rna),1,dpos-1)
 dats$rna <- rna; rm(rna)
 
 # include only data for patients in classifier
@@ -140,7 +142,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 63:100) {
+for (rngNum in 1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -171,13 +173,13 @@ for (rngNum in 63:100) {
 	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
 	
-	# group by pathway
+	# RNA - group by pathway
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
 								   pathwayList,netDir,verbose=FALSE, 
 								   numCores=numCores,writeProfiles=TRUE) 
 	cat("Made RNA pathway nets\n")
 
-	# group by pathway
+	# PROTEIN - group by pathway
 	netList2 <- makePSN_NamedMatrix(dats_train$rppa, rownames(dats_train$rppa),
    	     PROT_pathwayList,netDir,verbose=FALSE, 
    	     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
@@ -258,24 +260,40 @@ for (rngNum in 63:100) {
 		netDir <- sprintf("%s/networks",pDir)
 	
 		# prepare nets for new db
-		tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
-	        pathwayList[which(names(pathwayList)%in%pTally)],
-			netDir,verbose=F,numCores=numCores)
+		# RNA 
+		idx <- which(names(pathwayList) %in% pTally)
+		if (any(idx)) {
+			tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
+	   		     pathwayList[idx],
+				netDir,verbose=F,numCores=numCores)
+		}
 	
+		# clinical
+		idx <- which(names(clinList) %in% pTally)
+		if (any(idx)) {
 		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
-			clinList,netDir, simMetric="custom",customFunc=normDiff,
+			clinList[idx],
+			netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+		}
 
 		# add somatic mutations at pathway-level
-		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
-			numCores=numCores)
+		idx <- which(names(path_GRList) %in% pTally) 
+		if (any(idx)) {
+			netList3 <- makePSN_RangeSets(pat_GR_all, 
+				path_GRList[idx], 
+				netDir,numCores=numCores)
+		}
 
 		# proteomics group by pathway
-		netList4 <- makePSN_NamedMatrix(dats$rppa, 
-			rownames(dats$rppa),
-   		     PROT_pathwayList,netDir,verbose=FALSE, 
-   		     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
+		idx <- which(names(PROT_pathwayList) %in% pTally)
+		if (any(idx)) {
+			netList4 <- makePSN_NamedMatrix(dats$rppa, 
+				rownames(dats$rppa),
+   		     	PROT_pathwayList[idx],netDir,verbose=FALSE, 
+   		     	numCores=numCores,writeProfiles=TRUE,append=TRUE) 
 		cat("Made protein pathway nets\n")
+		}
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)

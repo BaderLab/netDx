@@ -265,7 +265,7 @@ for (rngNum in 1:1) {
 		if (any(idx)) {
 			cat(sprintf("RNA: included %i nets\n", length(idx)))
 			tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
-	   		     pathwayList[idx],
+	   		     pathwayList[idx],writeProfiles=TRUE,
 				netDir,verbose=F,numCores=numCores)
 		}
 	

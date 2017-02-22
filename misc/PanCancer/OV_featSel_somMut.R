@@ -10,10 +10,16 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/home/spai/BaderLab/PanCancer_LUSC/input"
-outRoot <-"/home/spai/BaderLab/PanCancer_LUSC/output"
-#inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_LUSC/input"
-#outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_LUSC/output"
+inDir <- "/home/spai/BaderLab/PanCancer_OV/input"
+outRoot <-"/home/spai/BaderLab/PanCancer_OV/output"
+
+### >>> CHANGE THIS for the current tumour
+clinList <- list(age="age") # clinical nets
+protList <- list(NOTCH="NOTCH3") # proteomics nets
+# probe-> gene mappings from BioC package IlluminaHumanMethylation27k.db,
+# as.list(IlluminaHumanMethylation27kALIAS2PROBE) function
+methList <- list(BRCA1=c("cg06973652","cg11964474"),
+				 BRCA2=c("cg12836863","cg27253386"))
 
 dt <- format(Sys.Date(),"%y%m%d")
 megaDir <- sprintf("%s/featSel_incMutRPPA_%s",outRoot,dt)
@@ -41,12 +47,13 @@ normDiff <- function(x) {
 # -----------------------------------------------------------
 # process input
 inFiles <- list(
-	clinical=sprintf("%s/LUSC_clinical_core.txt",inDir),
-	survival=sprintf("%s/LUSC_binary_survival.txt",inDir),
-	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
-	rppa=sprintf("%s/LUSC_RPPA_core.txt",inDir),
-	mut=sprintf("%s/from_firehose/LUSC_core_somatic_mutations.txt",
-		inDir)
+	clinical=sprintf("%s/OV_clinical_core.txt",inDir),
+	survival=sprintf("%s/OV_binary_survival.txt",inDir),
+	rna=sprintf("%s/OV_mRNA_core.txt",inDir),
+	rppa=sprintf("%s/OV_RPPA_core.txt",inDir),
+	mut=sprintf("%s/from_firehose/OV_core_somatic_mutations.txt",
+		inDir),
+	meth=sprintf("%s/OV_methylation_short.txt",inDir) # pre-prepared short file
 )
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
 colnames(pheno)[1] <- "ID"
@@ -60,28 +67,26 @@ surv$STATUS <- survStr
 pheno <- merge(x=pheno,y=surv,by="ID")
 
 dats <- list() #input data in different slots
+
 # clinical
 cat("\t* Clinical\n")
 clin <- pheno
-# ######
-# This section copied from main.R of syn1895966 and adapted to the current
-# code
-clin$stage <- as.vector(clin$stage)
-clin$stage[clin$stage=="Stage IA"| clin$stage=="Stage IB"] <- "I"
-clin$stage[clin$stage=="Stage IIA"| clin$stage=="Stage IIB"| clin$stage=="Stage II"] <- "II"
-clin$stage[clin$stage=="Stage IIIA"| clin$stage=="Stage IIIB"] <- "III"
-clin$stage <- as.factor(clin$stage)
-clin <- clin[, -which(colnames(clin)=="gender")]
-# ######
 rownames(clin) <- clin[,1]; 
-clin <- t(clin[,c("age","stage")])
-clin[1,] <- as.integer(clin[1,])
-clin[2,] <- as.integer(as.factor(clin[2,]))
-class(clin) <- "numeric"
+clin <- t(clin[,2,drop=FALSE])
 dats$clinical <- clin; rm(clin)
 
-#### change this for current tumour type
-clinList <- list(age="age",stage="stage")
+# methylation
+###cat("\t* Methylation\n")
+meth <- read.delim(inFiles$meth,sep="\t",h=T,as.is=T)
+dats$meth <- meth; rm(meth)
+
+### done once, don't repeat.
+###rownames(meth) <- meth[,1]; meth <- meth[,-1]
+###meth <- t(meth)
+###rownames(meth) <- sub("methylation_","",rownames(meth))
+###meth <- meth[which(rownames(meth) %in% unlist(methList)),]
+###write.table(meth, file=sprintf("%s/OV_methylation_short.txt", inDir),sep="\t",
+###	col=TRUE,row=TRUE)
 
 # Proteomics
 cat("\t* RPPA\n")
@@ -140,7 +145,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 63:100) {
+for (rngNum in 1:1) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -161,8 +166,6 @@ for (rngNum in 63:100) {
 	pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
 	   path.package("netDx.examples"))
 	pathwayList <- readPathways(pathFile)
-	PROT_pathwayList <- pathwayList
-	names(PROT_pathwayList) <- paste("PROT", names(pathwayList),sep="_")
 
 	data(genes)
 	gene_GR     <- GRanges(genes$chrom,IRanges(genes$txStart,genes$txEnd),
@@ -171,31 +174,37 @@ for (rngNum in 63:100) {
 	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
 	
-	# group by pathway
+	# RNA - group by pathway
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
 								   pathwayList,netDir,verbose=FALSE, 
 								   numCores=numCores,writeProfiles=TRUE) 
 	cat("Made RNA pathway nets\n")
 
-	# group by pathway
-	netList2 <- makePSN_NamedMatrix(dats_train$rppa, rownames(dats_train$rppa),
-   	     PROT_pathwayList,netDir,verbose=FALSE, 
-   	     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
-	cat("Made protein pathway nets\n")
+	# RPPA - genes of interest
+	netList2 <- makePSN_NamedMatrix(dats_train$rppa, 
+			rownames(dats_train$rppa),
+   		     protList,netDir,simMetric="custom", customFunc=normDiff,
+			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+	cat("Made protein gene nets\n")
 	
-	# each clinical var is its own net
+	# Clinical- each clinical var is its own net
 	netList3 <- makePSN_NamedMatrix(dats_train$clinical, 
 									rownames(dats_train$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
 	cat("Made clinical nets\n")
 
-	# add somatic mutations at pathway-level
+	# Somatic mutations - add somatic mutations at pathway-level
 	netList4 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
 		numCores=numCores)
 	cat("Made somatic mutation pathway nets\n")
 
-	netList <- unlist(c(netList,netList2,netList3,netList4)) 
+	# methylation BRCA1/2 only
+	netList5 <- makePSN_NamedMatrix(dats_train$meth, rownames(dats_train$meth),
+								   methList,netDir,verbose=FALSE, 
+								   numCores=numCores,writeProfiles=TRUE) 
+
+	netList <- unlist(c(netList,netList2,netList3,netList4,netList5)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
 	# now create database
@@ -258,24 +267,32 @@ for (rngNum in 63:100) {
 		netDir <- sprintf("%s/networks",pDir)
 	
 		# prepare nets for new db
+		# RNA
 		tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
 	        pathwayList[which(names(pathwayList)%in%pTally)],
 			netDir,verbose=F,numCores=numCores)
 	
+		# clinical
 		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
 
-		# add somatic mutations at pathway-level
+		# somatic mutations - add somatic mutations at pathway-level
 		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
 			numCores=numCores)
 
-		# proteomics group by pathway
+		# rppa by genes of interest  group by pathway
 		netList4 <- makePSN_NamedMatrix(dats$rppa, 
 			rownames(dats$rppa),
-   		     PROT_pathwayList,netDir,verbose=FALSE, 
-   		     numCores=numCores,writeProfiles=TRUE,append=TRUE) 
+   		     protList,netDir,simMetric="custom", customFunc=normDiff,
+			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
 		cat("Made protein pathway nets\n")
+	
+		# methylation BRCA1/2 only
+		netList5 <- makePSN_NamedMatrix(dats$meth, 
+			rownames(dats$meth),methList,netDir,verbose=FALSE, 
+			numCores=numCores,writeProfiles=TRUE) 
+		cat("Made methylation nets\n")
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)

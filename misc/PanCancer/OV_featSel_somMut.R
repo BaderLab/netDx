@@ -10,8 +10,8 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/home/spai/BaderLab/PanCancer_OV/input"
-outRoot <-"/home/spai/BaderLab/PanCancer_OV/output"
+inDir <- "/mnt/data2/BaderLab/PanCancer_OV/input"
+outRoot <-"/mnt/data2/BaderLab/PanCancer_OV/output"
 
 ### >>> CHANGE THIS for the current tumour
 clinList <- list(age="age") # clinical nets
@@ -272,7 +272,7 @@ for (rngNum in 1:100) {
 		# RNA
 		tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
 	        pathwayList[which(names(pathwayList)%in%pTally)],
-			netDir,verbose=F,numCores=numCores)
+			netDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
 	
 		# clinical
 		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),

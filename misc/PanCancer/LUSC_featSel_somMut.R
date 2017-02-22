@@ -142,7 +142,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:100) {
+for (rngNum in 1:1) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -263,6 +263,7 @@ for (rngNum in 1:100) {
 		# RNA 
 		idx <- which(names(pathwayList) %in% pTally)
 		if (any(idx)) {
+			cat(sprintf("RNA: included %i nets\n", length(idx)))
 			tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
 	   		     pathwayList[idx],
 				netDir,verbose=F,numCores=numCores)
@@ -271,6 +272,7 @@ for (rngNum in 1:100) {
 		# clinical
 		idx <- which(names(clinList) %in% pTally)
 		if (any(idx)) {
+			cat(sprintf("clinical: included %i nets\n", length(idx)))
 		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
 			clinList[idx],
 			netDir, simMetric="custom",customFunc=normDiff,
@@ -280,6 +282,7 @@ for (rngNum in 1:100) {
 		# add somatic mutations at pathway-level
 		idx <- which(names(path_GRList) %in% pTally) 
 		if (any(idx)) {
+			cat(sprintf("mutations: included %i nets\n", length(idx)))
 			netList3 <- makePSN_RangeSets(pat_GR_all, 
 				path_GRList[idx], 
 				netDir,numCores=numCores)
@@ -288,12 +291,14 @@ for (rngNum in 1:100) {
 		# proteomics group by pathway
 		idx <- which(names(PROT_pathwayList) %in% pTally)
 		if (any(idx)) {
+			cat(sprintf("proteomics: included %i nets\n", length(idx)))
 			netList4 <- makePSN_NamedMatrix(dats$rppa, 
 				rownames(dats$rppa),
    		     	PROT_pathwayList[idx],netDir,verbose=FALSE, 
    		     	numCores=numCores,writeProfiles=TRUE,append=TRUE) 
-		cat("Made protein pathway nets\n")
 		}
+
+		browser()
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)

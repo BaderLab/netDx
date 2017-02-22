@@ -15,7 +15,7 @@ outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
 #outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_incMut_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -116,7 +116,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:30) {
+for (rngNum in 1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -145,23 +145,24 @@ for (rngNum in 1:30) {
 	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
 	
 	# group by pathway
+	# RNA
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
 								   pathwayList,netDir,verbose=FALSE, 
 								   numCores=numCores,writeProfiles=TRUE) 
-	cat("Made RNA pathway nets\n")
+	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
 	
-	# each clinical var is its own net
-	clinList <- list(age="age",gender="gender")
+	# clinical - each clinical var is its own net
+	clinList <- list(age="age",gender="gender",Karnofsky="performance_score")
 	netList2 <- makePSN_NamedMatrix(dats_train$clinical, 
 									rownames(dats_train$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
-	cat("Made clinical nets\n")
+	cat(sprintf("Made %i clinical nets \n", length(netList2)))
 
 	# add somatic mutations at pathway-level
 	netList3 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
 		numCores=numCores)
-	cat("Made somatic mutation pathway nets\n")
+	cat(sprintf("Made %i mutation nets \n", length(netList3)))
 
 	netList <- unlist(c(netList,netList2,netList3)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
@@ -226,18 +227,34 @@ for (rngNum in 1:30) {
 		netDir <- sprintf("%s/networks",pDir)
 	
 		# prepare nets for new db
-		tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
-	        pathwayList[which(names(pathwayList)%in%pTally)],
+		# RNA - 
+		idx <- which(names(pathwayList) %in% pTally)
+		if (any(idx)) {
+		netList <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
+	        pathwayList[idx],writeProfiles=TRUE,
 			netDir,verbose=F,numCores=numCores)
+			cat(sprintf("TEST: made %i RNA nets\n", length(netList)))
+		}
 	
-		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
-			clinList,netDir, simMetric="custom",customFunc=normDiff,
-			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+		# clinical	
+		idx <- which(names(clinList) %in% pTally)
+		if (any(idx)) {	
+			netList2 <- makePSN_NamedMatrix(dats$clinical, 
+				rownames(dats$clinical),
+				clinList[idx],netDir, simMetric="custom",customFunc=normDiff,
+				sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+			cat(sprintf("TEST: made %i clinical nets\n", length(netList2)))
+		}
 
 		# add somatic mutations at pathway-level
-		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
-			numCores=numCores)
-	
+		idx <- which(names(path_GRList) %in% pTally)
+		if (any(idx)) {
+			netList3 <- makePSN_RangeSets(pat_GR_all, 
+				path_GRList[idx], 
+				netDir,numCores=numCores)
+			cat(sprintf("TEST: made %i mutation nets\n", length(netList3)))
+		}
+
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
 		# query of all training samples for this class
@@ -263,6 +280,14 @@ for (rngNum in 1:30) {
 	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
 						out$STATUS=="SURVIVEYES")
 	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
+
+	# cleanup
+	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+		outDir,outDir,outDir))	
+	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
+		outDir,outDir))
+	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
+		outDir,outDir))
 
 }}, error=function(ex){
 	print(ex)

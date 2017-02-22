@@ -4,9 +4,9 @@
 require(netDx)
 require(netDx.examples)
 cutoff <- 7
-numRuns <- 30
+numRuns <- 100
 
-datDir <- "/mnt/data2/BaderLab/PanCancer_GBM/output/featSel_170209"
+datDir <- "/mnt/data2/BaderLab/PanCancer_GBM/output/featSel_incMut_170217"
 
 # limit to genes in dataset
 mutFile <- "/mnt/data2/BaderLab/PanCancer_GBM/input/from_firehose/GBM_core_somatic_mutations.txt"
@@ -52,15 +52,21 @@ cat("----------------------\n")
 	outFile <- sprintf("%s/%s_consensusNets_cutoff%i.txt",datDir,
 		basename(scoreFile),cutoff)
 	write.table(cons,file=outFile,sep="\t",col=F,row=F,quote=F)
+	netTypeFile <- sub(".txt",".netTypes.txt",outFile)
 
 	outFile <- sprintf("%s/%s_somMut_cutoff%i.gmt",datDir,
 		basename(scoreFile),cutoff)
 
+
 	if (file.exists(outFile)) unlink(outFile)
 	system(sprintf("touch %s",outFile))
+	if (file.exists(netTypeFile)) unlink(netTypeFile)
+	system(sprintf("touch %s",netTypeFile))
+
 
 	# first write RNA-based pathways
 	idx <- grep(".profile",cons)
+	unaccounted <- cons[-idx]
 	cons<- sub(".profile","",cons)
 	pList <- pathwayList[which(names(pathwayList)%in% cons[idx])]
 	cat(sprintf("\t > %i gene-expression based pathways\n",length(pList)))
@@ -69,10 +75,15 @@ cat("----------------------\n")
 		cur <- intersect(cur, xpr_genes) # limit to interrogated genes
 		cat(sprintf("%s\t%s\t%s\n", k,k,paste(cur,collapse="\t")),
 			file=outFile,append=TRUE)
+		cat(sprintf("%s\tRNA\n", k),file=netTypeFile,append=TRUE)
 	}
+
 
 	# somatic mutation pathways
 	cons <- cons[-idx]  # remove RNA variables.
+	idx <- grep("MUT_", unaccounted)
+	unaccounted <- unaccounted[-idx]
+
 	tmp <- sub("MUT_", "", cons)
 	tmp <- sub("_cont","",tmp)
 	pList <- pathwayList[which(names(pathwayList) %in% tmp)]
@@ -83,6 +94,14 @@ cat("----------------------\n")
 		cur <- intersect(cur, mut_genes) # limit to interrogated genes
 		cat(sprintf("%s\t%s\t%s\n", k,k,paste(cur,collapse="\t")),
 			file=outFile,append=TRUE)
+		cat(sprintf("%s\tmutation\n", k),file=netTypeFile,append=TRUE)
+	}
+
+	# unaccounted
+	unaccounted <- sub("_cont","",unaccounted)
+	for (k in unaccounted) {
+		cat(sprintf("%s\t%s\t%s\n",k,k,k),file=outFile,append=TRUE)
+		cat(sprintf("%s\tother\n", k),file=netTypeFile,append=TRUE)
 	}
 	
 }

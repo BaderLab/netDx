@@ -142,7 +142,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:1) {
+for (rngNum in 1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -298,8 +298,6 @@ for (rngNum in 1:1) {
    		     	numCores=numCores,writeProfiles=TRUE,append=TRUE) 
 		}
 
-		browser()
-	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
 		# query of all training samples for this class

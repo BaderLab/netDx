@@ -57,6 +57,9 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
 		dir.create(outDir)
+	} else {
+		cat("You asked for append but the directory doesn't exist. Helpfully creating it\n")
+		if (!file.exists(outDir)) dir.create(outDir)
 	}
 
 	cl	<- makeCluster(numCores)

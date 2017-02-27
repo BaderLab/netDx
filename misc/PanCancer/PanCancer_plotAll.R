@@ -45,12 +45,12 @@ for (cur in names(dirList)) {
 																 AUC=val,
 												 				stringsAsFactors=FALSE) 
 		avg <- aggregate(curdat$AUC, 
-										 by=list(cancer=curdat$cancer, datatype=curdat$datatype),
-										 FUN=mean);
+					by=list(cancer=curdat$cancer, datatype=curdat$datatype),
+					FUN=mean);
 		colnames(avg)[3] <- "mean"
 		myse <- aggregate(curdat$AUC, 
-										 by=list(cancer=curdat$cancer, datatype=curdat$datatype),
-										 FUN=sem)
+					by=list(cancer=curdat$cancer, datatype=curdat$datatype),
+					FUN=sem)
 		colnames(myse)[3] <- "sem"
 		x <- merge(x=avg,y=myse,by=c("cancer","datatype"))
 		outList[[cur]][[subd]]  <- x

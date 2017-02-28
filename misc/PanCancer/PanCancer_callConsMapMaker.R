@@ -53,9 +53,9 @@ xprList <- pathwayList
 xprList <- lapply(xprList, function(x) x[which(x %in% xpr_genes)])
 
 netInfo <- list(
-	RNA=list(pattern=".profile$", netSet=xprList),
 	mutations=list(pattern="MUT_", netSet=mutList),
-	clinical=list(pattern="_cont",netSet="base")
+	clinical=list(pattern="age|grade|stage",netSet="base"),
+	RNA=list(pattern="*", netSet=xprList)
 	)
 
 cat("got here\n")
@@ -63,7 +63,5 @@ cat("got here\n")
 source("PanCancer_featSel_writeConsensusMap.R")
 writeConsensusMap(datDir=dirList$KIRC, predClasses=c("SURVIVEYES","SURVIVENO"),
 	netInfo=netInfo)
-									
-
 
 rm(netInfo)

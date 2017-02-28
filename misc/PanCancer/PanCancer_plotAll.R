@@ -11,6 +11,10 @@ dirList <- list(
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/netdx_integrate_170206",dirBase)
 	)
 
+
+dt <- format(Sys.Date(),"%y%m%d")
+featResFile <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/featSel_perf_170227.Rdata"
+
 sem <- function(x) sd(x)/sqrt(length(x))
 
 outList <- list()
@@ -64,15 +68,23 @@ for (cur in names(dirList)) {
 
 out <- do.call("rbind",megaList)
 
+# add feature selection as its own 'datatype'
+lnames <- load(featResFile)
+featSel_agg$datatype <- "pathway_features"
+out <- rbind(out, featSel_agg)
+browser()
+
 out$datatype <- factor(out$datatype, 
 										 levels=c("clinical","clinicalArna","clinicalAmir",
-															"clinicalArppa","all"))
+															"clinicalArppa","all","pathway_features"))
+
 colList <- list(
 			clinical=rgb(178,24,43,max=255),
 			clinicalArna=rgb(249,116,36,max=255),
 			clinicalAmir=rgb(95,168,204,max=255),
 			clinicalArppa=rgb(237,66,32,max=255),
-			all="grey50")
+			all="grey50",
+			pathway_features="purple")
 
 # add eb
 limits <- aes(ymax=mean+sem,ymin=mean-sem)
@@ -87,7 +99,8 @@ p <- p + ylim(0.5,0.85)
 p <- p + theme_bw() + theme(axis.text=element_text(size=14)) 
 		
 p <- p + ggtitle("netDx: PanCancer survival AUCROC")
-pdf("PanCancer_basic_survival.pdf",width=10,height=3)
+pdf(sprintf("%s/PanCancer_featSel_survival_%s.pdf",dirname(featResFile),
+						dt),width=10,height=3)
 print(p);
 dev.off()
 

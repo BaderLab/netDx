@@ -5,10 +5,13 @@ require(ROCR)
 
 dirBase <- "/Users/shraddhapai/Documents/Research/BaderLab"
 
+dt <- format(Sys.Date(),"%y%m%d")
+saveFile <- sprintf("/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/featSel_perf_%s.Rdata",dt)
+
 # with feature selection
 dirList <- list(
 	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223",dirBase),
-	OV=sprintf("%s/2017_TCGA_OV/output/featSel_incMutRPPA_170223",dirBase),
+	OV=sprintf("%s/2017_TCGA_OV/output/OV_170227",dirBase),
 	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170223",dirBase),
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222",dirBase)
 	)
@@ -22,16 +25,8 @@ full <- list()
 for (cur in names(dirList)) {
 	print(cur)
 
-	if (cur == "GBM") {
-				maxk <- 78
-				kset <- 1:maxk
-	} else if (cur == "OV") {
-				maxk <- 48
-				kset <- setdiff(1:maxk,40)
-	} else {
-				maxk <- 100
-				kset <- 1:maxk
-	}
+	if (cur == "OV") maxk <- 96 else maxk <- 100
+	kset <- 1:maxk
 	cat(sprintf("Num runs=%i\n", maxk))
 
 		val <- rep(NA,maxk)
@@ -81,31 +76,18 @@ limits <- aes(ymax=mean+sem,ymin=mean-sem)
 # plot and save pdf
 p <- ggplot(out,aes(y=mean,x=cancer))
 p <- p + geom_point(position=position_dodge(width=0.9),size=2.5) +
-			geom_errorbar(position=position_dodge(width=0.9),limits,width=0.4)
+			geom_errorbar(position=position_dodge(width=0.9),limits,width=0.2)
 p <- p + scale_colour_manual(values=unlist(colList))
 # b/w theme, larger axis tick labels
 p <- p + theme_bw() + theme(axis.text=element_text(size=14)) 
-browser()
-		
-p <- p + ggtitle("netDx: PanCancer survival AUCROC")
-pdf("PanCancer_basic_survival.pdf",width=10,height=3)
-print(p);
-dev.off()
+p <- p + ggtitle("PanCancer - feature selection results")
 
-# compare LUSC clinical to clinical+ RPPA
-alldat <- do.call("rbind",full)
-idx1 <- which(alldat$cancer %in% "LUSC" & alldat$datatype %in% "clinical")
-idx2 <- which(alldat$cancer %in% "LUSC" & alldat$datatype %in% "clinicalArppa")
-wmw<- wilcox.test(alldat[idx1,"AUC"],alldat[idx2,"AUC"],
-									alternative="less")
-cat(sprintf("LUSC: clinical = %1.2f ; clin + RPPA = %1.2f (WMW p < %1.2e)\n",
-						mean(alldat[idx1,"AUC"]),mean(alldat[idx2,"AUC"]),wmw$p.value))
+pdfFile <-  sub(".Rdata",".pdf",saveFile)
+pdf(pdfFile,width=10,height=4)
+print(p); dev.off()
 
-# compare KIRC clinical to clinical+ RNA
-alldat <- do.call("rbind",full)
-idx1 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "clinical")
-idx2 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "clinicalArna")
-wmw<- wilcox.test(alldat[idx1,"AUC"],alldat[idx2,"AUC"],
-		alternative="less")
-cat(sprintf("KIRC: clinical = %1.2f ; clin + RNA = %1.2f (WMW p < %1.2e)\n",
-						mean(alldat[idx1,"AUC"]),mean(alldat[idx2,"AUC"]),wmw$p.value))
+# save results
+featSel_full <- full
+featSel_agg <- out
+save(featSel_full,featSel_agg,file=saveFile)
+

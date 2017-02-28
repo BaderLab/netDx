@@ -62,69 +62,57 @@ cat("----------------------\n")
 	passes_cutoff <- cons[,-1]>= consCutoff;
 	idx <- which(rowSums(passes_cutoff)>=round(pctPass*length(rngDirs)))
 	cat(sprintf("\tConsensus: %i nets scored >= %i\n",length(idx),consCutoff))
-	#print(cons[idx,1])
 	cons <- cons[idx,1]
 
-	outFile <- sprintf("%s_%s_consensusNets_cutoff%i.txt",outPfx,gp,consCutoff)
+	for (curT in trimFromName) cons <- sub(curT,"",cons)
+
+	outFile <- sprintf("%s_%s_consensusNets_cutoff%i.gmt",
+										 outPfx,gp,consCutoff)
 	write.table(cons,file=outFile,sep="\t",col=F,row=F,quote=F)
-	netTypeFile <- sub(".txt",".netTypes.txt",outFile)
+	netTypeFile <- sub(".gmt",".netTypes.txt",outFile)
 
 	if (file.exists(outFile)) unlink(outFile)
 	system(sprintf("touch %s",outFile))
 	if (file.exists(netTypeFile)) unlink(netTypeFile)
 	system(sprintf("touch %s",netTypeFile))
 
+	# convert first letter of each word to uppercase.
+  .simpleCap <- function(x) {
+				 x <- tolower(x) 
+         s <- strsplit(x, " ")[[1]]
+         paste(toupper(substring(s, 1, 1)), substring(s, 2),
+               sep = "", collapse = " ")
+     }	
+
 	# first write RNA-based pathways
 	unaccounted <- cons
 	for (curType in names(netInfo)) {
 		curDat <- netInfo[[curType]]
 		idx <- grep(curDat$pattern,unaccounted)
-		cat(sprintf("%s (pattern=%s) : %i nets\n", 
+		cat(sprintf("\t%s (pattern=%s) : %i nets ->", 
 								curType,curDat$pattern,length(idx)))
 
 		curNets <- unaccounted[idx]
 		if (class(curDat$netSet)=="character") {
-			cat("got base")
-		browser()
-
+				cat("writing single\n")
+			for (k in curNets) {
+				k2 <- .simpleCap(k)
+				cat(sprintf("%s\t%s\t%s\n", k2,k2,k2),file=outFile,append=TRUE)
+				cat(sprintf("%s\t%s\n",k2,curType),file=netTypeFile,append=TRUE)
+			}
 		} else {
-			cat("\tnetSet is a list\n")
-			netSet <- curDat$netSet[which(curDat$netSet %in% curNets)]
-			browser()
+			midx <- which(names(curDat$netSet) %in% curNets)
+			netSet <- curDat$netSet[midx]
+			cat(sprintf("%i matches found\n", length(midx)))
 			for (k in names(netSet)) {
-				for (totrim in trimFromName) k <- sub(totrim,"",k)
-				cat(sprintf("%s\t%s\t%s\n", k,k,paste(netSet[[k]],collapse="\t")),
+				k2 <- .simpleCap(k)
+				cat(sprintf("%s\t%s\t%s\n", k2,k2,paste(netSet[[k]],collapse="\t")),
 					file=outFile,append=TRUE)
-				cat(sprintf("%s\t%s\n",k, curType),file=netTypeFile,append=TRUE)
+				cat(sprintf("%s\t%s\n",k2, curType),file=netTypeFile,append=TRUE)
 			}
 		}
 		unaccounted <- setdiff(unaccounted, unaccounted[idx])
-		cat(sprintf("\t%i still unaccounted for\n",length(unaccounted)))
-	}
-
-	# somatic mutation pathways
-	cons <- cons[-idx]  # remove RNA variables.
-	idx <- grep("MUT_", unaccounted)
-	unaccounted <- unaccounted[-idx]
-
-	tmp <- sub("MUT_", "", cons)
-	tmp <- sub("_cont","",tmp)
-	pList <- pathwayList[which(names(pathwayList) %in% tmp)]
-	names(pList) <- paste("MUT",names(pList),sep="_")
-	cat(sprintf("\t > %i mutation based pathways\n",length(pList)))
-	for (k in names(pList)) {
-		cur <- pList[[k]]
-		cur <- intersect(cur, mut_genes) # limit to interrogated genes
-		cat(sprintf("%s\t%s\t%s\n", k,k,paste(cur,collapse="\t")),
-			file=outFile,append=TRUE)
-		cat(sprintf("%s\tmutation\n", k),file=netTypeFile,append=TRUE)
-	}
-
-	# unaccounted
-	unaccounted <- sub("_cont","",unaccounted)
-	for (k in unaccounted) {
-		cat(sprintf("%s\t%s\t%s\n",k,k,k),file=outFile,append=TRUE)
-		cat(sprintf("%s\tother\n", k),file=netTypeFile,append=TRUE)
+		cat(sprintf("\t\t...%i still unaccounted for\n\n",length(unaccounted)))
 	}
 }
 }

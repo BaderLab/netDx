@@ -3,7 +3,10 @@
 #' @param geneFile (char) path to GENES.txt file created during the making
 #' of a generic GeneMANIA database
 #' @param netInfo (char) path to NETWORKS.txt file created during the making
-#' of a generic GeneMANIA database
+#' of a generic GeneMANIA database. If this table contains a column marked 
+#' "isBinary" with 1/0 indicating if a given network contains only binary 
+#' weights, then PropBinary similarity computation will be used (see method
+#' description). 
 #' @param netDir (char) path to directory containing interaction networks.
 #' Note that these are networks where the node IDs have been recoded by 
 #' GeneMANIA (e.g. 1,2,3)
@@ -23,6 +26,7 @@
 #' 3) MAX: max of raw edge weight
 #' @param limitToTop (integer) limit to top strongest connections. Set to
 #' Inf to list all connections
+#' @param outFileName (char) if provided, overrides outF. Relative to outDir
 #' @param writeSingleNets (logical) keep/delete individual recoded nets.
 #' TRUE results in each written to its own file; FALSE does not.
 #' @param verbose (logical) print messages if TRUE
@@ -38,7 +42,7 @@
 #' 4) weight similarity for the network (WT_SIM)
 #' @export
 writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
-	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,
+	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,outFileName=NULL,
 	writeSingleNets=FALSE,verbose=FALSE){
 
 	if (class(keepNets)=="character") {
@@ -48,10 +52,22 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 
 	pid		<- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)[,1:2]
 	colnames(pid)[1:2] <- c("GM_ID","ID")
+
+	simMode <- "normal"
 	netid	<- read.delim(netInfo,sep="\t",header=FALSE,as.is=TRUE)
 	colnames(netid)[1:2] <- c("NET_ID", "NETWORK")
+	if (ncol(netid)>2) {
+		cat("binary status provided; switching to BinProp mode of similarity!\n")
+		colnames(netid)[3]<- "isBinary"
+		simMode <- "BinProp"
+	}
 	nets	<- merge(x=netid,y=keepNets,by="NETWORK")
-	nets	<- nets[,c("NETWORK","NET_ID","WEIGHT")]
+	if (simMode =="normal") {
+		nets	<- nets[,c("NETWORK","NET_ID","WEIGHT")]
+	} else {
+		nets	<- nets[,c("NETWORK","NET_ID","WEIGHT","isBinary")]
+	}
+
 	nets$NET_ID <- as.character(nets$NET_ID)
 
 	# clean name
@@ -71,7 +87,31 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		}
 	}
 
-	for (i in 1:nrow(nets)) {
+	contNets <- 1:nrow(nets)
+	if (simMode=="BinProp") {
+		binNets <- which(nets[,"isBinary"]>0)
+		cat(sprintf("Got %i binary nets\n", length(binNets)))
+		for (i in binNets) {
+			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
+			ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
+																								 # harmless
+			if (nrow(ints)>=1) {
+				midx <- rbind(as.matrix(ints[,c(1:2)]),
+						 as.matrix(ints[,c(2:1)]))
+				intColl[midx] <- intColl[midx] + ints[,3] # increase tally for pairs
+																									# with shared events
+			}
+		}
+		# finally divide by total num binary nets to get proportion similarity
+		intColl <- intColl/length(binNets)
+		numInt <- numInt + 1 # increase count for everyone because we have 
+													 # accounted for binary nets
+		contNets <- setdiff(contNets, which(nets[,"isBinary"]>0))
+		cat(sprintf("%i continuous nets left\n",length(contNets)))
+	} 
+
+	for (i in contNets) { 
 		nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
 		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
@@ -179,8 +219,12 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		ints$TARGET <- pid$ID[midx]
 		ints <- ints[,c(4,5,3,1,2)]
 		
-		outF <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt",
+		if (is.null(outFileName)) {
+			outF <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt",
 						outDir,filterEdgeWt,writeAggNet)
+		} else {
+			outF <- sprintf("%s/%s", outDir,outFileName)
+		}
 		if (!is.infinite(limitToTop)) {
 			outF <- sub(".txt",sprintf("top%i.txt",limitToTop),outF)
 		}

@@ -16,7 +16,7 @@ outRoot <-"/home/spai/BaderLab/PanCancer_LUSC/output"
 #outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_LUSC/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_incMutRPPA_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_incMutRPPA_round2%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -142,7 +142,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:100) {
+for (rngNum in 4) { #1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -323,15 +323,15 @@ for (rngNum in 1:100) {
 						out$STATUS=="SURVIVEYES")
 	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
 
-	# cleanup
-	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
-		outDir,outDir,outDir))	
-	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
-		outDir,outDir))
-	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
-		outDir,outDir))
-	system(sprintf("rm -r %s/SURVIVEYES/tmp %s/SURVIVENO/tmp",
-		outDir,outDir))
+###	# cleanup
+###	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+###		outDir,outDir,outDir))	
+###	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
+###		outDir,outDir))
+###	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
+###		outDir,outDir))
+###	system(sprintf("rm -r %s/SURVIVEYES/tmp %s/SURVIVENO/tmp",
+###		outDir,outDir))
 
 }}, error=function(ex){
 	print(ex)

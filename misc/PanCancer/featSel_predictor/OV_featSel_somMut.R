@@ -10,8 +10,8 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_OV/input"
-outRoot <-"/mnt/data2/BaderLab/PanCancer_OV/output"
+inDir <- "/home/netdx/BaderLab/PanCancer_OV/input"
+outRoot <-"/home/netdx/BaderLab/PanCancer_OV/output"
 
 ### >>> CHANGE THIS for the current tumour
 clinList <- list(age="age") # clinical nets
@@ -22,7 +22,7 @@ methList <- list(BRCA1=c("cg06973652","cg11964474"),
 				 BRCA2=c("cg12836863","cg27253386"))
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_incMutRPPA_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -146,11 +146,15 @@ dir.create(megaDir)
 
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
+
 tryCatch({
-for (rngNum in 1:100) {
+for (rngNum in 57) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
+    t_rngStart <- Sys.time() 
+    cat("Start time:\n"); print(Sys.time())
 	cat(sprintf("-------------------------------\n"))
+    
 	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
 	dir.create(outDir)
 
@@ -161,6 +165,13 @@ for (rngNum in 1:100) {
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
 	dats_train <- lapply(dats,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
+    
+    #===================================================================
+    fix_train_clin <- as.matrix(dats_train$clinical)
+    colnames(fix_train_clin) <- "age"
+    fix_train_clin <- t(fix_train_clin)
+    dats_train$clinical <- fix_train_clin
+    #===================================================================
 	pat_GR_train <- pat_GR_all[which(pat_GR_all$ID %in% pheno$ID)]
 	
 	# create nets 
@@ -180,40 +191,43 @@ for (rngNum in 1:100) {
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
 								   pathwayList,netDir,verbose=FALSE, 
 								   numCores=numCores,writeProfiles=TRUE) 
-	cat("Made RNA pathway nets\n")
+	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
 
 	# RPPA - genes of interest
 	netList2 <- makePSN_NamedMatrix(dats_train$rppa, 
 			rownames(dats_train$rppa),
    		     protList,netDir,simMetric="custom", customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
-	cat("Made protein gene nets\n")
+	cat(sprintf("Made %i protein gene nets\n",length(netList2)))
 	
 	# Clinical- each clinical var is its own net
 	netList3 <- makePSN_NamedMatrix(dats_train$clinical, 
 									rownames(dats_train$clinical),
 			clinList,netDir, simMetric="custom",customFunc=normDiff,
 			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
-	cat("Made clinical nets\n")
+	cat(sprintf("Made %i clinical nets\n", length(netList3)))
 
 	# Somatic mutations - add somatic mutations at pathway-level
 	netList4 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
 		numCores=numCores)
-	cat("Made somatic mutation pathway nets\n")
+	cat(sprintf("Made %i somatic mutation pathway nets\n",length(netList4)))
 
 	# methylation BRCA1/2 only
-	netList5 <- makePSN_NamedMatrix(dats_train$meth, rownames(dats_train$meth),
+	netList5 <- makePSN_NamedMatrix(dats_train$meth, 
+			rownames(dats_train$meth),
 			methList,netDir,verbose=FALSE,append=TRUE, 
 		  	numCores=numCores,writeProfiles=TRUE) 
+	cat(sprintf("Made %i DNAm nets\n",length(netList5)))
 
 	netList <- unlist(c(netList,netList2,netList3,netList4,netList5)) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
-	
+
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
 	
 	# run featsel once per subtype
 	subtypes <- unique(pheno$STATUS)
+    # browser()
 	# run 10-fold cv per subtype
 	for (g in subtypes) {
 	    pDir <- sprintf("%s/%s",outDir,g)
@@ -270,31 +284,65 @@ for (rngNum in 1:100) {
 	
 		# prepare nets for new db
 		# RNA
-		tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
-	        pathwayList[which(names(pathwayList)%in%pTally)],
-			netDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
+		# tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
+	        # pathwayList[which(names(pathwayList)%in%pTally)],
+			# netDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
+            
+        idx <- which(names(pathwayList) %in% pTally)
+        if (any(idx)) {
+            cat(sprintf("RNA: included %i nets\n", length(idx)))
+            tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
+                 pathwayList[idx],
+                netDir,verbose=F,numCores=numCores, writeProfiles=TRUE)
+        }
 	
 		# clinical
-		netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
-			clinList,netDir, simMetric="custom",customFunc=normDiff,
-			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+		# netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
+			# clinList,netDir, simMetric="custom",customFunc=normDiff,
+			# sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+            
+        idx <- which(names(clinList) %in% pTally)
+		if (any(idx)) {
+            cat(sprintf("clinical: included %i nets\n", length(idx)))
+            netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
+                clinList[idx],
+                netDir, simMetric="custom",customFunc=normDiff,
+                sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+        }
 
 		# somatic mutations - add somatic mutations at pathway-level
-		netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
-			numCores=numCores)
-
+		# netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
+			# numCores=numCores)
+            
+		idx <- which(names(path_GRList) %in% pTally) 
+		if (any(idx)) {
+			cat(sprintf("mutations: included %i nets\n", length(idx)))
+			netList3 <- makePSN_RangeSets(pat_GR_all, 
+				path_GRList[idx], 
+				netDir,numCores=numCores)
+        }
+    
+            
+            
 		# rppa by genes of interest  group by pathway
-		netList4 <- makePSN_NamedMatrix(dats$rppa, 
-			rownames(dats$rppa),
-   		     protList,netDir,simMetric="custom", customFunc=normDiff,
-			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
-		cat("Made protein pathway nets\n")
+        
+        idx <- which(names(protList) %in% pTally) 
+        if (any(idx)){
+            cat(sprintf("protein: included %i nets\n", length(idx)))
+            netList4 <- makePSN_NamedMatrix(dats$rppa, 
+                rownames(dats$rppa),
+                 protList[idx],netDir,simMetric="custom", customFunc=normDiff,
+                sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
+        }
 	
 		# methylation BRCA1/2 only
-		netList5 <- makePSN_NamedMatrix(dats$meth, 
-			rownames(dats$meth),methList,netDir,verbose=FALSE, 
-			numCores=numCores,writeProfiles=TRUE) 
-		cat("Made methylation nets\n")
+        idx <- which(names(methList) %in% pTally) 
+        if (any(idx)){
+            cat(sprintf("methylation: included %i nets\n", length(idx)))
+            netList5 <- makePSN_NamedMatrix(dats$meth, 
+                rownames(dats$meth),methList[idx],netDir,verbose=FALSE, 
+                numCores=numCores,writeProfiles=TRUE,append=TRUE) 
+        }
 	
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
@@ -320,21 +368,22 @@ for (rngNum in 1:100) {
 	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
 						out$STATUS=="SURVIVEYES")
 	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
-
+    cat("End time:\n") 
+    print(Sys.time())
+    # cat(sprintf("Rng round took %i minutes\n", (Sys.time()-t_rngStart)/60))
+    # browser()
 	# cleanup
-	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
-		outDir,outDir,outDir))	
-	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
-		outDir,outDir))
-	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
-		outDir,outDir))
-	system(sprintf("rm -r %s/SURVIVEYES/tmp %s/SURVIVENO/tmp",
-		outDir,outDir))
+###	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+###		outDir,outDir,outDir))	
+###	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
+###		outDir,outDir))
+###	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
+###		outDir,outDir))
+###	system(sprintf("rm -r %s/SURVIVEYES/tmp %s/SURVIVENO/tmp",
+###		outDir,outDir))
 
 }}, error=function(ex){
 	print(ex)
 }, finally={
 	sink(NULL)
 })
-
-

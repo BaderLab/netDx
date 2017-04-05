@@ -72,6 +72,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){
 			d=net[which(net[,1]%in%cl & net[,2]%in%cl),],
 			vertices=cl)
 		tmp <- igraph::shortest.paths(g2,algorithm="dijkstra")
+		cat(sprintf("%s\n",curr_cl))
 		dset[[curr_cl]] <- .getAvgD(tmp)
 		dall[[curr_cl]] <- .getAllD(tmp)
 		tmp <- dset[[curr_cl]]
@@ -93,7 +94,7 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){
 		tmp <- igraph::shortest.paths(g,algorithm="dijkstra")
 		cur <- sprintf("%s-%s", cpairs[1,k],cpairs[2,k])
 		dset[[cur]] <- .getAvgD(tmp)
-		dset[[curr_cl]] <- .getAvgD(tmp)
+	#	dset[[curr_cl]] <- .getAvgD(tmp)
 		dall[[cur]] <- .getAllD(tmp)
 		
 		tmp <- dset[[curr_cl]]

@@ -48,12 +48,17 @@ GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
 )
 # directory with consensus nets
 consNetDir <- list(
-KIRC=sprintf("%s/2017_TCGA_KIRC/output/consNets_170405", rootDir)
+KIRC=sprintf("%s/2017_TCGA_KIRC/output/consNets_170405", rootDir),
+GBM=sprintf("%s/2017_TCGA_GBM/output/consNets_170405",rootDir),
+OV=sprintf("%s/2017_TCGA_OV/output/consNets_170405",rootDir),
+LUSC=sprintf("%s/2017_TCGA_LUSC/output/consNets_170405",rootDir)
 )
+
+consListingDir <- outDir
 
 
 # ########## Loop over cancer datasets
-for (curSet in "KIRC") {
+for (curSet in c("LUSC","KIRC","OV","GBM")) {
 	cat(sprintf("--------------------------\n"))
 	cat(sprintf("%s\n--------------------------\n\n",curSet))
 	
@@ -65,8 +70,8 @@ for (curSet in "KIRC") {
 	
 	# the pathway scores for each class
 	pTallyFile <- list(
-		YES=sprintf("%s_SURVIVEYES_consNets.txt", curSet),
-		NO=sprintf("%s_SURVIVENO_consNets.txt",curSet)
+		YES=sprintf("%s/%s_SURVIVEYES_consNets.txt", outDir,curSet),
+		NO=sprintf("%s/%s_SURVIVENO_consNets.txt",outDir,curSet)
 	)
 	
 	# load survival data
@@ -79,7 +84,7 @@ for (curSet in "KIRC") {
 	
 	# ----------------------------------------
 	# compare with survival on a per-feature basis
-	for (gps in names(pTallyFile)[2]) {
+	for (gps in names(pTallyFile)) {
 		cat(sprintf("Group %s\n", gps))
 		pTally <- read.delim(pTallyFile[[gps]],sep="\t",h=T,as.is=T)[,1]
 	
@@ -93,9 +98,9 @@ for (curSet in "KIRC") {
 		idxSet <- grep("profile$",pTally)
 		cat(sprintf("\t%i profiles\n", length(idxSet)))
 		for (idx in idxSet) {
-			cat(sprintf("%s\n", pTally[idx]))
+			#cat(sprintf("%s\n", pTally[idx]))
 			pFile <- sprintf("%s/%s", profileDir[[gps]], pTally[idx])
-			if (file.exists(pFile)) {
+			#if (file.exists(pFile)) {
 			dat <- read.delim(pFile,sep="\t",h=F,as.is=T)
 			rownames(dat) <-dat[,1] 
 			pat_ID <-  dat[,1];
@@ -144,7 +149,7 @@ for (curSet in "KIRC") {
 			#		main=ttl,cex.axis=1.3,bty='n',cex=1.3,
 			#		cex.main=1.3)
 			}
-			}
+			#}
 			isDone[idx] <- TRUE
 		}
 
@@ -158,7 +163,7 @@ for (curSet in "KIRC") {
 		cat(sprintf("\t%i binary non-clinical nets\n", length(idxSet)))
 		for (idx in idxSet) {
 			pFile 	<- sprintf("%s/%s.txt", profileDir[[gps]],pTally[idx])
-			if (file.exists(pFile)) {
+			#if (file.exists(pFile)) {
 			dat 	<- read.delim(pFile,sep="\t",h=F,as.is=T)
 			in_net	<- unique(c(dat[,1],dat[,2]))
 			mysurv	<- curSurv
@@ -182,7 +187,7 @@ for (curSet in "KIRC") {
 			plotList2[[plotCtr]] <- p
 			plotCtr <- plotCtr+1
 
-			}
+			#}
 			isDone[idx] <- TRUE
 		}
 
@@ -257,12 +262,15 @@ for (curSet in "KIRC") {
 	write.table(resMat,
 			file=sprintf("%s/%s_%s_correlations.txt",outDir,curSet,gps),
 				sep="\t",col=T,row=T,quote=F)
-
-		isTop <- which(apply(resMat[,4:6],1,max)>=2);
+		tmp <- round(resMat[,4:6],1)
+		isTop <- which(apply(tmp,1,max)>=2);
+		cat(sprintf("%i nets with p < 0.01\n",length(isTop)))
 	
 		# write table twice - first, all results. then those with p < 0.01
-		for (writeVersion in c("all","top")) {
-			if (writeVersion == "top") resMat <- resMat[isTop,]
+		writeTables <- "all"
+		if (length(isTop)>=1) writeTables <- c(writeTables,"top")
+		for (writeVersion in writeTables) {
+			if (writeVersion == "top") resMat <- resMat[isTop,,drop=FALSE]
 		# plot correlation table
 		if (nrow(resMat)>30) vcex <- 1 
 		else if (nrow(resMat)>20) vcex <- 1.5

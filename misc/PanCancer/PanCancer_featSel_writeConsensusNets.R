@@ -17,20 +17,22 @@ writeConsensusNets <- function(datDir,consCutoff=7L,
 		colnames(tmp)[1] <- "PATHWAY_NAME"
 		netColl[[curDir]] <- tmp
 	}
-
 	# filter for nets meeting cutoff criteria
 	cat("* Computing consensus\n")
 	cons <- getNetConsensus(netColl); x1 <- nrow(cons)
+	outFile <- sprintf("%s_%s_AllNets.txt",outPfx,gp)
+	write.table(cons[,1],file=outFile,sep="\t",col=T,row=F,quote=F)
 	na_sum <- rowSums(is.na(cons))
 	cons <- cons[which(na_sum < 1),]
-	cat(sprintf("\t%i of %i scored in all rounds\n",length(cons),x1))
-	
+	cat(sprintf("\t%i of %i scored in all rounds\n",nrow(cons),x1))
+
 	avg_score <- rowMeans(cons[,-1])
 	passes_cutoff <- cons[,-1]>= consCutoff;
 	idx <- which(rowSums(passes_cutoff)>=round(pctPass*length(rngDirs)))
 	cat(sprintf("\tConsensus: %i nets scored >= %i\n",length(idx),consCutoff))
 	
 	outFile <- sprintf("%s_%s_consNets.txt", outPfx, gp)
+	cons <- cons[idx,]
 	write.table(cons[,1],file=outFile,sep="\t",col=T,row=F,quote=F)
 	}
 }

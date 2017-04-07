@@ -11,7 +11,6 @@ dirList <- list(
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/netdx_integrate_170206",dirBase)
 	)
 
-
 dt <- format(Sys.Date(),"%y%m%d")
 featResFile <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/featSel_perf_170227.Rdata"
 
@@ -72,7 +71,10 @@ out <- do.call("rbind",megaList)
 lnames <- load(featResFile)
 featSel_agg$datatype <- "pathway_features"
 out <- rbind(out, featSel_agg)
+featSel_full <- do.call("rbind",featSel_full)
 browser()
+featSel_full <- cbind(featSel_full,datatype="pathway_features")
+featSel_full <- featSel_full[,c(1,3,2)]
 
 out$datatype <- factor(out$datatype, 
 										 levels=c("clinical","clinicalArna","clinicalAmir",
@@ -106,6 +108,8 @@ dev.off()
 
 # compare LUSC clinical to clinical+ RPPA
 alldat <- do.call("rbind",full)
+alldat <- rbind(alldat, featSel_full)
+
 idx1 <- which(alldat$cancer %in% "LUSC" & alldat$datatype %in% "clinical")
 idx2 <- which(alldat$cancer %in% "LUSC" & alldat$datatype %in% "clinicalArppa")
 wmw<- wilcox.test(alldat[idx1,"AUC"],alldat[idx2,"AUC"],
@@ -114,10 +118,20 @@ cat(sprintf("LUSC: clinical = %1.2f ; clin + RPPA = %1.2f (WMW p < %1.2e)\n",
 						mean(alldat[idx1,"AUC"]),mean(alldat[idx2,"AUC"]),wmw$p.value))
 
 # compare KIRC clinical to clinical+ RNA
-alldat <- do.call("rbind",full)
 idx1 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "clinical")
 idx2 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "clinicalArna")
 wmw<- wilcox.test(alldat[idx1,"AUC"],alldat[idx2,"AUC"],
 		alternative="less")
 cat(sprintf("KIRC: clinical = %1.2f ; clin + RNA = %1.2f (WMW p < %1.2e)\n",
 						mean(alldat[idx1,"AUC"]),mean(alldat[idx2,"AUC"]),wmw$p.value))
+
+# compare KIRC best to KIRC pathways
+idx1 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "clinicalArna")
+idx2 <- which(alldat$cancer %in% "KIRC" & alldat$datatype %in% "pathway_features")
+wmw<- wilcox.test(alldat[idx1,"AUC"],alldat[idx2,"AUC"],
+		alternative="less")
+cat(sprintf("KIRC: clinArna = %1.2f ; pathway = %1.2f %1.2f (WMW p < %1.2e)\n",
+						mean(alldat[idx1,"AUC"]),mean(alldat[idx2,"AUC"]),
+						mean(alldat[idx1,"AUC"])-mean(alldat[idx2,"AUC"]),
+						wmw$p.value))
+

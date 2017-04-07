@@ -9,13 +9,25 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/home/ahmad/tcga_datasets/KIRC/input"
-outRoot <-"/home/spai/KIRC/output"
+inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
+outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
+consNetDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/consNets"
+
+analysisMode <- "none" # none |consNets | bestConsNets | randomNets
+# none = just generate nets of consensus profiles, don't run predictions
+# consNets = predictions with GMdb of all nets
+# bestConsNets = GM db with nets that have corr < 0.01
+# randomNets = GMdb with randomly sampled nets of size consNets 
+
+if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
+	cat("invalid method")
+}
+
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_%s",outRoot,dt)
+megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -57,7 +69,6 @@ pheno$grade[pheno$grade=="GX"] <- "G2"
 pheno$grade <- as.factor(pheno$grade)
 pheno <- pheno[, -which(colnames(pheno)=="gender")]
 #======================================
-
 
 surv <- read.delim(inFiles$survival,sep="\t",h=T,as.is=T)
 colnames(surv)[1:2] <- c("ID","STATUS_INT")
@@ -134,7 +145,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-outDir <- sprintf("%s/ConsNets", megaDir)
+	outDir <- megaDir
 
 	pheno_all$TT_STATUS <- "DUMMY" 
 	
@@ -163,10 +174,23 @@ outDir <- sprintf("%s/ConsNets", megaDir)
 	for (g in subtypes) {
 		pDir <- sprintf("%s/%s",outDir,g)
 		# get feature selected net names
-		pTally <- read.delim(
-			sprintf("/home/spai/KIRC/KIRC_%s_consNets.txt", g),
-			sep="\t",h=T,as.is=T)
-		pTally <- pTally[,1]
+		
+		pTally <- switch(analysisMode,
+			consNets= {read.delim(
+				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
+					sep="\t",h=T,as.is=T)[,1]
+		}, bestConsNets={
+			stop("not implemented yet\n")
+		}, randomNets= {
+			pTally <- read.delim(
+				sprintf("%s/KIRC_%s_AllNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+			cat("**** Sampling randomly ****\n")
+			set.seed(249);
+			pTally <- sample(pTally, numCons, replace=FALSE)
+		},{
+			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
+		})
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
@@ -205,6 +229,42 @@ outDir <- sprintf("%s/ConsNets", megaDir)
 				path_GRList[idx], 
 				netDir,numCores=numCores)
         }
+
+		if (!analysisMode %in% "none") {
+		# create db
+		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
+
+		cat("Running test queries\n")
+		GMdir <- sprintf("%s/GM_results",pDir)
+		dir.create(GMdir)
+		for (rngNum in 1:100) {
+			cat(sprintf("(%i)", rngNum))	
+			pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
+										  setSeed=rngNum*5)
+			# query of all training samples for this class
+			qSamps <- pheno$ID[which(pheno_all$STATUS %in% g & 
+								 pheno_all$TT_STATUS%in%"TRAIN")]
+	
+			qFile <- sprintf("%s/%s_query_%i",GMdir,g,rngNum)
+			GM_writeQueryFile(qSamps,"all",nrow(pheno_all),qFile)
+			resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=GMdir)
+			if (length(predRes)< rngNum) predRes[[rngNum]] <- list()
+			predRes[[rngNum]][[g]] <- GM_getQueryROC(
+									sprintf("%s.PRANK",resFile),
+									pheno_all,g)
+		}
+		}
+	}
+
+	if (!analysisMode %in% "none") {
+	resDir <- sprintf("%s/predictions",outDir)
+	dir.create(resDir)
+	for (k in 1:length(predRes)) {
+		predClass <- GM_OneVAll_getClass(predRes[[k]])
+ 		out <- merge(x=pheno_all,y=predClass,by="ID")
+		outFile <- sprintf("%s/predictionResults_%i.txt",resDir,k)
+	 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+	}
 	}
 	
 }, error=function(ex){

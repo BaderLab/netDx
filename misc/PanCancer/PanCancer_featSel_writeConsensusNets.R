@@ -5,7 +5,7 @@ writeConsensusNets <- function(datDir,consCutoff=7L,
 	predClasses=c("SURVIVEYES","SURVIVENO"),
 	pctPass=0.5,outPfx="./pred_") {
 	for (gp in predClasses) {
-		rngDirs <- dir(path=datDir, pattern="rng")
+		rngDirs <- dir(path=datDir, pattern="^rng")
 		rngDirs <- setdiff(rngDirs, rngDirs[grep("tar.gz",rngDirs)])
 
 	cat(sprintf("Got %i iterations\n", length(rngDirs)))

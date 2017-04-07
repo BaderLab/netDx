@@ -77,7 +77,7 @@ tryCatch({
 
 datSets <- c("OV","KIRC","LUSC","GBM")
 dijk <- list()
-for (aggFun in c("MAX")) {
+for (aggFun in c("MEAN")) {
 	dijk[[aggFun]] <- list()
 	for (simMode in "BinProp") { 		
 		curDijk <- matrix(NA,nrow=length(datSets),ncol=8)

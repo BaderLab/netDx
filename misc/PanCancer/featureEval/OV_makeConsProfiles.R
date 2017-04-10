@@ -8,15 +8,13 @@ require(ROCR)
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
-cutoff <- 9
-maxRng <- 25 
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_OV/input"
-outRoot <-"/mnt/data2/BaderLab/PanCancer_OV/output"
+inDir <- "/home/netdx/BaderLab/PanCancer_OV/input"
+outRoot <-"/home/netdx/BaderLab/PanCancer_OV/output"
 
 #### makeConsProfiles code block >>>>
-consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
-maxRng <- 25 
+consNetDir <- "/home/netdx/BaderLab/PanCancer_common"
+maxRng <- 25
 
 analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
@@ -218,7 +216,6 @@ tryCatch({
 			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
 			tmp
 		}, randomNets= {
-			cat("need to count num nets in cons, sigh")
 			numCons <- sprintf("wc -l %s/OV_%s_consNets.txt",consNetDir,g) 
 			numCons <- as.integer(strsplit(system(numCons,intern=T)," ")[[1]][1])
 			pTally <- read.delim(

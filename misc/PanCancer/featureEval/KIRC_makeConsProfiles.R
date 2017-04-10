@@ -11,9 +11,12 @@ cutoff <- 9
 
 inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
 outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
-consNetDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/consNets"
 
-analysisMode <- "none" # none |consNets | bestConsNets | randomNets
+#### makeConsProfiles code block >>>>
+consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
+maxRng <- 25 
+
+analysisMode <- "randomNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -23,11 +26,11 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 	cat("invalid method")
 }
 
-
 if (!file.exists(outRoot)) dir.create(outRoot)
-
 dt <- format(Sys.Date(),"%y%m%d")
 megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
+#### <<<< makeConsProfiles code block 
+
 
 # ----------------------------------------------------------------
 # helper functions
@@ -175,22 +178,44 @@ tryCatch({
 		pDir <- sprintf("%s/%s",outDir,g)
 		# get feature selected net names
 		
+#### makeConsProfiles code block >>>>
 		pTally <- switch(analysisMode,
-			consNets= {read.delim(
+	       consNets={
+			read.delim(
 				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
-					sep="\t",h=T,as.is=T)[,1]
+				sep="\t",h=T,as.is=T)[,1]
+		}, none={
+			read.delim(
+				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
 		}, bestConsNets={
-			stop("not implemented yet\n")
+			tmp <- read.delim(
+				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+			fName <- dir(consNetDir,pattern=sprintf("KIRC_%s_correlations",g))
+			bestSet <- read.delim(
+				sprintf("%s/%s",consNetDir,fName),sep="\t",h=T,as.is=T)
+			idx_tmp <- unlist(sapply(1:nrow(bestSet), 
+				function(k) max(bestSet[k,4:6])))
+			oldlen <- length(tmp)
+			tmp <- tmp[which(tmp %in% rownames(bestSet)[which(idx_tmp>2)])]
+			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
+			tmp
 		}, randomNets= {
+			cat("need to count num nets in cons, sigh")
+			numCons <- sprintf("wc -l %s/KIRC_%s_consNets.txt",consNetDir,g) 
+			numCons <- as.integer(strsplit(system(numCons,intern=T)," ")[[1]][1])
 			pTally <- read.delim(
 				sprintf("%s/KIRC_%s_AllNets.txt", consNetDir,g),
 				sep="\t",h=T,as.is=T)[,1]
-			cat("**** Sampling randomly ****\n")
+			cat(sprintf("**** Sampling %i nets randomly ****\n",numCons))
 			set.seed(249);
 			pTally <- sample(pTally, numCons, replace=FALSE)
 		},{
 			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
 		})
+#### <<< makeConsProfiles code block 
+
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
@@ -211,16 +236,13 @@ tryCatch({
 		idx <- which(names(clinList) %in% pTally)
 		if (any(idx)) {
             cat(sprintf("clinical: included %i nets\n", length(idx)))
-            netList2 <- makePSN_NamedMatrix(dats$clinical, rownames(dats$clinical),
+            netList2 <- makePSN_NamedMatrix(dats$clinical, 
+				rownames(dats$clinical),
                 clinList[idx],
                 netDir, simMetric="custom",customFunc=normDiff,
                 sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
         }
 
-		# # add somatic mutations at pathway-level
-		# netList3 <- makePSN_RangeSets(pat_GR_all, path_GRList, netDir,
-			# numCores=numCores)
-            
         # add somatic mutations at pathway-level
 		idx <- which(names(path_GRList) %in% pTally) 
 		if (any(idx)) {
@@ -230,6 +252,7 @@ tryCatch({
 				netDir,numCores=numCores)
         }
 
+### makeConsProfiles code block >>>>
 		if (!analysisMode %in% "none") {
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
@@ -237,7 +260,7 @@ tryCatch({
 		cat("Running test queries\n")
 		GMdir <- sprintf("%s/GM_results",pDir)
 		dir.create(GMdir)
-		for (rngNum in 1:100) {
+		for (rngNum in 1:maxRng) {
 			cat(sprintf("(%i)", rngNum))	
 			pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 										  setSeed=rngNum*5)
@@ -266,7 +289,7 @@ tryCatch({
 	 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
 	}
 	}
-	
+### <<<< makeConsProfiles code block 
 }, error=function(ex){
 	print(ex)
 }, finally={

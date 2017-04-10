@@ -16,7 +16,7 @@ outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
 consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-analysisMode <- "randomNets" # none |consNets | bestConsNets | randomNets
+analysisMode <- "bestConsNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -202,7 +202,6 @@ tryCatch({
 			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
 			tmp
 		}, randomNets= {
-			cat("need to count num nets in cons, sigh")
 			numCons <- sprintf("wc -l %s/KIRC_%s_consNets.txt",consNetDir,g) 
 			numCons <- as.integer(strsplit(system(numCons,intern=T)," ")[[1]][1])
 			pTally <- read.delim(

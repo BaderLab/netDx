@@ -3,10 +3,10 @@
 require(ROCR)
 
 
-# rootDir <- "/mnt/data2/BaderLab" # VM1
-rootDir <- "/home/netdx/BaderLab" # VM4
+ rootDir <- "/mnt/data2/BaderLab" # VM1
+# rootDir <- "/home/netdx/BaderLab" # VM4
 
-for (curSet in "OV") {
+for (curSet in "KIRC") {
 	inDir <- sprintf("%s/PanCancer_%s",rootDir,curSet)
 	dirSet <- list(
 			allCons=sprintf("%s/output/consNets_170410",inDir),
@@ -20,6 +20,7 @@ for (curSet in "OV") {
 			pattern="prediction")
 		cat(sprintf("%s: Got %i predictions\n", d, length(fSet)))
 		val <- rep(NA, length(fSet))
+		ctr <- 1
 		for (fName in fSet) {	
 			dat <- read.delim(sprintf("%s/predictions/%s",dirSet[[d]],fName),
 				sep="\t",h=T,as.is=T)
@@ -34,14 +35,16 @@ for (curSet in "OV") {
 	
 			# dummy score column needed for perfCalc()                      
 			tmp <- data.frame(score=0,tp=tp,tn=tn,fp=fp,fn=fn)              
-			val[k] <- performance(pred, "auc")@y.values[[1]]        
+			val[ctr] <- performance(pred, "auc")@y.values[[1]]        
+			ctr <- ctr+1
 		}
 		predSet[[d]] <- val
 	}
 	pdf(sprintf("%s/PanCancer_common/%s_consRes_plot.pdf",rootDir,curSet))
 	
 	tryCatch({
-		boxplot(predSet)
+		boxplot(predSet,main=sprintf("%s: %i iterations", 
+			curSet,length(predSet[[1]])),ylab="AUC")
 	},error=function(ex){
 		print(ex)
 	},finally={

@@ -48,17 +48,17 @@ GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
 )
 # directory with consensus nets
 consNetDir <- list(
-KIRC=sprintf("%s/2017_TCGA_KIRC/output/consNets_170405", rootDir),
-GBM=sprintf("%s/2017_TCGA_GBM/output/consNets_170405",rootDir),
-OV=sprintf("%s/2017_TCGA_OV/output/consNets_170405",rootDir),
-LUSC=sprintf("%s/2017_TCGA_LUSC/output/consNets_170405",rootDir)
+	KIRC=sprintf("%s/PanCancer_KIRC/output/none_170410", rootDir),
+	LUSC="",
+	GBM="",
+	OV=""
 )
 
 consListingDir <- outDir
-
+dt <- format(Sys.Date(),"%y%m%d")
 
 # ########## Loop over cancer datasets
-for (curSet in c("LUSC","KIRC","OV","GBM")) {
+for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 	cat(sprintf("--------------------------\n"))
 	cat(sprintf("%s\n--------------------------\n\n",curSet))
 	
@@ -193,7 +193,7 @@ for (curSet in c("LUSC","KIRC","OV","GBM")) {
 
 		### Now handle clinical vars
 		cat("\t done feature-wise analysis\n")
-		cat(sprintf("\t%i clnical features\n", sum(!isDone)))
+		cat(sprintf("\t%i clinical features\n", sum(!isDone)))
 		curClin <- read.delim(clinList[[curSet]],sep="\t",h=T,as.is=T)
 		colnames(curClin)[1] <- "ID"
 		if (any(grep("performance_score",colnames(curClin)))) {
@@ -235,9 +235,10 @@ for (curSet in c("LUSC","KIRC","OV","GBM")) {
 				plotCtr <- plotCtr+1
 				#print(p)
 		}
-		pdf(sprintf("%s/%s_%s_PCA.pdf",outDir,curSet,gps),
+
+		pdf(sprintf("%s/%s_%s_PCA_%s.pdf",outDir,curSet,gps,dt),
 			width=11,height=11)
-		source("multiplot.R")
+		source("../multiplot.R")
 		tryCatch({
 			for (sidx in seq(1,length(plotList),9)) {
 				eidx <- sidx+8; 
@@ -253,14 +254,14 @@ for (curSet in c("LUSC","KIRC","OV","GBM")) {
 				multiplot(plotlist=plotList2[sidx:eidx],
 					layout=matrix(1:4,ncol=2,byrow=TRUE))
 			}
-
 		resMat <- resMat[order(apply(resMat[,4:6],1,max),decreasing=TRUE),]
 
 		colnames(resMat) <-c("PC1","PC2","PC3",
 			"-log(PC1p)","-log(PC2p)","-log(PC3p)")
 		
 	write.table(resMat,
-			file=sprintf("%s/%s_%s_correlations.txt",outDir,curSet,gps),
+			file=sprintf("%s/%s_%s_correlations_%s.txt",
+				outDir,curSet,gps,dt),
 				sep="\t",col=T,row=T,quote=F)
 		tmp <- round(resMat[,4:6],1)
 		isTop <- which(apply(tmp,1,max)>=2);

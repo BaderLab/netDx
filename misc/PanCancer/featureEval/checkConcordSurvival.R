@@ -25,7 +25,9 @@ toTitleCase <- function(str) {
 
 # input directory for data
 #rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-rootDir <- "/mnt/data2/BaderLab"
+# rootDir <- "/mnt/data2/BaderLab" # VM1
+rootDir <- "/home/netdx/BaderLab" # VM4
+
 # must define universe of clinical variables
 clinicalVars <- c("age","stage","grade","Karnofsky","gender")
 clinicalVars <- paste(clinicalVars,"_cont",sep="")
@@ -53,14 +55,14 @@ consNetDir <- list(
 	KIRC=sprintf("%s/PanCancer_KIRC/output/none_170407", rootDir),
 	LUSC="",
 	GBM="",
-	OV=""
+	OV=sprintf("%s/PanCancer_OV/output/none_170410",rootDir)
 )
 
 consListingDir <- outDir
 dt <- format(Sys.Date(),"%y%m%d")
 
 # ########## Loop over cancer datasets
-for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
+for (curSet in c("OV")) { #LUSC","KIRC","OV","GBM")) {
 	cat(sprintf("--------------------------\n"))
 	cat(sprintf("%s\n--------------------------\n\n",curSet))
 	

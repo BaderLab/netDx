@@ -15,7 +15,7 @@ outRoot <-"/mnt/data2/BaderLab/PanCancer_LUSC/output"
 consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-analysisMode <- "bestConsNets" # none |consNets | bestConsNets | randomNets
+analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -209,7 +209,6 @@ outDir <- megaDir
 			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
 			tmp
 		}, randomNets= {
-			cat("need to count num nets in cons, sigh")
 			numCons <- sprintf("wc -l %s/LUSC_%s_consNets.txt",consNetDir,g) 
 			numCons <- as.integer(strsplit(system(numCons,intern=T)," ")[[1]][1])
 			pTally <- read.delim(
@@ -303,9 +302,6 @@ outDir <- megaDir
 	}
 	}
 ### <<<< makeConsProfiles code block 
-
-	}
-	
 }, error=function(ex){
 	print(ex)
 }, finally={

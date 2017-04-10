@@ -7,18 +7,31 @@ require(netDx.examples)
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
-cutoff <- 9
 
 inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
 outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
 #inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/input"
 #outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/output"
 
-# directory with consensus nets
-consNetDir <- "/mnt/data2/BaderLab/PanCancer_GBM/consNets"
+#### makeConsProfiles code block >>>>
+consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
+maxRng <- 25 
 
+analysisMode <- "bestConsNets" # none |consNets | bestConsNets | randomNets
+# none = just generate nets of consensus profiles, don't run predictions
+# consNets = predictions with GMdb of all nets
+# bestConsNets = GM db with nets that have corr < 0.01
+# randomNets = GMdb with randomly sampled nets of size consNets 
+
+if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
+	cat("invalid method")
+}
+
+if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/consNets_%s",outRoot,dt)
+megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
+#### <<<< makeConsProfiles code block 
+
 
 # ----------------------------------------------------------------
 # helper functions
@@ -121,17 +134,11 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-###for (rngNum in 1:100) {
 	outDir <- sprintf("%s/consNets",megaDir)
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- "DUMMY"
 ###	# --------------------------------------------
-###	# feature selection - train only
-###	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
-###	dats_train <- lapply(dats,function(x) { 
-###						 x[,which(colnames(x) %in% pheno$ID)]})
-###	pat_GR_train <- pat_GR_all[which(pat_GR_all$ID %in% pheno$ID)]
 	
 	# create nets 
 	netDir <- sprintf("%s/networks",outDir) 
@@ -145,68 +152,9 @@ tryCatch({
 	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
 	
-###	# group by pathway
-###	# RNA
-###	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
-###								   pathwayList,netDir,verbose=FALSE, 
-###								   numCores=numCores,writeProfiles=TRUE) 
-###	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
-###	
-###	# clinical - each clinical var is its own net
-###	netList2 <- makePSN_NamedMatrix(dats_train$clinical, 
-###									rownames(dats_train$clinical),
-###			clinList,netDir, simMetric="custom",customFunc=normDiff,
-###			sparsify=TRUE,verbose=TRUE,numCores=numCores,append=TRUE)
-###	cat(sprintf("Made %i clinical nets \n", length(netList2)))
-###
-###	# add somatic mutations at pathway-level
-###	netList3 <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
-###		numCores=numCores)
-###	cat(sprintf("Made %i mutation nets \n", length(netList3)))
-###
-###	netList <- unlist(c(netList,netList2,netList3)) 
-###	cat(sprintf("Total of %i nets\n", length(netList)))
-###	
-###	# now create database
-###	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
 	
 	# run featsel once per subtype
 	subtypes <- unique(pheno_all$STATUS)
-	# run 10-fold cv per subtype
-###	for (g in subtypes) {
-###	    pDir <- sprintf("%s/%s",outDir,g)
-###	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
-###		dir.create(pDir)
-###	
-###		cat(sprintf("\n******\nSubtype %s\n",g))
-###		pheno_subtype <- pheno
-###		## label patients not in the current class as a residual
-###		pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
-###		## sanity check
-###		print(table(pheno_subtype$STATUS,useNA="always"))
-###		resDir    <- sprintf("%s/GM_results",pDir)
-###		## query for feature selection comprises of training 
-###		## samples from the class of interest
-###		trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
-###		
-###		# Cross validation
-###		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir, 
-###			nrow(pheno_subtype),verbose=T, numCores=numCores,
-###			GMmemory=GMmemory)
-###	
-###		# patient similarity ranks
-###		prank <- dir(path=resDir,pattern="PRANK$")
-###		# network ranks
-###		nrank <- dir(path=resDir,pattern="NRANK$")
-###		cat(sprintf("Got %i prank files\n",length(prank)))
-###			
-###	    # Compute network score
-###		pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
-###		head(pTally)
-###		# write to file
-###		tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
-###		write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
-###	}
 	
 	## ----class-prediction, eval=TRUE-------------------------
 	# now create GM databases for each class
@@ -217,10 +165,42 @@ tryCatch({
 	for (g in subtypes) {
 		pDir <- sprintf("%s/%s",outDir,g)
 		if (!file.exists(pDir)) dir.create(pDir,recursive=TRUE)
-		# get feature selected net names
-		pTally <- read.delim(
-			sprintf("%s/GBM_%s_consNets.txt",consNetDir,g),
-			sep="\t",h=T,as.is=T)[,1]
+#### makeConsProfiles code block >>>>
+		pTally <- switch(analysisMode,
+	       consNets={
+			read.delim(
+				sprintf("%s/GBM_%s_consNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+		}, none={
+			read.delim(
+				sprintf("%s/GBM_%s_consNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+		}, bestConsNets={
+			tmp <- read.delim(
+				sprintf("%s/GBM_%s_consNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+			fName <- dir(consNetDir,pattern=sprintf("GBM_%s_correlations",g))
+			bestSet <- read.delim(
+				sprintf("%s/%s",consNetDir,fName),sep="\t",h=T,as.is=T)
+			idx_tmp <- unlist(sapply(1:nrow(bestSet), 
+				function(k) max(bestSet[k,4:6])))
+			oldlen <- length(tmp)
+			tmp <- tmp[which(tmp %in% rownames(bestSet)[which(idx_tmp>2)])]
+			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
+			tmp
+		}, randomNets= {
+			numCons <- sprintf("wc -l %s/GBM_%s_consNets.txt",consNetDir,g) 
+			numCons <- as.integer(strsplit(system(numCons,intern=T)," ")[[1]][1])
+			pTally <- read.delim(
+				sprintf("%s/GBM_%s_AllNets.txt", consNetDir,g),
+				sep="\t",h=T,as.is=T)[,1]
+			cat(sprintf("**** Sampling %i nets randomly ****\n",numCons))
+			set.seed(249);
+			pTally <- sample(pTally, numCons, replace=FALSE)
+		},{
+			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
+		})
+#### <<< makeConsProfiles code block 
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
@@ -254,42 +234,44 @@ tryCatch({
 				netDir,numCores=numCores)
 			cat(sprintf("TEST: made %i mutation nets\n", length(netList3)))
 		}
+### makeConsProfiles code block >>>>
+		if (!analysisMode %in% "none") {
+		# create db
+		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
 
-###		# create db
-###		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
-###		# query of all training samples for this class
-###		qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
-###								 pheno$TT_STATUS%in%"TRAIN")]
-###	
-###		qFile <- sprintf("%s/%s_query",pDir,g)
-###		GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
-###		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
-###		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
-	}
+		cat("Running test queries\n")
+		GMdir <- sprintf("%s/GM_results",pDir)
+		dir.create(GMdir)
+		for (rngNum in 1:maxRng) {
+			cat(sprintf("(%i)", rngNum))	
+			pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
+										  setSeed=rngNum*5)
+			# query of all training samples for this class
+			qSamps <- pheno$ID[which(pheno_all$STATUS %in% g & 
+								 pheno_all$TT_STATUS%in%"TRAIN")]
 	
-###	predClass <- GM_OneVAll_getClass(predRes)
-###	out <- merge(x=pheno_all,y=predClass,by="ID")
-###	outFile <- sprintf("%s/predictionResults.txt",outDir)
-###	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-###	
-###	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-###	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-###		nrow(out), acc*100))
-###	
-###	require(ROCR)
-###	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
-###						out$STATUS=="SURVIVEYES")
-###	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
-###
-###	# cleanup
-###	system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
-###		outDir,outDir,outDir))	
-###	system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
-###		outDir,outDir))
-###	system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
-###		outDir,outDir))
+			qFile <- sprintf("%s/%s_query_%i",GMdir,g,rngNum)
+			GM_writeQueryFile(qSamps,"all",nrow(pheno_all),qFile)
+			resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=GMdir)
+			if (length(predRes)< rngNum) predRes[[rngNum]] <- list()
+			predRes[[rngNum]][[g]] <- GM_getQueryROC(
+									sprintf("%s.PRANK",resFile),
+									pheno_all,g)
+		}
+		}
+	}
 
-###}
+	if (!analysisMode %in% "none") {
+	resDir <- sprintf("%s/predictions",outDir)
+	dir.create(resDir)
+	for (k in 1:length(predRes)) {
+		predClass <- GM_OneVAll_getClass(predRes[[k]])
+ 		out <- merge(x=pheno_all,y=predClass,by="ID")
+		outFile <- sprintf("%s/predictionResults_%i.txt",resDir,k)
+	 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+	}
+	}
+### <<<< makeConsProfiles code block 
 }, error=function(ex){
 	print(ex)
 }, finally={

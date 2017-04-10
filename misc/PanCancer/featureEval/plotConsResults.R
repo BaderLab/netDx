@@ -2,11 +2,12 @@
 
 require(ROCR)
 
+# rootDir <- "/mnt/data2/BaderLab" # VM1
+ rootDir <- "/home/netdx/BaderLab" # VM4
 
- rootDir <- "/mnt/data2/BaderLab" # VM1
-# rootDir <- "/home/netdx/BaderLab" # VM4
+dt <- format(Sys.Date(),"%y%m%d")
 
-for (curSet in "KIRC") {
+for (curSet in c("GBM","OV")) {
 	inDir <- sprintf("%s/PanCancer_%s",rootDir,curSet)
 	dirSet <- list(
 			allCons=sprintf("%s/output/consNets_170410",inDir),
@@ -50,5 +51,6 @@ for (curSet in "KIRC") {
 	},finally={
 		dev.off()
 	})
+	save(predSet, file=sprintf("%s/PanCancer_common/%s_consRes_%s.Rdata",rootDir,curSet,dt))
 }
 

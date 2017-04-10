@@ -15,7 +15,8 @@ outRoot <-"/mnt/data2/BaderLab/PanCancer_LUSC/output"
 consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
+for (analysisMode in c("bestConsNets","randomNets")) {
+#analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -307,5 +308,6 @@ outDir <- megaDir
 }, finally={
 	sink(NULL)
 })
+}
 
 

@@ -8,16 +8,17 @@ numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
-outRoot <-"/mnt/data2/BaderLab/PanCancer_GBM/output"
+inDir <- "/home/netdx/BaderLab/PanCancer_GBM/input"
+outRoot <-"/home/netdx/BaderLab/PanCancer_GBM/output"
 #inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/input"
 #outRoot <-"/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_GBM/output"
 
 #### makeConsProfiles code block >>>>
-consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
+consNetDir <- "/home/netdx/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-analysisMode <- "bestConsNets" # none |consNets | bestConsNets | randomNets
+for (analysisMode in c("consNets","bestConsNets","randomNets")) {
+#analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -134,7 +135,7 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-	outDir <- sprintf("%s/consNets",megaDir)
+	outDir <- megaDir
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- "DUMMY"
@@ -257,6 +258,7 @@ tryCatch({
 			predRes[[rngNum]][[g]] <- GM_getQueryROC(
 									sprintf("%s.PRANK",resFile),
 									pheno_all,g)
+			unlink(resFile)
 		}
 		}
 	}
@@ -279,3 +281,4 @@ tryCatch({
 })
 
 
+}

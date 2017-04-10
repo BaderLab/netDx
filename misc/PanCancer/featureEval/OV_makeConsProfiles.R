@@ -16,7 +16,7 @@ outRoot <-"/home/netdx/BaderLab/PanCancer_OV/output"
 consNetDir <- "/home/netdx/BaderLab/PanCancer_common"
 maxRng <- 25
 
-analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
+analysisMode <- "randomNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -304,6 +304,7 @@ tryCatch({
 			predRes[[rngNum]][[g]] <- GM_getQueryROC(
 									sprintf("%s.PRANK",resFile),
 									pheno_all,g)
+			unlink(resFile)
 		}
 		}
 	}

@@ -24,31 +24,33 @@ toTitleCase <- function(str) {
 }
 
 # input directory for data
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
+#rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
+rootDir <- "/mnt/data2/BaderLab"
 # must define universe of clinical variables
 clinicalVars <- c("age","stage","grade","Karnofsky","gender")
 clinicalVars <- paste(clinicalVars,"_cont",sep="")
 cutoff <- 10
 datSets <- c("KIRC","GBM","LUSC","OV") # sets to run for?
-outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/2017_PanCancer/FeatureEval"
+#outDir <- "/Users/shraddhapai/Google Drive/PatientNetworks/2017_PanCancer/FeatureEval"
+outDir <- sprintf("%s/PanCancer_common",rootDir)
 
 # to create pheno table
 clinList <- list(
-KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir),
-OV=sprintf("%s/2017_TCGA_OV/input/OV_clinical_core.txt",rootDir),
-LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_clinical_core.txt",rootDir),
-GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_clinical_core.txt",rootDir)
+KIRC=sprintf("%s/PanCancer_KIRC/input/KIRC_clinical_core.txt",rootDir),
+OV=sprintf("%s/PanCancer_OV/input/OV_clinical_core.txt",rootDir),
+LUSC=sprintf("%s/PanCancer_LUSC/input/LUSC_clinical_core.txt",rootDir),
+GBM=sprintf("%s/PanCancer_GBM/input/GBM_clinical_core.txt",rootDir)
 )
 # binary survival
 survList <- list(
-KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir),
-OV=sprintf("%s/2017_TCGA_OV/input/OV_binary_survival.txt",rootDir),
-LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_binary_survival.txt",rootDir),
-GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
+KIRC=sprintf("%s/PanCancer_KIRC/input/KIRC_binary_survival.txt",rootDir),
+OV=sprintf("%s/PanCancer_OV/input/OV_binary_survival.txt",rootDir),
+LUSC=sprintf("%s/PanCancer_LUSC/input/LUSC_binary_survival.txt",rootDir),
+GBM=sprintf("%s/PanCancer_GBM/input/GBM_binary_survival.txt",rootDir)
 )
 # directory with consensus nets
 consNetDir <- list(
-	KIRC=sprintf("%s/PanCancer_KIRC/output/none_170410", rootDir),
+	KIRC=sprintf("%s/PanCancer_KIRC/output/none_170407", rootDir),
 	LUSC="",
 	GBM="",
 	OV=""
@@ -64,14 +66,14 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 	
 	dataDir <- consNetDir[[curSet]]
 	profileDir <- list(
-		YES=sprintf("%s/SURVIVEYES/networks",dataDir),
-		NO=sprintf("%s/SURVIVENO/networks",dataDir)
+		SURVIVEYES=sprintf("%s/SURVIVEYES/networks",dataDir),
+		SURVIVENO=sprintf("%s/SURVIVENO/networks",dataDir)
 	)
 	
 	# the pathway scores for each class
 	pTallyFile <- list(
-		YES=sprintf("%s/%s_SURVIVEYES_consNets.txt", outDir,curSet),
-		NO=sprintf("%s/%s_SURVIVENO_consNets.txt",outDir,curSet)
+		SURVIVEYES=sprintf("%s/%s_SURVIVEYES_consNets.txt", outDir,curSet),
+		SURVIVENO=sprintf("%s/%s_SURVIVENO_consNets.txt",outDir,curSet)
 	)
 	
 	# load survival data
@@ -259,10 +261,13 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 		colnames(resMat) <-c("PC1","PC2","PC3",
 			"-log(PC1p)","-log(PC2p)","-log(PC3p)")
 		
-	write.table(resMat,
+		tmp <- resMat
+		rownames(tmp) <- pTally
+	write.table(tmp,
 			file=sprintf("%s/%s_%s_correlations_%s.txt",
 				outDir,curSet,gps,dt),
 				sep="\t",col=T,row=T,quote=F)
+		rm(tmp)
 		tmp <- round(resMat[,4:6],1)
 		isTop <- which(apply(tmp,1,max)>=2);
 		cat(sprintf("%i nets with p < 0.01\n",length(isTop)))

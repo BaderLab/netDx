@@ -2,12 +2,15 @@
 
 require(ROCR)
 
-# rootDir <- "/mnt/data2/BaderLab" # VM1
- rootDir <- "/home/netdx/BaderLab" # VM4
+ rootDir <- "/mnt/data2/BaderLab" # VM1
+ #rootDir <- "/home/netdx/BaderLab" # VM4
 
 dt <- format(Sys.Date(),"%y%m%d")
 
-for (curSet in c("GBM","OV")) {
+saveData <- FALSE # set to true to save, false to plot
+
+if (saveData) {
+for (curSet in c("KIRC","LUSC")) {
 	inDir <- sprintf("%s/PanCancer_%s",rootDir,curSet)
 	dirSet <- list(
 			allCons=sprintf("%s/output/consNets_170410",inDir),
@@ -53,4 +56,39 @@ for (curSet in c("GBM","OV")) {
 	})
 	save(predSet, file=sprintf("%s/PanCancer_common/%s_consRes_%s.Rdata",rootDir,curSet,dt))
 }
+} else { # load and plot
+	inDir <- sprintf("%s/PanCancer_common", rootDir)
+	res <- list()
+	for (curSet in c("KIRC","LUSC","OV","GBM")) {
+		fName <- dir(path=inDir,pattern="Rdata")
+		fName <- fName[grep(curSet, fName)]
+		load(sprintf("%s/%s",inDir,fName))
+		res[[curSet]] <- do.call("rbind",predSet)
+	}
 
+	blah <- list()
+	for (nm in names(res)) { 
+		x <- res[[nm]]
+		df <- as.data.frame(x)
+		df$type <- rownames(df)
+		df$cancertype <- nm
+		blah[[nm]] <- as.matrix(df)
+	}
+	blah2 <- do.call("rbind",blah)
+	blah3 <- suppressWarnings(data.frame(blah2, stringsAsFactors=FALSE))
+	for (k in 1:25) blah3[,k] <- as.numeric(blah3[,k])
+	
+	require(reshape2)
+	blah4 <- melt(blah3)
+	
+	require(ggplot2)                                                             
+	p <- ggplot(blah4, aes(cancertype, value)) + geom_boxplot(aes(colour=type))  
+	p <- p + ylab("AUCROC (25 runs)")
+	p <- p + ggtitle("PanCancer test perf on consensus/random nets") 
+	p <- p + geom_hline(aes(yintercept=0.5),colour='red')
+	                                                                             
+	pdfFile <- sprintf("%s/consRes_perf_%s.pdf", inDir,dt)                       
+	pdf(pdfFile,width=8,height=4)                                                
+	print(p)                                                                     
+	dev.off() 
+}

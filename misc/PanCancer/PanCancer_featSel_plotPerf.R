@@ -25,7 +25,8 @@ full <- list()
 for (cur in names(dirList)) {
 	print(cur)
 
-	if (cur == "OV") maxk <- 96 else maxk <- 100
+	#if (cur == "OV") maxk <- 96 else maxk <- 100
+	maxk <- 100
 	kset <- 1:maxk
 	cat(sprintf("Num runs=%i\n", maxk))
 
@@ -86,8 +87,29 @@ pdfFile <-  sub(".Rdata",".pdf",saveFile)
 pdf(pdfFile,width=10,height=4)
 print(p); dev.off()
 
+print(pdfFile)
+
 # save results
 featSel_full <- full
 featSel_agg <- out
 save(featSel_full,featSel_agg,file=saveFile)
+
+# compare to random
+randomNets <- list()
+load(sprintf("%s/2017_PanCancer_survival/KIRC_randomMean.Rdata",dirBase))
+randomNets[["KIRC"]] <- randomMean
+rm(randomMean)
+lnames <- load(sprintf("%s/2017_PanCancer_survival/OV_randomMean.Rdata",dirBase))
+randomNets[["OV"]] <- randomMean
+
+x <- list(KIRC_real=full$KIRC[,2],KIRC_random=randomNets$KIRC,
+			OV_real=full$OV[,2],OV_random=randomNets$OV)
+boxplot(x,main="real v random",col=c("brown","brown","pink","pink"),
+	ylab="AUCROC")
+kirc <- wilcox.test(x[[1]],x[[2]])
+cat("Real v random: KIRC\n")
+print(kirc)
+ov <- wilcox.test(x[[3]],x[[4]])
+cat("Real v random: OC\n")
+print(ov)
 

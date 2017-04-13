@@ -11,6 +11,25 @@ dirList <- list(
 )
 
 source("PanCancer_featSel_writeConsensusNets.R")
+dt <- format(Sys.Date(),"%y%m%d")
+outDir <- sprintf("%s/2017_PanCancer_Survival/consNetsTest", rootDir)
+if (!file.exists(outDir)) dir.create(outDir)
+logFile <- sprintf("%s/getConsNets_%s.log",outDir,dt)
+sink(logFile,split=TRUE)
+tryCatch({
 for (curSet in names(dirList)){
-	writeConsensusNets(dirList[[curSet]],outPfx=sprintf("./%s",curSet))
+	cat("-----------------------------\n")
+	cat(sprintf("%s\n",curSet))
+	cat("-----------------------------\n")
+	for (cutoff in 6:9) {
+	cat(sprintf("\tcutoff = %i\n", cutoff))
+	writeConsensusNets(datDir=dirList[[curSet]],
+		outPfx=sprintf("%s/%s_thresh%i",outDir,curSet,cutoff),
+		consCutoff=cutoff)
+	}
 }
+},error=function(ex){
+	print(ex)
+},finally={
+	sink(NULL)
+})

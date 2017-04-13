@@ -37,7 +37,7 @@ for (gp in predClasses) {
 cat("----------------------\n")
 cat(sprintf("%s\n",gp))
 cat("----------------------\n")
-	rngDirs <- dir(path=datDir, pattern="rng")
+	rngDirs <- dir(path=datDir, pattern="^rng")
 	cat(sprintf("Got %i iterations\n", length(rngDirs)))
 
 	# collect nets from all iterations
@@ -56,6 +56,7 @@ cat("----------------------\n")
 	cons <- getNetConsensus(netColl); x1 <- nrow(cons)
 	na_sum <- rowSums(is.na(cons))
 	cons <- cons[which(na_sum < 1),]
+full_cons <- cons
 	cat(sprintf("\t%i of %i scored in all rounds\n",length(cons),x1))
 	
 	avg_score <- rowMeans(cons[,-1])

@@ -305,7 +305,8 @@ for (curSet in c("GBM")) { #LUSC","KIRC","OV","GBM")) {
 		axis(3,at=seq_len(3)-0.5,labels=colnames(resMat)[4:6],
 				tick=F,cex.axis=1,line=-1)
 		axis(2,at=seq_len(nrow(resMat))-0.5,
-			labels=sub(".profile","",rev(rownames(resMat))),tick=F,
+			labels=sub(".profile","",
+				sub("_cont","",rev(rownames(resMat)))),tick=F,
 			las=1,cex.axis=1)
 		}
 

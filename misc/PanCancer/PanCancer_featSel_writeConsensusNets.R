@@ -23,13 +23,25 @@ writeConsensusNets <- function(datDir,consCutoff=7L,
 	outFile <- sprintf("%s_%s_AllNets.txt",outPfx,gp)
 	write.table(cons[,1],file=outFile,sep="\t",col=T,row=F,quote=F)
 	na_sum <- rowSums(is.na(cons))
+	full_cons <- cons
 	cons <- cons[which(na_sum < 1),]
-	cat(sprintf("\t%i of %i scored in all rounds\n",nrow(cons),x1))
+
+	### uncomment this section to plot na_sum vs num_passes_cutoff
+	 blah <- rowSums(full_cons[,-1]>=consCutoff,na.rm=T)
+###	 plot(na_sum,blah, xlab="# splits for which net wasn't chosen", 
+###			ylab="num splits for which net passes cutoff")
+###	idx <- which(na_sum<1)
+###	points(na_sum[idx],blah[idx],col='red')
+###	abline(h=40,lty=3,col='red')
+###	abline(h=50,lty=3,col='red')
+###	title(basename(outPfx))
+###	cat(sprintf("\t%i of %i scored in all rounds\n",nrow(cons),x1))
 
 	avg_score <- rowMeans(cons[,-1])
 	passes_cutoff <- cons[,-1]>= consCutoff;
 	idx <- which(rowSums(passes_cutoff)>=round(pctPass*length(rngDirs)))
-	cat(sprintf("\tConsensus: %i nets scored >= %i\n",length(idx),consCutoff))
+	cat(sprintf("\t** Consensus: %i nets scored >= %i **\n",
+		length(idx),consCutoff))
 	
 	outFile <- sprintf("%s_%s_consNets.txt", outPfx, gp)
 	cons <- cons[idx,]

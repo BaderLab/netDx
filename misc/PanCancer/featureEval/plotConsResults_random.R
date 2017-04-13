@@ -54,6 +54,10 @@ for (curSet in c("KIRC")) {
 		abline(h=0.5,lty=3,col='red')
 		cat("Summary of 10 random resamplings\n")
 		print(summary(tmp))
+
+		randomMean <- tmp
+		save(randomMean,file=sprintf("%s/PanCancer_common/%s_randomMean.Rdata",
+			rootDir,curSet))
 	},error=function(ex){
 		print(ex)
 	},finally={

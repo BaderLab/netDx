@@ -16,7 +16,7 @@ outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
 consNetDir <- "/mnt/data2/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-analysisMode <- "bestConsNets" # none |consNets | bestConsNets | randomNets
+analysisMode <- "randomNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
@@ -26,11 +26,12 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 	cat("invalid method")
 }
 
+for (sampRNG in seq(5,50,5)) {
+
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
+megaDir <- sprintf("%s/%s_%s_%s",outRoot,analysisMode,sampRNG,dt)
 #### <<<< makeConsProfiles code block 
-
 
 # ----------------------------------------------------------------
 # helper functions
@@ -208,7 +209,7 @@ tryCatch({
 				sprintf("%s/KIRC_%s_AllNets.txt", consNetDir,g),
 				sep="\t",h=T,as.is=T)[,1]
 			cat(sprintf("**** Sampling %i nets randomly ****\n",numCons))
-			set.seed(249);
+			set.seed(sampRNG);
 			pTally <- sample(pTally, numCons, replace=FALSE)
 		},{
 			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
@@ -274,6 +275,7 @@ tryCatch({
 			predRes[[rngNum]][[g]] <- GM_getQueryROC(
 									sprintf("%s.PRANK",resFile),
 									pheno_all,g)
+			unlink(resFile)
 		}
 		}
 	}
@@ -294,3 +296,4 @@ tryCatch({
 }, finally={
 	sink(NULL)
 })
+}

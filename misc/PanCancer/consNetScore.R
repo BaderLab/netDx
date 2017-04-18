@@ -8,10 +8,10 @@ for (curSet in "GBM") {
 		dat <- read.delim(sprintf("%s/%s_thresh%i_SURVIVEYES_consNets.txt",
 			inDir,curSet,cutoff),sep="\t",h=T,as.is=T)
 		if (is.null(maxScore)) {
-			maxScore <- data.frame(NET=dat[,1],SCORE=cutoff)
+			maxScore <- data.frame(NET=dat[,1],SCORE=cutoff,
+				stringsAsFactors=FALSE)
 		} else {
-			idx <- which(dat[,1] %in% maxScore[,1])
-			maxScore[idx,2] <- cutoff
+			maxScore[which(maxScore[,1] %in% dat[,1]),2] <- cutoff
 			idx <- which(!dat[,1] %in% maxScore[,1])
 			if (any(idx)) {
 			cat(sprintf("** warn: found %i not in maxScore\n",length(idx)))
@@ -32,6 +32,7 @@ for (curSet in "GBM") {
 ###			las=1,cex.axis=0.8)
 ###	dev.off()
 	colnames(maxScore) <- c("net","max_score")
+	maxScore[,1] <- toupper(sub("_cont|.profile","",maxScore[,1]))
 	write.table(maxScore,file=sprintf("%s/%s_SURVIVEYES_consNet_maxScore.txt",
 		inDir,curSet),sep="\t",col=T,row=F,quote=F)
 }

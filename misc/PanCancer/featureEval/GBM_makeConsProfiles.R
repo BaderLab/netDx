@@ -1,4 +1,5 @@
 #' write consensus nets for feature evaluation
+#' runs on vm4
 
 rm(list=ls())
 require(netDx)
@@ -17,7 +18,7 @@ outRoot <-"/home/netdx/BaderLab/PanCancer_GBM/output"
 consNetDir <- "/home/netdx/BaderLab/PanCancer_common"
 maxRng <- 25 
 
-for (analysisMode in c("consNets","bestConsNets","randomNets")) {
+for (analysisMode in "randomNets") { #c("consNets","bestConsNets","randomNets")) {
 #analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
 # consNets = predictions with GMdb of all nets
@@ -28,9 +29,12 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 	cat("invalid method")
 }
 
+for (sampRNG in seq(5,50,5)) {
+
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
+#megaDir <- sprintf("%s/%s_%s",outRoot,analysisMode,dt)
+megaDir <- sprintf("%s/%s_%s_%s",outRoot,analysisMode,sampRNG,dt)
 #### <<<< makeConsProfiles code block 
 
 
@@ -196,7 +200,7 @@ tryCatch({
 				sprintf("%s/GBM_%s_AllNets.txt", consNetDir,g),
 				sep="\t",h=T,as.is=T)[,1]
 			cat(sprintf("**** Sampling %i nets randomly ****\n",numCons))
-			set.seed(249);
+			set.seed(sampRNG);
 			pTally <- sample(pTally, numCons, replace=FALSE)
 		},{
 			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
@@ -279,6 +283,7 @@ tryCatch({
 }, finally={
 	sink(NULL)
 })
+}
 
 
 }

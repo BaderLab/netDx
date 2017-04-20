@@ -2,6 +2,9 @@
 #' for the cancer.
 
 rm(list=ls())
+# --------------------------------------------------------------
+
+
 
 # --------------------------------------------------------------
 # Param for computing integrated PSN
@@ -9,34 +12,35 @@ outDir		<- "."
 cutoff 		<-10  	# include nets with score >= this value
 corrThresh 	<-0.7 	# exclude edges with similarity < this threshold
 dt <- format(Sys.Date(),"%y%m%d")
+verbose <- FALSE
 
 # --------------------------------------------------------------
 # setup for network generation in Cytoscape
-###require(EasycyRest) # https://github.com/shraddhapai/EasycyRest
-###require(httr)
-###
-###styleName <- "PSNstyle"
-###portNum <- 1234
-###base.url <- sprintf("http://localhost:%i/v1",portNum)
-###res	<- httr::GET(sprintf("%s/styles",base.url))
-###curStyles <- gsub("\\\"","",rawToChar(res$content))
-###curStyles <- unlist(strsplit(curStyles,","))
-###
-###if (any(grep("PSNstyle",curStyles))) {
-###	cat("style exists not creating\n")
-###} else {
-###	cat("Creating style\n")
-###	nodeFills <- map_NodeFillDiscrete("GROUP",
-###		c("SURVIVEYES","SURVIVENO"),
-###		c("#FF9900","#003399"))
-###	defaults <- list("NODE_SHAPE"="ellipse",
-###			"NODE_SIZE"=50,
-###			"EDGE_TRANSPARENCY"=120,
-###			"NODE_TRANSPARENCY"=120)
-###	sty <- createStyle(styleName, 
-###		defaults=defaults,
-###		mappings=list(nodeFills))
-###}
+require(EasycyRest) # https://github.com/shraddhapai/EasycyRest
+require(httr)
+
+styleName <- "PSNstyle"
+portNum <- 1234
+base.url <- sprintf("http://localhost:%i/v1",portNum)
+res	<- httr::GET(sprintf("%s/styles",base.url))
+curStyles <- gsub("\\\"","",rawToChar(res$content))
+curStyles <- unlist(strsplit(curStyles,","))
+
+if (any(grep("PSNstyle",curStyles))) {
+	cat("style exists not creating\n")
+} else {
+	cat("Creating style\n")
+	nodeFills <- map_NodeFillDiscrete("GROUP",
+		c("SURVIVEYES","SURVIVENO"),
+		c("#FF9900","#003399"))
+	defaults <- list("NODE_SHAPE"="ellipse",
+			"NODE_SIZE"=50,
+			"EDGE_TRANSPARENCY"=120,
+			"NODE_TRANSPARENCY"=120)
+	sty <- createStyle(styleName, 
+		defaults=defaults,
+		mappings=list(nodeFills))
+}
 
 # --------------------------------------------------------------
 # data dirs for input
@@ -79,9 +83,9 @@ tryCatch({
 
 datSets <- c("OV","KIRC","LUSC","GBM")
 dijk <- list()
-for (aggFun in c("cosine")) {
+for (aggFun in c("dummy")) {
 	dijk[[aggFun]] <- list()
-	for (simMode in "BinProp") { 		
+	for (simMode in "dummy") { 		
 		curDijk <- matrix(NA,nrow=length(datSets),ncol=8)
 		rownames(curDijk) <- datSets
 		colnames(curDijk) <- c("NO","YES","YES-NO","overall","pYES-YESNO",
@@ -89,7 +93,7 @@ for (aggFun in c("cosine")) {
 
 		cur_i <- 1
 
-		for (curSet in "KIRC") {		
+		for (curSet in datSets) {
 		clinical_file <- clinList[[curSet]]
 		survival_file <- survList[[curSet]]
 		dataDir <- selIter[[curSet]]
@@ -124,6 +128,19 @@ for (aggFun in c("cosine")) {
 		# -----------------------------------------------------
 		#if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 		#dir.create(outDir)
+
+		# need pheno table for class assignment.
+		pheno <- read.delim(clinical_file,sep="\t",h=T,as.is=T)
+		colnames(pheno)[1] <- "ID"
+		surv <- read.delim(survival_file,sep="\t",h=T,as.is=T)
+		colnames(surv)[1:2] <- c("ID","STATUS_INT")
+		survStr <- rep(NA,nrow(surv))
+		survStr[surv$STATUS_INT<1] <- "SURVIVENO"
+		survStr[surv$STATUS_INT>0] <- "SURVIVEYES"
+		surv$STATUS <- survStr
+		pheno <- merge(x=pheno,y=surv,by="ID")
+		pheno$X <- NULL
+		colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
 		
 		# gene IDs should be the same for both classes
 		tmp <- system(sprintf("diff %s %s", ptFile$YES,ptFile$NO),intern=TRUE)
@@ -140,12 +157,18 @@ for (aggFun in c("cosine")) {
 		newNetIDs <- list()
 
 		# pool feature selected nets from both groups
+		outmat <- list() # num rows = num patients. # num cols = num unit
+								     # features (e.g. one per gene). note this concatenates
+										 # for all groups
+		featTally <- list()
 		for (gps in names(pTallyFile)) {
 			cat(sprintf("Group %s\n", gps))
 			pTally <- read.delim(pTallyFile[[gps]],sep="\t",h=T,as.is=T)
 			pTally <- subset(pTally, pTally[,2]>=cutoff)[,1]
-			pTally <- sub("_cont|\\.profile","",pTally)
+			#pTally <- sub("_cont|\\.profile","",pTally)
 			if ("BRCA2" %in% pTally) pTally <- pTally[-which(pTally=="BRCA2")]
+	
+			featTally[[gps]] <- length(pTally)
 
 			netInfo_cur <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
 			netInfo_cur[,2] <- sub("_cont|\\.profile","",netInfo_cur[,2])
@@ -154,67 +177,98 @@ for (aggFun in c("cosine")) {
 
 			# copy feature selected nets for this group
 			for (cur in pTally) {
-				idx <- which(netInfo_cur[,2] == cur)
+				if (verbose) cat(sprintf("%s\n",cur))
+
+				if (any(grep(".profile", cur))) { # is an xpr matrix, store as-is
+					if (verbose) cat("\t.profile net -> storing matrix\n")
+					val <- read.delim(sprintf("%s/%s",dirname(netInfo[[gps]]),
+						cur),sep="\t",h=F,as.is=T)
+					rownames(val) <- val[,1]
+					val <- val[,-1]
+
+					if (length(outmat)>=1) {# is not first
+						if (verbose) cat("not first, match ids\n")
+						midx <- match(rownames(outmat[[1]]),rownames(val))
+						val <- val[midx,,drop=FALSE]
+						if (all.equal(rownames(val),rownames(outmat[[1]]))!=TRUE) {
+							cat("indices don't match\n")
+							browser()
+					}}
+					
+					outmat[[cur]] <- as.matrix(val)
+	
+				} else if (any(grep("^MUT_",cur))) { # mutation-based net
+					if (verbose) cat("\tMutation net -> storing as binary\n")
+					cur <- sprintf("%s.txt",cur)
+					tmp <- read.delim(sprintf("%s/%s",dirname(netInfo[[gps]]),
+						cur),sep="\t",h=F,as.is=T)
+				
+					vec <- matrix(0,nrow=nrow(pheno),ncol=1)
+					if (length(outmat)>=1) rownames(vec) <- rownames(outmat[[1]])
+					else rownames(vec) <- pheno$ID
+	
+					hasmut <- union(tmp[,1],tmp[,2])
+					vec[which(rownames(vec)%in% hasmut)] <- 1
+					
+					outmat[[cur]] <- vec
+				} else {														 # clinical net
+					if (verbose) cat("\tmust be clinical\n")
+					if (cur=="Karnofsky_cont") cur2 <- "performance_score"
+					else cur2 <- sub("_cont","",cur)
+					val <- pheno[,cur2]
+					if (class(val)!="numeric") {
+						val <- as.integer(as.factor(val))
+					}
+					val <- as.matrix(val);
+					rownames(val) <- pheno$ID
+					
+					if (length(outmat)>=1) {
+						if (verbose) cat("\t\tnot first, match indices\n")
+						midx <- match(rownames(outmat[[1]]),rownames(val))
+						val <- val[midx,,drop=FALSE]
+						if (all.equal(rownames(val),rownames(outmat[[1]]))!=TRUE) {
+							cat("indices don't match\n")
+							browser()
+						}
+					} 
+					outmat[[cur]] <- val
+					cur <- sprintf("%s.txt",cur)
+				}
+				idx <- which(netInfo_cur[,4] == cur)
 				if (length(idx)<1) {
 					cat(sprintf("%s: index not found!\n",cur))
 					browser()
 				}
-browser()
-				netID <- sprintf("1.%s.txt",netInfo_cur[idx,1])
-				tmp <- sprintf("%s.%s", gps,netID)
-				file.copy(from=sprintf("%s/%s", netDir[[gps]], netID), 
-							to=sprintf("%s/1.%s",poolDir,tmp))
-					
-				curNetIds[ctr,] <- c(sub(".txt","",tmp), 
-									 paste(gps,netInfo_cur[idx,2],sep=".")) 
-				##cat(sprintf("\t%s -> %s\n", cur, tmp))
-				ctr <- ctr+1
-			}
-			newNetIDs[[gps]] <- curNetIds
 		}
+		}
+		cat(sprintf("Compiled %i features\n", length(outmat)))
+		print(featTally)
 
-		# write compiled net info file
-		newNetIDs <- do.call("rbind",newNetIDs)
-		if (simMode == "BinProp") {
-			isBinary <- rep(0,nrow(newNetIDs))
-			isBinary[grep("MUT_|stage|grade|gender",newNetIDs[,2])] <- 1
-			newNetIDs <- cbind(newNetIDs, isBinary=isBinary)
+		allDat <- do.call("cbind",outmat)
+		allDat <- t(allDat) # patients must becolumns for cosine
+	
+		# make net of cosine similarities.		
+		cosSim <- lsa::cosine(x=na.omit(allDat))
+		if (any(rowSums(is.na(cosSim))>0)) {
+			cat("-> got NA\n")
+			browser()
 		}
-		netInfo_combinedF <- sprintf("%s/netInfo.txt", poolDir)
-		write.table(newNetIDs,file=netInfo_combinedF,sep="\t",
-			col=F,row=F,quote=F)
+		require(reshape2)
+		cosSim <- melt(cosSim)
+		cosSim[,1] <- as.character(cosSim[,1])
+		cosSim[,2] <- as.character(cosSim[,2])
+		idx <- which(cosSim[,1]==cosSim[,2]) # remove self edges
+		cosSim <- cosSim[-idx,]
+
+		netDx::sparsifyNet(cosSim, numPatients=ncol(allDat),outFile="tmp.txt",
+				verbose=FALSE)
+		tmp <- read.delim("tmp.txt",sep="\t",header=F,as.is=T)
+		colnames(tmp) <- c("AliasA","AliasB","weight")
+		write.table(tmp[,c(1,3,2)],file="tmp.txt",sep="\t",col=T,row=F,quote=F)
 		
-		# now create integrated net using the best nets pooled 
-		# from all classes
-		cat(sprintf("%i networks with score >=%i\n",nrow(pTally),cutoff))
-		cat("-----\n")
-pdf("test.pdf")
-		aggNetFile <- netDx::writeWeightedNets(ptFile$YES,
-						netInfo=netInfo_combinedF,
-						poolDir,keepNets=newNetIDs[,2],outDir,
-						filterEdgeWt=corrThresh,limitToTop=25,
-						outFileName=sprintf("%s_%s_%s_PSN.txt", 
-							curSet,simMode,aggFun),
-						writeAggNet=aggFun,verbose=FALSE)
-dev.off()
-		aggNet<- read.delim(aggNetFile,sep="\t",h=T,as.is=T)[,1:3]
-		colnames(aggNet) <- c("AliasA","AliasB","weight")
+		aggNet <- tmp
 		aggNet[,3] <- 1-aggNet[,3]  # convert similarity to dissimilarity
-		
-		# need pheno table for class assignment.
-		pheno <- read.delim(clinical_file,sep="\t",h=T,as.is=T)
-		colnames(pheno)[1] <- "ID"
-		surv <- read.delim(survival_file,sep="\t",h=T,as.is=T)
-		colnames(surv)[1:2] <- c("ID","STATUS_INT")
-		survStr <- rep(NA,nrow(surv))
-		survStr[surv$STATUS_INT<1] <- "SURVIVENO"
-		survStr[surv$STATUS_INT>0] <- "SURVIVEYES"
-		surv$STATUS <- survStr
-		pheno <- merge(x=pheno,y=surv,by="ID")
 
-		pheno$X <- NULL
-		
-		colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
 		cat("\n\n---------------------\n")
 		cat(sprintf("Dijkstra distances: %s: %s :%s\n",
 			curSet,aggFun,simMode))

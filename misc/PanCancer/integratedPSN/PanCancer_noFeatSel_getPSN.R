@@ -43,24 +43,34 @@ if (any(grep("PSNstyle",curStyles))) {
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 # to create pheno table
 clinList <- list(
-	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_clinical_core.txt",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir),
+	OV=sprintf("%s/2017_TCGA_OV/input/OV_clinical_core.txt",rootDir),
+	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_clinical_core.txt",rootDir),
+	GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_clinical_core.txt",rootDir)
 )
 survList <- list(
-	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_binary_survival.txt",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir),
+	OV=sprintf("%s/2017_TCGA_OV/input/OV_binary_survival.txt",rootDir),
+	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_binary_survival.txt",rootDir),
+	GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
 )
 
 outDir <- sprintf("%s/2017_PanCancer_Survival/integratedPSN",rootDir)
 
 selIter <- list(
-		LUSC=sprintf("%s/2017_TCGA_LUSC/output/ownTrain_170205",rootDir)
+		LUSC=sprintf("%s/2017_TCGA_LUSC/output/ownTrain_170205",rootDir),
+		OV=sprintf("%s/2017_TCGA_OV/output/ownTrain_170205",rootDir),
+		GBM=sprintf("%s/2017_TCGA_GBM/output/ownTrain_170206",rootDir)
 )
 
 # which nets to combine for a given cancer type. selected based on 
 # performance evaluate independently.
 pTallySet <- list(
-	LUSC=c("rppa")
+	LUSC=c("rppa"),
+	GBM="clinical",
+	KIRC=c("clinical","rna"),
+	OV="clinical"
 )
-
 
 # --------------------------------------------------------------
 # Work begins
@@ -70,7 +80,7 @@ sink(logFile,split=TRUE)
 
 tryCatch({
 
-datSets <- c("OV","KIRC","LUSC","GBM")
+datSets <- c("LUSC","OV","GBM")
 dijk <- list()
 		curDijk <- matrix(NA,nrow=length(datSets),ncol=8)
 		rownames(curDijk) <- datSets
@@ -79,7 +89,7 @@ dijk <- list()
 
 		cur_i <- 1
 
-		for (curSet in "LUSC") {		
+		for (curSet in datSets) { #datSets) {		
 
 		cat(sprintf("%s\n", curSet))
 		
@@ -149,7 +159,7 @@ dijk <- list()
 		pheno <- merge(x=pheno,y=surv,by="ID")
 
 		pheno$X <- NULL
-		
+
 		colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
 		cat("\n\n---------------------\n")
 		cat(sprintf("Dijkstra distances: %s: %s\n",
@@ -180,6 +190,8 @@ dijk <- list()
 			write.table(pheno,file=sprintf("%s/%s_%s_PSN_pheno.txt",
 			 outDir,curSet, aggFun),sep="\t",col=T,row=F,quote=F)
 
+		pheno$age <- as.character(pheno$age)
+
 		# layout network in Cytoscape
 		network.suid <- EasycyRest::createNetwork(
 			nodes=pheno, nodeID_column="ID",edges=aggNet,
@@ -197,10 +209,9 @@ dijk <- list()
 		
 	}
 
-#write.table(dijk,
-#	file=sprintf("%s/Dijkstra_PSN_%s_%s_%s_%s.txt",
-#	outDir,simMode,aggFun,netMode,dt),
-#	sep="\t",col=T,row=T,quote=F)
+write.table(curDijk,
+	file=sprintf("%s/Dijkstra_noFeatSel_PSN_%s_%s.txt",
+	outDir,aggFun,dt),sep="\t",col=T,row=T,quote=F)
 
 },error=function(ex){ 
 	print(ex)

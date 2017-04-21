@@ -2,14 +2,14 @@
 
 require(ROCR)
 
-rootDir <- "/mnt/data2/BaderLab" # VM1
-#rootDir <- "/home/netdx/BaderLab" # VM4
+#rootDir <- "/mnt/data2/BaderLab" # VM1
+rootDir <- "/home/netdx/BaderLab" # VM4
 
 dt <- format(Sys.Date(),"%y%m%d")
 saveData <- TRUE # set to true to save, false to plot
 
 if (saveData) {
-for (curSet in c("KIRC")) {
+for (curSet in c("GBM")) {
 	inDir <- sprintf("%s/PanCancer_%s",rootDir,curSet)
 	dirs <- dir(path=sprintf("%s/output", inDir),pattern="randomNets")
 	dirSet <- list()
@@ -25,6 +25,7 @@ for (curSet in c("KIRC")) {
 		for (fName in fSet) {	
 			dat <- read.delim(sprintf("%s/predictions/%s",dirSet[[d]],fName),
 				sep="\t",h=T,as.is=T)
+			if (nrow(dat)>1) {
 	    	pred <- prediction(dat$SURVIVEYES_SCORE-dat$SURVIVENO_SCORE,    
 	                          dat$STATUS=="SURVIVEYES") 
 
@@ -38,8 +39,11 @@ for (curSet in c("KIRC")) {
 			tmp <- data.frame(score=0,tp=tp,tn=tn,fp=fp,fn=fn)              
 			val[ctr] <- performance(pred, "auc")@y.values[[1]]        
 			ctr <- ctr+1
+			} else {
+				cat(sprintf("\t%s:%s: too few records!\n",d,fName))
+			}
 		}
-		predSet[[d]] <- val
+		predSet[[d]] <- na.omit(val)
 	}
 	pdf(sprintf("%s/PanCancer_common/%s_consRes_plot_random.pdf",
 		rootDir,curSet),width=8,height=3)

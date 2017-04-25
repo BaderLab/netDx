@@ -6,7 +6,7 @@
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
   cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = FALSE,
-  sparsify = FALSE, ...)
+  sparsify = FALSE, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -40,6 +40,8 @@ If FALSE, uses  getSimilarity() and writes interaction networks.}
 
 \item{sparsify}{(logical) sparsify networks by calling sparsifyNets()
 with default parameters. Only used when writeProfiles=FALSE}
+
+\item{append}{(logical) if TRUE does not overwrite netDir.}
 
 \item{...}{passed to \code{getSimilarity()}}
 }

@@ -57,6 +57,9 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
 		dir.create(outDir)
+	} else {
+		cat("You asked for append but the directory doesn't exist. Helpfully creating it\n")
+		if (!file.exists(outDir)) dir.create(outDir)
 	}
 
 	cl	<- makeCluster(numCores)
@@ -86,7 +89,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 									p2=colnames(sim)[ij[,2]], 
 									similarity=sim[idx])
 
-				too_weak    <- which(pat_pairs[,3] < cutoff)
+				too_weak    <- which(pat_pairs[,3] < cutoff | 
+									is.na(pat_pairs[,3]))
 				if (any(too_weak)) {
 					if (verbose) 
 						cat(sprintf("\t%i weak connections\n", 

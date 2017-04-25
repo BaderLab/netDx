@@ -10,7 +10,7 @@ dirList <- list(
 outDirList <- list(
 	KIRC="/mnt/data2/BaderLab/PanCancer_common", 	# VM1
 	LUSC="/home/netdx/BaderLab/PanCancer_common", 	# VM4
-	OV="" # VM2
+	OV="", # VM2
 	GBM=""
 )
 
@@ -39,17 +39,23 @@ combList <- list(
 
 for (cur in "LUSC") { #names(dirList)) {
 	curd <- dirList[[cur]]
-	maxk <- 45
+	currCombList <- combList
+	if (cur=="LUSC") {# no dnam
+		currCombList[["dnam"]] <- NULL
+		currCombList[["clinicalAdnam"]] <- NULL
+	}
+	maxk <- maxK[[cur]]
 	kset <- 1:maxk
 	cat(sprintf("Num runs=%i\n", maxk))
 
-		val <- matrix(NA,nrow=length(kset),ncol=length(combList))
-		colnames(val) <- names(combList)
+		val <- matrix(NA,nrow=length(kset),ncol=length(currCombList))
+		colnames(val) <- names(currCombList)
 		for (k in kset) {
-			for (nm in names(combList)) {
+			for (nm in names(currCombList)) {
 				finDir	<-sprintf("%s/rng%i/%s",curd,k,nm)
 				dat <- read.delim(sprintf("%s/predictionResults.txt",finDir),
 						,sep="\t",h=T,as.is=T)
+				if (nrow(dat)>0) {
 				pred <- prediction(dat$SURVIVEYES_SCORE-dat$SURVIVENO_SCORE,
 						  dat$STATUS=="SURVIVEYES")
 
@@ -63,11 +69,12 @@ for (cur in "LUSC") { #names(dirList)) {
 				tmp <- data.frame(score=0,tp=tp,tn=tn,fp=fp,fn=fn) 
 				idx <- which(colnames(val)==nm)
 				val[k,idx] <- performance(pred, "auc")@y.values[[1]]
+				}
 			}
 		}
 
 	outFile <- sprintf("%s/%s_oneNetPer_FeatSel_results.Rdata",
-		outDir,cur)
+		outDirList[[cur]],cur)
 	cat("Saving to file.\n")
 	save(val,file=outFile)
 }

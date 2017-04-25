@@ -26,7 +26,7 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 	cat("invalid method")
 }
 
-for (sampRNG in seq(5,50,5)) {
+for (sampRNG in seq(55,500,5)) {
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")

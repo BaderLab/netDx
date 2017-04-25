@@ -5,21 +5,21 @@ dirList <- list(
 	KIRC="/mnt/data2/BaderLab/PanCancer_KIRC/output/featSel_oneNetPer_170424",
 	LUSC="/home/netdx/BaderLab/PanCancer_LUSC/output/featSel_oneNetPer_170425", # VM4
 	OV="",
-	GBM=""
+	GBM="/home/spai/BaderLab/PanCancer_GBM/output/featSel_oneNetPer_170425" #VM3
 )
 outDirList <- list(
 	KIRC="/mnt/data2/BaderLab/PanCancer_common", 	# VM1
 	LUSC="/home/netdx/BaderLab/PanCancer_common", 	# VM4
 	OV="", # VM2
-	GBM=""
+	GBM="/home/spai/BaderLab/PanCancer_common" # VM3
 )
 
 # iterations that have run so far
 maxK <- list(
 	KIRC=52,
-	LUSC=21
+	LUSC=21,
+	GBM=19
 )
-
 
 outList <- list()
 megaList <- list()
@@ -37,12 +37,15 @@ combList <- list(
     clinicalAcnv=c("clinical.profile","cnv.profile"),    
     all="all")  
 
-for (cur in "LUSC") { #names(dirList)) {
+for (cur in "GBM") { #names(dirList)) {
 	curd <- dirList[[cur]]
 	currCombList <- combList
 	if (cur=="LUSC") {# no dnam
 		currCombList[["dnam"]] <- NULL
 		currCombList[["clinicalAdnam"]] <- NULL
+	} else if (cur == "GBM") {
+		currCombList[["prot"]] <- NULL
+		currCombList[["clinicalAprot"]] <- NULL
 	}
 	maxk <- maxK[[cur]]
 	kset <- 1:maxk

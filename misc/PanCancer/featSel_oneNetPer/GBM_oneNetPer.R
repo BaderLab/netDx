@@ -258,7 +258,7 @@ for (rngNum in 1:100) {
 		
 			qFile <- sprintf("%s/%s_query",pDir2,g)
 			GM_writeQueryFile(qSamps,incNets=pTally,
-				,nrow(pheno_all),qFile)
+				nrow(pheno_all),qFile)
 			resFile <- runGeneMANIA(megadbDir$dbDir,qFile,resDir=pDir2)
 			predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
 				pheno_all,g)

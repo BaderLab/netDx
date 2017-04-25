@@ -16,7 +16,7 @@ outDirList <- list(
 
 # iterations that have run so far
 maxK <- list(
-	KIRC=52,
+	KIRC=66,
 	LUSC=21,
 	GBM=19,
 	OV=40
@@ -38,7 +38,7 @@ combList <- list(
     clinicalAcnv=c("clinical.profile","cnv.profile"),    
     all="all")  
 
-for (cur in "GBM") { #names(dirList)) {
+for (cur in "KIRC") { #names(dirList)) {
 	curd <- dirList[[cur]]
 	currCombList <- combList
 	if (cur=="LUSC") {# no dnam

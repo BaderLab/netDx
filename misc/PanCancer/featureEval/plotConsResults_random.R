@@ -2,14 +2,14 @@
 
 require(ROCR)
 
-#rootDir <- "/mnt/data2/BaderLab" # VM1
-rootDir <- "/home/netdx/BaderLab" # VM4
+rootDir <- "/mnt/data2/BaderLab" # VM1
+#rootDir <- "/home/netdx/BaderLab" # VM4
 
 dt <- format(Sys.Date(),"%y%m%d")
 saveData <- TRUE # set to true to save, false to plot
 
 if (saveData) {
-for (curSet in c("GBM")) {
+for (curSet in c("KIRC")) {
 	inDir <- sprintf("%s/PanCancer_%s",rootDir,curSet)
 	dirs <- dir(path=sprintf("%s/output", inDir),pattern="randomNets")
 	dirSet <- list()

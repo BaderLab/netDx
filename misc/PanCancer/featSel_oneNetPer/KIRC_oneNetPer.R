@@ -45,7 +45,7 @@ inFiles <- list(
 datFiles <- list(
 	rna=sprintf("%s/KIRC_mRNA_core.txt",inDir),
 	prot=sprintf("%s/KIRC_RPPA_core.txt",inDir),
-	mirna=sprintf("%s/KIRC_miRNA_core.txt",inDir),
+	mir=sprintf("%s/KIRC_miRNA_core.txt",inDir),
 	dnam=sprintf("%s/KIRC_methylation_core.txt",inDir),
 	cnv=sprintf("%s/KIRC_CNV_core.txt",inDir)
 )
@@ -129,7 +129,7 @@ combList <- list(
 	dnam="dnam.profile",
     clinicalArna=c("clinical.profile","rna.profile"),    
     clinicalAmir=c("clinical.profile","mir.profile"),    
-    clinicalAprot=c("clinical.profile","rppa.profile"),    
+    clinicalAprot=c("clinical.profile","prot.profile"),    
     clinicalAdnam=c("clinical.profile","dnam.profile"),    
     clinicalAcnv=c("clinical.profile","cnv.profile"),    
     all="all")  
@@ -278,12 +278,10 @@ for (rngNum in 1:100) {
 		}
         
     #cleanup to save disk space
-###    system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
-###        outDir,outDir,outDir))
-###    system(sprintf("rm -r %s/*/SURVIVENO/dataset %s/*/SURVIVENO/networks", 
-###        outDir,outDir))
-###    system(sprintf("rm -r %s/*/SURVIVEYES/dataset %s/*/SURVIVEYES/networks",
-###        outDir,outDir))
+    system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+        outDir,outDir,outDir))
+    system(sprintf("rm -r %s/dataset %s/networks", 
+        outDir,outDir))
 
 }
 	pheno_all$TT_STATUS <- NA

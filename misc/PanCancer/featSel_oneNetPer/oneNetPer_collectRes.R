@@ -2,15 +2,15 @@
 require(ROCR)
 
 dirList <- list(
-	KIRC="/mnt/data2/BaderLab/PanCancer_KIRC/output/featSel_oneNetPer_170424",
+	KIRC="/mnt/data2/BaderLab/PanCancer_KIRC/output/featSel_oneNetPer_170424", # VM
 	LUSC="/home/netdx/BaderLab/PanCancer_LUSC/output/featSel_oneNetPer_170425", # VM4
-	OV="",
+	OV="/home/ahmad/tcga_datasets/OV/output/featSel_oneNetPer_170425",# VM2
 	GBM="/home/spai/BaderLab/PanCancer_GBM/output/featSel_oneNetPer_170425" #VM3
 )
 outDirList <- list(
 	KIRC="/mnt/data2/BaderLab/PanCancer_common", 	# VM1
 	LUSC="/home/netdx/BaderLab/PanCancer_common", 	# VM4
-	OV="", # VM2
+	OV="/home/spai/BaderLab/PanCancer_common", # VM2
 	GBM="/home/spai/BaderLab/PanCancer_common" # VM3
 )
 
@@ -18,7 +18,8 @@ outDirList <- list(
 maxK <- list(
 	KIRC=52,
 	LUSC=21,
-	GBM=19
+	GBM=19,
+	OV=40
 )
 
 outList <- list()

@@ -36,12 +36,14 @@ runGeneMANIA <- function(GM_db, queryFile, resDir, parseReport=TRUE,
 	# when GM is executed in parallel. However, the problem did not seem
 	# to occur in Feb 2016 on the VM but does occur in April 2016. 
 	# This while-loop exists to ensure that all GM queries run.
+	t0	<- Sys.time()
 	while ((!file.exists(resFile)) & (attempt <= MAX_ATTEMPTS)) {
 			cat(sprintf("* Attempt %i : %s\n", attempt,
 						basename(queryFile)))
 		system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
 		attempt <- attempt + 1
 	}
+	cat(sprintf("QueryRunner time taken: %1.1f s\n", Sys.time()-t0))
 	
 	Sys.sleep(3)
 	if (parseReport) GM_parseReport(resFile)

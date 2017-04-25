@@ -19,7 +19,10 @@ of a generic GeneMANIA database}
 Note that these are networks where the node IDs have been recoded by 
 GeneMANIA (e.g. 1,2,3)}
 
-\item{keepNets}{(data.frame) networks to retain in the final network
+\item{keepNets}{(char or data.frame) networks to include in integrated net
+If data.frame must be in "NETWORK" column,other columns will be
+ignored. Mainly included as convenience so pathway scores can passed
+in table format
 (NETWORK), and a multiplier constant for edges in that network (WEIGHT)}
 
 \item{outDir}{(char) path to directory where network files should be 

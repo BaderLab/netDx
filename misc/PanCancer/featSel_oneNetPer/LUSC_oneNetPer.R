@@ -136,20 +136,19 @@ alldat <- do.call("rbind",dats)
 pheno_all <- pheno
 
 combList <- list(    
+    clinicalArna=c("clinical_cont","rna.profile"),    
+    clinicalAprot=c("clinical_cont","prot.profile"),    
     clinical="clinical_cont",
 	mir="mir.profile",
 	rna="rna.profile",
 	prot="prot.profile",
 	cnv="cnv.profile",
-    clinicalArna=c("clinical_cont","rna.profile"),    
     clinicalAmir=c("clinical_cont","mir.profile"),    
     clinicalAcnv=c("clinical_cont","cnv.profile"),    
-    clinicalAprot=c("clinical.profile","prot.profile"),    
     all="all")  
 
 cat(sprintf("Clinical variables are: { %s }\n", 
 	paste(rownames(dats$clinical),sep=",",collapse=",")))
-browser()
 rm(pheno)
 
 # ----------------------------------------------------------
@@ -184,7 +183,7 @@ cat(sprintf("Total of %i nets\n", length(netList)))
 megadbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores)
 
 # first loop - over train/test splits
-for (rngNum in 1:100) {
+for (rngNum in 7:100) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -278,41 +277,46 @@ for (rngNum in 1:100) {
 			pTally <- pTally[which(pTally[,2]>=cutoff),1]
 			cat(sprintf("%s: %i pathways\n",g,length(pTally)))
 
-			# query of all training samples for this class
-			qSamps <- pheno_all$ID[which(pheno_all$STATUS %in% g & 
-									 pheno_all$TT_STATUS%in%"TRAIN")]
-		
-			qFile <- sprintf("%s/%s_query",pDir2,g)
-			# only include the nets that were feature selected
-			GM_writeQueryFile(qSamps,incNets=pTally,
-				nrow(pheno_all),qFile)
-			resFile <- runGeneMANIA(megadbDir$dbDir,qFile,resDir=pDir2)
-			predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
-				pheno_all,g)
+			if (length(pTally)>=1) {
+				# query of all training samples for this class
+				qSamps <- pheno_all$ID[which(pheno_all$STATUS %in% g & 
+										 pheno_all$TT_STATUS%in%"TRAIN")]
+			
+				qFile <- sprintf("%s/%s_query",pDir2,g)
+				# only include the nets that were feature selected
+				GM_writeQueryFile(qSamps,incNets=pTally,
+					nrow(pheno_all),qFile)
+				resFile <- runGeneMANIA(megadbDir$dbDir,qFile,resDir=pDir2)
+				predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
+					pheno_all,g)
+			} else {
+				predRes[[g]] <- NA
+			}
 		}
-		
-		predClass <- GM_OneVAll_getClass(predRes)
-		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults.txt",pDir)
-		write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-		
-		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-		cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-			nrow(out), acc*100))
-		
-		require(ROCR)
-		ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
-							out$STATUS=="SURVIVEYES")
-		save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",pDir))
+		if (any(is.na(predRes))) {
+			cat("One or more groups had zero feature selected nets\n")
+			cat("# no feature-selected nets.\n",file=outFile) 
+		} else {
+			predClass <- GM_OneVAll_getClass(predRes)
+			out <- merge(x=pheno_all,y=predClass,by="ID")
+			write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+			
+			acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
+			cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
+				nrow(out), acc*100))
+			
+			require(ROCR)
+			ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
+								out$STATUS=="SURVIVEYES")
+			save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",pDir))
 		}
-        
+		}
     #cleanup to save disk space
-###    system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
-###        outDir,outDir,outDir))
-###    system(sprintf("rm -r %s/*/SURVIVENO/dataset %s/*/SURVIVENO/networks", 
-###        outDir,outDir))
-###    system(sprintf("rm -r %s/*/SURVIVEYES/dataset %s/*/SURVIVEYES/networks",
-###        outDir,outDir))
+    system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+        outDir,outDir,outDir))
+    system(sprintf("rm -r %s/dataset %s/networks", 
+        outDir,outDir))
 
 }
 	pheno_all$TT_STATUS <- NA

@@ -250,7 +250,6 @@ for (rngNum in 1:100) {
 
 			# feature selected nets pass cutoff threshold
 			pTally <- pTally[which(pTally[,2]>=cutoff),1]
-			pTally <- sub(".profile","",pTally)
 			cat(sprintf("%s: %i pathways\n",g,length(pTally)))
 
 			# query of all training samples for this class
@@ -258,7 +257,7 @@ for (rngNum in 1:100) {
 									 pheno_all$TT_STATUS%in%"TRAIN")]
 		
 			qFile <- sprintf("%s/%s_query",pDir2,g)
-			GM_writeQueryFile(qSamps,incNets=combList[[cur]]
+			GM_writeQueryFile(qSamps,incNets=pTally,
 				,nrow(pheno_all),qFile)
 			resFile <- runGeneMANIA(megadbDir$dbDir,qFile,resDir=pDir2)
 			predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),

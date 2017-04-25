@@ -12,7 +12,12 @@ saveFile <- sprintf("/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCanc
 dirList <- list(
 	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223",dirBase),
 	OV=sprintf("%s/2017_TCGA_OV/output/OV_170227",dirBase),
-	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170223",dirBase),
+	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170223",
+		dirBase),
+	LUSC_clinRNA=sprintf("%s/2017_TCGA_LUSC/output/featSel_clinRNA170228",
+		dirBase),
+	LUSC_clinRPPA=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_170228",
+		dirBase),
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222",dirBase)
 	)
 
@@ -27,6 +32,9 @@ for (cur in names(dirList)) {
 
 	#if (cur == "OV") maxk <- 96 else maxk <- 100
 	maxk <- 100
+	if (cur %in% c("LUSC_clinRNA","LUSC_clinRPPA")) {
+		maxk <- 25
+	} 
 	kset <- 1:maxk
 	cat(sprintf("Num runs=%i\n", maxk))
 
@@ -82,6 +90,7 @@ p <- p + geom_point(position=position_dodge(width=0.9),size=2.5) +
 p <- p + scale_colour_manual(values=unlist(colList))
 # b/w theme, larger axis tick labels
 p <- p + theme_bw() + theme(axis.text=element_text(size=14)) 
+p <- p + ylab("AUCROC (mean+/- SEM)")
 p <- p + ggtitle("PanCancer - feature selection results")
 
 pdfFile <-  sub(".Rdata",".pdf",saveFile)
@@ -96,21 +105,25 @@ featSel_agg <- out
 save(featSel_full,featSel_agg,file=saveFile)
 
 # compare to random
-randomNets <- list()
-load(sprintf("%s/2017_PanCancer_survival/KIRC_randomMean.Rdata",dirBase))
-randomNets[["KIRC"]] <- randomMean
-rm(randomMean)
-lnames <- load(sprintf("%s/2017_PanCancer_survival/OV_randomMean.Rdata",dirBase))
-randomNets[["OV"]] <- randomMean
+randomDir <- sprintf("%s/2017_PanCancer_survival/randomNets",dirBase)
+compareNets <- list()
 
-x <- list(KIRC_real=full$KIRC[,2],KIRC_random=randomNets$KIRC,
-			OV_real=full$OV[,2],OV_random=randomNets$OV)
-boxplot(x,main="real v random",col=c("brown","brown","pink","pink"),
-	ylab="AUCROC")
-kirc <- wilcox.test(x[[1]],x[[2]])
-cat("Real v random: KIRC\n")
-print(kirc)
-ov <- wilcox.test(x[[3]],x[[4]])
-cat("Real v random: OC\n")
-print(ov)
+datSets <- c("KIRC","OV","GBM") 
+pvals <- matrix(NA,nrow=length(datSets),ncol=1)
+ctr <- 1
+for (curSet in datSets) {
+	load(sprintf("%s/%s_randomMean.Rdata",randomDir,curSet))
+	
+	x <- full[[curSet]][,2]
+	y <- randomMean
+	compareNets[[curSet]] <- x
+	compareNets[[sprintf("%s_random",curSet)]] <- y
+	rm(randomMean)
 
+	pvals[ctr,1] <- wilcox.test(x,y,alternative="greater")$p.value
+	ctr <- ctr+1
+}
+rownames(pvals) <- datSets
+
+boxplot(compareNets)
+print(pvals)

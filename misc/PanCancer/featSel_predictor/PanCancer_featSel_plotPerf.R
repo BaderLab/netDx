@@ -107,7 +107,7 @@ save(featSel_full,featSel_agg,file=saveFile)
 randomDir <- sprintf("%s/2017_PanCancer_survival/randomNets",dirBase)
 compareNets <- list()
 
-datSets <- c("KIRC","OV","GBM") 
+datSets <- c("KIRC","OV","GBM","LUSC") 
 pvals <- matrix(NA,nrow=length(datSets),ncol=1)
 ctr <- 1
 for (curSet in datSets) {
@@ -116,7 +116,7 @@ for (curSet in datSets) {
 	x <- full[[curSet]][,2]
 	y <- randomMean
 	compareNets[[curSet]] <- x
-	compareNets[[sprintf("%s_random",curSet)]] <- y
+	compareNets[[sprintf("%s\nrandom",curSet)]] <- y
 	rm(randomMean)
 
 	pvals[ctr,1] <- wilcox.test(x,y,alternative="greater")$p.value
@@ -124,5 +124,13 @@ for (curSet in datSets) {
 }
 rownames(pvals) <- datSets
 
-boxplot(compareNets)
+par(las=1,bty='n',cex.axis=1.3,mar=c(4,6,4,2))
+x <- boxplot(compareNets,at=1:length(compareNets),ylim=c(0,1),
+	main="AUCROC: Feature selected pathways (N=100)\nvs randomly selected (N=10)",
+	ylab="AUCROC for train/test splits (real)\nor different random samplings")
+abline(h=0.5,lty=3,col='red')
+for (ctr in 1:nrow(pvals)) {
+    text(x=(2*ctr)-0.5,y=1.0, 
+			labels=sprintf("p< %1.2e",pvals[ctr]))
+}
 print(pvals)

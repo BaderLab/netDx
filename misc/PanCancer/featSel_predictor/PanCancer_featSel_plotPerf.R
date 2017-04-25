@@ -77,7 +77,8 @@ print(out)
 cat("---------------------------\n")
 cat("Best performance\n")
 x <- sapply(names(full), function(nm) 
-						cat(sprintf("%s: %1.2f\n", nm, max(full[[nm]][,2],na.rm=T))))
+						cat(sprintf("%s: %1.2f\n", nm, max(full[[nm]][,2],
+						na.rm=T))))
 
 # add eb
 limits <- aes(ymax=mean+sem,ymin=mean-sem)

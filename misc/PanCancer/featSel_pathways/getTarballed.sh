@@ -26,7 +26,7 @@ scp $VM3:~/${outF} .
 indir=/home/netdx/BaderLab/PanCancer_KIRC/output/featSel_pathways_VM4_170426
 outF=KIRC_featSelPath_VM4_170426.tar.gz
 ssh $VM4 "cd $indir; tar cvfz ~/${outF} rng*/predictionResults.txt rng*/SURVIVE*/*/*CV_score.txt" 
-scp $VM3:~/${outF} .
+scp $VM4:~/${outF} .
 
 mv *gz ${localDir}/.
 cd $localDir

@@ -71,8 +71,12 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		idx <- which(nm %in% namedSets[[curSet]])
 		if (verbose) cat(sprintf("%i members\n", length(idx)))
 
+		minMembers <- 1 
+		if (simMetric=="pearson") minMembers <- 3;
+
 		oFile <- NULL
-		if (any(idx)) { # has sufficient connections to make network
+ 		# has sufficient connections to make network
+		if (length(idx)>=minMembers) {
 			if (writeProfiles) {
 				outFile <- sprintf("%s/%s.profile",outDir,curSet)
 				write.table(t(xpr[idx,,drop=FALSE]),file=outFile,sep="\t",

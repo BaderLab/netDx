@@ -4,7 +4,7 @@ rm(list=ls())
 # data dirs for input
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 dirList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_pathways_170426",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_featSel_pathway_170426",rootDir)
 )
 
 source("writeConsensusNets_oneSet.R")
@@ -22,10 +22,25 @@ tryCatch({
 		cat(sprintf("%s\n",curSet))
 		cat("-----------------------------\n")
 		for (cutoff in 9:10) {
+		cat("-----------------------------\n")
 		cat(sprintf("\tcutoff = %i\n", cutoff))
+		cat("-----------------------------\n")
+
+		outPfx<-sprintf("%s/%s_thresh%i",outDir,curSet,cutoff)
 		writeConsensusNets(datDir=dirList[[curSet]],
-			outPfx=sprintf("%s/%s_thresh%i",outDir,curSet,cutoff),
-			consCutoff=cutoff,pctPass=1)
+			outPfx=outPfx,consCutoff=cutoff,pctPass=.75)
+
+		cat("YES\n")
+		dat <- read.delim(sprintf("%s_SURVIVEYES_consNets.txt",outPfx),
+			sep="\t",header=T,as.is=T)
+		print(dat)
+		cat("\n")
+		cat("NO\n")
+		dat <- read.delim(sprintf("%s_SURVIVENO_consNets.txt",outPfx),
+			sep="\t",header=T,as.is=T)
+		print(dat)
+
+		cat("-----------------------------\n")
 		}
 	}
 },error=function(ex){

@@ -9,14 +9,16 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-#inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
 
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-inDir <- sprintf("%s/2017_TCGA_KIRC/input",rootDir)
-outRoot <- sprintf("%s/2017_TCGA_KIRC/output",rootDir)
+#rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
+rootDir <- "/mnt/data2/BaderLab"
+#inDir <- sprintf("%s/2017_TCGA_KIRC/input",rootDir)
+#outRoot <- sprintf("%s/2017_TCGA_KIRC/output",rootDir)
+inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
+outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
 #### makeConsProfiles code block >>>>
-consNetDir <- sprintf("%s/2017_PanCancer_Survival/oneClinNet_featSelNets",
+consNetDir <- sprintf("%s/PanCancer_common/oneClinNet_featSelNets",
 		rootDir)
 netScoreFile <- list(
 		SURVIVENO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",

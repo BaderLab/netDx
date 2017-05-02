@@ -25,6 +25,12 @@ load(inFile)
 oneNetPer <- cbind(oneNetPer,val[,1])
 colnames(oneNetPer)[ncol(oneNetPer)] <- "clinOneRNAPath"
 
+# clinical one & RNA by pathway - RANDOMLY-sampled
+inFile <- sprintf("%s/randomNets_170501/KIRC_randomMean.Rdata",rootDir)
+load(inFile)
+oneNetPer <- cbind(oneNetPer, unlist(lapply(predSet, mean)))
+colnames(oneNetPer)[ncol(oneNetPer)] <- "rnd"
+
 # clinical by var only
 inFile <- sprintf("%s/clinNets_170430/%s_clinNets_170430_results.Rdata",
 	rootDir,curSet)
@@ -35,19 +41,18 @@ colnames(oneNetPer)[ncol(oneNetPer)] <- "clinNets"
 colnames(oneNetPer) <- sub("clinical","clin",colnames(oneNetPer))
 #pdf(sprintf("%s/%s_perf.pdf", outDir,curSet), width=11,height=5)
 
-idx <- which(colnames(oneNetPer) %in% c("clinOneRNAPath","clinRNAPath"))
-oneNetPer <- oneNetPer[,-idx]
+#idx <- which(colnames(oneNetPer) %in% c("clinOneRNAPath","clinRNAPath"))
+#oneNetPer <- oneNetPer[,-idx]
 
 mu <- colMeans(oneNetPer,na.rm=TRUE)
 sem <- sapply(1:ncol(oneNetPer),function(x) 
 	sd(oneNetPer[,x],na.rm=TRUE)/sqrt(nrow(oneNetPer)))
 sdev <- sapply(1:ncol(oneNetPer),function(x) 
 	sd(oneNetPer[,x],na.rm=TRUE)) #/sqrt(nrow(oneNetPer)))
-	
-	#abline(v=vLines[[curSet]],lty=1,lwd=2)
 
-postscript(sprintf("%s/KIRC_perf.eps",outDir),width=8,height=3)
-colSet <- c(rep("darkgreen",6),rep("orange",5),"red","purple")
+postscript(sprintf("%s/KIRC_perf.eps",outDir),width=15,height=3)
+colSet <- c(rep("darkgreen",6),rep("orange",5),"red",
+		"purple","pink","brown","blue")
 tryCatch({
 	par(bty='n',mar=c(3,4,2,4))
 
@@ -58,10 +63,10 @@ tryCatch({
 
 	lbl <- colnames(oneNetPer)
 	lbl[1:11] <- sub("A","\n",lbl[1:11])
-	#lbl[which(lbl=="clinRNAPath")] <- "clin-nets\nRNA-path"
-	#lbl[which(lbl=="clinOneRNAPath")] <- "clinOne\nRNA-path"
+	lbl[which(lbl=="clinRNAPath")] <- "cNets\nRpath"
+	lbl[which(lbl=="clinOneRNAPath")] <- "cOne\nRpath"
 	lbl[which(lbl=="clinNets")] <- "clin-nets"
-	axis(1,at=1:length(mu), labels=lbl,cex.axis=1)
+	axis(1,at=1:length(mu), labels=lbl,cex.axis=0.7)
 	segments(x0=1:length(mu), y0=mu-sem,y1=mu+sem,col=colSet,lwd=3)
 	segments(x0=(1:length(mu))-0.05, x1=(1:length(mu))+0.05,
 			y0=mu-sem,y1=mu-sem,col=colSet,lwd=3)
@@ -109,12 +114,12 @@ if (any(has_na>0)) {
 ###	median(oneNetPer[,"clinArna"]), median(oneNetPer[,"clinOneRNAPath"]),
 ###	wmw$p.value))
 ###cat("-----\n")
-wmw <- wilcox.test(oneNetPer[,"clin"],oneNetPer[,"clinArna"],
-			alternative="less")
-cat(sprintf("clin vs clinARNA: %1.2f vs %1.2f; WMW p < %1.2e\n",
-	median(oneNetPer[,"clin"]), median(oneNetPer[,"clinArna"]),
-	wmw$p.value))
-cat("-----\n")
+###wmw <- wilcox.test(oneNetPer[,"clin"],oneNetPer[,"clinArna"],
+###			alternative="less")
+###cat(sprintf("clin vs clinARNA: %1.2f vs %1.2f; WMW p < %1.2e\n",
+###	median(oneNetPer[,"clin"]), median(oneNetPer[,"clinArna"]),
+###	wmw$p.value))
+###cat("-----\n")
 ###wmw <- wilcox.test(oneNetPer[,"clinRNAPath"],oneNetPer[,"clinNets"],
 ###			alternative="less")
 ###cat(sprintf("clinRNAPath vs clinNets: %1.2f vs %1.2f; WMW p < %1.2e\n",
@@ -126,6 +131,13 @@ wmw <- wilcox.test(oneNetPer[,"all"],oneNetPer[,"clinNets"],
 cat(sprintf("all vs clinNets: %1.2f vs %1.2f; WMW p < %1.2e\n",
 	median(oneNetPer[,"all"]), median(oneNetPer[,"clinNets"]),
 	wmw$p.value))
+
+wmw <- wilcox.test(oneNetPer[,"clinOneRNAPath"],oneNetPer[,"rnd"],
+			alternative="greater")
+cat(sprintf("clinOneRNAPath vs rnd: %1.2f vs %1.2f; WMW p < %1.2e\n",
+	median(oneNetPer[,"clinOneRNAPath"]), median(oneNetPer[,"rnd"]),
+	wmw$p.value))
+
 
 }
 

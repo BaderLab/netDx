@@ -3,6 +3,7 @@ rm(list=ls())
 
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 inDir <- sprintf("%s/2017_TCGA_KIRC/input",rootDir)
+outDir <- sprintf("%s/2017_TCGA_KIRC", rootDir)
 
 inFiles <- list(
 	clinical=sprintf("%s/KIRC_clinical_core.txt",inDir),
@@ -60,5 +61,7 @@ cat(sprintf("WMW: p < %1.2e\n", wmw$p.value))
 
 source("multiplot.R")
 plotList <- list(p1,p2,p3)
+pdf(sprintf("%s/survival_vs_clinicalvar.pdf",outDir),width=8,height=3)
 multiplot(plotlist=plotList,cols=3)
+dev.off()
 

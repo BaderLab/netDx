@@ -4,12 +4,13 @@ rm(list=ls())
 # data dirs for input
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 dirList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_featSel_pathway_170426",rootDir)
+	#KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_featSel_pathway_170426",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430",rootDir)
 )
 
 source("writeConsensusNets_oneSet.R")
 dt <- format(Sys.Date(),"%y%m%d")
-outDir <- sprintf("%s/2017_PanCancer_Survival/featSel_pathways_170426/featSelNets", 
+outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430/featSelNets", 
 		rootDir)
 if (!file.exists(outDir)) dir.create(outDir,recursive=TRUE)
 
@@ -28,7 +29,7 @@ tryCatch({
 
 		outPfx<-sprintf("%s/%s_thresh%i",outDir,curSet,cutoff)
 		writeConsensusNets(datDir=dirList[[curSet]],
-			outPfx=outPfx,consCutoff=cutoff,pctPass=.75)
+			outPfx=outPfx,consCutoff=cutoff,pctPass=1.0)
 
 		cat("YES\n")
 		dat <- read.delim(sprintf("%s_SURVIVEYES_consNets.txt",outPfx),

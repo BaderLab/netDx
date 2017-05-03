@@ -11,7 +11,7 @@ writeConsensusNets <- function(datDir,consCutoff=7L,
 	cat(sprintf("Got %i iterations\n", length(rngDirs)))
 	netColl <- list()
 	for (curDir in rngDirs) {
-		scoreFile <- sprintf("%s/%s/all/%s/GM_results/%s_pathway_CV_score.txt",
+		scoreFile <- sprintf("%s/%s/rna/%s/GM_results/%s_pathway_CV_score.txt",
 				 datDir,curDir,gp,gp)
 		tmp	 <- read.delim(scoreFile,sep="\t",h=T,as.is=T)
 		colnames(tmp)[1] <- "PATHWAY_NAME"

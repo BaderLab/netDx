@@ -11,7 +11,7 @@ pset <- seq(0.25,1,0.25)
 pdf(sprintf("%s/netScoreRankings.pdf",inDir),width=11,height=5)
 tryCatch({
 	par(mar=c(3,5,1,1),mfrow=c(2,1))
-for (curSet in c("KIRC","OV","LUSC","GBM")) {
+for (curSet in c("KIRC")) { #,"OV","LUSC","GBM")) {
 	for (gp in c("SURVIVEYES","SURVIVENO")) {
 		inFile <- sprintf("%s/%s_thresh10_%s_netScores.txt",inDir,curSet,gp)
 		dat <- read.delim(inFile,sep="\t",h=T,as.is=T)

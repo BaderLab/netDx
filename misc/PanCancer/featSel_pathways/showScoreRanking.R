@@ -2,21 +2,22 @@
 rm(list=ls())
 
 #inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/featSel_pathways_170426/featSelNets"
-inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/oneClinNet_featSelNets"
+#inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/oneClinNet_featSelNets"
+inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/pathwaysOnly_170502"
 
 require(plotrix)
 
-tset <- 9:10
+tset <- 10
 pset <- seq(0.1,1,0.1)
 
 pctPass4file <- 1.0
 
-pdf(sprintf("%s/netScoreRankings.pdf",inDir),width=11,height=5)
+pdf(sprintf("%s/netScoreRankings.pdf",inDir),width=8,height=5)
 tryCatch({
-	par(mar=c(2,30,1,1),mfrow=c(2,1))
+	par(mar=c(2,33,1,1),mfrow=c(2,1))
 for (curSet in c("KIRC")) { # ,"OV","LUSC","GBM")) {
 	for (gp in c("SURVIVEYES","SURVIVENO")) {
-		inFile <- sprintf("%s/%s__thresh10_pctPass%1.2f_%s_netScores.txt",
+		inFile <- sprintf("%s/%s_thresh10_pctPass%1.2f_%s_netScores.txt",
 			inDir,curSet,pctPass4file,gp)
 		dat <- read.delim(inFile,sep="\t",h=T,as.is=T)
 		netSet <- matrix(0,nrow=nrow(dat),ncol=length(tset)*length(pset))
@@ -38,13 +39,17 @@ for (curSet in c("KIRC")) { # ,"OV","LUSC","GBM")) {
 		
 		plotrix::color2D.matplot(netSet,show.values=F,axes=F,xlab="",ylab="",
 			extremes=c("blue","white"),border='gray50')
+
+		tmp <- tolower(rev(sub(".profile|_cont","",
+				rownames(netSet))))
+		tmp <- gsub("_"," ",tmp)	
+
 		axis(2,at=seq_len(nrow(netSet))-0.5,
-			labels=rev(sub(".profile|_cont","",
-				rownames(netSet))),cex.axis=0.6,las=1,
+			labels=tmp,cex.axis=0.6,las=1,
 			ylab="Feature",xlab="Cutoff and % pass") 
 		axis(1,at=seq(1,length(tset)*length(pset),length(pset))-0.5,
 			labels=tset,cex.axis=0.8)
-		title(sprintf("%s:%s",curSet,gp))
+		title(sprintf("%s:%s",curSet,gp),cex.main=0.8)
 	}
 }},error=function(ex) {
 	print(ex)

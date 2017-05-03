@@ -90,4 +90,6 @@ writeConsensusNets <- function(datDir,
 	cons <- cons[idx,]
 	write.table(cons[,1],file=outFile,sep="\t",col=T,row=F,quote=F)
 	}
+
+	return(outPfx)
 }

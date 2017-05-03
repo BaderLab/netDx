@@ -5,14 +5,16 @@ rm(list=ls())
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 dirList <- list(
 	#KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_featSel_pathway_170426",rootDir)
-	KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430",rootDir)
+#	KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/output/pathway_170502",rootDir)
 )
+#outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430/featSelNets", 
+#		rootDir)
+outDir <- sprintf("%s/2017_PanCancer_Survival/pathwaysOnly_170502",rootDir)
+if (!file.exists(outDir)) dir.create(outDir,recursive=TRUE)
 
 source("writeConsensusNets_oneSet.R")
 dt <- format(Sys.Date(),"%y%m%d")
-outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430/featSelNets", 
-		rootDir)
-if (!file.exists(outDir)) dir.create(outDir,recursive=TRUE)
 
 logFile <- sprintf("%s/getConsNets_pathways_%s.log",outDir,dt)
 sink(logFile,split=TRUE)
@@ -22,14 +24,15 @@ tryCatch({
 		cat("-----------------------------\n")
 		cat(sprintf("%s\n",curSet))
 		cat("-----------------------------\n")
-		for (cutoff in 9:10) {
+		for (cutoff in 10) {
 		cat("-----------------------------\n")
 		cat(sprintf("\tcutoff = %i\n", cutoff))
 		cat("-----------------------------\n")
 
-		outPfx<-sprintf("%s/%s_thresh%i",outDir,curSet,cutoff)
-		writeConsensusNets(datDir=dirList[[curSet]],
-			outPfx=outPfx,consCutoff=cutoff,pctPass=1.0)
+	pctPass <- 0.7
+		outPfx		<-sprintf("%s/%s",outDir,curSet)
+		outPfx	<- writeConsensusNets(datDir=dirList[[curSet]],
+			outPfx=outPfx,consCutoff=cutoff,pctPass=pctPass)
 
 		cat("YES\n")
 		dat <- read.delim(sprintf("%s_SURVIVEYES_consNets.txt",outPfx),

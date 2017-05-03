@@ -2,13 +2,13 @@
 require(ROCR)
 
 dirList <- list(
-	KIRC="/mnt/data2/BaderLab/PanCancer_KIRC/output/featSel_oneNetPer_170424", # VM
+	KIRC="/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_KIRC/output/KIRC_oneNetPer_170426",
 	LUSC="/home/netdx/BaderLab/PanCancer_LUSC/output/featSel_oneNetPer_170425", # VM4
 	OV="/home/ahmad/tcga_datasets/OV/output/featSel_oneNetPer_170425",# VM2
 	GBM="/home/spai/BaderLab/PanCancer_GBM/output/featSel_oneNetPer_170425" #VM3
 )
 outDirList <- list(
-	KIRC="/mnt/data2/BaderLab/PanCancer_common", 	# VM1
+	KIRC="/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival",
 	LUSC="/home/netdx/BaderLab/PanCancer_common", 	# VM4
 	OV="/home/spai/BaderLab/PanCancer_common", # VM2
 	GBM="/home/spai/BaderLab/PanCancer_common" # VM3
@@ -16,7 +16,7 @@ outDirList <- list(
 
 # iterations that have run so far
 maxK <- list(
-	KIRC=66,
+	KIRC=100,
 	LUSC=21,
 	GBM=19,
 	OV=40

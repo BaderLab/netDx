@@ -45,7 +45,7 @@ for (curSet in setList) {
 	colSet <- colSets[[curSet]]
 	plot(1:length(mu),mu,xlab="Data combinations",ylim=c(0.4,0.85),
 		type='p',bty='n',ylab="AUCROC (mean+/-SEM)",xaxt='n',
-		las=1,col=colSet,pch=16,cex=2.5,cex.axis=1.4)
+		las=1,col=colSet,pch=16,cex=1.5,cex.axis=1.4)
 	title(curSet)
 
 	axis(1,at=1:length(mu), labels=colnames(val),cex.axis=1.4)
@@ -57,8 +57,7 @@ for (curSet in setList) {
 	#boxplot(val,las=2,main=sprintf("%s (N=%i splits)",curSet,nrow(val)),
 	#	bty='n',ylab="AUCROC")
 	#abline(h=0.7,lty=3,col='red')
-	#abline(h=0.5,lty=1,col='red')
-	
+	#abline(h=0.5,lty=1,col='red')lbl	
 	has_na <- colSums(is.na(val))
 	if (any(has_na>0)) {
 		cat("the following sections have 1+ failed rounds\n")

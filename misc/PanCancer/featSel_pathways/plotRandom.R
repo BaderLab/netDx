@@ -12,7 +12,7 @@ curSet	<- "KIRC"
 if (!file.exists(outDir)) dir.create(outDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-saveData <- FALSE # set to true to save, false to plot
+saveData <- TRUE # set to true to save, false to plot
 
 if (saveData) {
 	dirs <- dir(path=inDir,pattern="randomNets")

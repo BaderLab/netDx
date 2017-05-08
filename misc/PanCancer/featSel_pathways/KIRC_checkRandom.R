@@ -78,13 +78,14 @@ for (nm in names(netScoreFile)) {
 		if ("clinical.profile" %in% netNames[idx]) {
 			netCount[[nm]] <- length(idx)-1 # subtract 1 for clinical
 			incClin[[nm]] <- TRUE				# force clin to be included
-		} else 
+		} else {
 			netCount[[nm]] <- length(idx)
 			incClin[[nm]] <- FALSE			# when sampling random, don't include clin
+		}
 }
 }
 
-for (sampRNG in seq(55,500,5)) {
+for (sampRNG in seq(1,100,5)) {
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
@@ -253,6 +254,7 @@ tryCatch({
             
    # clinical
 		if ("clinical.profile" %in% pTally) {
+		cat("going to include clinical\n")
        	netList2 <- makePSN_NamedMatrix(dats$clinical, 
 				rownames(dats$clinical),clinList[idx],
            netDir,writeProfiles=TRUE,

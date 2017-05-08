@@ -253,10 +253,10 @@ tryCatch({
     }
             
    # clinical
-		if ("clinical.profile" %in% pTally) {
+		if ("clinical" %in% pTally) {
 		cat("going to include clinical\n")
        	netList2 <- makePSN_NamedMatrix(dats$clinical, 
-				rownames(dats$clinical),clinList[idx],
+				rownames(dats$clinical),clinList,
            netDir,writeProfiles=TRUE,
            verbose=TRUE,numCores=numCores,append=TRUE)
 		}

@@ -26,7 +26,7 @@ netScoreFile <- list(
 		consNetDir)
 )
 
-maxRng <- 50 		# num train/test splits to check performance on
+maxRng <- 100 		# num train/test splits to check performance on
 consCutoff <- 10	# score a net must have to be a consensus net
 consPctPass <- 0.7	# % of rounds it must have score >= consCutoff
 
@@ -87,7 +87,7 @@ for (nm in names(netScoreFile)) {
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/%s_%i_pass%1.2f_%s",outRoot,
+megaDir <- sprintf("%s/%s_%i_pass%1.2f_v2_%s",outRoot,
 		analysisMode,consCutoff,consPctPass,dt)
 #### <<<< makeConsProfiles code block 
 
@@ -234,7 +234,6 @@ tryCatch({
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
-browser()
 		netDir <- sprintf("%s/networks",pDir)
 		if (!file.exists(netDir)) dir.create(netDir,recursive=TRUE)
 	
@@ -264,7 +263,7 @@ browser()
 		cat("Running test queries\n")
 		GMdir <- sprintf("%s/GM_results",pDir)
 		dir.create(GMdir)
-		for (rngNum in 1:maxRng) {
+		for (rngNum in 51:maxRng) {
 			cat(sprintf("(%i)", rngNum))	
 			pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 										  setSeed=rngNum*5)
@@ -286,7 +285,7 @@ browser()
 
 	resDir <- sprintf("%s/predictions",outDir)
 	dir.create(resDir)
-	for (k in 1:length(predRes)) {
+	for (k in 51:100) {#1:length(predRes)) {
 		predClass <- GM_OneVAll_getClass(predRes[[k]])
  		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults_%i.txt",resDir,k)

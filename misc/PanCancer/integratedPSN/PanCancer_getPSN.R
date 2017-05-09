@@ -3,10 +3,11 @@ rm(list=ls())
 
 # --------------------------------------------------------------
 # Param for computing integrated PSN
-outDir		<- "."
 cutoff 		<-10  	# include nets with score >= this value
 corrThresh 	<-0.7 	# exclude edges with similarity < this threshold
 dt <- format(Sys.Date(),"%y%m%d")
+
+netMode <- "consensus" # consensus|bestAUC
 
 # --------------------------------------------------------------
 # setup for network generation in Cytoscape
@@ -52,16 +53,28 @@ survList <- list(
 	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_binary_survival.txt",rootDir),
 	GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
 )
-# best performing iteration.
-selIter <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222/rng29", rootDir),
-	OV=sprintf("%s/2017_TCGA_OV/output/featSel_170327/rng57", rootDir),
-	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170327/rng4",
-							 rootDir),
-	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223/rng78", 
-							 rootDir)
-)
 
+outDir <- sprintf("%s/2017_PanCancer_Survival/integratedPSN",rootDir)
+
+if (netMode=="bestAUC") {
+#### best performing iteration.
+###selIter <- list(
+###	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222/rng29", rootDir),
+###	OV=sprintf("%s/2017_TCGA_OV/output/featSel_170327/rng57", rootDir),
+###	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170327/rng4",
+###							 rootDir),
+###	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223/rng78", 
+###							 rootDir)
+###)
+} else {
+	cat("***** Consensus mode *****\n")
+	selIter <- list(
+		KIRC=sprintf("%s/2017_TCGA_KIRC/output/consNets_170410", rootDir),
+		OV=sprintf("%s/2017_TCGA_OV/output/consNets_170410", rootDir),
+		LUSC=sprintf("%s/2017_TCGA_LUSC/output/consNets_170410",rootDir),
+		GBM=sprintf("%s/2017_TCGA_GBM/output/consNets_170410",rootDir)
+	)
+}
 require(netDx)
 
 # --------------------------------------------------------------
@@ -77,7 +90,7 @@ tryCatch({
 
 datSets <- c("OV","KIRC","LUSC","GBM")
 dijk <- list()
-for (aggFun in c("MEAN")) {
+for (aggFun in c("MAX")) {
 	dijk[[aggFun]] <- list()
 	for (simMode in "BinProp") { 		
 		curDijk <- matrix(NA,nrow=length(datSets),ncol=8)
@@ -140,13 +153,19 @@ for (aggFun in c("MEAN")) {
 		# pool feature selected nets from both groups
 		for (gps in names(pTallyFile)) {
 			cat(sprintf("Group %s\n", gps))
+		if (netMode=="bestAUC") {
 			pTally <- read.delim(pTallyFile[[gps]],sep="\t",h=T,as.is=T)
 			pTally <- subset(pTally, pTally[,2]>=cutoff)[,1]
 			pTally <- sub("_cont|\\.profile","",pTally)
 			if ("BRCA2" %in% pTally) pTally <- pTally[-which(pTally=="BRCA2")]
-
+		}
+			
 			netInfo_cur <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
 			netInfo_cur[,2] <- sub("_cont|\\.profile","",netInfo_cur[,2])
+	
+		if (netMode=="consensus") {
+			pTally <- netInfo_cur[,2]
+		}
 			curNetIds <- matrix(NA,nrow=length(pTally),ncol=2)
 			ctr <- 1
 
@@ -283,8 +302,8 @@ dev.off()
 			dev.off()
 		})
 		}
-		write.table(pheno,file=sprintf("%s/%s_%s_%s_PSN_pheno.txt",
-			 outDir,curSet, simMode, aggFun),sep="\t",col=T,row=F,quote=F)
+		write.table(pheno,file=sprintf("%s/%s_%s_%s_%s_PSN_pheno.txt",
+			 outDir,curSet, simMode, aggFun,netMode),sep="\t",col=T,row=F,quote=F)
 
 		# layout network in Cytoscape
 		network.suid <- EasycyRest::createNetwork(
@@ -308,8 +327,11 @@ dev.off()
 }
 
 dijk <- do.call("rbind",dijk)
-write.table(dijk,file=sprintf("Dijkstra_PSN_%s.txt",dt),sep="\t",col=T,row=T,
-	quote=F)
+write.table(dijk,
+	file=sprintf("%s/Dijkstra_PSN_%s_%s_%s_%s.txt",
+	outDir,simMode,aggFun,netMode,dt),
+	sep="\t",col=T,row=T,quote=F)
+
 },error=function(ex){ 
 	print(ex)
 }, finally={

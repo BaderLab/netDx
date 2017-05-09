@@ -8,27 +8,22 @@ numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
-
-#rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-rootDir <- "/mnt/data2/BaderLab"
-#inDir <- sprintf("%s/2017_TCGA_KIRC/input",rootDir)
-#outRoot <- sprintf("%s/2017_TCGA_KIRC/output",rootDir)
-inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
-outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
-
-#### makeConsProfiles code block >>>>
-consNetDir <- sprintf("%s/PanCancer_common/oneClinNet_featSelNets",
-		rootDir)
-netScoreFile <- list(
-	SURVIVENO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",
-		consNetDir),
-	SURVIVEYES=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
-		consNetDir)
-)
-
 maxRng <- 100 		# num train/test splits to check performance on
 consCutoff <- 10	# score a net must have to be a consensus net
 consPctPass <- 0.7	# % of rounds it must have score >= consCutoff
+
+rootDir <- "/mnt/data2/BaderLab"
+inDir 	<- sprintf("%s/PanCancer_KIRC/input",rootDir)
+outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
+
+#### makeConsProfiles code block >>>>
+consNetDir <- sprintf("%s/PanCancer_common/pathwaysOnly_170502",rootDir)
+netScoreFile <- list(
+	SURVIVENO=sprintf("%s/KIRC_thresh10_pctPass1.00_SURVIVENO_netScores.txt",
+		consNetDir),
+	SURVIVEYES=sprintf("%s/KIRC_thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
+		consNetDir)
+)
 
 analysisMode <- "consNets" # none |consNets | bestConsNets | randomNets
 # none = just generate nets of consensus profiles, don't run predictions
@@ -63,9 +58,7 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 # count the number of consensus nets per group and whether clinical
 # is part of this. will affect sampling downstream.
 netCount <- list()
-incClin <- list()
 consNets <- list()
-if (analysisMode %in% c("randomNets","consNets")) {
 for (nm in names(netScoreFile)) {
 	netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
 	netNames 	<- netScores[,1]
@@ -74,26 +67,22 @@ for (nm in names(netScoreFile)) {
 	idx <- which(tmp >= floor(consPctPass*ncol(netScores)))
 	cat(sprintf("%s: %i nets score >= %i for %i%% trials\n",
 		nm, length(idx), consCutoff, round(consPctPass*100)))
-
+	
+	netCount[[nm]] <- length(idx)
 	consNets[[nm]] <- netNames[idx]
-	if ("clinical.profile" %in% netNames[idx]) {
-		netCount[[nm]] <- length(idx)-1 # subtract 1 for clinical
-		incClin[[nm]] <- TRUE		# force clin to be included
-	} else 
-		netCount[[nm]] <- length(idx)
-		incClin[[nm]] <- FALSE		# when sampling random, don't include clin
-	}
+	cat(sprintf("Consensus nets for %s are:\n",nm))
+	print(consNets[[nm]])
+	cat("---\n")
 }
+
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/%s_%i_pass%1.2f_v2_%s",outRoot,
-		analysisMode,consCutoff,consPctPass,dt)
+megaDir <- sprintf("%s/pathOnly_%s_%s",outRoot,analysisMode,dt)
 #### <<<< makeConsProfiles code block 
 
 # -----------------------------------------------------------
 # process input
-clinList <- list(clinical=c("age","grade","stage"))
 
 inFiles <- list(
 	clinical=sprintf("%s/KIRC_clinical_core.txt",inDir),
@@ -124,16 +113,6 @@ pheno$X <- NULL
 pheno_nosurv <- pheno[1:4]
 
 dats <- list() #input data in different slots
-
-# clinical
-cat("\t* Clinical\n")
-clinical <- pheno_nosurv
-rownames(clinical) <- clinical[,1];
-clinical$grade <- as.numeric(factor(clinical$grade))
-clinical$stage <- as.numeric(factor(clinical$stage))
-clinical$ID <- NULL
-clinical <- t(clinical)
-dats$clinical <- clinical; rm(clinical)
 
 # RNA
 cat("\t* RNA\n")
@@ -167,6 +146,7 @@ logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
 	outDir <- megaDir
+
 	pheno_all$TT_STATUS <- "DUMMY" 
 	
 	# create nets 
@@ -193,49 +173,30 @@ tryCatch({
 		## SP: change the filenames here
 		pTally <- switch(analysisMode,
 	       consNets={
-				consNets[[g]]
-###		}, none={
-###			read.delim(
-###				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
-###				sep="\t",h=T,as.is=T)[,1]
-####		}, bestConsNets={
-###			tmp <- read.delim(
-###				sprintf("%s/KIRC_%s_consNets.txt", consNetDir,g),
-###				sep="\t",h=T,as.is=T)[,1]
-###			fName <- dir(consNetDir,pattern=sprintf("KIRC_%s_correlations",g))
-###			bestSet <- read.delim(
-###				sprintf("%s/%s",consNetDir,fName),sep="\t",h=T,as.is=T)
-###			idx_tmp <- unlist(sapply(1:nrow(bestSet), 
-###				function(k) max(bestSet[k,4:6])))
-###			oldlen <- length(tmp)
-###			tmp <- tmp[which(tmp %in% rownames(bestSet)[which(idx_tmp>2)])]
-###			cat(sprintf("Filtered %i to %i best\n", oldlen,length(tmp)))
-###			tmp
+			consNets[[g]]
 		}, randomNets= {
+			stop("won't work, use KIRC_pathOnly_checkRandom instead")
 			pTally	<- read.delim(
-				sprintf("%s/KIRC__thresh%i_pctPass1.00_%s_AllNets.txt", 
+				sprintf("%s/KIRC_thresh%i_pctPass1.00_%s_AllNets.txt", 
 						consNetDir,consCutoff,g),sep="\t",h=T,as.is=T)[,1]
-			tmp <- which(pTally == "clinical.profile")
-			if (any(tmp)) pTally <- pTally[-tmp]
 			cat(sprintf("**** Sampling %i nets randomly ****\n",netCount[[g]]))
 			set.seed(sampRNG);
 			pTally <- sample(pTally, netCount[[g]], replace=FALSE)
 			# only add clinical by force if it was part of the consensus
 			# nets for the group
-			if (incClin[[g]]) pTally <- c("clinical.profile", pTally)
 			cat(sprintf("Nets for this round:\n%s\n", 
 				paste(pTally,collapse="\n")))
 
-				pTally
+			pTally
 		},{
 			stop(sprintf("Invalid analysisMode = %s\n", analysisMode))
 		})
 #### <<< makeConsProfiles code block 
-		pTally <- sub(".profile","",pTally)
-		pTally <- sub("_cont","",pTally)
-		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
-		netDir <- sprintf("%s/networks",pDir)
-		if (!file.exists(netDir)) dir.create(netDir,recursive=TRUE)
+	pTally <- sub(".profile","",pTally)
+	pTally <- sub("_cont","",pTally)
+	cat(sprintf("%s: %i pathways\n",g,length(pTally)))
+	netDir <- sprintf("%s/networks",pDir)
+	if (!file.exists(netDir)) dir.create(netDir,recursive=TRUE)
 	
     #prepare nets for new db
     # RNA 
@@ -247,14 +208,6 @@ tryCatch({
 					numCores=numCores, writeProfiles=TRUE)
     }
             
-   # clinical
-		if ("clinical.profile" %in% pTally) {
-       	netList2 <- makePSN_NamedMatrix(dats$clinical, 
-				rownames(dats$clinical),clinList[idx],
-           netDir,writeProfiles=TRUE,
-           verbose=TRUE,numCores=numCores,append=TRUE)
-		}
-        
 ### makeConsProfiles code block >>>>
 		if (!analysisMode %in% "none") {
 		# create db
@@ -263,7 +216,7 @@ tryCatch({
 		cat("Running test queries\n")
 		GMdir <- sprintf("%s/GM_results",pDir)
 		dir.create(GMdir)
-		for (rngNum in 51:maxRng) {
+		for (rngNum in 1:maxRng) {
 			cat(sprintf("(%i)", rngNum))	
 			pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 										  setSeed=rngNum*5)
@@ -285,7 +238,7 @@ tryCatch({
 
 	resDir <- sprintf("%s/predictions",outDir)
 	dir.create(resDir)
-	for (k in 51:100) {#1:length(predRes)) {
+	for (k in 1:length(predRes)) {
 		predClass <- GM_OneVAll_getClass(predRes[[k]])
  		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults_%i.txt",resDir,k)

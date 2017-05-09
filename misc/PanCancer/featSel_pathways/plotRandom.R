@@ -3,11 +3,11 @@
 require(ROCR)
 
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneClinNet_pathway_random_170501",
+inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneClinNet_pathway_random_170508",
 		rootDir) # VM1
-outDir	<- sprintf("%s/2017_PanCancer_Survival/randomNets_170501",rootDir)
-outFile	<- sprintf("%s/%s_randomMean.Rdata",outDir,curSet) 
+outDir	<- sprintf("%s/2017_PanCancer_Survival/randomNets_170508",rootDir)
 curSet	<- "KIRC"
+outFile	<- sprintf("%s/%s_randomMean.Rdata",outDir,curSet) 
 
 if (!file.exists(outDir)) dir.create(outDir)
 
@@ -67,7 +67,7 @@ if (saveData) {
 				length(predSet)),
 			ylab="mean AUCROC over 25 resamplings",ylim=c(0.4,1))
 		abline(h=c(0.5,0.7),lty=3,col='red')
-		cat("Summary of 10 random resamplings\n")
+		cat(sprintf("Summary of %s random resamplings\n",length(tmp)))
 		print(summary(tmp))
 
 		randomMean <- tmp

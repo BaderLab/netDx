@@ -31,6 +31,7 @@ sink(logFile,split=TRUE)
 tryCatch({
 par(mfrow=c(2,2),mar=c(2,4,1,0))
 for (curSet in setList) {
+<<<<<<< Updated upstream
 	cat("---------------------\n")
 	cat(sprintf("%s\n",curSet))
 	cat("---------------------\n")

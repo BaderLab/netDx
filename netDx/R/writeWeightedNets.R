@@ -221,7 +221,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			
 			cat(sprintf("\tRemoving %i duplicate edges\n",
 					length(torm)))
-			ints <- ints[-torm,]
+			if (length(torm)>0) ints <- ints[-torm,]
 
 		x <- paste(ints[,1],ints[,2],sep=".")
 		y <- paste(ints[,2],ints[,1],sep=".")

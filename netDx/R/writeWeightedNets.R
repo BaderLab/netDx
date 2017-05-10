@@ -131,7 +131,9 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	for (i in contNets) { 
 		nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
 		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
+		cat(sprintf("Edge wt filter: %i -> %i interactions\n", oldcount,nrow(ints)))
 		if (nrow(ints)>=1) {
 			midx <- rbind(as.matrix(ints[,c(1:2)]),
 						  as.matrix(ints[,c(2:1)]))
@@ -186,7 +188,10 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				limitToTop))
 			for (k in 1:ncol(intColl)) {
 				mytop <- order(tmp[k,],decreasing=TRUE)
-				tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+				#cat(sprintf("%s: mytop=%i\n", k,length(mytop)))
+			  if (limitToTop <= (length(mytop)-1)) {
+					tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+				}
 			}
 		}
 
@@ -194,22 +199,52 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (is.infinite(limitToTop)) {
 			tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
 		}
+		
 
 		ints	<- melt(tmp)
 		cat(sprintf("\n\t%i pairs have no edges (counts directed edges)\n", 
 					sum(is.nan(ints$value))+sum(is.na(ints$value))))
 		ints	<- na.omit(ints)
 
+
+		# remove duplicate edges that have been encoded in both directions
 		if (!is.infinite(limitToTop)) {
-			x <- paste(ints[,1],ints[,2],sep=".")
-			y <- paste(ints[,2],ints[,1],sep=".")
-			dup <- intersect(x,y)  # A->B and B->A 
-			if (length(dup)>0) {
-				cat(sprintf("\tRemoving %i duplicate edges\n",
-					length(dup)))
-				ints <- ints[-which(y %in% dup),]
+			torm <- c()
+			n <- nrow(ints)
+			# painfully slow, need way to vectorize this.
+			# this pass-through is needed for initial pruning of duplicates
+			for (k in 1:(n-1)) {
+					dup <- which(ints[(k+1):n,2]==ints[k,1] & 
+										ints[(k+1):n,1]==ints[k,2])
+					if (any(dup)) torm <- c(torm,dup)	
 			}
+			
+			cat(sprintf("\tRemoving %i duplicate edges\n",
+					length(torm)))
+			ints <- ints[-torm,]
+
+		x <- paste(ints[,1],ints[,2],sep=".")
+		y <- paste(ints[,2],ints[,1],sep=".")
+		z <- which(y %in% x)
+		if (any(z)) {
+				ints <- ints[-z,]
+				cat(sprintf("\tSecond pass-through: removed %i more dups\n", 
+					length(z)))
+		}	
+		x <- paste(ints[,1],ints[,2],sep=".")
+		y <- paste(ints[,2],ints[,1],sep=".")
+		dup <- intersect(x,y)
+			if (length(dup)>0) {
+				cat("still have duplicates\n"); browser()
+			}
+###				for (k in dup) {
+###					vec <- as.integer(unlist(strsplit(k,"\\.")))		
+###				}
+###				ints <- ints[-which(y %in% dup),]
+###			}
+
 		}
+
 		den <- choose(ncol(intColl),2)
 		cat(sprintf("\tSparsity = %i/%i (%i %%)\n",
 			nrow(ints), den, round((nrow(ints)/den)*100)))

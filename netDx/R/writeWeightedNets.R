@@ -143,13 +143,18 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				if (any(still_empty)) 
 					intColl[midx[still_empty]] <- 0
 				intColl[midx] <- intColl[midx] + ints[,3]#*nets$WEIGHT[i])
+				if (plotEdgeDensity) {
+					tmp <- na.omit(as.numeric(ints[,3]))
+					#plot(density(tmp),main=nets$NETWORK[i])
+					hist(tmp,main=nets$NETWORK[i])
+				}
 				numInt[midx] <- numInt[midx] + 1
 
 			} else if (writeAggNet=="MAX"){
 					### cannot run max() like that
 				intColl[midx] <- pmax(intColl[midx],ints[,3],na.rm=TRUE)
 				if (plotEdgeDensity) {
-					plot(density(na.omit(as.numeric(intColl))),
+					plot(density(na.omit(as.numeric(ints[,3]))),
 						main=nets$NETWORK[i])
 				}
 

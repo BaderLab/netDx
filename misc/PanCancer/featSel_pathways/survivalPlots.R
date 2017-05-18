@@ -6,14 +6,15 @@ rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_KIRC"
 outDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival"
 
 dirList <- list(
-	KIRC_oneClinNet="output/KIRC_pathway_clinOneNet_170428",
-	KIRC_pathways="output/KIRC_featSel_pathway_170426"
+	KIRC_oneClinNet="output/KIRC_oneNetPer_170426",
+	KIRC_clinNetsOnly="output/KIRC_clinNets_170430",
+	KIRC_clinPathways="output/KIRC_featSel_pathway_170426",
+	KIRC_oneRNANet="output/KIRC_oneNetPer_170426",
+	KIRC_pathwayOnly="output/pathway_170502"
 	)
 
-p_val_list = list(
-	"KIRC_oneClinNet"=numeric(),
-	"KIRC_pathways"=numeric()
-)
+p_val_list = list()
+for (nm in names(dirList)) p_val_list[[nm]] <- numeric()
 
 numTest <- c()
 for (cur in names(dirList)) {
@@ -26,7 +27,16 @@ for (cur in names(dirList)) {
         OS_dat <- read.delim(OS_dir,sep="\t",h=T,as.is=T)
         clincore_dat <- read.delim(clincore_dir,sep="\t",h=T,as.is=T)
 
-        netdx_res_dir <- sprintf("%s/%s/rng%i/predictionResults.txt",rootDir,dirList[[cur]],cur_rng)
+				if (cur == "KIRC_oneRNANet") { 
+        	netdx_res_dir <- sprintf("%s/%s/rng%i/rna/predictionResults.txt",
+						rootDir,dirList[[cur]],cur_rng)
+				} else if ( cur == "KIRC_oneClinNet" ) {
+        	netdx_res_dir <- sprintf("%s/%s/rng%i/clinical/predictionResults.txt",
+						rootDir,dirList[[cur]],cur_rng)
+				}else {
+        	netdx_res_dir <- sprintf("%s/%s/rng%i/predictionResults.txt",
+						rootDir,dirList[[cur]],cur_rng)
+				}
         netdx_res_dat <- read.delim(netdx_res_dir,sep="\t",h=T,as.is=T)
 
 				if (cur_rng == 1) numTest <- c(numTest, nrow(netdx_res_dat))
@@ -36,7 +46,8 @@ for (cur in names(dirList)) {
         netdx_merged <- merge(netdx_res_dat, merged_dat, by = "feature")
 
         #Need age, status in clinical and predicted status
-        netdx_merged$SurvObj <- with(netdx_merged, Surv(OS_OS, STATUS_INT == 0))
+        netdx_merged$SurvObj <- with(netdx_merged, 
+						Surv(OS_OS, STATUS_INT == 0))
 
         tester <- coxph(SurvObj ~ PRED_CLASS, data = netdx_merged)
 
@@ -64,8 +75,8 @@ for (cur in names(dirList)) {
 }
 
 
-pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
-	width = 6,height = 6)
+#pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
+#	width = 11,height = 6)
 ctr <- 1
 par(bty='n')
 boxplot(p_val_list,las=1,bty='n', cex.axis=1.3,
@@ -73,6 +84,11 @@ boxplot(p_val_list,las=1,bty='n', cex.axis=1.3,
 	ylab="-log(p),log-rank test for survival",
 	main="KIRC: Survival prediction")
 abline(h=-log10(c(0.05,0.05/100)),col='red')
+
+x <- "KIRC_oneRNANet"
+y <- "KIRC_pathwayOnly"
+wmw <- wilcox.test(p_val_list[[x]],p_val_list[[y]],alternative="less")
+cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
 ###for(cur in names(p_val_list)){
 ###    log_5 <- -log(0.05, 10)
 ###    log_bon <- -log(0.0005, 10)
@@ -85,5 +101,5 @@ abline(h=-log10(c(0.05,0.05/100)),col='red')
 ###			cur,numTest[ctr]))
 ###	ctr <- ctr+1
 ###}
-dev.off()
+#dev.off()
 

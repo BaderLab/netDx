@@ -39,4 +39,6 @@ mv *gz ${localDir}/.
 cd $localDir
 tar xvfz KIRC_VM1_170503.tar.gz
 tar xvfz KIRC_VM4_170503.tar.gz
+tar xvfz KIRC_VM3_170503.tar.gz
+tar xvfz KIRC_VM5_170503.tar.gz
 

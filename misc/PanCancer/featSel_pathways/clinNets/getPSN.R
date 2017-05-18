@@ -1,9 +1,12 @@
 #' generate integrated PSN for TCGA breast cancer data
 rm(list=ls())
 
+stop("SP -- you were going to see why the Dijkstra computation resulted in 0 and 1 values. You were wondering if Dijkstra used the entire net like it was supposed to")
+
 # --------------------------------------------------------------
 # Param for computing integrated PSN
-cutoff 		<-10  	# include nets with score >= this value
+consCutoff 		<-10  	# include nets with score >= this value
+consPctPass		<- 1
 corrThresh 	<-0.7 	# exclude edges with similarity < this threshold
 dt <- format(Sys.Date(),"%y%m%d")
 
@@ -42,39 +45,18 @@ if (any(grep("PSNstyle",curStyles))) {
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 # to create pheno table
 clinList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir),
-	OV=sprintf("%s/2017_TCGA_OV/input/OV_clinical_core.txt",rootDir),
-	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_clinical_core.txt",rootDir),
-	GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_clinical_core.txt",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir)
 )
 survList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir),
-	OV=sprintf("%s/2017_TCGA_OV/input/OV_binary_survival.txt",rootDir),
-	LUSC=sprintf("%s/2017_TCGA_LUSC/input/LUSC_binary_survival.txt",rootDir),
-	GBM=sprintf("%s/2017_TCGA_GBM/input/GBM_binary_survival.txt",rootDir)
+	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir)
 )
 
-outDir <- sprintf("%s/2017_PanCancer_Survival/integratedPSN",rootDir)
+outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430",rootDir)
 
-if (netMode=="bestAUC") {
-#### best performing iteration.
-###selIter <- list(
-###	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222/rng29", rootDir),
-###	OV=sprintf("%s/2017_TCGA_OV/output/featSel_170327/rng57", rootDir),
-###	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170327/rng4",
-###							 rootDir),
-###	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223/rng78", 
-###							 rootDir)
-###)
-} else {
-	cat("***** Consensus mode *****\n")
-	selIter <- list(
-		KIRC=sprintf("%s/2017_TCGA_KIRC/output/consNets_170410", rootDir),
-		OV=sprintf("%s/2017_TCGA_OV/output/consNets_170410", rootDir),
-		LUSC=sprintf("%s/2017_TCGA_LUSC/output/consNets_170410",rootDir),
-		GBM=sprintf("%s/2017_TCGA_GBM/output/consNets_170410",rootDir)
+cat("***** Consensus mode *****\n")
+selIter <- list(
+		KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430", rootDir)
 	)
-}
 require(netDx)
 
 # --------------------------------------------------------------
@@ -88,7 +70,7 @@ tryCatch({
 # simMode normal|BinProp. BinProp converges all binary sims into
 		# "proportion binary with similarity".
 
-datSets <- c("OV","KIRC","LUSC","GBM")
+datSets <- "KIRC" # c("OV","KIRC","LUSC","GBM")
 dijk <- list()
 for (aggFun in c("MAX")) {
 	dijk[[aggFun]] <- list()
@@ -110,26 +92,26 @@ for (aggFun in c("MAX")) {
 		# -----------------------------------------------------
 		# patient IDs - should be identical for both
 		ptFile	<- list(
-			YES=sprintf("%s/SURVIVEYES/tmp/GENES.txt",dataDir),
-			NO=sprintf("%s/SURVIVENO/tmp/GENES.txt",dataDir)
+			YES=sprintf("%s/rng1/SURVIVEYES/tmp/GENES.txt",dataDir),
+			NO=sprintf("%s/rng1/SURVIVENO/tmp/GENES.txt",dataDir)
 		)
 		# net ID-to-name mappings
 		netInfo	<- list(
-			YES=sprintf("%s/SURVIVEYES/tmp/NETWORKS.txt",dataDir),
-			NO=sprintf("%s/SURVIVENO/tmp/NETWORKS.txt",dataDir)
+			YES=sprintf("%s/rng1/SURVIVEYES/tmp/NETWORKS.txt",dataDir),
+			NO=sprintf("%s/rng1/SURVIVENO/tmp/NETWORKS.txt",dataDir)
 			)
 		# interaction nets
 		netDir		<- list(
-			YES=sprintf("%s/SURVIVEYES/tmp/INTERACTIONS",dataDir),
-			NO=sprintf("%s/SURVIVENO/tmp/INTERACTIONS",dataDir)
+			YES=sprintf("%s/rng1/SURVIVEYES/tmp/INTERACTIONS",dataDir),
+			NO=sprintf("%s/rng1/SURVIVENO/tmp/INTERACTIONS",dataDir)
 		)
 		# we are going to take union of FS pathways for each class so we need
 		# the pathway scores for each class
-		pTallyFile <- list(
-			YES=sprintf("%s/SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt",
-						dataDir),
-			NO=sprintf("%s/SURVIVENO/GM_results/SURVIVENO_pathway_CV_score.txt",
-						dataDir)
+		netScoreFile <- list(
+			YES=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
+						outDir),
+			NO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",
+						outDir)
 		)
 		
 		# -----------------------------------------------------
@@ -151,20 +133,21 @@ for (aggFun in c("MAX")) {
 		newNetIDs <- list()
 
 		# pool feature selected nets from both groups
-		for (gps in names(pTallyFile)) {
+		for (gps in names(netScoreFile)) {
 			cat(sprintf("Group %s\n", gps))
-		if (netMode=="bestAUC") {
-			pTally <- read.delim(pTallyFile[[gps]],sep="\t",h=T,as.is=T)
-			pTally <- subset(pTally, pTally[,2]>=cutoff)[,1]
-			pTally <- sub("_cont|\\.profile","",pTally)
-			if ("BRCA2" %in% pTally) pTally <- pTally[-which(pTally=="BRCA2")]
-		}
 			
 			netInfo_cur <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
 			netInfo_cur[,2] <- sub("_cont|\\.profile","",netInfo_cur[,2])
 	
 		if (netMode=="consensus") {
-			pTally <- netInfo_cur[,2]
+			netScores	<- read.delim(netScoreFile[[gps]],sep="\t",h=T,as.is=T)
+			netNames 	<- netScores[,1]
+			netScores <- netScores[,-1]
+			tmp <- rowSums(netScores >= consCutoff)
+			idx <- which(tmp >= floor(consPctPass*ncol(netScores)))
+			pTally <-  netNames[idx]
+			pTally <- sub("_cont|\\.profile","",pTally)
+			print(pTally)
 		}
 			curNetIds <- matrix(NA,nrow=length(pTally),ncol=2)
 			ctr <- 1
@@ -193,7 +176,6 @@ for (aggFun in c("MAX")) {
 		newNetIDs <- do.call("rbind",newNetIDs)
 		if (simMode == "BinProp") {
 			isBinary <- rep(0,nrow(newNetIDs))
-			isBinary[grep("MUT_|stage|grade|gender",newNetIDs[,2])] <- 1
 			newNetIDs <- cbind(newNetIDs, isBinary=isBinary)
 		}
 		netInfo_combinedF <- sprintf("%s/netInfo.txt", poolDir)
@@ -202,7 +184,7 @@ for (aggFun in c("MAX")) {
 		
 		# now create integrated net using the best nets pooled 
 		# from all classes
-		cat(sprintf("%i networks with score >=%i\n",nrow(pTally),cutoff))
+		cat(sprintf("%i networks with score >=%i\n",nrow(pTally),consCutoff))
 		cat("-----\n")
 pdf("test.pdf")
 		aggNetFile <- netDx::writeWeightedNets(ptFile$YES,

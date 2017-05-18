@@ -1,6 +1,6 @@
 Package: netDx
 Title: Learns Patient Binary Classification based on Similarity Networks
-Version: 0.924
+Version: 0.9241
 Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
 	person("Shirley","Hui",role="aut"),
 	person("Ruth","Isserlin",role="aut"),

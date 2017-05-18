@@ -14,11 +14,11 @@ cutoff <- 9
 #inDir <- "/mnt/data2/BaderLab/PanCancer_GBM/input"
 #outRoot <- "/mnt/data2/BaderLab/PanCancer_GBM/output"
 
-inDir <- "/home/spai/BaderLab/PanCancer_GBM/input"
-outRoot <- "/home/spai/BaderLab/PanCancer_GBM/output"
+inDir <- "/home/netdx/BaderLab/PanCancer_GBM/input"
+outRoot <- "/home/netdx/BaderLab/PanCancer_GBM/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_oneNetPer_%s",outRoot,dt)
+megaDir <- sprintf("%s/oneNetPer_normDiff_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -68,8 +68,6 @@ datFiles <- list(
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
 colnames(pheno)[1] <- "ID"
 # ------------------
-pheno$gender <- ifelse(pheno$gender=="FEMALE",1, 0)
-# -------------------
 
 surv <- read.delim(inFiles$survival,sep="\t",h=T,as.is=T)
 colnames(surv)[1:2] <- c("ID","STATUS_INT")
@@ -90,7 +88,6 @@ rownames(clinical) <- clinical[,1];
 # GBM-specific variables
 clinical$performance_score[which(clinical$performance_score == "[Not Available]")] <- NA
 clinical$performance_score <- strtoi(clinical$performance_score)
-browser()
 clinical$gender <- ifelse(pheno$gender=="FEMALE",1, 0)
 # =======================
 clinical$ID <- NULL

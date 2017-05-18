@@ -13,7 +13,8 @@ dt <- format(Sys.Date(),"%y%m%d")
 dirList <- list(
 	GBM=sprintf("%s/2017_TCGA_GBM/output/featSel_incMut_round2_170223",dirBase),
 	OV=sprintf("%s/2017_TCGA_OV/output/OV_170227",dirBase),
-	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170223",dirBase),
+	LUSC=sprintf("%s/2017_TCGA_LUSC/output/featSel_incMutRPPA_round2170223",
+		dirBase),
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/featSel_170222",dirBase)
 	)
 

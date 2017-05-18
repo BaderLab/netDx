@@ -1,13 +1,13 @@
 #' plot results of running predictor with only best consensus nets vs random
-
 require(ROCR)
 
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneClinNet_pathway_random_170508",
+inDir <- sprintf("%s/2017_TCGA_KIRC/output/pathOnly_consNets_170509",
 		rootDir) # VM1
-outDir	<- sprintf("%s/2017_PanCancer_Survival/randomNets_170508",rootDir)
+outDir	<- sprintf("%s/2017_PanCancer_Survival/pathOnly_consensus_170509",
+	rootDir)
 curSet	<- "KIRC"
-outFile	<- sprintf("%s/%s_randomMean.Rdata",outDir,curSet) 
+outFile	<- sprintf("%s/%s_pathOnly_consensusRes.Rdata",outDir,curSet) 
 
 if (!file.exists(outDir)) dir.create(outDir)
 
@@ -15,19 +15,15 @@ dt <- format(Sys.Date(),"%y%m%d")
 saveData <- TRUE # set to true to save, false to plot
 
 if (saveData) {
-	dirs <- dir(path=inDir,pattern="randomNets")
-	dirSet <- list()
-	for (d in dirs) dirSet[[d]] <- sprintf("%s/%s",inDir,d)
-	
 	predSet <- list()
-	for (d in names(dirSet)) {
-		fSet <- dir(sprintf("%s/predictions", dirSet[[d]]),
+	for (d in inDir) { 
+		fSet <- dir(sprintf("%s/predictions", d),
 			pattern="prediction")
 		cat(sprintf("%s: Got %i predictions\n", d, length(fSet)))
 		val <- rep(NA, length(fSet))
 		ctr <- 1
 		for (fName in fSet) {	
-			dat <- read.delim(sprintf("%s/predictions/%s",dirSet[[d]],fName),
+			dat <- read.delim(sprintf("%s/predictions/%s",d,fName),
 				sep="\t",h=T,as.is=T)
 			if (nrow(dat)>1) {
 	    	pred <- prediction(dat$SURVIVEYES_SCORE-dat$SURVIVENO_SCORE,    
@@ -59,19 +55,18 @@ if (saveData) {
 		layout(matrix(c(1,1,2),ncol=3,nrow=1,byrow=TRUE))
 		boxplot(predSet,main=sprintf("%s: %i iterations", 
 			curSet,length(predSet[[1]])),ylab="AUC")
-		tmp <-unlist(lapply(predSet,mean))
 	
+		tmp <- predSet[[1]]
 		# distribution of mean AUCROC across all random resamplings
 		boxplot(tmp,
-			main=sprintf("Mean over 25 resamplings\n(%i random samples)",
-				length(predSet)),
+			main=sprintf("Mean over %i train-test splits",length(tmp)),
 			ylab="mean AUCROC over 25 resamplings",ylim=c(0.4,1))
 		abline(h=c(0.5,0.7),lty=3,col='red')
-		cat(sprintf("Summary of %s random resamplings\n",length(tmp)))
+		cat(sprintf("Summary of %i train/test splits", length(tmp)))
 		print(summary(tmp))
 
-		randomMean <- tmp
-		save(randomMean,file=outFile)
+		consRes <- tmp
+		save(consRes,file=outFile)
 
 	},error=function(ex){
 		print(ex)

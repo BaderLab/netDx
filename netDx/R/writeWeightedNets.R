@@ -110,14 +110,18 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 								# create a single measure for them all.
 			}
 		}
-		# finally divide by total num binary nets to get proportion similarity
-		intColl <- intColl/length(binNets)
-		# now convert to the range between filterEdgeWts and 1 to put on
-		# par with correlation-based nets
-		tmp <- qexp(intColl)
-		midx <- which(numInt > 0)
-		oldVal <- intColl[midx]
-		intColl[midx] <- ((tmp[midx]/max(tmp[midx]))*(1-filterEdgeWt))+filterEdgeWt
+
+		if (length(binNets)>0) {
+			# finally divide by total num binary nets to get proportion similarity
+			intColl <- intColl/length(binNets)
+			# now convert to the range between filterEdgeWts and 1 to put on
+			# par with correlation-based nets
+			tmp <- qexp(intColl)
+			midx <- which(numInt > 0)
+			oldVal <- intColl[midx]
+			intColl[midx] <- ((tmp[midx]/max(tmp[midx]))*(1-filterEdgeWt))
+			intColl[midx] <- intColl[midx] + filterEdgeWt
+		}
 
 		contNets <- setdiff(contNets, which(nets[,"isBinary"]>0))
 		cat(sprintf("%i continuous nets left\n",length(contNets)))
@@ -127,10 +131,13 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	for (i in contNets) { 
 		nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
 		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
+		cat(sprintf("Edge wt filter: %i -> %i interactions\n", oldcount,nrow(ints)))
 		if (nrow(ints)>=1) {
 			midx <- rbind(as.matrix(ints[,c(1:2)]),
 						  as.matrix(ints[,c(2:1)]))
+
 			if (writeAggNet=="MEAN") {
 				# count each edge in both directions so that the upper
 				# and lower triangle of the matrix are filled.
@@ -138,14 +145,21 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				if (any(still_empty)) 
 					intColl[midx[still_empty]] <- 0
 				intColl[midx] <- intColl[midx] + ints[,3]#*nets$WEIGHT[i])
+				if (plotEdgeDensity) {
+					tmp <- na.omit(as.numeric(ints[,3]))
+					#plot(density(tmp),main=nets$NETWORK[i])
+					hist(tmp,main=nets$NETWORK[i])
+				}
 				numInt[midx] <- numInt[midx] + 1
+
 			} else if (writeAggNet=="MAX"){
 					### cannot run max() like that
 				intColl[midx] <- pmax(intColl[midx],ints[,3],na.rm=TRUE)
 				if (plotEdgeDensity) {
-					plot(density(na.omit(as.numeric(intColl))),
+					plot(density(na.omit(as.numeric(ints[,3]))),
 						main=nets$NETWORK[i])
 				}
+
 				numInt[midx] <- numInt[midx] + 1
 				###maxNet[midx] <- nets$NET_ID[i]
 				if (verbose) cat(sprintf("\t%s: %i: %i interactions added\n",
@@ -153,34 +167,6 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				##print(table(maxNet))
 				##print(summary(as.numeric(intColl)))
 			}
-	
-###			# resolve to patient name
-###			midx <- match(ints[,1],pid$GM_ID)
-###			if (all.equal(pid$GM_ID[midx],ints[,1])!=TRUE) {
-###				cat("column 1 doesn't match\n")
-###				browser()
-###			}
-###			ints$SOURCE <- pid$ID[midx]; rm(midx)
-###			
-###			midx <- match(ints[,2],pid$GM_ID)
-###			if (all.equal(pid$GM_ID[midx],ints[,2])!=TRUE) {
-###				cat("column 2 doesn't match\n")
-###				browser()
-###			}
-###			ints$TARGET <- pid$ID[midx]
-###	
-###			ints$NETNAME <- nets$NETWORK_NAME[i]
-###			colnames(ints)[1:2] <- c("NODEID_SOURCE","NODEID_TARGET")
-###			ints <- ints[,c(4,5,3,6,1,2)]
-###			colnames(ints)[3:4] <- c("WT_SIM","NETWORK_NAME")
-###			ints[,3] <- ints[,3]*nets$WEIGHT[i]
-###	
-###			if (writeSingleNets) {
-###			## write output net
-###			outF <- sprintf("%s/%s_filterEdgeWt%1.2f.txt",outDir,
-###				nets$NETWORK_NAME[i],filterEdgeWt)
-###			write.table(ints,file=outF,sep="\t",col=T,row=F,quote=F)
-###			}
 		}
 	}
 	if (verbose) cat(sprintf("Total of %i nets merged\n", nrow(nets)))
@@ -193,13 +179,19 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (writeAggNet=="MEAN") tmp <- intColl/numInt # take mean
 		else tmp <- intColl # max value is already in
 
-		if (limitToTop >= ncol(intColl)) limitToTop <- Inf
+		if (!is.infinite(limitToTop)) {
+					if (limitToTop >= ncol(intColl)) limitToTop <- Inf
+		}
+
 		if (!is.infinite(limitToTop)){
 			cat(sprintf("* Limiting to top %i edges per patient",
 				limitToTop))
 			for (k in 1:ncol(intColl)) {
 				mytop <- order(tmp[k,],decreasing=TRUE)
-				tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+				#cat(sprintf("%s: mytop=%i\n", k,length(mytop)))
+			  if (limitToTop <= (length(mytop)-1)) {
+					tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+				}
 			}
 		}
 
@@ -207,22 +199,52 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (is.infinite(limitToTop)) {
 			tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
 		}
+		
 
 		ints	<- melt(tmp)
 		cat(sprintf("\n\t%i pairs have no edges (counts directed edges)\n", 
 					sum(is.nan(ints$value))+sum(is.na(ints$value))))
 		ints	<- na.omit(ints)
 
+
+		# remove duplicate edges that have been encoded in both directions
 		if (!is.infinite(limitToTop)) {
-			x <- paste(ints[,1],ints[,2],sep=".")
-			y <- paste(ints[,2],ints[,1],sep=".")
-			dup <- intersect(x,y)  # A->B and B->A 
-			if (length(dup)>0) {
-				cat(sprintf("\tRemoving %i duplicate edges\n",
-					length(dup)))
-				ints <- ints[-which(y %in% dup),]
+			torm <- c()
+			n <- nrow(ints)
+			# painfully slow, need way to vectorize this.
+			# this pass-through is needed for initial pruning of duplicates
+			for (k in 1:(n-1)) {
+					dup <- which(ints[(k+1):n,2]==ints[k,1] & 
+										ints[(k+1):n,1]==ints[k,2])
+					if (any(dup)) torm <- c(torm,dup)	
 			}
+			
+			cat(sprintf("\tRemoving %i duplicate edges\n",
+					length(torm)))
+			if (length(torm)>0) ints <- ints[-torm,]
+
+		x <- paste(ints[,1],ints[,2],sep=".")
+		y <- paste(ints[,2],ints[,1],sep=".")
+		z <- which(y %in% x)
+		if (any(z)) {
+				ints <- ints[-z,]
+				cat(sprintf("\tSecond pass-through: removed %i more dups\n", 
+					length(z)))
+		}	
+		x <- paste(ints[,1],ints[,2],sep=".")
+		y <- paste(ints[,2],ints[,1],sep=".")
+		dup <- intersect(x,y)
+			if (length(dup)>0) {
+				cat("still have duplicates\n"); browser()
+			}
+###				for (k in dup) {
+###					vec <- as.integer(unlist(strsplit(k,"\\.")))		
+###				}
+###				ints <- ints[-which(y %in% dup),]
+###			}
+
 		}
+
 		den <- choose(ncol(intColl),2)
 		cat(sprintf("\tSparsity = %i/%i (%i %%)\n",
 			nrow(ints), den, round((nrow(ints)/den)*100)))

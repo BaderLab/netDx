@@ -1,11 +1,13 @@
 #' plot results of running predictor with only best consensus nets vs random
+rm(list=ls())
 
 require(ROCR)
 
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
-inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneClinNet_pathway_random_170508",
+inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_pathOnly_random_170503",
 		rootDir) # VM1
-outDir	<- sprintf("%s/2017_PanCancer_Survival/randomNets_170508",rootDir)
+outDir	<- sprintf("%s/2017_PanCancer_Survival/pathOnly_randomNets_170503",
+		rootDir)
 curSet	<- "KIRC"
 outFile	<- sprintf("%s/%s_randomMean.Rdata",outDir,curSet) 
 
@@ -67,7 +69,7 @@ if (saveData) {
 				length(predSet)),
 			ylab="mean AUCROC over 25 resamplings",ylim=c(0.4,1))
 		abline(h=c(0.5,0.7),lty=3,col='red')
-		cat(sprintf("Summary of %s random resamplings\n",length(tmp)))
+		cat(sprintf("Summary of %i random resamplings\n",length(tmp)))
 		print(summary(tmp))
 
 		randomMean <- tmp

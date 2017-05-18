@@ -49,11 +49,13 @@ survList <- list(
 	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir)
 )
 
-outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430",rootDir)
+outDir <- sprintf("%s/2017_PanCancer_Survival/featSel_pathways_170426",
+		rootDir)
 
 cat("***** Consensus mode *****\n")
 selIter <- list(
-		KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430", rootDir)
+		KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_featSel_pathway_170426", 
+			rootDir)
 	)
 require(netDx)
 
@@ -106,9 +108,9 @@ for (aggFun in c("MAX","MEAN")) {
 		# we are going to take union of FS pathways for each class so we need
 		# the pathway scores for each class
 		netScoreFile <- list(
-			YES=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
+			YES=sprintf("%s/KIRC_thresh10_SURVIVEYES_netScores.txt",
 						outDir),
-			NO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",
+			NO=sprintf("%s/KIRC_thresh10_SURVIVENO_netScores.txt",
 						outDir)
 		)
 		
@@ -216,7 +218,7 @@ dev.off()
 		cat(sprintf("Dijkstra distances: %s: %s :%s\n",
 			curSet,aggFun,simMode))
 		cat("---------------------\n")
-		x <- compareShortestPath(aggNet, pheno,verbose=TRUE)
+		x <- compareShortestPath(aggNet, pheno,verbose=FALSE)
 		###print(lapply(x$avg, function(k) k[1]))
 		
 		pyes <- wilcox.test(x$all[["SURVIVEYES"]],
@@ -260,7 +262,7 @@ dev.off()
 		# layout network in Cytoscape
 		network.suid <- EasycyRest::createNetwork(
 			nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
-				netName=sprintf("%s_clinNets_%s",curSet,aggFun),
+				netName=sprintf("%s_clinNetPathways_%s",curSet,aggFun),
 				collName=curSet
 		)
 		# spring-embedded layout on edge 'weight' column

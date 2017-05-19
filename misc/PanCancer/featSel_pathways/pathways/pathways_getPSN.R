@@ -5,7 +5,7 @@ rm(list=ls())
 # --------------------------------------------------------------
 # Param for computing integrated PSN
 consCutoff 		<-10  	# include nets with score >= this value
-consPctPass		<- 1
+consPctPass		<- 0.7
 dt <- format(Sys.Date(),"%y%m%d")
 
 netMode <- "consensus" # consensus|bestAUC
@@ -49,11 +49,12 @@ survList <- list(
 	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir)
 )
 
-outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430",rootDir)
+outDir <- sprintf("%s/2017_PanCancer_Survival/pathwaysOnly_170502",rootDir)
 
 cat("***** Consensus mode *****\n")
 selIter <- list(
-		KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430", rootDir)
+		KIRC=sprintf("%s/2017_TCGA_KIRC/output/pathOnly_consNets_170509", 
+			rootDir)
 	)
 require(netDx)
 
@@ -90,25 +91,25 @@ for (aggFun in c("MAX","MEAN")) {
 		# -----------------------------------------------------
 		# patient IDs - should be identical for both
 		ptFile	<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/GENES.txt",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/GENES.txt",dataDir)
+			YES=sprintf("%s/SURVIVEYES/tmp/GENES.txt",dataDir),
+			NO=sprintf("%s/SURVIVENO/tmp/GENES.txt",dataDir)
 		)
 		# net ID-to-name mappings
 		netInfo	<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/NETWORKS.txt",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/NETWORKS.txt",dataDir)
+			YES=sprintf("%s/SURVIVEYES/tmp/NETWORKS.txt",dataDir),
+			NO=sprintf("%s/SURVIVENO/tmp/NETWORKS.txt",dataDir)
 			)
 		# interaction nets
 		netDir		<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/INTERACTIONS",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/INTERACTIONS",dataDir)
+			YES=sprintf("%s/SURVIVEYES/tmp/INTERACTIONS",dataDir),
+			NO=sprintf("%s/SURVIVENO/tmp/INTERACTIONS",dataDir)
 		)
 		# we are going to take union of FS pathways for each class so we need
 		# the pathway scores for each class
 		netScoreFile <- list(
-			YES=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
+			YES=sprintf("%s/KIRC_thresh10_pctPass0.70_SURVIVEYES_netScores.txt",
 						outDir),
-			NO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",
+			NO=sprintf("%s/KIRC_thresh10_pctPass0.70_SURVIVENO_netScores.txt",
 						outDir)
 		)
 		
@@ -248,7 +249,7 @@ dev.off()
 		aggNetFile <- netDx::writeWeightedNets(ptFile$YES,
 						netInfo=netInfo_combinedF,
 						poolDir,keepNets=newNetIDs[,2],outDir,
-						filterEdgeWt=0,limitToTop=25,
+						filterEdgeWt=0,limitToTop=50,
 						outFileName=sprintf("%s_%s_%s_PSNpruned.txt", 
 							curSet,simMode,aggFun),
 						writeAggNet=aggFun,verbose=FALSE)
@@ -260,7 +261,7 @@ dev.off()
 		# layout network in Cytoscape
 		network.suid <- EasycyRest::createNetwork(
 			nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
-				netName=sprintf("%s_clinNets_%s",curSet,aggFun),
+				netName=sprintf("%s_pathwayOnly_%s",curSet,aggFun),
 				collName=curSet
 		)
 		# spring-embedded layout on edge 'weight' column

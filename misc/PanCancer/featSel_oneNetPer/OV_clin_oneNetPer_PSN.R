@@ -1,4 +1,4 @@
-#' generate integrated PSN for TCGA breast cancer data
+#' generate integrated PSN for OV - oneNetPer.
 rm(list=ls())
 
 
@@ -43,17 +43,17 @@ if (any(grep("PSNstyle",curStyles))) {
 rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
 # to create pheno table
 clinList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir)
+	OV=sprintf("%s/2017_TCGA_OV/input/OV_clinical_core.txt",rootDir)
 )
 survList <- list(
-	KIRC=sprintf("%s/2017_TCGA_KIRC/input/KIRC_binary_survival.txt",rootDir)
+	OV=sprintf("%s/2017_TCGA_OV/input/OV_binary_survival.txt",rootDir)
 )
 
-outDir <- sprintf("%s/2017_PanCancer_Survival/clinNets_170430",rootDir)
+outDir <- sprintf("%s/2017_PanCancer_Survival/oneNetPer_FeatSel",rootDir)
 
 cat("***** Consensus mode *****\n")
 selIter <- list(
-		KIRC=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430", rootDir)
+		OV=sprintf("%s/2017_TCGA_OV/output/OV_oneNetPer_170425", rootDir)
 	)
 require(netDx)
 
@@ -68,7 +68,7 @@ tryCatch({
 # simMode normal|BinProp. BinProp converges all binary sims into
 		# "proportion binary with similarity".
 
-datSets <- "KIRC" # c("OV","KIRC","LUSC","GBM")
+datSets <- "OV" # c("OV","OV","LUSC","GBM")
 dijk <- list()
 for (aggFun in c("MAX","MEAN")) {
 	dijk[[aggFun]] <- list()
@@ -90,39 +90,21 @@ for (aggFun in c("MAX","MEAN")) {
 		# -----------------------------------------------------
 		# patient IDs - should be identical for both
 		ptFile	<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/GENES.txt",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/GENES.txt",dataDir)
+			YES=sprintf("%s/tmp/GENES.txt",dataDir)
 		)
 		# net ID-to-name mappings
 		netInfo	<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/NETWORKS.txt",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/NETWORKS.txt",dataDir)
+			YES=sprintf("%s/tmp/NETWORKS.txt",dataDir)
 			)
 		# interaction nets
 		netDir		<- list(
-			YES=sprintf("%s/rng1/SURVIVEYES/tmp/INTERACTIONS",dataDir),
-			NO=sprintf("%s/rng1/SURVIVENO/tmp/INTERACTIONS",dataDir)
-		)
-		# we are going to take union of FS pathways for each class so we need
-		# the pathway scores for each class
-		netScoreFile <- list(
-			YES=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
-						outDir),
-			NO=sprintf("%s/KIRC__thresh10_pctPass1.00_SURVIVENO_netScores.txt",
-						outDir)
+			YES=sprintf("%s/tmp/INTERACTIONS",dataDir)
 		)
 		
 		# -----------------------------------------------------
 		#if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 		#dir.create(outDir)
-		
-		# gene IDs should be the same for both classes
-		tmp <- system(sprintf("diff %s %s", ptFile$YES,ptFile$NO),intern=TRUE)
-		if (!is.null(attr(tmp,"status"))){
-			cat("Gene IDs for all classes not identical! Assumption violated.\n")
-			browser()
-		}
-		
+				
 		# pool best nets for both
 		poolDir <- "./pool"
 		if (file.exists(poolDir)) unlink(poolDir,recursive=TRUE)
@@ -131,20 +113,16 @@ for (aggFun in c("MAX","MEAN")) {
 		newNetIDs <- list()
 
 		# pool feature selected nets from both groups
-		for (gps in names(netScoreFile)) {
+		# running only for first group because both not needed
+		for (gps in "YES") {
 			cat(sprintf("Group %s\n", gps))
 			
 			netInfo_cur <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
 			netInfo_cur[,2] <- sub("_cont|\\.profile","",netInfo_cur[,2])
 	
 		if (netMode=="consensus") {
-			netScores	<- read.delim(netScoreFile[[gps]],sep="\t",h=T,as.is=T)
-			netNames 	<- netScores[,1]
-			netScores <- netScores[,-1]
-			tmp <- rowSums(netScores >= consCutoff)
-			idx <- which(tmp >= floor(consPctPass*ncol(netScores)))
-			pTally <-  netNames[idx]
-			pTally <- sub("_cont|\\.profile","",pTally)
+			cat("*** pTally hard-coded to clinical ***\n")
+			pTally <- "clinical"
 			print(pTally)
 		}
 			curNetIds <- matrix(NA,nrow=length(pTally),ncol=2)
@@ -164,7 +142,6 @@ for (aggFun in c("MAX","MEAN")) {
 					
 				curNetIds[ctr,] <- c(sub(".txt","",tmp), 
 									 paste(gps,netInfo_cur[idx,2],sep=".")) 
-				##cat(sprintf("\t%s -> %s\n", cur, tmp))
 				ctr <- ctr+1
 			}
 			newNetIDs[[gps]] <- curNetIds
@@ -216,7 +193,7 @@ dev.off()
 		cat(sprintf("Dijkstra distances: %s: %s :%s\n",
 			curSet,aggFun,simMode))
 		cat("---------------------\n")
-		x <- compareShortestPath(aggNet, pheno,verbose=TRUE)
+		x <- compareShortestPath(aggNet, pheno,verbose=FALSE)
 		###print(lapply(x$avg, function(k) k[1]))
 		
 		pyes <- wilcox.test(x$all[["SURVIVEYES"]],
@@ -260,7 +237,7 @@ dev.off()
 		# layout network in Cytoscape
 		network.suid <- EasycyRest::createNetwork(
 			nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
-				netName=sprintf("%s_clinNets_%s",curSet,aggFun),
+				netName=sprintf("%s_clinOneNet_%s",curSet,aggFun),
 				collName=curSet
 		)
 		# spring-embedded layout on edge 'weight' column
@@ -280,8 +257,8 @@ dev.off()
 
 dijk <- do.call("rbind",dijk)
 write.table(dijk,
-	file=sprintf("%s/Dijkstra_PSN_%s_%s_%s_%s.txt",
-	outDir,simMode,aggFun,netMode,dt),
+	file=sprintf("%s/%s_Dijkstra_PSN_%s_%s.txt",
+	outDir,curSet,aggFun,dt),
 	sep="\t",col=T,row=T,quote=F)
 
 },error=function(ex){ 

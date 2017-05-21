@@ -10,8 +10,8 @@ outDir="/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/o
 
 # iterations that have run so far
 maxK <- list(
-	KIRC=70,
-	GBM=96
+	KIRC=100,
+	GBM=100
 )
 
 
@@ -44,7 +44,7 @@ combList <- list(
     clinicalAcnv=c("clinical_cont","cnv.profile"),    
     all="all")  
 
-for (cur in "GBM") { #names(dirList)) {
+for (cur in c("KIRC","GBM")) { #names(dirList)) {
 	curd <- dirList[[cur]]
 	currCombList <- combList
 	if (cur == "GBM") {

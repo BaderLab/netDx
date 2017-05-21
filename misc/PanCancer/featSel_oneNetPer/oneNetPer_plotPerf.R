@@ -30,13 +30,14 @@ pdf(sprintf("%s/perf.pdf",rootDir),width=13,height=6)
 sink(logFile,split=TRUE)
 tryCatch({
 par(mfrow=c(2,2),mar=c(2,4,1,0))
-for (curSet in setList) {
-<<<<<<< Updated upstream
-	cat("---------------------\n")
+for (curSet in "OV") { #setList) {
+
 	cat(sprintf("%s\n",curSet))
 	cat("---------------------\n")
 	inFile <- sprintf("%s/%s_oneNetPer_FeatSel_results.Rdata",rootDir,curSet)
 	load(inFile)
+
+browser()
 	
 	colnames(val) <- sub("clinical","clin",colnames(val))
 	mu <- colMeans(val,na.rm=TRUE)

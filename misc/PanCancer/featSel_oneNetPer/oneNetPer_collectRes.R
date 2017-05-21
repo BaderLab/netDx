@@ -7,6 +7,7 @@ dirList <- list(
 	OV="/home/ahmad/tcga_datasets/OV/output/featSel_oneNetPer_170425",# VM2
 	GBM="/home/spai/BaderLab/PanCancer_GBM/output/featSel_oneNetPer_170425" #VM3
 )
+
 outDirList <- list(
 	KIRC="/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival",
 	LUSC="/home/netdx/BaderLab/PanCancer_common", 	# VM4

@@ -26,6 +26,8 @@ require(netDx)
 #' @param outPfx (char) prefix to output filename (absolute path)
 #' @param trimFromName (char) strings to trim from net names before writing
 #' to file
+#' @param gmtFile (char) path to gmt file mapping set names to units
+#' @param unitList (char) units measured in this predictor
 #' @return no values. 
 #' Writes several files with consensus/all net info
 #' Outdir is <outPfx>_<gp>_thresh<i>_pctPass<1.2f>
@@ -39,7 +41,8 @@ require(netDx)
 #' 7) outDir/netInfo.txt
 writeConsensusNets <- function(datDir,
 	predClasses=c("SURVIVEYES","SURVIVENO"),netInfo,
-	consCutoff=7L,pctPass=0.5,outPfx="./pred_") {
+	consCutoff=7L,pctPass=0.5,outPfx="./pred_",
+	gmtFile,unitList) {
 
 	outPfx <- sprintf("%s_thresh%i_pctPass%1.2f", outPfx,consCutoff, pctPass)
 	for (gp in predClasses) {

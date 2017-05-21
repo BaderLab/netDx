@@ -1,1 +1,11 @@
-name	dataDir	outdir	inc	maxKclinPath		oneClinNet_featSelNets	no	100clinPathRnd		randomNets_170508	no	100clinPathCons		consensus_170502	no	100clinNets	KIRC_clinNets_170430	clinNets_170430	yes	100clinNetsPathNets	KIRC_featSel_pathway_170426	featSel_pathways_170426	yes	100pathOnly	pathway_170502	pathwaysOnly_170502	yes	100pathOnlyRnd	KIRC_pathOnly_random_170503	pathOnly_randomNets_170503	yes	100pathOnlyCons	pathOnly_consNets_170509	pathOnly_consensus_170509	yes	100
+name	dataDir	outdir	inc	maxK
+clinOne	oneNetPer_FeatSel	oneNetPer_FeatSel/KIRC_oneNetPer_clin_normDiff.Rdata	yes	100
+clinPath	KIRC_oneClinNetRNA_normDiff_170519	oneClinNet_featSelNets_normDiff	no	100
+clinPathRnd		randomNets_170508	no	100
+clinPathCons		consensus_170502	no	100
+clinNets	KIRC_clinNets_170430	clinNets_170430	yes	100
+clinNetsPathNets	KIRC_featSel_pathway_170426	featSel_pathways_170426	yes	100
+clinNetsPathBest	KIRC_clinRNA_best	clinRNA_best	yes	100
+pathOnly	pathway_170502	pathwaysOnly_170502	yes	100
+pathOnlyRnd	KIRC_pathOnly_random_170503	pathOnly_randomNets_170503	yes	100
+pathOnlyCons	pathOnly_consNets_170509	pathOnly_consensus_170509	no	100

@@ -45,7 +45,7 @@ return(c(aucroc,aucpr))
 # --------------------------------------------------------------
 # list of all conditions to collect data for and their i/o locations
 setFile <- "KIRCpathway_locations.txt"
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
+rootDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab"
 inRoot <- sprintf("%s/2017_TCGA_KIRC/output",rootDir)
 outRoot <- sprintf("%s/2017_PanCancer_Survival",rootDir)
 
@@ -61,8 +61,10 @@ for (ctr in 1:nrow(setInfo)) {
 	cur <- setInfo$name[ctr]
 	curd <- sprintf("%s/%s",inRoot,setInfo$dataDir[ctr])
 	maxk <- setInfo$maxK[ctr]
-	outFile <- sprintf("%s/%s/KIRC_results_%s_%s.Rdata",
-		outRoot,setInfo$outdir[ctr],cur,dt)
+	outDir <- sprintf("%s/%s", outRoot, setInfo$outdir[ctr])
+	if (!file.exists(outDir)) dir.create(outDir)
+	outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
+		outRoot,setInfo$outdir[ctr],cur)
 
 	kset <- 1:maxk
 	cat(sprintf("%s:Num runs=%i\n", cur,maxk))

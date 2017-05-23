@@ -3,7 +3,7 @@ rm(list=ls())
 require(reshape2)
 require(multcomp)
 
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/oneNetPer_FeatSel"
+rootDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_PanCancer_Survival/oneNetPer_FeatSel"
 
 inDir <- sprintf("%s/fromAhmad_170428/all_rdata",rootDir)
 
@@ -26,23 +26,47 @@ vLines <- list(
 
 logFile <- sprintf("%s/perf.log.txt",rootDir)
 
-pdf(sprintf("%s/perf.pdf",rootDir),width=13,height=6)
+postscript(sprintf("%s/perf.eps",rootDir),width=13,height=6)
 sink(logFile,split=TRUE)
 tryCatch({
 par(mfrow=c(2,2),mar=c(2,4,1,0))
-for (curSet in "OV") { #setList) {
+
+outmat <- matrix(NA,ncol=12,nrow=length(setList))
+rownames(outmat) <- setList
+currow <- 1
+for (curSet in setList) {
 
 	cat(sprintf("%s\n",curSet))
 	cat("---------------------\n")
-	inFile <- sprintf("%s/%s_oneNetPer_FeatSel_results.Rdata",rootDir,curSet)
+	inFile <- sprintf("%s/%s_oneNetPer_FeatSel_results.Rdata",inDir,curSet)
 	load(inFile)
+	val_orig <- val;
 
-browser()
+	if (curSet %in% c("KIRC","GBM")) {  # get latest results
+		inFile <- sprintf("%s/%s_oneNetPer_clin_normDiff.Rdata",rootDir,curSet)
+		lnames <- load(inFile)
+		for (k in colnames(val)[grep("clin",colnames(val))]) {
+			print(k)
+			idx1 <- which(colnames(val_orig) == k)
+			idx2 <- which(colnames(val) == k)
+			val_orig[,idx1] <- val[,idx2]
+		}
+		val <- val_orig; rm(val_orig)
+	} 
 	
 	colnames(val) <- sub("clinical","clin",colnames(val))
 	mu <- colMeans(val,na.rm=TRUE)
 	sem <- sapply(1:ncol(val),function(x) 
 		sd(val[,x],na.rm=TRUE)/sqrt(nrow(val)))
+	
+	maxauc <- apply(val,2,max,na.rm=TRUE)
+	if (currow==1) {
+		colnames(outmat) <- names(maxauc)	
+	}
+	for (k in 1:length(maxauc)) {
+		outmat[currow,which(colnames(outmat)==names(maxauc)[k])] <- maxauc[k]
+	}
+	currow <- currow+1
 	
 	colSet <- colSets[[curSet]]
 	plot(1:length(mu),mu,xlab="Data combinations",ylim=c(0.4,0.85),
@@ -55,7 +79,7 @@ browser()
 	abline(h=0.5,col='red',lty=1,lwd=2)
 	abline(h=0.7,col='red',lty=3,lwd=2)
 	abline(v=vLines[[curSet]],lty=1,lwd=2)
-	
+
 	#boxplot(val,las=2,main=sprintf("%s (N=%i splits)",curSet,nrow(val)),
 	#	bty='n',ylab="AUCROC")
 	#abline(h=0.7,lty=3,col='red')
@@ -103,6 +127,12 @@ set.seed(103)
 	}	
 	print(dunn)
 	cat("\t------\n")
+
+	if (curSet %in% "LUSC") {
+		idx1 <- which(colnames(val) == "clinAprot")
+		idx2 <- which(colnames(val) == "prot")
+		wmw <- wilcox.test(val[,idx1],val[,idx2])
+	}
 
 	if (curSet %in% c("GBM","OV")) {
 	cat("C. Dunnett's test: clinical > other single\n")
@@ -173,6 +203,11 @@ cat("\n")
 	}
 
 }
+
+# write max AUC
+write.table(outmat,file=sprintf("%s/oneFeatSel_maxAUC.txt", rootDir),
+	sep="\t",col=TRUE,row=TRUE,quote=FALSE)
+
 },error=function(ex){
 	print(ex)
 },finally= {

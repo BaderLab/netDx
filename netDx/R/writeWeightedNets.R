@@ -25,7 +25,10 @@
 #' 2) MEAN: average of weighted edges (raw x netDx score)
 #' 3) MAX: max of raw edge weight
 #' @param limitToTop (integer) limit to top strongest connections. Set to
-#' Inf to list all connections
+#' Inf to list all connections. Takes precedence over limitToBottom
+#' @param limitToBottom (integer) limit to top weakest connections. Set to
+#' Inf to list all connections. If this and limitToTop are provided, then
+#' limitToTop takes precedence and this is ignored.
 #' @param outFileName (char) if provided, overrides outF. Relative to outDir
 #' @param writeSingleNets (logical) keep/delete individual recoded nets.
 #' TRUE results in each written to its own file; FALSE does not.
@@ -45,7 +48,8 @@
 #' 4) weight similarity for the network (WT_SIM)
 #' @export
 writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
-	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,outFileName=NULL,
+	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,limitToBottom=Inf,
+	outFileName=NULL,
 	writeSingleNets=FALSE,plotEdgeDensity=FALSE,verbose=FALSE){
 
 	writeAggNet  <- toupper(writeAggNet)
@@ -191,6 +195,18 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				#cat(sprintf("%s: mytop=%i\n", k,length(mytop)))
 			  if (limitToTop <= (length(mytop)-1)) {
 					tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
+				}
+			}
+		} else if (!is.infinite(limitToBottom)) {
+			cat(sprintf("* Limiting to bottom %i edges per patient",
+				limitToBottom))
+			for (k in 1:ncol(intColl)) {
+				mybot <- order(tmp[k,])
+				cat(sprintf("%s: mybot=%i\n", k,length(mybot)))
+			  if (limitToBottom <= (length(mybot)-1)) {
+					before <- tmp[k,]
+					tmp[k,mybot[(limitToBottom+1):length(mybot)]] <- NA
+					after <- tmp[k,]
 				}
 			}
 		}

@@ -6,14 +6,18 @@
 \usage{
 writeWeightedNets(geneFile, netInfo, netDir, keepNets, outDir,
   filterEdgeWt = 0, writeAggNet = "MAX", limitToTop = 50L,
-  writeSingleNets = FALSE, verbose = FALSE)
+  limitToBottom = Inf, outFileName = NULL, writeSingleNets = FALSE,
+  plotEdgeDensity = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{geneFile}{(char) path to GENES.txt file created during the making
 of a generic GeneMANIA database}
 
 \item{netInfo}{(char) path to NETWORKS.txt file created during the making
-of a generic GeneMANIA database}
+of a generic GeneMANIA database. If this table contains a column marked 
+"isBinary" with 1/0 indicating if a given network contains only binary 
+weights, then PropBinary similarity computation will be used (see method
+description).}
 
 \item{netDir}{(char) path to directory containing interaction networks.
 Note that these are networks where the node IDs have been recoded by 
@@ -38,10 +42,20 @@ this filter being applied before the multiplier is applied.}
 3) MAX: max of raw edge weight}
 
 \item{limitToTop}{(integer) limit to top strongest connections. Set to
-Inf to list all connections}
+Inf to list all connections. Takes precedence over limitToBottom}
+
+\item{limitToBottom}{(integer) limit to top weakest connections. Set to
+Inf to list all connections. If this and limitToTop are provided, then
+limitToTop takes precedence and this is ignored.}
+
+\item{outFileName}{(char) if provided, overrides outF. Relative to outDir}
 
 \item{writeSingleNets}{(logical) keep/delete individual recoded nets.
 TRUE results in each written to its own file; FALSE does not.}
+
+\item{plotEdgeDensity}{(logical) plot density plot of edge weights, one
+per input net. Used to troubleshoot problems introduced by specific nets.
+Expects a graphic device to be open already (e.g. by pdf() call)}
 
 \item{verbose}{(logical) print messages if TRUE}
 }

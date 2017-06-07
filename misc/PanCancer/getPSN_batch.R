@@ -1,28 +1,31 @@
 
-curd <- getwd()
 rm(list=ls())
 cat("multiple clinical nets\n")
 setwd("featSel_pathways/pathways")
 source("pathways_getPSN.R")
-setwd(curd)
-rm(list=ls())
 
+rm(list=ls())
 cat("multiple clinical nets\n")
 setwd("../clinNets")
 source("getPSN.R")
-setwd(curd)
+rm(list=ls())
+
+cat("clin+best RNA\n")
+setwd("../clinRNA_best")
+source("getPSN.R")
 rm(list=ls())
 
 cat("one clinical net\n")
 setwd("../../featSel_oneNetPer")
 source("KIRC_clin_oneNetPer_PSN.R")
-setwd(curd)
+
 
 datRoot <- "/Users/shraddhapai/Dropbox/netDx/BaderLab/2017_PanCancer_Survival"
 inFile <- list(
-	pathways="pathwaysOnly_170502",
+	oneClinNet="oneNetPer_FeatSel",
 	clinNets="clinNets_170430",
-	oneClinNet="oneNetPer_FeatSel"
+	pathways="pathwaysOnly_170502",
+	clinRNA_best="clinRNA_best"
 )
 
 # compile Dijkstra

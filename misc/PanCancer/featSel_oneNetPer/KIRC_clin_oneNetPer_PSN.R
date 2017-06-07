@@ -27,7 +27,7 @@ sink(logFile,split=TRUE)
 
 tryCatch({
 		source("../getPSN_doItAll.R")
-		getPSN(infoList=inData,consCutoff=10,consPctPass=1,topX=0.5)
+		getPSN(infoList=inData,consCutoff=10,consPctPass=1,topX=0.5,outDir=outDir)
 },error=function(ex){ 
 	print(ex)
 }, finally={

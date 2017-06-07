@@ -2,40 +2,36 @@ rm(list=ls())
 library(rms)
 library(survival)
 
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_KIRC"
-outDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival"
+rootDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC"
+outDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_PanCancer_Survival"
 
-dirList <- list(
-	KIRC_oneClinNet="output/KIRC_oneNetPer_170426",
-	KIRC_clinNetsOnly="output/KIRC_clinNets_170430",
-	KIRC_clinPathways="output/KIRC_featSel_pathway_170426",
-	KIRC_oneRNANet="output/KIRC_oneNetPer_170426",
-	KIRC_pathwayOnly="output/pathway_170502"
-	)
+setFile <- "KIRCpathway_locations.txt"
+setInfo	<- read.delim(setFile,sep="\t",h=T,as.is=T)
+setInfo$inc[which(setInfo$name=="pathOnlyRnd")] <- "no"
+setInfo <- subset(setInfo, inc=="yes")
+
 
 p_val_list = list()
-for (nm in names(dirList)) p_val_list[[nm]] <- numeric()
+for (nm in setInfo$name) p_val_list[[nm]] <- numeric()
 
 numTest <- c()
-for (cur in names(dirList)) {
-    print(cur)
+OS_dir <- sprintf("%s/input/KIRC_OS_core.txt", rootDir)
+clincore_dir <- sprintf("%s/input/KIRC_clinical_core.txt",rootDir)
+OS_dat <- read.delim(OS_dir,sep="\t",h=T,as.is=T)
+clincore_dat <- read.delim(clincore_dir,sep="\t",h=T,as.is=T)
+for (cur in 1:nrow(setInfo)) {
+	setName <- setInfo$name[cur]
+	print(setName)
     for (cur_rng in c(1:100)){
-
-        OS_dir <- sprintf("%s/input/KIRC_OS_core.txt", rootDir)
-        clincore_dir <- sprintf("%s/input/KIRC_clinical_core.txt",rootDir)
-
-        OS_dat <- read.delim(OS_dir,sep="\t",h=T,as.is=T)
-        clincore_dat <- read.delim(clincore_dir,sep="\t",h=T,as.is=T)
-
-				if (cur == "KIRC_oneRNANet") { 
-        	netdx_res_dir <- sprintf("%s/%s/rng%i/rna/predictionResults.txt",
-						rootDir,dirList[[cur]],cur_rng)
-				} else if ( cur == "KIRC_oneClinNet" ) {
-        	netdx_res_dir <- sprintf("%s/%s/rng%i/clinical/predictionResults.txt",
-						rootDir,dirList[[cur]],cur_rng)
+				if (setName == "rnaOne") { 
+        	netdx_res_dir <- sprintf("%s/output/%s/rng%i/rna/predictionResults.txt",
+						rootDir,setInfo$dataDir[cur],cur_rng)
+				} else if (setName=="clinOne") {
+        	netdx_res_dir <- sprintf("%s/output/%s/rng%i/clinical/predictionResults.txt",
+						rootDir,setInfo$dataDir[cur],cur_rng)
 				}else {
-        	netdx_res_dir <- sprintf("%s/%s/rng%i/predictionResults.txt",
-						rootDir,dirList[[cur]],cur_rng)
+        	netdx_res_dir <- sprintf("%s/output/%s/rng%i/predictionResults.txt",
+						rootDir,setInfo$dataDir[cur],cur_rng)
 				}
         netdx_res_dat <- read.delim(netdx_res_dir,sep="\t",h=T,as.is=T)
 
@@ -75,20 +71,22 @@ for (cur in names(dirList)) {
 }
 
 
-#pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
-#	width = 11,height = 6)
+pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
+	width = 11,height = 6)
+#p_val_list <- p_val_list[rev(c("clinOne","clinNets","pathOnly","clinNetsPathBest"))]
+p_val_list <- p_val_list[rev(c("rnaOne","pathOnly","clinNets","clinNetsPathBest"))]
 ctr <- 1
-par(bty='n')
+par(bty='n',mar=c(4,10,3,3))
 boxplot(p_val_list,las=1,bty='n', cex.axis=1.3,
-	cex.lab=1.5,
-	ylab="-log(p),log-rank test for survival",
+	cex.lab=1.5,horizontal=TRUE,
+	xlab="-log(p),log-rank test for survival",
 	main="KIRC: Survival prediction")
-abline(h=-log10(c(0.05,0.05/100)),col='red')
+abline(v=-log10(c(0.05,0.05/100)),col='red',lwd=3,lty=c(1,3))
 
-x <- "KIRC_oneRNANet"
-y <- "KIRC_pathwayOnly"
-wmw <- wilcox.test(p_val_list[[x]],p_val_list[[y]],alternative="less")
-cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
+#x <- "KIRC_oneRNANet"
+#y <- "KIRC_pathwayOnly"
+#wmw <- wilcox.test(p_val_list[[x]],p_val_list[[y]],alternative="less")
+#cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
 ###for(cur in names(p_val_list)){
 ###    log_5 <- -log(0.05, 10)
 ###    log_bon <- -log(0.0005, 10)
@@ -101,5 +99,5 @@ cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
 ###			cur,numTest[ctr]))
 ###	ctr <- ctr+1
 ###}
-#dev.off()
+dev.off()
 

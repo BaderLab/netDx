@@ -1,6 +1,5 @@
 #' Plot performance of various KIRC predictor conditions
 #' Statistically compare them.
-
 rm(list=ls())
 
 # list of all conditions to collect data for and their i/o locations
@@ -29,13 +28,22 @@ rm(val,val_pr)
 for (ctr in 2:nrow(setInfo)) {
 	cur <- setInfo$name[ctr]
 	print(cur)
-	maxk <- setInfo$maxK[ctr]
-	outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
-		outRoot,setInfo$outdir[ctr],cur)
+	if (cur == "rnaOne") {
+		outFile <- sprintf("%s/oneNetPer_FeatSel/fromAhmad_170428/all_rdata/KIRC_oneNetPer_FeatSel_results.Rdata",outRoot)
+		lnames <- load(outFile)
+		mega_roc[,ctr] <- val[,which(colnames(val)=="rna")]; rm(val)
+		outFile <- sprintf("%s/oneNetPer_FeatSel/AUCPR/KIRC_oneNetPer_FeatSel_results_prauc.Rdata",outRoot)
+		lnames <- load(outFile)
+		mega_pr[,ctr] <- val[,which(colnames(val)=="rna")]; rm(val)
+	} else {
+		maxk <- setInfo$maxK[ctr]
+		outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
+			outRoot,setInfo$outdir[ctr],cur)
 	
-	lnames <- load(outFile)
-	mega_roc[,ctr]	<- val; 
-	mega_pr[,ctr]		<- val_pr
+		lnames <- load(outFile)
+		mega_roc[,ctr]	<- val; 
+		mega_pr[,ctr]		<- val_pr
+	} 
 }
 
 # same with single RNA net
@@ -137,9 +145,9 @@ colSet <- c("red","red","purple","hotpink1",
 
 # do this at the end, after organizing mega_roc.
 
-	postscript(sprintf("%s/KIRC_perf.eps",outRoot),width=18,height=6)
+	#postscript(sprintf("%s/KIRC_perf.eps",outRoot),width=18,height=6)
 	tryCatch({
-		par(bty='n',mar=c(3,5,2,4),mfrow=c(2,2))
+		par(bty='n',mar=c(3,8,2,4),mfrow=c(2,2))
 for (cur_dat in c("roc","pr")) {
 	print(cur_dat)
    if (cur_dat == "roc") curdat <- mega_roc
@@ -149,19 +157,26 @@ for (cur_dat in c("roc","pr")) {
 	sem <- sapply(1:ncol(curdat),function(x) 
 		sd(curdat[,x],na.rm=TRUE)/sqrt(nrow(curdat)))
 	
-	if (cur_dat =="roc") ylim <- c(0.65,0.9) else ylim <- c(0.6,0.85)
+	if (cur_dat =="roc") {
+		ylim <- c(0.65,0.9) 
+		ylab <- "AUCROC\n(mean+/-SEM)"
+	} else {
+		ylim <- c(0.6,0.85)
+		ylab <- "AUCPR\n(mean+/-SEM)"
+	}
 		
 		lbl <- colnames(curdat)
 		lbl[which(lbl=="clinPath")] <- "cOne\nRpath"
 		lbl[which(lbl=="clinNetsPathNets")] <- "clin-nets\nRpath"
 		lbl[which(lbl=="clinNets")] <- "clin-nets"
+
 		# pathway effect
-		idxSet <- list(pathways=5:7, clinPerf=1:4)
+		idxSet <- list(pathways=c(5:7,2,4), clinPerf=1:4)
 		for (nm in names(idxSet)) {
 			idx <- idxSet[[nm]]
 			plot(1:length(idx), mu[idx],ylim=ylim,
-				type='n',bty='n',ylab="AUCROC\n(mean+/-SEM)",xaxt='n',
-				las=1,cex.axis=1.4,xlim=c(1,length(idx)),cex.axis=1.4)
+				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1.5,
+				las=1,cex.axis=1.6,xlim=c(1,length(idx)))
 				abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
 				points(1:length(idx),mu[idx],type='p',col=colSet[idx],pch=16) 
 					#,cex=0.5)

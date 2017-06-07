@@ -78,7 +78,7 @@ This section assumes you have Java, Python, R and Bioconductor installed. From c
 ```
 $ cd netDx-master/
 $ R
-> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2"))
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","igraph"))
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)
 > install.packages("knitr") # needed to run examples

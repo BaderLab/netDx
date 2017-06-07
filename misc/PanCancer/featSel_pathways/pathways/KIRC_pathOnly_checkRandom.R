@@ -9,8 +9,6 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 maxRng <- 25 		# num train/test splits to check performance on
-consCutoff <- 10	# score a net must have to be a consensus net
-consPctPass <- 0.7	# % of rounds it must have score >= consCutoff
 
 rootDir <- "/mnt/data2/BaderLab"
 inDir 	<- sprintf("%s/PanCancer_KIRC/input",rootDir)
@@ -19,9 +17,9 @@ outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 #### makeConsProfiles code block >>>>
 consNetDir <- sprintf("%s/PanCancer_common/pathwaysOnly_170502",rootDir)
 netScoreFile <- list(
-	SURVIVENO=sprintf("%s/KIRC_thresh10_pctPass1.00_SURVIVENO_netScores.txt",
+	SURVIVENO=sprintf("%s/pathways_thresh10_pctPass0.70_SURVIVENO_netScores.txt",
 		consNetDir),
-	SURVIVEYES=sprintf("%s/KIRC_thresh10_pctPass1.00_SURVIVEYES_netScores.txt",
+	SURVIVEYES=sprintf("%s/pathways_thresh10_pctPass0.70_SURVIVEYES_netScores.txt",
 		consNetDir)
 )
 
@@ -30,26 +28,6 @@ analysisMode <- "randomNets" # none |consNets | bestConsNets | randomNets
 # consNets = predictions with GMdb of all nets
 # bestConsNets = GM db with nets that have corr < 0.01
 # randomNets = GMdb with randomly sampled nets of size consNets 
-
-# ----------------------------------------------------------------
-# helper functions
-
-# normalized difference 
-# x is vector of values, one per patient (e.g. ages)
-normDiff <- function(x) {
-    #if (nrow(x)>=1) x <- x[1,]
-    nm <- colnames(x)
-    x <- as.numeric(x)
-    n <- length(x)
-    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
-    
-    out <- matrix(NA,nrow=n,ncol=n);
-    # weight between i and j is
-    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
-    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
-    rownames(out) <- nm; colnames(out)<- nm
-    out
-}
 
 if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 	cat("invalid method")
@@ -60,15 +38,12 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 netCount <- list()
 if (analysisMode == "randomNets") {
 for (nm in names(netScoreFile)) {
-		netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
-		netNames 	<- netScores[,1]
-		netScores <- netScores[,-1]
-		tmp <- rowSums(netScores >= consCutoff)
-		idx <- which(tmp >= floor(consPctPass*ncol(netScores)))
-		cat(sprintf("%s: %i nets score >= %i for %i%% trials\n",
-			nm, length(idx), consCutoff, round(consPctPass*100)))
-		
-		netCount[[nm]] <- length(idx)
+	netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
+	netNames 	<- netScores[,1]
+	netScores <- netScores[,-1]
+	netCount[[nm]] <- colSums(netScores>=cutoff,na.rm=TRUE)
+	cat(sprintf("%s: # fs nets\n", nm))
+	print(summary(netCount[[nm]]))
 }
 }
 
@@ -174,11 +149,12 @@ tryCatch({
 			consNets[[g]]
 		}, randomNets= {
 			pTally	<- read.delim(
-				sprintf("%s/KIRC_thresh%i_pctPass1.00_%s_AllNets.txt", 
-						consNetDir,consCutoff,g),sep="\t",h=T,as.is=T)[,1]
-			cat(sprintf("**** Sampling %i nets randomly ****\n",netCount[[g]]))
+				sprintf("%s/pathways_thresh10_pctPass0.70_%s_AllNets.txt", 
+						consNetDir,g),sep="\t",h=T,as.is=T)[,1]
+			cur_randNum <- netCount[[g]][ceil(sampRNG/5)]
+			cat(sprintf("**** Sampling %i nets randomly ****\n",cur_randNum))
 			set.seed(sampRNG);
-			pTally <- sample(pTally, netCount[[g]], replace=FALSE)
+			pTally <- sample(pTally, cur_randNum, replace=FALSE)
 			# only add clinical by force if it was part of the consensus
 			# nets for the group
 			cat(sprintf("Nets for this round:\n%s\n", 

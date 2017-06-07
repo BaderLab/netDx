@@ -12,7 +12,7 @@
 #' 8. netScoreFile (list with YES and NO) path to net score over 100 splits
 #' 
 getPSN <- function(infoList, consCutoff, consPctPass, topX,aggFun="MEAN",
-	netMode="consensus") {
+	netMode="consensus",outDir=".") {
 
 # --------------------------------------------------------------
 # setup for network generation in Cytoscape
@@ -75,6 +75,7 @@ dir.create(poolDir)
 	newNetIDs <- list()
 
 # pool feature selected nets from both groups
+alreadyAdded <- c() 
 for (gps in names(ptFile)) {
 	cat(sprintf("Group %s\n", gps))
 	
@@ -91,7 +92,16 @@ for (gps in names(ptFile)) {
 		idx <- which(tmp >= floor(consPctPass*ncol(netScores)))
 		pTally <-  netNames[idx]
 		pTally <- sub("_cont|\\.profile","",pTally)
+
+		idx <- which(pTally %in% alreadyAdded)
+		if (any(idx)) {
+			cat(sprintf("Found a net already added before, removing: {%s}\n",
+				paste(pTally[idx],collapse=",")))
+			pTally <- pTally[-idx]
+		}
+		if (length(pTally)>=1) alreadyAdded <- c(alreadyAdded,pTally)
 	}
+	
 	print(pTally)
 	curNetIds <- matrix(NA,nrow=length(pTally),ncol=2)
 	ctr <- 1
@@ -203,6 +213,9 @@ curDijk[1,5:8] <-c(pyes,pyes2,pno,pno2)
 
 # create a pruned network for visualization
 aggNet_pruned <- netDx::pruneNetByStrongest(aggNet,pheno$ID, topX=topX)	
+outFile <- sprintf("%s/%s_prunedNet_top%1.2f.txt",outDir,outPfx,topX)
+write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
+	quote=FALSE)
 # layout network in Cytoscape
 network.suid <- EasycyRest::createNetwork(
 	nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,

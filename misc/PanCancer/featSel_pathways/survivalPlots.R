@@ -71,8 +71,8 @@ for (cur in 1:nrow(setInfo)) {
 }
 
 
-pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
-	width = 11,height = 6)
+#pdf(file=sprintf("%s/KIRC_pathway_survPlot.pdf", outDir),
+#	width = 11,height = 6)
 #p_val_list <- p_val_list[rev(c("clinOne","clinNets","pathOnly","clinNetsPathBest"))]
 p_val_list <- p_val_list[rev(c("rnaOne","pathOnly","clinNets","clinNetsPathBest"))]
 ctr <- 1
@@ -99,5 +99,5 @@ abline(v=-log10(c(0.05,0.05/100)),col='red',lwd=3,lty=c(1,3))
 ###			cur,numTest[ctr]))
 ###	ctr <- ctr+1
 ###}
-dev.off()
+#dev.off()
 

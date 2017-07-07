@@ -82,7 +82,7 @@ for (gps in names(ptFile)) {
 	netInfo_cur <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
 	netInfo_cur[,2] <- sub("_cont|\\.profile","",netInfo_cur[,2])
 	
-	if (setName=="oneClinNet") {
+	if (setName %in% c("OV_oneClinNet","oneClinNet")) {
 		pTally <- "clinical" # hard-coded for oneClinNet scenario
 	} else {
 		netScores	<- read.delim(netScoreFile[[gps]],sep="\t",h=T,as.is=T)
@@ -168,7 +168,7 @@ write.table(pheno,file=sprintf("%s/%s_PSN_pheno.txt",
 
 # get and plot Dijkstra distances for all group combinations
 x <- compareShortestPath(aggNet, pheno,verbose=FALSE)
-pdf(sprintf("%s/%s_DijkstraBoxplots.pdf", outDir,outPfx),width=10,height=4)
+pdf(sprintf("%s/%s_DijkstraViolinplots.pdf", outDir,outPfx),width=10,height=4)
 tryCatch({
 	par(las=1,bty='n')
 	dl <- data.frame(intType=rep(names(x$all),lapply(x$all,length)),
@@ -178,7 +178,7 @@ tryCatch({
 	p <- p + ylab("Pairwise Dijkstra distance\n(smaller is better)") 
 	p <- p + xlab("Pair groups")
 	p <- p + ggtitle(setName)
-	p2 <- p+geom_boxplot() + geom_jitter(width = 0.1,cex=0.3, alpha=0.5)
+	p2 <- p+geom_violin()+geom_boxplot(width=0.02) # + geom_jitter(width = 0.1,cex=0.3, alpha=0.5)
 	print(p2)
 
 	boxplot(x$all,pars=list(boxwex=0.4),cex.axis=0.8,
@@ -234,12 +234,4 @@ response <- httr::GET(apply.style.url)
 write.table(curDijk,
 	file=sprintf("%s/%s_Dijkstra_PSN.txt",outDir,outPfx),
 		sep="\t",col=T,row=T,quote=F)
-
-
-
-
-
-
-
-
 }

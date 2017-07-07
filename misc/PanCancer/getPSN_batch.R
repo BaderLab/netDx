@@ -1,6 +1,6 @@
 
 rm(list=ls())
-cat("multiple clinical nets\n")
+cat("pathways\n")
 setwd("featSel_pathways/pathways")
 source("pathways_getPSN.R")
 

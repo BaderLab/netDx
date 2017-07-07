@@ -29,11 +29,15 @@ logFile <- sprintf("%s/perf.log.txt",rootDir)
 postscript(sprintf("%s/perf.eps",rootDir),width=13,height=6)
 sink(logFile,split=TRUE)
 tryCatch({
-par(mfrow=c(2,2),mar=c(2,4,1,0))
+par(mfrow=c(2,2),mar=c(2,4,1,4))
 
 outmat <- matrix(NA,ncol=12,nrow=length(setList))
 rownames(outmat) <- setList
 currow <- 1
+
+# collect results for "all" condition
+mu_all <- c()
+sem_all <- c()
 for (curSet in setList) {
 
 	cat(sprintf("%s\n",curSet))
@@ -45,7 +49,7 @@ for (curSet in setList) {
 	if (curSet %in% c("KIRC","GBM")) {  # get latest results
 		inFile <- sprintf("%s/%s_oneNetPer_clin_normDiff.Rdata",rootDir,curSet)
 		lnames <- load(inFile)
-		for (k in colnames(val)[grep("clin",colnames(val))]) {
+		for (k in colnames(val)[c(grep("clin",colnames(val)),which(colnames(val)=="all"))]) {
 			print(k)
 			idx1 <- which(colnames(val_orig) == k)
 			idx2 <- which(colnames(val) == k)
@@ -56,8 +60,14 @@ for (curSet in setList) {
 	
 	colnames(val) <- sub("clinical","clin",colnames(val))
 	mu <- colMeans(val,na.rm=TRUE)
+write.table(mu,file=sprintf("%s_meanAUROC.txt", curSet),sep="\t",
+	col=T,row=T,quote=F)
 	sem <- sapply(1:ncol(val),function(x) 
 		sd(val[,x],na.rm=TRUE)/sqrt(nrow(val)))
+	names(sem) <- colnames(val)
+
+	mu_all <- c(mu_all,mu[which(names(mu)=="all")])
+	sem_all <- c(sem_all,sem[which(names(sem)=="all")])
 	
 	maxauc <- apply(val,2,max,na.rm=TRUE)
 	if (currow==1) {
@@ -74,11 +84,18 @@ for (curSet in setList) {
 		las=1,col=colSet,pch=16,cex=1.5,cex.axis=1.4)
 	title(curSet)
 
+	print(names(mu))
+
 	axis(1,at=1:length(mu), labels=colnames(val),cex.axis=1.4)
 	segments(x0=1:length(mu), y0=mu-sem,y1=mu+sem,col=colSet,lwd=3)
 	abline(h=0.5,col='red',lty=1,lwd=2)
 	abline(h=0.7,col='red',lty=3,lwd=2)
 	abline(v=vLines[[curSet]],lty=1,lwd=2)
+
+	cat("AUROC (mean+/-SEM)\n")
+	for (k in 1:length(mu)) {
+		cat(sprintf("\t%s: %1.2f +/- %1.2f\n", colnames(val)[k],mu[k],sem[k])) 
+	}
 
 	#boxplot(val,las=2,main=sprintf("%s (N=%i splits)",curSet,nrow(val)),
 	#	bty='n',ylab="AUCROC")
@@ -201,6 +218,8 @@ cat("\n")
 		}	
 		print(dunn)
 	}
+	cat(sprintf("%s: all: (Mean +/- SEM) = %1.2f +/- %1.3f\n",
+			curSet, mu["all"],sem["all"]))
 
 }
 
@@ -208,9 +227,21 @@ cat("\n")
 write.table(outmat,file=sprintf("%s/oneFeatSel_maxAUC.txt", rootDir),
 	sep="\t",col=TRUE,row=TRUE,quote=FALSE)
 
+
 },error=function(ex){
 	print(ex)
 },finally= {
 	dev.off()
 	sink(NULL)
 })
+
+# now plot mu+/- sem for all
+names(mu_all) <- setList
+mu <- mu_all; sem <- sem_all; rm(mu_all,sem_all)
+plot(1:4,mu,pch=16,xlab="Cancer type",ylim=c(0.4,1),
+		bty='n',las=1,cex.axis=1.3,xaxt='n')
+segments(x0=1:length(mu), y0=mu-sem,y1=mu+sem,col="black",lwd=3)
+axis(side=1,at=1:4,labels=setList)
+	abline(h=0.5,col='red',lty=1,lwd=2)
+	abline(h=0.7,col='red',lty=3,lwd=2)
+

@@ -74,6 +74,7 @@ for (ctr in 1:nrow(setInfo)) {
 	colnames(val) <- ""
 	if (cur == "pathOnlyRnd") { # random nets have different structure
 		dirs <- dir(curd,pattern="random")
+		if (any(grep("gz$",dirs))) dirs <- dirs[-grep("gz$",dirs)] 
 		big_ctr <- 1
 		for (d in dirs) { # one round of sampling
 			fSet <- dir(sprintf("%s/%s/predictions",curd,d),pattern="prediction")

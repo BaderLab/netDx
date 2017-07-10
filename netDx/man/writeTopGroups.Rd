@@ -29,4 +29,3 @@ To include all genes (not recommended unless you know what you are doing)
 \description{
 writes subset of gmt with feature-selected pathways
 }
-

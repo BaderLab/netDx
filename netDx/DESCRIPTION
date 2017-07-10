@@ -18,4 +18,4 @@ Suggests: netDx.examples, reshape2, igraph, gplots
 License: GPL>=2.0
 LazyData: false
 URL: http://netdx.org
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

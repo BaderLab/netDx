@@ -17,7 +17,7 @@ inDir <- "/Users/ahmadshah/Desktop/CSC2515/patient_networks/tcga_pancancer/KIRC/
 outRoot <- "/Users/ahmadshah/Desktop/CSC2515/patient_networks/tcga_pancancer/KIRC"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/setnum_timetest_pathwaysOnly_%s",outRoot,dt)
+megaDir <- sprintf("%s/nosetnum_timetest_pathwaysOnly_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -166,8 +166,8 @@ for (rngNum in 1:1) {
 
 		# Cross validation
     t0 <- Sys.time()
-		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
-			# nrow(pheno_subtype),verbose=T, numCores=numCores,
+		GM_runCV_featureSet_mem(trainPred, resDir, dbDir$dbDir,
+			nrow(pheno_subtype),
 			verbose=T, numCores=numCores,
 			GMmemory=GMmemory)
     t1 <- Sys.time()

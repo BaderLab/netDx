@@ -1,0 +1,12 @@
+#organism	id	file	name	description	alias	taxonomyid
+organism	ids.txt	predictor	my_predictor	my_predictor	1339
+
+#group	name	code	description	RRGGBB colour	organism
+group	dummy_group	geneset_1	dummy_group	ff00ff	predictor
+
+#network	filename	name	description	group code
+network	ATOH1_cont.txt	ATOH1_cont	ATOH1_cont.txt	geneset_1
+network	EYA1_cont.txt	EYA1_cont	EYA1_cont.txt	geneset_1
+network	HHIP_cont.txt	HHIP_cont	HHIP_cont.txt	geneset_1
+network	PDLIM3_cont.txt	PDLIM3_cont	PDLIM3_cont.txt	geneset_1
+network	SFRP1_cont.txt	SFRP1_cont	SFRP1_cont.txt	geneset_1

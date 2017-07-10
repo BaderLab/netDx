@@ -19,4 +19,3 @@ getCorrType(inFile, plusID, minusID)
 \description{
 Counts the relative correlation of (+,+) and (+,-)(-,-) interactions
 }
-

@@ -41,4 +41,3 @@ data(TCGA_mini);
 x <- makeRandomNetworks(pheno$ID, numNets=10L,
 outDir="/tmp")
 }
-

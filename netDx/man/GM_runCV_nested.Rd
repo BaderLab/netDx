@@ -42,4 +42,3 @@ GM_runCV_nested(outDir=".",pheno_DF=MB.pheno, predictClass="WNT",
 	trainID_pred=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
 	numTrainSamps=103L,GM_db=GM_db)
 }
-

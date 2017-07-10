@@ -1,0 +1,6 @@
+1	EOMES_cont	1	EOMES_cont.txt	0	1
+2	KCNA1_cont	2	KCNA1_cont.txt	0	1
+3	KHDRBS2_cont	3	KHDRBS2_cont.txt	0	1
+4	OAS1_cont	4	OAS1_cont.txt	0	1
+5	RBM24_cont	5	RBM24_cont.txt	0	1
+6	UNC5D_cont	6	UNC5D_cont.txt	0	1

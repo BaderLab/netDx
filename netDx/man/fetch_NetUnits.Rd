@@ -59,4 +59,3 @@ y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 y <- fetch_NetUnits(x,pathwayList, names(pathwayList),
 	trackMapping_detail=TRUE)
 }
-

@@ -10,17 +10,17 @@ GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps,
   ...)
 }
 \arguments{
-\item{trainID_pred}{(char) vector with universe of predictor class 
+\item{trainID_pred}{(char) vector with universe of predictor class
 patients (ie all that can possibly be included in the query file}
 
 \item{outDir}{(char) directory to store query file and GM results}
 
-\item{GM_db}{(char) path to GeneMANIA generic database with 
+\item{GM_db}{(char) path to GeneMANIA generic database with
 training population}
 
 \item{numTrainSamps}{(integer) number of training samples in total}
 
-\item{incNets}{(char) vector of networks to include in this analysis 
+\item{incNets}{(char) vector of networks to include in this analysis
 (features/pathway names). Useful for subset-based feature selection}
 
 \item{orgName}{(char) organism name for GeneMANIA generic database.
@@ -52,4 +52,3 @@ GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
 GM_runCV_featureSet(MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
 "~/tmp",GM_db,103L)
 }
-

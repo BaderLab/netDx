@@ -20,4 +20,3 @@ scores must be in rownames(resampPerf)}
 \description{
 pick best cutoff for CNV-based predictor
 }
-

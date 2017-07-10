@@ -30,4 +30,3 @@ Wrapper to write GeneMANIA query file
 data(TCGA_mini)
 GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 }
-

@@ -7,7 +7,6 @@
 #' @param GM_db (char) path to GeneMANIA generic database with
 #'	training population
 #' @param numTrainSamps (integer) number of training samples in total
-#' 	leave blank 
 #' @param incNets (char) vector of networks to include in this analysis
 #' (features/pathway names). Useful for subset-based feature selection
 #' @param orgName (char) organism name for GeneMANIA generic database.
@@ -42,14 +41,8 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps,
 	for (m in 1:length(qSamps)) {
 		if (verbose) cat(sprintf("%i ",m))
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
-
-		if(missing(numTrainSamps)){
-			GM_writeQueryFile(qSamps[[m]], incNets, 5,
-							  qFile,orgName)
-		}else{
 			GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 							  qFile,orgName)
-		}
 	}
 
 	cl	<- makeCluster(numCores)

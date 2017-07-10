@@ -44,4 +44,3 @@ data(silh);
 colnames(silh$net)[3] <- "weight"
 compareShortestPath(silh$net, silh$groups)
 }
-

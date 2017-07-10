@@ -67,4 +67,3 @@ data(TCGA_mini)
 x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 sparsifyNet(x,outFile="tmp.txt")
 }
-

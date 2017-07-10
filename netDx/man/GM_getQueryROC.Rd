@@ -41,4 +41,3 @@ prankFile <- sprintf("\%s/extdata/GM_PRANK.txt",
 	 path.package("netDx"))
 x <- GM_getQueryROC(prankFile, pheno, "LumA")
 }
-

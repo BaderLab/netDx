@@ -52,4 +52,3 @@ works for two-way classification (predClass/"other").
 Extension to N-way classification
 probably doesn't require much additional work
 }
-

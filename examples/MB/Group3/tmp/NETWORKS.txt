@@ -1,0 +1,5 @@
+1	GABRA5_cont	1	GABRA5_cont.txt	0	1
+2	IMPG2_cont	2	IMPG2_cont.txt	0	1
+3	MAB21L2_cont	3	MAB21L2_cont.txt	0	1
+4	NPR3_cont	4	NPR3_cont.txt	0	1
+5	NRL_cont	5	NRL_cont.txt	0	1

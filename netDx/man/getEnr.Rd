@@ -59,4 +59,3 @@ x <- getEnr(netDir, npheno, "case",netGrep=".txt$")
 print(x$orig_rat) 
 
 }
-

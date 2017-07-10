@@ -52,4 +52,3 @@ netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 netmat <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
 x <- updateNets(netmat, npheno,writeNewNets=FALSE)
 }
-

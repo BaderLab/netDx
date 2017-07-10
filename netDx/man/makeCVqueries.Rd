@@ -27,4 +27,3 @@ Randomly select patients for query in cross-validation
 data(TCGA_mini)
 x <- makeCVqueries(pheno$ID)
 }
-

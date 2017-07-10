@@ -27,4 +27,3 @@ matrix
 data(confmat)
 x <- perfCalc(confmat)
 }
-

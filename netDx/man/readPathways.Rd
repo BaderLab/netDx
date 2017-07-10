@@ -60,4 +60,3 @@ pathFile <- sprintf("\%s/extdata/pathways.gmt",
 pathwayList    <- readPathways(pathFile)
 
 }
-

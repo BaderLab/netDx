@@ -54,4 +54,3 @@ are related in a network N if they both overlap elements of set N.
 data(pathway_GR,TCGA_mini)
 netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 }
-

@@ -36,6 +36,8 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 # count the number of consensus nets per group and whether clinical
 # is part of this. will affect sampling downstream.
 netCount <- list()
+fsNets <- c() # nets feature selected in the original analysis and that
+			  # we should exclude now.
 if (analysisMode == "randomNets") {
 for (nm in names(netScoreFile)) {
 	netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
@@ -47,8 +49,7 @@ for (nm in names(netScoreFile)) {
 	idx <- which(wasHighScoring>=70)
 	cat(sprintf("%i high-scoring nets removed\n", length(idx)))
 	cat("-----\n"); print(netNames[idx]); cat("-----\n")
-	netNames <- netNames[-idx];
-	netScores <- netScores[-idx,]
+	fsNets <- c(fsNets, netNames[idx])
 
 	netCount[[nm]] <- colSums(netScores>=cutoff,na.rm=TRUE)
 	cat(sprintf("%s: # fs nets\n", nm))
@@ -160,6 +161,7 @@ tryCatch({
 			pTally	<- read.delim(
 				sprintf("%s/pathways_thresh10_pctPass0.70_%s_AllNets.txt", 
 						consNetDir,g),sep="\t",h=T,as.is=T)[,1]
+			pTally <- pTally[!pTally %in% fsNets] # REMOVE informative nets
 			cur_randNum <- netCount[[g]][ceil(sampRNG/5)]
 			cat(sprintf("**** Sampling %i nets randomly ****\n",cur_randNum))
 			set.seed(sampRNG);

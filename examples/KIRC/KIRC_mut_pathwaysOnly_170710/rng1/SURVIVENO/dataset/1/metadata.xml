@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-<properties>
-<entry key="short_name">predictor</entry>
-<entry key="organism_id">1</entry>
-<entry key="common_name">my_predictor</entry>
-</properties>

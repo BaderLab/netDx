@@ -18,6 +18,9 @@
 #' pctPass
 writeEMap <- function(netScores, setList, netInfo,pctPass=0.70,
 		maxScore=10,outPfx="curr",trimFromName=c(".profile","_cont")) {
+
+	dt <- format(Sys.Date(),"%y%m%d")
+
 	netS <- read.delim(netScores,sep="\t",h=T,as.is=T)
 	netNames <- netS[,1]; netS <- netS[,-1]
 	
@@ -39,8 +42,8 @@ writeEMap <- function(netScores, setList, netInfo,pctPass=0.70,
 	colnames(netInfo) <- c("netType","netName")
 	df2 <- merge(x=df1,y=netInfo,by="netName")
 		
-	outFile <- sprintf("%s.gmt",outPfx)
-	netAttrFile <- sprintf("%s_nodeAttrs.txt",outPfx)
+	outFile <- sprintf("%s_%s.gmt",outPfx,dt)
+	netAttrFile <- sprintf("%s_nodeAttrs_%s.txt",outPfx,dt)
 
 	if (file.exists(outFile)) unlink(outFile)
 	system(sprintf("touch %s",outFile))

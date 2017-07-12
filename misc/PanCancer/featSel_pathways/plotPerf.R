@@ -5,6 +5,7 @@ rm(list=ls())
 # list of all conditions to collect data for and their i/o locations
 rootDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab"
 outRoot <- sprintf("%s/2017_PanCancer_Survival",rootDir)
+dt <- format(Sys.Date(),"%y%m%d")
 
 setFile <- "KIRCpathway_locations.txt"
 setInfo	<- read.delim(setFile,sep="\t",h=T,as.is=T)
@@ -46,106 +47,17 @@ for (ctr in 2:nrow(setInfo)) {
 	} 
 }
 
-# same with single RNA net
-tmpFile <- sprintf("%s/oneNetPer_FeatSel/KIRC_oneNetPer_FeatSel_results.Rdata", 
-	outRoot)
-load(tmpFile)
-idx <- which(colnames(val)=="rna")
-mega_roc <- cbind(mega_roc, val[,idx])
-colnames(mega_roc)[ncol(mega_roc)] <- "rna"
-rm(val)
-
-tmpFile <- sprintf("%s/oneNetPer_FeatSel/AUCPR/KIRC_oneNetPer_FeatSel_results_prauc.Rdata",outRoot)
-lnames<-load(tmpFile)
-idx <- which(colnames(val)=="rna")
-mega_pr <- cbind(mega_pr, val[,idx])
-colnames(mega_pr)[ncol(mega_pr)] <- "rna"
-rm(val)
-
-#### one netPer
-###inFile <- sprintf("%s/oneNetPer_FeatSel/%s_oneNetPer_FeatSel_results.Rdata",
-###	rootDir,curSet)
-###load(inFile)
-###oneNetPer <- val; rm(val)
-###
-#### clinical by var & RNA by pathway
-###inFile <- sprintf("%s/featSel_pathways_170426/%s_pathway_results.Rdata",
-###	rootDir,curSet)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer,val[,1])
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "clinRNAPath"
-###
-#### clinical in one net & RNA by pathway
-###inFile <- sprintf("%s/featSel_pathways_170426/%s_pathway_oneClinNet_results.Rdata",
-###	rootDir,curSet)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer,val[,1])
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "clinOneRNAPath"
-###
-#### clinical one & RNA by pathway - RANDOMLY-sampled
-###inFile <- sprintf("%s/randomNets_170508/KIRC_randomMean.Rdata",rootDir)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer, randomMean)
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "rnd"
-###rm(randomMean)
-###
-####  RNA by pathway - RANDOMLY-sampled
-###inFile <- sprintf("%s/pathOnly_randomNets_170503/KIRC_randomMean.Rdata",
-###	rootDir)
-###load(inFile)
-###tmp <- c(randomMean, rep(NA, 100-length(randomMean)))
-###oneNetPer <- cbind(oneNetPer, tmp)
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "pathOnlyrnd"
-###print(length(randomMean))
-###rm(randomMean)
-###
-#### clinical one & RNA by pathway - consensus nets
-###inFile <- sprintf("%s/consensus_170502/KIRC_consensusRes.Rdata",rootDir)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer, consRes) 
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "consNet"
-###
-#### pathway only
-###inFile <- sprintf("%s/pathwaysOnly_170502/KIRC_pathway_results.Rdata",rootDir)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer, consRes) 
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "pathOnly"
-###
-#### clinical by var only
-###inFile <- sprintf("%s/clinNets_170430/%s_clinNets_170430_results.Rdata",
-###	rootDir,curSet)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer,val[,1])
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "clinNets"
-###
-#### Pathway only - consensus nets
-###inFile <- sprintf("%s/pathOnly_consensus_170509/KIRC_pathOnly_consensusRes.Rdata",
-###	rootDir)
-###load(inFile)
-###oneNetPer <- cbind(oneNetPer, consRes) 
-###colnames(oneNetPer)[ncol(oneNetPer)] <- "pathOnlycons"
-
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 
-mega_roc <- mega_roc[,c(1:4,7,5:6)]
-mega_pr <- mega_pr[,c(1:4,7,5:6)]
+keepnm <- c("clinOne","clinNets","clinNetsPathBest",
+		"rnaOne","pathOnly","pathOnlyRnd")
+mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
+mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
 colSet <- c("red","red","purple","hotpink1", 
 	"dodgerblue3","dodgerblue3","gray40")
 
-#colSet <- c(rep("darkgreen",6),rep("orange",5),"red",
-#		"purple","pink","blue","brown","gray","blue","pink")
-#mega_roc <- mega_roc[,-c(2,4:11)]
-#colSet		<- colSet[-c(2,4:11)]
-
-###colSet <- c("red","purple","grey40","hotpink1",
-###			"red","purple",
-###			"dodgerblue3","dodgerblue3","grey40","hotpink1",
-###			"green")
-
-# do this at the end, after organizing mega_roc.
-
-	#postscript(sprintf("%s/KIRC_perf.eps",outRoot),width=18,height=6)
+postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=18,height=6)
 	tryCatch({
 		par(bty='n',mar=c(3,8,2,4),mfrow=c(2,2))
 for (cur_dat in c("roc","pr")) {
@@ -167,16 +79,15 @@ for (cur_dat in c("roc","pr")) {
 		
 		lbl <- colnames(curdat)
 		lbl[which(lbl=="clinPath")] <- "cOne\nRpath"
-		lbl[which(lbl=="clinNetsPathNets")] <- "clin-nets\nRpath"
 		lbl[which(lbl=="clinNets")] <- "clin-nets"
 
 		# pathway effect
-		idxSet <- list(pathways=c(5:7,2,4), clinPerf=1:4)
+		idxSet <- list(pathways=4:6, clinPerf=1:2)
 		for (nm in names(idxSet)) {
 			idx <- idxSet[[nm]]
 			plot(1:length(idx), mu[idx],ylim=ylim,
 				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1.5,
-				las=1,cex.axis=1.6,xlim=c(1,length(idx)))
+				las=1,cex.axis=1.6,xlim=c(0.5,length(idx)+0.5))
 				abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
 				points(1:length(idx),mu[idx],type='p',col=colSet[idx],pch=16) 
 					#,cex=0.5)
@@ -208,14 +119,15 @@ for (cur_dat in c("roc","pr")) {
 	.wmwtest <- function(x,y,type) {
 		wmw <- wilcox.test(curdat[,x],curdat[,y],alternative=type)
 		cat(sprintf("%s vs %s\t\t%1.2f vs %1.2f\t\tWMW p < %1.2e\n",
-			x,y, median(curdat[,x]), median(curdat[,y]),
+			x,y, median(curdat[,x],na.rm=TRUE), median(curdat[,y],na.rm=TRUE),
 			wmw$p.value))
 	}
 #if (cur_dat == "roc") {
+	cat(sprintf("Stat tests for %s\n------------------\n",cur_dat))
 	.wmwtest("clinOne","clinNets","less")
 	.wmwtest("clinNets","clinNetsPathBest","less")
-	.wmwtest("pathOnly","pathOnlyRnd","greater")
-	.wmwtest("rna","pathOnly","less")
+	#.wmwtest("pathOnly","pathOnlyRnd","greater")
+	#.wmwtest("rna","pathOnly","less")
 	###.wmwtest("pathOnlyrnd","pathOnly","less")
 #	}
 }

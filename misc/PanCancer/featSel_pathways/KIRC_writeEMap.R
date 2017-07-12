@@ -1,9 +1,9 @@
 #' call code that creates enrichment map.
 
 # pathways only
-datDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_PanCancer_Survival/pathwaysOnly_170502"
-inDir <- "/Users/shraddhapai/Documents/Research/BaderLab/2017_TCGA_KIRC/input"
-scorePfx <- sprintf("%s/KIRC_thresh10_pctPass0.70",datDir)
+datDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_PanCancer_Survival/pathwaysOnly_170502"
+inDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/input"
+scorePfx <- sprintf("%s/featSelNets/pathways_thresh10_pctPass0.70",datDir)
 netInfo <- sprintf("%s/inputNets.txt",datDir)
 xprFile <- sprintf("%s/KIRC_mRNA_core.txt",inDir)
 

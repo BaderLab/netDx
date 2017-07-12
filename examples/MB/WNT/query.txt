@@ -1,5 +1,0 @@
-predictor
-MB.11	MB.128	MB.145	MB.18	MB.191
-all
-103
-automatic

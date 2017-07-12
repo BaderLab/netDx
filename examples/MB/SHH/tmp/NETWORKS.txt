@@ -1,5 +1,0 @@
-1	ATOH1_cont	1	ATOH1_cont.txt	0	1
-2	EYA1_cont	2	EYA1_cont.txt	0	1
-3	HHIP_cont	3	HHIP_cont.txt	0	1
-4	PDLIM3_cont	4	PDLIM3_cont.txt	0	1
-5	SFRP1_cont	5	SFRP1_cont.txt	0	1

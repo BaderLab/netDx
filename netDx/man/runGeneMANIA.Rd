@@ -36,4 +36,3 @@ GM_query <- sprintf("\%s/extdata/GM_query.txt",
 	path.package("netDx"))
 runGeneMANIA(GM_db, GM_query,"/tmp")
 }
-

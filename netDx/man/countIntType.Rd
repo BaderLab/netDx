@@ -27,4 +27,3 @@ netDir <- sprintf("\%s/extdata/example_nets",
 countIntType(sprintf("\%s/BOTH_EQUAL.txt", netDir),
 		npheno[1:100,1],npheno[101:200,1])
 }
-

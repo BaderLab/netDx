@@ -1,13 +1,14 @@
 #' Run GeneMANIA cross-validation with a provided subset of networks
 #'
-#' @details Creates query files, runs GM for 10-fold cross validation. 
-#' @param trainID_pred (char) vector with universe of predictor class 
+#' @details Creates query files, runs GM for 10-fold cross validation.
+#' @param trainID_pred (char) vector with universe of predictor class
 #' patients (ie all that can possibly be included in the query file
 #' @param outDir (char) directory to store query file and GM results
-#' @param GM_db (char) path to GeneMANIA generic database with 
+#' @param GM_db (char) path to GeneMANIA generic database with
 #'	training population
 #' @param numTrainSamps (integer) number of training samples in total
-#' @param incNets (char) vector of networks to include in this analysis 
+#' leave blank to use 5 training samples in order to save memory
+#' @param incNets (char) vector of networks to include in this analysis
 #' (features/pathway names). Useful for subset-based feature selection
 #' @param orgName (char) organism name for GeneMANIA generic database.
 #' The default value will likely never need to be changed.
@@ -25,14 +26,14 @@
 #' GM_runCV_featureSet(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
 #'	"~/tmp",GM_db,103L)
 #' @export
-GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps, 
+GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
-	numCores=2L,GMmemory=6L,seed_CVqueries=42L,...) {	
-	
+	numCores=2L,GMmemory=6L,seed_CVqueries=42L,...) {
+
 	#TODO if results already exist, what do we do? Delete with a warning?
 	if (!file.exists(outDir)) dir.create(outDir)
 
-	# get query names 
+	# get query names
 	if (verbose) cat("\tWriting GM queries: ")
 	qSamps <- makeCVqueries(trainID_pred,verbose=verbose,
 		setSeed=seed_CVqueries,...)
@@ -41,7 +42,13 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps,
 	for (m in 1:length(qSamps)) {
 		if (verbose) cat(sprintf("%i ",m))
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
-		GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps, 
+
+		if(is.null(numTrainSamps)){
+			numTrainSamps = 5
+			cat("Memory saver option: using 5 training samples for CV")
+		}
+
+		GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
 
@@ -54,13 +61,13 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps,
 
 		runGeneMANIA(GM_db, qFile, outDir,GMmemory=GMmemory,
 					 verbose=verbose)
-		
-		# needed so R will pause while GM finishes running. 
+
+		# needed so R will pause while GM finishes running.
 		# otherwise the script proceeds asynchronously (without waiting
 		# for GM to complete) and will try to work with result files that
 		# haven't been written yet
-		#Sys.sleep(15) 	
-	
+		#Sys.sleep(15)
+
 		# keep only PRANK and NRANK and remove main results file.
 		resFile <- sprintf("%s/%s_%i.query-results.report.txt",
 			outDir,fileSfx,m)

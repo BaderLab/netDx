@@ -78,4 +78,3 @@ each level of feature selection stringency. The output of this function
 can then be used to compute performance measures such as the ROC or 
 precision-recall curve.
 }
-

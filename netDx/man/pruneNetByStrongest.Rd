@@ -20,4 +20,3 @@ weight
 \description{
 Prune network by retaining strongest edges
 }
-

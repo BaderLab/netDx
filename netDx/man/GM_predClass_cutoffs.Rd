@@ -46,4 +46,3 @@ Currently only works when all data can be provided as a
 single matrix. Also currently works only for binary classification 
 although extension to 3+-way classificaiton is likely straightforward.
 }
-

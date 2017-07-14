@@ -10,7 +10,7 @@ GM_writeQueryFile(qSamps, incNets = "all", numReturn = 1L, outFile,
 \arguments{
 \item{qSamps}{(char) vector of patient IDs in query}
 
-\item{incNets}{(char) vector of networks to include in this analysis 
+\item{incNets}{(char) vector of networks to include in this analysis
 (features/pathway names). Useful for subset-based feature selection}
 
 \item{numReturn}{(integer) number of patients to return in ranking file}
@@ -30,4 +30,3 @@ Wrapper to write GeneMANIA query file
 data(TCGA_mini)
 GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 }
-

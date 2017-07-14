@@ -25,4 +25,3 @@ Then computes precision/recall measure for each class. Finally returns
 measures for each class as well as an overall average measure across
 all binary.
 }
-

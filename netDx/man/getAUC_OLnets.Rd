@@ -24,4 +24,3 @@ this predictor doesn't use GM to rank patient similarity.
 Rather a "called +" is a patient with CNVs that overlap feature-selected
 nets
 }
-

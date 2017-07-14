@@ -24,4 +24,3 @@ x <- runGeneMANIA(GM_db,GM_query,"/tmp")
 GM_parseReport(x)
 
 }
-

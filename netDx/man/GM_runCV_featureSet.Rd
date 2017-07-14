@@ -4,7 +4,7 @@
 \alias{GM_runCV_featureSet}
 \title{Run GeneMANIA cross-validation with a provided subset of networks}
 \usage{
-GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps,
+GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
   verbose = FALSE, numCores = 2L, GMmemory = 6L, seed_CVqueries = 42L,
   ...)
@@ -18,7 +18,8 @@ patients (ie all that can possibly be included in the query file}
 \item{GM_db}{(char) path to GeneMANIA generic database with
 training population}
 
-\item{numTrainSamps}{(integer) number of training samples in total}
+\item{numTrainSamps}{(integer) number of training samples in total
+leave blank to use 5 training samples in order to save memory}
 
 \item{incNets}{(char) vector of networks to include in this analysis
 (features/pathway names). Useful for subset-based feature selection}

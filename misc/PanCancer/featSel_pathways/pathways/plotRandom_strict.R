@@ -63,11 +63,11 @@ if (saveData) {
 			curSet,length(predSet[[1]])),ylab="AUC")
 		tmp <-unlist(lapply(predSet,mean))
 	
-		# distribution of mean AUCROC across all random resamplings
+		# distribution of mean AUROC across all random resamplings
 		boxplot(tmp,
 			main=sprintf("Mean over 25 resamplings\n(%i random samples)",
 				length(predSet)),
-			ylab="mean AUCROC over 25 resamplings",ylim=c(0.4,1))
+			ylab="mean AUROC over 25 resamplings",ylim=c(0.4,1))
 		abline(h=c(0.5,0.7),lty=3,col='red')
 		cat(sprintf("Summary of %i random resamplings\n",length(tmp)))
 		print(summary(tmp))

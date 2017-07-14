@@ -150,6 +150,8 @@ for (rngNum in 1:100) {
         idx <- which(names(pathwayList) %in% pTally)
         if (any(idx)) {
             cat(sprintf("RNA: included %i nets\n", length(idx)))
+			write.table(names(pathwayList)[idx],file=sprintf("%s/netNames.txt",
+				pDir),sep="\t",col=F,row=F,quote=F)
             tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
                  pathwayList[idx],
                 netDir,verbose=F,numCores=numCores, writeProfiles=TRUE)

@@ -40,7 +40,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 
 	# write query files
 	for (m in 1:length(qSamps)) {
-		if (verbose) cat(sprintf("%s ",m))
+		if (verbose) cat(sprintf("%i ",m))
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
 		if(is.null(numTrainSamps)){

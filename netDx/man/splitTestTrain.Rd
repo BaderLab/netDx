@@ -36,4 +36,3 @@ Split samples into training and testing set
 data(TCGA_mini)
 x <- splitTestTrain(pheno)
 }
-

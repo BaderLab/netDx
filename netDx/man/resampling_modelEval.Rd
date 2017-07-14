@@ -55,4 +55,3 @@ nets
 \description{
 Resampling-based predictor, evaluate test samples
 }
-

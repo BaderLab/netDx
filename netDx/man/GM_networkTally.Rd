@@ -29,4 +29,3 @@ netFiles <- sprintf("\%s/\%s", netDir,dir(netDir,pattern="NRANK$"))
 pTally <- GM_networkTally(netFiles)
 print(head(pTally))
 }
-

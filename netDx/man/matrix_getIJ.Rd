@@ -19,4 +19,3 @@ has col indices
 \description{
 Converts matrix index (1 to m*n) to row (m) and column (n) number
 }
-

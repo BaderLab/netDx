@@ -46,4 +46,3 @@ another has too few).
 data(TCGA_mini) 
 x <- splitTestTrain_partition(pheno,predClass="LumA")
 }
-

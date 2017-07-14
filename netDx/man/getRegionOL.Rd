@@ -34,4 +34,3 @@ would be a list of GenomicRanges objects, one per cellular pathway.
 data(TCGA_mini,pathway_GR)
 x <- getRegionOL(cnv_GR,pathway_GR)
 }
-

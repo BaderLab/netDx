@@ -49,4 +49,3 @@ getOR(x,npheno,"case",colnames(x)[1]) # should give large RelEnr
 getOR(x,npheno,"case",colnames(x)[2]) # should give RelEnr of 0
 getOR(x,npheno,"case",colnames(x)[3]) # should give RelEnr of 1
 }
-

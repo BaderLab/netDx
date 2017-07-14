@@ -21,4 +21,3 @@ one row per cutoff.
 \description{
 Pick best cutoff following resampling of training data
 }
-

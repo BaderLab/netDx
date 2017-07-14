@@ -13,11 +13,11 @@ cutoff <- 9
 #inDir <- "/home/ahmad/tcga_datasets/KIRC/input"
 #outRoot <-"/home/ahmad/tcga_datasets/KIRC/output"
 # VM1
-inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
-outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
+inDir <- "/Users/ahmadshah/Desktop/CSC2515/patient_networks/tcga_pancancer/KIRC/features"
+outRoot <- "/Users/ahmadshah/Desktop/CSC2515/patient_networks/tcga_pancancer/KIRC"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/pathwaysOnly_%s",outRoot,dt)
+megaDir <- sprintf("%s/nosetnum_timetest_pathwaysOnly_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -116,7 +116,7 @@ for (i in names(pathwayList)) {
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:25) {
+for (rngNum in 1:1) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -165,9 +165,14 @@ for (rngNum in 1:25) {
 		trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
 
 		# Cross validation
+    t0 <- Sys.time()
 		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
-			nrow(pheno_subtype),verbose=T, numCores=numCores,
+			nrow(pheno_subtype),
+			verbose=T, numCores=numCores,
 			GMmemory=GMmemory)
+    t1 <- Sys.time()
+    cat(sprintf("CV took %s seconds\n", t1-t0))
+
 
 		# patient similarity ranks
 		prank <- dir(path=resDir,pattern="PRANK$")

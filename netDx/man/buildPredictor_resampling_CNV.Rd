@@ -78,4 +78,3 @@ output of resampling_predTest_CNV()
 \description{
 Build predictor with n-way resampling, for CNV-based nets
 }
-

@@ -33,4 +33,3 @@ netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 netFiles <- sprintf("\%s/\%s", netDir, dir(netDir,pattern="txt$"))
 writeNetsSIF(netFiles,"merged.sif",netSfx=".txt")
 }
-

@@ -51,4 +51,3 @@ netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 pruneNets(netDir,"~/tmp",filterIDs=npheno[1:10,],
 	netSfx="txt$")
 }
-

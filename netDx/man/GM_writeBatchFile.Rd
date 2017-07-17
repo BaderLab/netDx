@@ -45,4 +45,3 @@ netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
 netList <- dir(netDir,pattern="txt$")
 GM_writeBatchFile(netDir,netList, "~/tmp", npheno$ID)
 }
-

@@ -56,4 +56,3 @@ doSubsetSelection(methodName="greedy.backward",incNets=nets,
 queryPool=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
 GM_db=GM_db,pheno_DF=MB.pheno, outDir=".",num2return=103L)
 }
-

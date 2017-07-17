@@ -60,4 +60,3 @@ n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
 	writeProfiles=TRUE); 
 db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
 }
-

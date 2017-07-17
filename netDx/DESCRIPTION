@@ -1,6 +1,6 @@
 Package: netDx
 Title: Learns Patient Binary Classification based on Similarity Networks
-Version: 0.9242
+Version: 0.93
 Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
 	person("Shirley","Hui",role="aut"),
 	person("Ruth","Isserlin",role="aut"),
@@ -18,4 +18,4 @@ Suggests: netDx.examples, reshape2, igraph, gplots
 License: GPL>=2.0
 LazyData: false
 URL: http://netdx.org
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

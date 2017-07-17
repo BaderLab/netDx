@@ -74,4 +74,3 @@ File format is:
 \description{
 Write an integrated similarity network consisting of selected networks.
 }
-

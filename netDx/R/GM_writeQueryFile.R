@@ -1,18 +1,18 @@
 #' Wrapper to write GeneMANIA query file
-#' 
+#'
 #' @param qSamps (char) vector of patient IDs in query
-#' @param incNets (char) vector of networks to include in this analysis 
+#' @param incNets (char) vector of networks to include in this analysis
 #' (features/pathway names). Useful for subset-based feature selection
 #' @param numReturn (integer) number of patients to return in ranking file
 #' @param outFile (char) path to output file
-#' @param orgName (char) organism name 
+#' @param orgName (char) organism name
 #' @return No value. Side effect of writing the query file to
 #' \code{outFile}
 #' @examples
 #' data(TCGA_mini)
 #' GM_writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 #' @export
-GM_writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile, 
+GM_writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile,
   orgName="predictor") {
 	cat(sprintf("%s\n",orgName), file=outFile)			# org name
 	cat(sprintf("%s\n",

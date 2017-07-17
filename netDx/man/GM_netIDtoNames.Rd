@@ -20,4 +20,3 @@ original patient ID
 \description{
 resolve patient number in GeneMANIA interaction net to names
 }
-

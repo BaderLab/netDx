@@ -22,7 +22,7 @@ megaDir <- sprintf("%s/pathwaysOnly_%s",outRoot,dt)
 # ----------------------------------------------------------------
 # helper functions
 
-# normalized difference 
+# normalized difference
 # x is vector of values, one per patient (e.g. ages)
 normDiff <- function(x) {
     #if (nrow(x)>=1) x <- x[1,]
@@ -30,7 +30,7 @@ normDiff <- function(x) {
     x <- as.numeric(x)
     n <- length(x)
     rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
-    
+
     out <- matrix(NA,nrow=n,ncol=n);
     # weight between i and j is
     # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
@@ -78,7 +78,7 @@ dats <- list() #input data in different slots
 cat("\t* RNA\n")
 rna <- read.delim(inFiles$rna,sep="\t",h=T,as.is=T)
 rna <- t(rna)
-colnames(rna) <- rna[1,]; rna <- rna[-1,]; 
+colnames(rna) <- rna[1,]; rna <- rna[-1,];
 rna <- rna[-nrow(rna),]
 class(rna) <- "numeric"
 rownames(rna) <- sub("mRNA_","",rownames(rna))
@@ -87,13 +87,13 @@ dats$rna <- rna; rm(rna)
 
 # include only data for patients in classifier
 dats <- lapply(dats, function(x) { x[,which(colnames(x)%in%pheno$ID)]})
-dats <- lapply(dats, function(x) { 
+dats <- lapply(dats, function(x) {
 	midx <- match(pheno$ID,colnames(x))
 	x <- x[,midx]
 	x
 })
 
-pheno_all <- pheno; 
+pheno_all <- pheno;
 rm(pheno,pheno_nosurv)
 
 # ----------------------------------------------------------
@@ -103,7 +103,7 @@ if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
 # list networks
-pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
+pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
    path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 netFile <- sprintf("%s/inputNets.txt", megaDir)
@@ -128,23 +128,23 @@ for (rngNum in 1:25) {
 	# --------------------------------------------
 	# feature selection - train only
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
-	dats_train <- lapply(dats,function(x) { 
+	dats_train <- lapply(dats,function(x) {
 						 x[,which(colnames(x) %in% pheno$ID)]})
-	
-	# create nets 
-	netDir <- sprintf("%s/networks",outDir) 
-	
+
+	# create nets
+	netDir <- sprintf("%s/networks",outDir)
+
 	# group by pathway
 	netList <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
-								   pathwayList,netDir,verbose=FALSE, 
-								   numCores=numCores,writeProfiles=TRUE) 
+								   pathwayList,netDir,verbose=FALSE,
+								   numCores=numCores,writeProfiles=TRUE)
     cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
 
 	cat(sprintf("Total of %i nets\n", length(netList)))
-	
+
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
-	
+
 	# run featsel once per subtype
 	subtypes <- unique(pheno$STATUS)
 	# run 10-fold cv per subtype
@@ -152,7 +152,7 @@ for (rngNum in 1:25) {
 	    pDir <- sprintf("%s/%s",outDir,g)
 	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
 		dir.create(pDir)
-	
+
 		cat(sprintf("\n******\nSubtype %s\n",g))
 		pheno_subtype <- pheno
 		## label patients not in the current class as a residual
@@ -160,21 +160,21 @@ for (rngNum in 1:25) {
 		## sanity check
 		print(table(pheno_subtype$STATUS,useNA="always"))
 		resDir    <- sprintf("%s/GM_results",pDir)
-		## query for feature selection comprises of training 
+		## query for feature selection comprises of training
 		## samples from the class of interest
 		trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
-		
+
 		# Cross validation
-		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir, 
+		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
 			nrow(pheno_subtype),verbose=T, numCores=numCores,
 			GMmemory=GMmemory)
-	
+
 		# patient similarity ranks
 		prank <- dir(path=resDir,pattern="PRANK$")
 		# network ranks
 		nrank <- dir(path=resDir,pattern="NRANK$")
 		cat(sprintf("Got %i prank files\n",length(prank)))
-			
+
 	    # Compute network score
 		pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
 		head(pTally)
@@ -182,7 +182,7 @@ for (rngNum in 1:25) {
 		tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 		write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
 	}
-	
+
 	## ----class-prediction, eval=TRUE-------------------------
 	# now create GM databases for each class
 	# should contain train + test patients
@@ -200,9 +200,9 @@ for (rngNum in 1:25) {
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
-	
+
         # prepare nets for new db
-        # RNA 
+        # RNA
         idx <- which(names(pathwayList) %in% pTally)
         if (any(idx)) {
             cat(sprintf("RNA: included %i nets\n", length(idx)))
@@ -210,39 +210,39 @@ for (rngNum in 1:25) {
                  pathwayList[idx],
                 netDir,verbose=F,numCores=numCores, writeProfiles=TRUE)
         }
-	
+
 		# create db
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
 		# query of all training samples for this class
-		qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
+		qSamps <- pheno$ID[which(pheno$STATUS %in% g &
 								 pheno$TT_STATUS%in%"TRAIN")]
-	
+
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
 	}
-	
+
 	predClass <- GM_OneVAll_getClass(predRes)
 	out <- merge(x=pheno_all,y=predClass,by="ID")
 	outFile <- sprintf("%s/predictionResults.txt",outDir)
 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-	
+
 	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
 		nrow(out), acc*100))
-	
+
 	require(ROCR)
 	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
 						out$STATUS=="SURVIVEYES")
 	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
-        
+
     #cleanup to save disk space
-    system(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       
-        outDir,outDir,outDir))                                                  
-    system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",          
-        outDir,outDir))                                                         
-    system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",        
+    system(sprintf("rm -r %s/dataset %s/tmp %s/networks",
+        outDir,outDir,outDir))
+    system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
+        outDir,outDir))
+    system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
         outDir,outDir))
 }
 }, error=function(ex){

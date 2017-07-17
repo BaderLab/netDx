@@ -38,4 +38,3 @@ netDir <- sprintf("\%s/extdata/example_nets",
 path.package("netDx"))
 x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
 }
-

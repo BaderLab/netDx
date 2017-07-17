@@ -19,4 +19,3 @@ assign patient class when ranked by multiple GM predictors
 \examples{
 data(predRes); predClass <- GM_OneVAll_getClass(predRes)
 }
-

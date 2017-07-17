@@ -75,4 +75,3 @@ before running this method. This method does not currently allow users
 to explicitly set the RNG seed for specific functions 
 (e.g. splitTestTrain)
 }
-

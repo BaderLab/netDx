@@ -47,4 +47,3 @@ dir(pDir,pattern="PRANK$")) # example PRANK
 x <- CV_perf(pranks,pheno_full, "LumA",".")
 x <- CV_perf(pranks,pheno_full, "LumA",justGetError=TRUE)
 }
-

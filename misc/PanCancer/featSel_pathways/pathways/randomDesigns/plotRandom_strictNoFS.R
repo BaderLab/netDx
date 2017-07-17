@@ -4,9 +4,9 @@ rm(list=ls())
 require(ROCR)
 
 rootDir <- "/Users/shraddhapai/Dropbox/netDx/BaderLab"
-inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_pathOnly_randomStrict_170620",
+inDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_pathOnly_randomStrictNoFS_170711",
 		rootDir) # VM1
-outDir	<- sprintf("%s/2017_PanCancer_Survival/pathOnly_randomStrict_170620",
+outDir	<- sprintf("%s/2017_PanCancer_Survival/pathOnly_randomStrictNoFS_170711",
 		rootDir)
 curSet	<- "KIRC"
 outFile	<- sprintf("%s/%s_randomMean.Rdata",outDir,curSet) 
@@ -63,11 +63,11 @@ if (saveData) {
 			curSet,length(predSet[[1]])),ylab="AUC")
 		tmp <-unlist(lapply(predSet,mean))
 	
-		# distribution of mean AUCROC across all random resamplings
+		# distribution of mean AUROC across all random resamplings
 		boxplot(tmp,
 			main=sprintf("Mean over 25 resamplings\n(%i random samples)",
 				length(predSet)),
-			ylab="mean AUCROC over 25 resamplings",ylim=c(0.4,1))
+			ylab="mean AUROC over 25 resamplings",ylim=c(0.4,1))
 		abline(h=c(0.5,0.7),lty=3,col='red')
 		cat(sprintf("Summary of %i random resamplings\n",length(tmp)))
 		print(summary(tmp))

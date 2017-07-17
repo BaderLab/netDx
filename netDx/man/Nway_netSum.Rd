@@ -89,4 +89,3 @@ using test samples from all resamplings, measure predictor performance.
 In short, this function performs all steps involved in building and 
 evaluating the predictor.
 }
-

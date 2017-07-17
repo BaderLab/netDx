@@ -38,8 +38,16 @@ for (ctr in 2:nrow(setInfo)) {
 		mega_pr[,ctr] <- val[,which(colnames(val)=="rna")]; rm(val)
 	} else {
 		maxk <- setInfo$maxK[ctr]
+		if (cur %in% "pathOnlyRnd_old") {
+		outFile <- sprintf("%s/%s/KIRC_results_pathOnlyRnd.Rdata",
+			outRoot,setInfo$outdir[ctr],cur)
+		} else if (cur %in% c("pathOnlyRnd_noFS","pathOnlyRnd_Shuf","pathOnlyRnd_25")) {
+		outFile <- sprintf("%s/%s/KIRC_randomMean.Rdata",
+			outRoot,setInfo$outdir[ctr])
+		} else {
 		outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
 			outRoot,setInfo$outdir[ctr],cur)
+		}
 	
 		lnames <- load(outFile)
 		mega_roc[,ctr]	<- val; 
@@ -48,18 +56,25 @@ for (ctr in 2:nrow(setInfo)) {
 }
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
-
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly","pathOnlyRnd")
+		"rnaOne","pathOnly","pathOnlyRnd_old","pathOnlyRnd",
+		"pathRnd_D","pathRnd_D_shuf",
+#		"pathOnlyRnd_noFS","pathOnlyRnd_Shuf", 
+	"pathOnlyRnd_25",
+		"pathOnlyCons")
 mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
 colSet <- c("red","red","purple","hotpink1", 
-	"dodgerblue3","dodgerblue3","gray40")
+	"dodgerblue3","gray40",
+		"green","darkgreen",
+		"pink","deeppink4",
+		# "darkgreen","purple","blue",
+		"orange")
 
-postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=18,height=6)
+#postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=18,height=6)
 	tryCatch({
-		par(bty='n',mar=c(3,8,2,4),mfrow=c(2,2))
+		par(bty='n',mar=c(5,8,2,4),mfrow=c(2,1))#mfrow=c(2,2))
 for (cur_dat in c("roc","pr")) {
 	print(cur_dat)
    if (cur_dat == "roc") curdat <- mega_roc
@@ -71,10 +86,10 @@ for (cur_dat in c("roc","pr")) {
 	
 	if (cur_dat =="roc") {
 		ylim <- c(0.65,0.9) 
-		ylab <- "AUCROC\n(mean+/-SEM)"
-	} else {
+		ylab <- "AUROC\n(mean+/-SEM)"
+	} else ,mfrow=c(2,1){
 		ylim <- c(0.6,0.85)
-		ylab <- "AUCPR\n(mean+/-SEM)"
+		ylab <- "AUPR\n(mean+/-SEM)"
 	}
 		
 		lbl <- colnames(curdat)
@@ -82,19 +97,21 @@ for (cur_dat in c("roc","pr")) {
 		lbl[which(lbl=="clinNets")] <- "clin-nets"
 
 		# pathway effect
-		idxSet <- list(pathways=4:6, clinPerf=1:2)
-		for (nm in names(idxSet)) {
+		idxSet <- list(pathways=4:length(mu), clinPerf=1:3)
+		for (nm in names(idxSet)[1]) {
 			idx <- idxSet[[nm]]
 			plot(1:length(idx), mu[idx],ylim=ylim,
-				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1.5,
-				las=1,cex.axis=1.6,xlim=c(0.5,length(idx)+0.5))
+				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1.5,xlab="",
+				las=1,cex.axis=1.6,xlim=c(0.5,length(idx)+0.5),
+				srt=45)
+
 				abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
 				points(1:length(idx),mu[idx],type='p',col=colSet[idx],pch=16) 
 					#,cex=0.5)
-			title(curSet)
 	
 		# x-axis labels
-			axis(1,at=1:length(idx), labels=lbl[idx],cex.axis=1)
+			axis(1,at=1:length(idx), labels=sub("pathOnlyRnd_","",lbl[idx]),
+				cex.axis=1)
 	
 		# error bars
 		segments(x0=1:length(idx), y0=mu[idx]-sem[idx],
@@ -105,7 +122,7 @@ for (cur_dat in c("roc","pr")) {
 				y0=mu[idx]+sem[idx],y1=mu[idx]+sem[idx],col=colSet[idx],lwd=4)
 		abline(h=0.5,col='red',lty=1,lwd=2)
 	
-		abline(v=c(6.5,12.5),col='black',lty=1)
+		#abline(v=c(6.5,12.5),col='black',lty=1)
 	}	
 	has_na <- colSums(is.na(curdat))
 	if (any(has_na>0)) {
@@ -126,15 +143,14 @@ for (cur_dat in c("roc","pr")) {
 	cat(sprintf("Stat tests for %s\n------------------\n",cur_dat))
 	.wmwtest("clinOne","clinNets","less")
 	.wmwtest("clinNets","clinNetsPathBest","less")
-	#.wmwtest("pathOnly","pathOnlyRnd","greater")
+	.wmwtest("pathOnly","pathOnlyRnd","greater")
+	.wmwtest("pathOnly","pathOnlyCons","less")
+	.wmwtest("pathOnly","pathRnd_D_shuf","greater")
 	#.wmwtest("rna","pathOnly","less")
-	###.wmwtest("pathOnlyrnd","pathOnly","less")
 #	}
 }
 	}, error=function(ex){
 		print(ex)
 	}, finally={
-		dev.off()
+	#dev.off()
 	})
-
-	

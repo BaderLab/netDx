@@ -78,4 +78,3 @@ data(TCGA_mini,pathwayList);
 out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
 	".",writeProfiles=TRUE)
 }
-

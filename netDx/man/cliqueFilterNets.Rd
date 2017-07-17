@@ -76,4 +76,3 @@ x <- cliqueFilterNets(netDir,npheno,".",predClass="case",netGrep="txt$",
 print(x)
 
 }
-

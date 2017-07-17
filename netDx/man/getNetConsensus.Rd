@@ -23,4 +23,3 @@ compile net score across a set of predictor results
 used to compare how individual nets score for different
 predictor configurations
 }
-

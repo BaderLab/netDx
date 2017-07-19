@@ -58,7 +58,7 @@ for (ctr in 2:nrow(setInfo)) {
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
 		"rnaOne","pathOnly","pathOnlyRnd_old","pathOnlyRnd",
-		"pathRnd_D","pathRnd_D_shuf",
+		"pathRnd_D","pathRnd_D_shuf","pathRnd_D_noFS",
 #		"pathOnlyRnd_noFS","pathOnlyRnd_Shuf", 
 	"pathOnlyRnd_25",
 		"pathOnlyCons")
@@ -68,7 +68,7 @@ mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 colSet <- c("red","red","purple","hotpink1", 
 	"dodgerblue3","gray40",
 		"green","darkgreen",
-		"pink","deeppink4",
+		"pink","deeppink4","deeppink2",
 		# "darkgreen","purple","blue",
 		"orange")
 
@@ -87,7 +87,7 @@ for (cur_dat in c("roc","pr")) {
 	if (cur_dat =="roc") {
 		ylim <- c(0.65,0.9) 
 		ylab <- "AUROC\n(mean+/-SEM)"
-	} else ,mfrow=c(2,1){
+	} else {
 		ylim <- c(0.6,0.85)
 		ylab <- "AUPR\n(mean+/-SEM)"
 	}
@@ -145,7 +145,7 @@ for (cur_dat in c("roc","pr")) {
 	.wmwtest("clinNets","clinNetsPathBest","less")
 	.wmwtest("pathOnly","pathOnlyRnd","greater")
 	.wmwtest("pathOnly","pathOnlyCons","less")
-	.wmwtest("pathOnly","pathRnd_D_shuf","greater")
+	.wmwtest("pathOnly","pathRnd_D_noFS","greater")
 	#.wmwtest("rna","pathOnly","less")
 #	}
 }

@@ -16,7 +16,7 @@
 #' 1) <outPfx>.gmt file - for enrichment map
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
-writeEMap <- function(netScores, setList, netInfo,pctPass=0.70,
+writeEMap <- function(netScores, setList, netInfo=NULL,pctPass=0.70,
 		maxScore=10,outPfx="curr",trimFromName=c(".profile","_cont")) {
 
 	dt <- format(Sys.Date(),"%y%m%d")
@@ -39,8 +39,12 @@ writeEMap <- function(netScores, setList, netInfo,pctPass=0.70,
 	for (tr in trimFromName) netNames <- sub(tr,"",netNames)
 
 	df1 <- data.frame(netName=netNames, maxScore=maxNetS)
-	colnames(netInfo) <- c("netType","netName")
-	df2 <- merge(x=df1,y=netInfo,by="netName")
+	if (!is.null(netInfo)) {
+		colnames(netInfo) <- c("netType","netName")
+		df2 <- merge(x=df1,y=netInfo,by="netName")
+	} else {
+		df2 <- df1
+	}
 		
 	outFile <- sprintf("%s_%s.gmt",outPfx,dt)
 	netAttrFile <- sprintf("%s_nodeAttrs_%s.txt",outPfx,dt)

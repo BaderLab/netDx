@@ -52,7 +52,7 @@ outRoot <- sprintf("%s/2017_PanCancer_Survival",rootDir)
 # --------------------------------------------------------------
 dt <- format(Sys.Date(),"%y%m%d")
 setInfo <- read.delim(setFile,sep="\t",h=T,as.is=T)
-setInfo <- subset(setInfo, inc=="yes" & name == "pathOnly80")
+setInfo <- subset(setInfo, inc=="yes" & name =="pathAltClass")
 
 outList <- list()
 megaList <- list()

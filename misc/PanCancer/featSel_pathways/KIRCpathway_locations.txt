@@ -8,6 +8,7 @@ clinNetsPathNets	KIRC_featSel_pathway_170426	featSel_pathways_170426	no	100
 clinNetsPathBest	KIRC_clinRNA_best	clinRNA_best	yes	100
 rnaOne	KIRC_oneNetPer_170426		yes	
 pathOnly	pathway_170502	pathwaysOnly_170502	yes	100
+pathOnly80	pathway80_170720	pathway80_170720	yes	100
 pathOnlyRnd_old	KIRC_pathOnly_random_170503	pathOnly_randomNets_170503	yes	100
 pathOnlyRnd	KIRC_pathOnly_randomStrict_170620	pathOnly_randomStrict_170620	yes	100
 pathOnlyRnd_noFS	KIRC_pathOnly_randomStrictnoFS_170711	pathOnly_randomStrictNoFS_170711	no	100

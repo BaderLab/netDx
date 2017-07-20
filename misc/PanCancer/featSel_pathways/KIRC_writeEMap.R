@@ -4,7 +4,7 @@ setInfoFile <- "/Users/shraddhapai/Documents/Software/netDx/misc/PanCancer/featS
 setInfo <- read.delim(setInfoFile,sep="\t",h=T,as.is=T)
 
 #setInfo <- subset(setInfo, name %in% "pathOnly")
-setInfo <- subset(setInfo, name %in% "pathOnly80")
+setInfo <- subset(setInfo, name %in% c("pathOnly90","pathOnly95"))
 
 # pathways only
 datRoot <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/output"
@@ -31,13 +31,16 @@ xprList <- lapply(xprList, function(x) x[which(x %in% xpr_genes)])
 source("writeConsensusNets_oneSet.R")
 source("writeEMap.R")
 
-
 for (curSet in 1:nrow(setInfo)) {
 	cat(sprintf("%s\n",setInfo$name[curSet]))
 	# write net scores
-	netDir		<- sprintf("%s/%s/netScores",outRoot,setInfo$outdir[curSet])
+	od <- sprintf("%s/%s",outRoot,setInfo$outdir[curSet])
+	if (!file.exists(od)) dir.create(od)
+
+	netDir		<- sprintf("%s/netScores",od)
 	dir.create(netDir)
 	datDir		<- sprintf("%s/%s",datRoot, setInfo$dataDir[curSet])
+	
 	scorePfx	<- writeConsensusNets(datDir=datDir,
 		outPfx=sprintf("%s/%s",netDir,setInfo$dataDir[curSet]),
 		consCutoff=10,pctPass=0.7)

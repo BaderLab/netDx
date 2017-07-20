@@ -57,18 +57,19 @@ for (ctr in 2:nrow(setInfo)) {
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly","pathOnly80", "pathOnlyRnd_old","pathOnlyRnd",
-		"pathRnd_D","pathRnd_D_shuf","pathRnd_D_noFS",
+		"rnaOne","pathOnly","pathAltClass", "pathOnly80", 
+		# "pathOnlyRnd_old","pathOnlyRnd",
+	#	"pathRnd_D","pathRnd_D_shuf","pathRnd_D_noFS",
 #		"pathOnlyRnd_noFS","pathOnlyRnd_Shuf", 
-	"pathOnlyRnd_25",
+	#"pathOnlyRnd_25",
 		"pathOnlyCons")
 mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
-colSet <- c("red","red","purple","hotpink1", 
-	"dodgerblue3","purple","gray40",
-		"green","darkgreen",
-		"pink","deeppink4","deeppink2",
+colSet <- c("red","red","purple",
+		"hotpink1", "dodgerblue3","darkblue","purple",
+		#"gray40","green","darkgreen",
+	#	"pink","deeppink4","deeppink2",
 		# "darkgreen","purple","blue",
 		"orange")
 
@@ -86,10 +87,10 @@ for (cur_dat in c("roc","pr")) {
 	
 	if (cur_dat =="roc") {
 		ylim <- c(0.65,0.9) 
-		ylab <- "AUROC\n(mean+/-SEM)"
+		ylab <- "AUROC(mean+/-SEM)"
 	} else {
 		ylim <- c(0.6,0.85)
-		ylab <- "AUPR\n(mean+/-SEM)"
+		ylab <- "AUPR(mean+/-SEM)"
 	}
 		
 		lbl <- colnames(curdat)
@@ -101,8 +102,8 @@ for (cur_dat in c("roc","pr")) {
 		for (nm in names(idxSet)[1]) {
 			idx <- idxSet[[nm]]
 			plot(1:length(idx), mu[idx],ylim=ylim,
-				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1.5,xlab="",
-				las=1,cex.axis=1.6,xlim=c(0.5,length(idx)+0.5),
+				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1,xlab="",
+				las=1,cex.axis=1,xlim=c(0.5,length(idx)+0.5),
 				srt=45)
 
 				abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)

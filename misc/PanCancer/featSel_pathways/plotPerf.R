@@ -57,7 +57,7 @@ for (ctr in 2:nrow(setInfo)) {
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly","pathOnlyRnd_old","pathOnlyRnd",
+		"rnaOne","pathOnly","pathOnly80", "pathOnlyRnd_old","pathOnlyRnd",
 		"pathRnd_D","pathRnd_D_shuf","pathRnd_D_noFS",
 #		"pathOnlyRnd_noFS","pathOnlyRnd_Shuf", 
 	"pathOnlyRnd_25",
@@ -66,7 +66,7 @@ mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
 colSet <- c("red","red","purple","hotpink1", 
-	"dodgerblue3","gray40",
+	"dodgerblue3","purple","gray40",
 		"green","darkgreen",
 		"pink","deeppink4","deeppink2",
 		# "darkgreen","purple","blue",

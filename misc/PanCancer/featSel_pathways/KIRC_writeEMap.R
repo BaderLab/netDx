@@ -1,10 +1,16 @@
 #' call code that creates enrichment map.
 
+setInfoFile <- "/Users/shraddhapai/Documents/Software/netDx/misc/PanCancer/featSel_pathways/KIRCpathway_locations.txt"
+setInfo <- read.delim(setInfoFile,sep="\t",h=T,as.is=T)
+
+#setInfo <- subset(setInfo, name %in% "pathOnly")
+setInfo <- subset(setInfo, name %in% "pathOnly80")
+
 # pathways only
-datDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_PanCancer_Survival/pathwaysOnly_170502"
+datRoot <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/output"
+outRoot <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_PanCancer_Survival"
+
 inDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/input"
-scorePfx <- sprintf("%s/featSelNets/pathways_thresh10_pctPass0.70",datDir)
-netInfo <- sprintf("%s/inputNets.txt",datDir)
 xprFile <- sprintf("%s/KIRC_mRNA_core.txt",inDir)
 
 # RNA-based pathway nets
@@ -14,7 +20,7 @@ pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
            path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 
-# gene expression
+# read genes measured in this set so we can keep ust those in EMap
 xpr_genes <- scan(xprFile,nlines=1,what="character",quiet=TRUE)[-1]
 xpr_genes <- sub("mRNA_","",xpr_genes)
 bpos <- regexpr("\\|", xpr_genes)
@@ -22,12 +28,28 @@ xpr_genes <- substr(xpr_genes, 1,bpos-1)
 xprList <- pathwayList
 xprList <- lapply(xprList, function(x) x[which(x %in% xpr_genes)])
 
-netInfo <- read.delim(netInfo,sep="\t",h=FALSE,as.is=T)
-
+source("writeConsensusNets_oneSet.R")
 source("writeEMap.R")
-for (gp in c("SURVIVEYES","SURVIVENO")) {
-	nFile <- sprintf("%s_%s_netScores.txt",scorePfx, gp)
-	writeEMap(nFile, xprList,netInfo=netInfo,
-			outPfx=sprintf("%s_%s",datDir,gp))
-	
+
+
+for (curSet in 1:nrow(setInfo)) {
+	cat(sprintf("%s\n",setInfo$name[curSet]))
+	# write net scores
+	netDir		<- sprintf("%s/%s/netScores",outRoot,setInfo$outdir[curSet])
+	dir.create(netDir)
+	datDir		<- sprintf("%s/%s",datRoot, setInfo$dataDir[curSet])
+	scorePfx	<- writeConsensusNets(datDir=datDir,
+		outPfx=sprintf("%s/%s",netDir,setInfo$dataDir[curSet]),
+		consCutoff=10,pctPass=0.7)
+
+	# write gmt for enrichment map
+	cat("Writing enrichment map\n")
+	emapDir <- sprintf("%s/%s/EMap",outRoot,setInfo$outdir[curSet])
+	dir.create(emapDir)
+	for (gp in c("SURVIVEYES","SURVIVENO")) {
+		cat(sprintf("\t%s\n",gp))
+		nFile <- sprintf("%s_%s_netScores.txt",scorePfx, gp)
+		writeEMap(nFile, xprList,netInfo=NULL,
+				outPfx=sprintf("%s/%s",emapDir,gp))
+	}
 }

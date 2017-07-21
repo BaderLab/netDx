@@ -16,6 +16,8 @@ outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 dt <- format(Sys.Date(),"%y%m%d")
 megaDir <- sprintf("%s/pathways_AltClass_%s",outRoot,dt)
 
+source("GM_OneVAll_getClass_altMethod.R")
+
 # -----------------------------------------------------------
 ## count the number of consensus nets per group and whether clinical
 ### is part of this. will affect sampling downstream.
@@ -35,7 +37,6 @@ for (nm in names(netScoreFile)) {
   netScores <- netScores[,-1]
 	for (k in 1:ncol(netScores)) { 
 		netScoreList[[nm]][[k]] <- netNames[which(netScores[,k]>=9)]
-		browser()
 	}
 }
 
@@ -100,7 +101,7 @@ rm(pheno,pheno_nosurv)
 # ----------------------------------------------------------
 # build classifier
 numCores <- 8L
-if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
+#if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
 # list networks
@@ -117,13 +118,15 @@ for (i in names(pathwayList)) {
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-for (rngNum in 1:25) {
+for (rngNum in 1:100) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
 	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
 	dir.create(outDir)
 	
+	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
+											  setSeed=rngNum*5)
 	# no feature selection
 
 	## ----class-prediction, eval=TRUE-------------------------
@@ -134,24 +137,14 @@ for (rngNum in 1:25) {
 	predRes <- list()
 	for (g in subtypes) {
 		pDir <- sprintf("%s/%s",outDir,g)
+		dir.create(pDir)
 		# get feature selected net names
 		pTally <- netScoreList[[g]][[rngNum]]
 		cat(sprintf("%s: rng %i: got %i nets\n", g, rngNum, length(pTally)))
-		browser()
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
-
-     # prepare nets for new db
-     # RNA
-     idx <- which(names(pathwayList) %in% pTally)
-     if (any(idx)) {
-       cat(sprintf("RNA: included %i nets\n", length(idx)))
-       tmp <- makePSN_NamedMatrix(dats$rna, rownames(dats$rna),
-          pathwayList[idx],
-         netDir,verbose=F,numCores=numCores, writeProfiles=TRUE)
-    }
 
 		### Alternate way of classifying patients
 		### for each group, build a database only containing TRAIN for the 
@@ -163,32 +156,36 @@ for (rngNum in 1:25) {
 		cat(sprintf("Making db with %i %s TRAIN and %i TEST\n",
 			length(idx2),g,length(idx1)))
 		curPheno <- pheno[union(idx1,idx2),]
+		cur_rna <- dats$rna[,union(idx1,idx2)]
+		if (all.equal(colnames(cur_rna),curPheno$ID)!=TRUE) {
+			cat("pheno and rna don't match\n")
+			browser()
+		}
 
+     # prepare nets for new db
+     # RNA
+     idx <- which(names(pathwayList) %in% pTally)
+     if (any(idx)) {
+       cat(sprintf("RNA: included %i nets\n", length(idx)))
+       tmp <- makePSN_NamedMatrix(cur_rna,rownames(cur_rna),
+          pathwayList[idx],
+         netDir,verbose=F,numCores=numCores, writeProfiles=TRUE)
+    }
 		# create db
 		dbDir <- GM_createDB(netDir,curPheno$ID,pDir,numCores=numCores)
 		# query of all training samples for this class
 		qSamps <- curPheno$ID[which(curPheno$STATUS %in% g &
 								 curPheno$TT_STATUS%in%"TRAIN")]
-
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		GM_writeQueryFile(qSamps,"all",nrow(curPheno),qFile)
 		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),curPheno,g)
 	}
 
-	predClass <- GM_OneVAll_getClass(predRes)
+	predClass <- GM_OneVAll_getClass_alt(predRes)
 	out <- merge(x=pheno_all,y=predClass,by="ID")
 	outFile <- sprintf("%s/predictionResults.txt",outDir)
 	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-
-	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-		nrow(out), acc*100))
-
-	require(ROCR)
-	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
-						out$STATUS=="SURVIVEYES")
-	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
 
     #cleanup to save disk space
     system(sprintf("rm -r %s/dataset %s/tmp %s/networks",

@@ -218,6 +218,7 @@ for (rngNum in 1:25) {
 		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),curPheno,g)
 	### <<<< end AltClassMethod
+	
 
 	}
 

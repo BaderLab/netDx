@@ -17,7 +17,7 @@
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
 writeEMap <- function(netScores, setList, netInfo=NULL,pctPass=0.70,
-		maxScore=10,outPfx="curr",trimFromName=c(".profile","_cont")) {
+		minScore=3,maxScore=10,outPfx="curr",trimFromName=c(".profile","_cont")) {
 
 	dt <- format(Sys.Date(),"%y%m%d")
 
@@ -26,7 +26,7 @@ writeEMap <- function(netScores, setList, netInfo=NULL,pctPass=0.70,
 	
 	# compute the max score per net for pctPass % of trials
 	maxNetS <- matrix(NA, nrow=length(netNames),ncol=1)
-	for (sc in 3:maxScore) {
+	for (sc in minScore:maxScore) {
 			tmp <- rowSums(netS >= sc)
 			idx <- which(tmp >= floor(pctPass * ncol(netS)))
 			cat(sprintf("\t%i : %i pass\n", sc, length(idx)))

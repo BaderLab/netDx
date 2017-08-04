@@ -57,23 +57,11 @@ for (ctr in 2:nrow(setInfo)) {
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly","pathFull_AltClass","pathAltClass", "pathAlt_noFS",
-		"pathOnly80", 
-		# "pathOnlyRnd_old","pathOnlyRnd",
-	#	"pathRnd_D","pathRnd_D_shuf","pathRnd_D_noFS",
-#		"pathOnlyRnd_noFS","pathOnlyRnd_Shuf", 
-	#"pathOnlyRnd_25",
-		"pathOnlyCons")
+		"rnaOne","pathOnly", "pathRnd_D_noFS",
+		"pathFull_AltClass", "pathAlt_noFS",
+		"pathOnly80","pathOnly90","pathOnly95")
 mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
-
-colSet <- c("red","red","purple",
-		"hotpink1", "dodgerblue3","darkblue","darkblue","green",
-		"purple",
-		#"gray40","green","darkgreen",
-	#	"pink","deeppink4","deeppink2",
-		# "darkgreen","purple","blue",
-		"orange")
 
 #postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=18,height=6)
 	tryCatch({
@@ -100,29 +88,37 @@ for (cur_dat in c("roc","pr")) {
 		lbl[which(lbl=="clinNets")] <- "clin-nets"
 
 		# pathway effect
-		idxSet <- list(pathways=4:length(mu), clinPerf=1:3)
+		idxSet <- list(pathways=4:length(mu), clinPerf=1:3,
+				AltClass=c(4,9:11))
+		#	pathways=c("pathOnly","pathRnd_D_noFS",
+		#		"pathOnly80","pathOnly90","pathOnly95",
+		#		"pathFull_AltClass","pathAlt_noFS")
+		#	clinPerf=c("clinOne","clinNets","clinNetsPathBest"))
 		for (nm in names(idxSet)[1]) {
 			idx <- idxSet[[nm]]
 			plot(1:length(idx), mu[idx],ylim=ylim,
 				type='n',bty='n',ylab=ylab,xaxt='n',cex.lab=1,xlab="",
-				las=1,cex.axis=1,xlim=c(0.5,length(idx)+0.5),
+				las=1,cex.axis=0.7,xlim=c(0.5,length(idx)+0.5),
 				srt=45)
 
 				abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
-				points(1:length(idx),mu[idx],type='p',col=colSet[idx],pch=16) 
-					#,cex=0.5)
+				clrs <- numeric()
+				for (i in names(mu)[idx]) {
+					clrs <- c(clrs, setInfo$color[which(setInfo$name==i)])
+				}
+				points(1:length(idx),mu[idx],type='p',col=clrs,pch=16) 
 	
 		# x-axis labels
 			axis(1,at=1:length(idx), labels=sub("pathOnlyRnd_","",lbl[idx]),
-				cex.axis=1)
+				cex.axis=0.7)
 	
 		# error bars
 		segments(x0=1:length(idx), y0=mu[idx]-sem[idx],
-				y1=mu[idx]+sem[idx],col=colSet[idx],lwd=3)
+				y1=mu[idx]+sem[idx],col=clrs,lwd=3)
 		segments(x0=1:length(idx)-0.05, x1=1:length(idx)+0.05,
-				y0=mu[idx]-sem[idx],y1=mu[idx]-sem[idx],col=colSet[idx],lwd=4)
+				y0=mu[idx]-sem[idx],y1=mu[idx]-sem[idx],col=clrs,lwd=4)
 		segments(x0=1:length(idx)-0.05, x1=1:length(idx)+0.05,
-				y0=mu[idx]+sem[idx],y1=mu[idx]+sem[idx],col=colSet[idx],lwd=4)
+				y0=mu[idx]+sem[idx],y1=mu[idx]+sem[idx],col=clrs,lwd=4)
 		abline(h=0.5,col='red',lty=1,lwd=2)
 	
 		#abline(v=c(6.5,12.5),col='black',lty=1)
@@ -149,8 +145,11 @@ for (cur_dat in c("roc","pr")) {
 #	.wmwtest("pathOnly","pathOnlyRnd","greater")
 #	.wmwtest("pathOnly","pathOnlyCons","less")
 #	.wmwtest("pathOnly","pathRnd_D_noFS","greater")
-	.wmwtest("pathOnly","pathAltClass","less")
-	.wmwtest("pathAltClass","pathAlt_noFS","greater")
+	#.wmwtest("pathOnly","pathFull_AltClass","less")
+	.wmwtest("pathOnly","pathOnly80","less")
+	.wmwtest("pathOnly","pathOnly90","less")
+	.wmwtest("pathOnly","pathOnly95","less")
+	#.wmwtest("pathFull_AltClass","pathAlt_noFS","greater")
 	#.wmwtest("rna","pathOnly","less")
 #	}
 }

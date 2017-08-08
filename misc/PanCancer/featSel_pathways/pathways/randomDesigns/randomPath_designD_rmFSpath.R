@@ -109,6 +109,8 @@ rm(pheno,pheno_nosurv)
 numCores <- 8L
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
+logFile <- sprintf("%s/log.txt",megaDir)
+sink(logFile,split=TRUE)
 
 # list networks
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
@@ -136,8 +138,6 @@ for (i in names(pathwayList)) {
 	cat(sprintf("rna\t%s\n",i),file=netFile,append=TRUE)
 }
 
-logFile <- sprintf("%s/log.txt",megaDir)
-sink(logFile,split=TRUE)
 tryCatch({
 for (rngNum in 1:50) {
 	cat(sprintf("-------------------------------\n"))
@@ -164,6 +164,7 @@ for (rngNum in 1:50) {
 			sprintf("%s/pathways_thresh10_pctPass0.70_%s_AllNets.txt", 
 				consNetDir,g),sep="\t",h=T,as.is=T)[,1]
 		pTally <- sub(".profile","",pTally)
+		pTally <- intersect(pTally,names(pathwayList))
 		cur_randNum <- netCount[[g]][rngNum]
 		pTally <- sample(pTally, cur_randNum, replace=FALSE) ## random
 
@@ -209,11 +210,11 @@ for (rngNum in 1:50) {
 	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
         
     #cleanup to save disk space
-    system(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       
-        outDir,outDir,outDir))                                                  
-    system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",          
-        outDir,outDir))                                                         
-    system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",        
+    system(sprintf("rm -r %s/dataset %s/tmp %s/networks", 
+        outDir,outDir,outDir))
+    system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",
+        outDir,outDir))
+    system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",
         outDir,outDir))
 }
 }, error=function(ex){

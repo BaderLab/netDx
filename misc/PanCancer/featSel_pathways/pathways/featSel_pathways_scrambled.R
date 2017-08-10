@@ -18,7 +18,7 @@ inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
 outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/pathwaysScramble2_%s",outRoot,dt)
+megaDir <- sprintf("%s/pathwaysScramble_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -117,13 +117,19 @@ for (i in names(pathwayList)) {
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
+# >>> scrambling code
 cat("*SCRAMBLED ******\n")
-tmp <- dats$rna;
-set.seed(100)
-tmp <- tmp[sample(nrow(tmp),replace=FALSE),]
-tmp <- tmp[,sample(ncol(tmp),replace=FALSE)]
+set.seed(100) # reproducible
+tmp <- dats$rna
+scr_idx <- sample(nrow(tmp)*ncol(tmp),replace=F)
+tmp2 <- matrix(tmp[scr_idx],nrow=nrow(tmp),ncol=ncol(tmp))
+rownames(tmp2) <- rownames(tmp)
+colnames(tmp2) <- colnames(tmp)
+dats$rna <- tmp2; rm(tmp,tmp2)
+cat("*SCRAMBLED ******\n")
+
 dats$rna <- tmp
-for (rngNum in 21:40) {
+for (rngNum in 1:20) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))

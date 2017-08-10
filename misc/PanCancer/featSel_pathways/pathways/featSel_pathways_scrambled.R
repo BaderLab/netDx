@@ -128,7 +128,6 @@ colnames(tmp2) <- colnames(tmp)
 dats$rna <- tmp2; rm(tmp,tmp2)
 cat("*SCRAMBLED ******\n")
 
-dats$rna <- tmp
 for (rngNum in 1:20) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))

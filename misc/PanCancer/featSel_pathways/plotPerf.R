@@ -57,9 +57,11 @@ for (ctr in 2:nrow(setInfo)) {
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly", "pathRnd_D_noFS",
-		"pathFull_AltClass", "pathAlt_noFS",
-		"pathOnly80","pathOnly90","pathOnly95")
+		"rnaOne","pathOnly","pathOnly_noFS","pseudo_featSel",
+	"scrambled2", "realPseudo",
+	"pathRndDpseudonoPath")
+	#	"pathFull_AltClass", "pathAlt_noFS",
+	#	"pathOnly80","pathOnly90","pathOnly95")
 mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
@@ -76,10 +78,10 @@ for (cur_dat in c("roc","pr")) {
 		sd(curdat[,x],na.rm=TRUE)/sqrt(nrow(curdat)))
 	
 	if (cur_dat =="roc") {
-		ylim <- c(0.65,0.9) 
+		ylim <- c(0.45,0.9) 
 		ylab <- "AUROC(mean+/-SEM)"
 	} else {
-		ylim <- c(0.6,0.85)
+		ylim <- c(0.45,0.85)
 		ylab <- "AUPR(mean+/-SEM)"
 	}
 		
@@ -107,6 +109,10 @@ for (cur_dat in c("roc","pr")) {
 					clrs <- c(clrs, setInfo$color[which(setInfo$name==i)])
 				}
 				points(1:length(idx),mu[idx],type='p',col=clrs,pch=16) 
+
+			ln <- colSums(!is.na(curdat[,idx]))
+			text(x=1:length(idx), y=0.6,labels=sprintf("N=%i",ln))
+
 	
 		# x-axis labels
 			axis(1,at=1:length(idx), labels=sub("pathOnlyRnd_","",lbl[idx]),
@@ -146,11 +152,12 @@ for (cur_dat in c("roc","pr")) {
 #	.wmwtest("pathOnly","pathOnlyCons","less")
 #	.wmwtest("pathOnly","pathRnd_D_noFS","greater")
 	#.wmwtest("pathOnly","pathFull_AltClass","less")
-	.wmwtest("pathOnly","pathOnly80","less")
-	.wmwtest("pathOnly","pathOnly90","less")
-	.wmwtest("pathOnly","pathOnly95","less")
+#	.wmwtest("pathOnly","pathOnly80","less")
+#	.wmwtest("pathOnly","pathOnly90","less")
+#	.wmwtest("pathOnly","pathOnly95","less")
 	#.wmwtest("pathFull_AltClass","pathAlt_noFS","greater")
 	#.wmwtest("rna","pathOnly","less")
+	.wmwtest("pathOnly","pathOnly_noFS","greater")
 #	}
 }
 	}, error=function(ex){

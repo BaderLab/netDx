@@ -52,7 +52,7 @@ outRoot <- sprintf("%s/2017_PanCancer_Survival",rootDir)
 # --------------------------------------------------------------
 dt <- format(Sys.Date(),"%y%m%d")
 setInfo <- read.delim(setFile,sep="\t",h=T,as.is=T)
-setInfo <- subset(setInfo, inc=="yes" & name %in% "pathAlt_noFS") #c("pathOnly90","pathOnly95"))
+setInfo <- subset(setInfo, inc=="yes" & name %in% "realPseudo") #c("pathOnly90","pathOnly95"))
 
 outList <- list()
 megaList <- list()
@@ -66,7 +66,7 @@ for (ctr in 1:nrow(setInfo)) {
 	outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
 		outRoot,setInfo$outdir[ctr],cur)
 
-	kset <- 1:100#c(1:49,51:68,76:92)#1:100#c(1:15,26:37,51:58,76:82) #1:maxk
+	kset <- c(1:40,41:53,61:73) #c(1:7,21:27,41:43,61:63,81:83)#c(1:49,51:68,76:92)#1:100#c(1:15,26:37,51:58,76:82) #1:maxk
 	cat(sprintf("%s:Num runs=%i\n", cur,maxk))
 
 	val		<- matrix(NA,nrow=maxk,ncol=1)

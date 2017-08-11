@@ -1,5 +1,6 @@
 #' feature selection for GBM from PanCancer survival dataset
-#' 10-fold CV predictor design with clinical and mRNA data
+#' pathway nets but excluding any that included FS genes.
+#
 rm(list=ls())
 require(netDx)
 require(netDx.examples)
@@ -9,36 +10,40 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-# VM2
-#inDir <- "/home/ahmad/tcga_datasets/KIRC/input"
-#outRoot <-"/home/ahmad/tcga_datasets/KIRC/output"
-# VM1
 rootDir <- "/home/shraddhapai/BaderLab"
 inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
 outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/pathwaysScramble_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_realPseudo2_%s",outRoot,dt)
 
-# ----------------------------------------------------------------
-# helper functions
+# -----------------------------------------------------------
+## count the number of consensus nets per group and whether clinical
+### is part of this. will affect sampling downstream.
+consNetDir <- sprintf("%s/PanCancer_common/pathwaysOnly_170502",rootDir)
+netScoreFile <- list(
+	SURVIVENO=sprintf("%s/pathways_thresh10_pctPass0.70_SURVIVENO_netScores.txt",
+		consNetDir),
+	SURVIVEYES=sprintf("%s/pathways_thresh10_pctPass0.70_SURVIVEYES_netScores.txt",
+		consNetDir)
+)
+fsNets <- c() # nets feature selected in the original analysis and that
+              # we should exclude now.
+for (nm in names(netScoreFile)) {
+   netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
+   netNames 	<- netScores[,1]
+   netScores <- netScores[,-1]
 
-# normalized difference
-# x is vector of values, one per patient (e.g. ages)
-normDiff <- function(x) {
-    #if (nrow(x)>=1) x <- x[1,]
-    nm <- colnames(x)
-    x <- as.numeric(x)
-    n <- length(x)
-    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+	wasHighScoring <- netScores >=7
+    wasHighScoring <- rowSums(wasHighScoring,na.rm=TRUE)
+    idx <- which(wasHighScoring>=70)
+    cat(sprintf("%i high-scoring nets removed\n", length(idx)))
+    cat("-----\n"); print(netNames[idx]); cat("-----\n")
+    fsNets <- c(fsNets, netNames[idx])
 
-    out <- matrix(NA,nrow=n,ncol=n);
-    # weight between i and j is
-    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
-    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
-    rownames(out) <- nm; colnames(out)<- nm
-    out
+   cat(sprintf("%s: # fs nets\n", nm))
 }
+
 
 # -----------------------------------------------------------
 # process input
@@ -107,6 +112,26 @@ dir.create(megaDir)
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
    path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
+
+### Pathways are real and pseudo
+fsNets	<- sub(".profile","",fsNets)
+fsPath	<- pathwayList[which(names(pathwayList)%in% fsNets)]
+pathGenes <- unique(unlist(pathwayList))
+uni_genes <- unique(rownames(dats$rna))
+uni_genes <- uni_genes[which(!uni_genes %in% pathGenes)]
+
+old <- length(unique(rownames(dats$rna)))
+cat(sprintf("%i of %i genes are non-pathway, make new universe\n", 
+	nrow(dats$rna),old))
+cat("Creating pseudo pathways\n")
+pseudo <- list()
+set.seed(30); # make reproducible
+for (k in 1:length(pathwayList)) {
+	pseudo[[k]] <- sample(uni_genes,length(pathwayList[[k]]),FALSE)
+}
+names(pseudo) <- paste("PSEUDO",names(pathwayList),sep="_")
+pathwayList <- c(pathwayList,pseudo) ###  Pathways = real + pseudo
+
 netFile <- sprintf("%s/inputNets.txt", megaDir)
 cat(sprintf("NetType\tNetName\n",file=netFile))
 # rna nets
@@ -116,19 +141,10 @@ for (i in names(pathwayList)) {
 
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
+cat(sprintf("After merging real and pseudo, we get %i pathways\n", 
+	length(pathwayList)))
 tryCatch({
-# >>> scrambling code
-cat("*SCRAMBLED ******\n")
-set.seed(100) # reproducible
-tmp <- dats$rna
-scr_idx <- sample(nrow(tmp)*ncol(tmp),replace=F)
-tmp2 <- matrix(tmp[scr_idx],nrow=nrow(tmp),ncol=ncol(tmp))
-rownames(tmp2) <- rownames(tmp)
-colnames(tmp2) <- colnames(tmp)
-dats$rna <- tmp2; rm(tmp,tmp2)
-cat("*SCRAMBLED ******\n")
-
-for (rngNum in 1:20) {
+for (rngNum in 21:40) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))

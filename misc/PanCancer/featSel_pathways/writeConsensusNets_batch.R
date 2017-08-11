@@ -3,7 +3,7 @@
 rm(list=ls())
 source("writeConsensusNets_oneSet.R")
 
-set2run <- "pathway80"
+set2run <- "realPseudo"#"scrambled" #"pseudo"#"pathOnly_noFS" #"pathway80"
 cutoff <- 10
 pctPass <- 0.7
 rnaFile <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/input/KIRC_mRNA_core.txt"
@@ -14,14 +14,24 @@ dirList <- list(
 	clinNets=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinNets_170430",rootDir),
 	clinRNA_best=sprintf("%s/2017_TCGA_KIRC/output/KIRC_clinRNA_best",rootDir),
 	pathways=sprintf("%s/2017_TCGA_KIRC/output/pathway_170502",rootDir),
-	pathway80=sprintf("%s/2017_TCGA_KIRC/output/pathway80_170719",rootDir)
+	pathway80=sprintf("%s/2017_TCGA_KIRC/output/pathway80_170719",rootDir),
+	pathOnly_noFS=sprintf("%s/2017_TCGA_KIRC/output/pathOnly_noFS_170809",rootDir),
+	pseudo=sprintf("%s/2017_TCGA_KIRC/output/randomD_pseudoPath_noFS_170804",rootDir),
+	pseudo_featSel=sprintf("%s/2017_TCGA_KIRC/output/pseudo_featSel_170809",rootDir),
+	scrambled=sprintf("%s/2017_TCGA_KIRC/output/scrambled2_170810",rootDir),
+	realPseudo=sprintf("%s/2017_TCGA_KIRC/output/realPseudo_170810",rootDir)
 )
 
 outList <- list(
 		clinNets=sprintf("%s/2017_PanCancer_Survival/clinNets_170430/featSelNets",
 		rootDir),
 		pathways=sprintf("%s/2017_PanCancer_Survival/pathwaysOnly_170502/featSelNets",rootDir),
-		pathway80=sprintf("%s/2017_PanCancer_Survival/pathway80_170502/featSelNets",rootDir)
+		pathway80=sprintf("%s/2017_PanCancer_Survival/pathway80_170502/featSelNets",rootDir),
+		pathOnly_noFS=sprintf("%s/2017_PanCancer_Survival/pathOnly_noFS_170809/featSelNets",rootDir),
+		pseudo=sprintf("%s/2017_PanCancer_Survival/randomD_pseudoPath_noFS_170804/featSelNets",rootDir),
+	pseudo_featSel=sprintf("%s/2017_PanCancer_Survival/pseudo_featSel_170809",rootDir),
+		scrambled=sprintf("%s/2017_PanCancer_Survival/scrambled2_170810/featSelNets",rootDir),
+	realPseudo=sprintf("%s/2017_PanCancer_Survival/realPseudo_170810",rootDir)
 )
 
 outDir <- outList[[set2run]]
@@ -38,7 +48,7 @@ tryCatch({
 		cat(sprintf("%s\n",curSet))
 		cat("-----------------------------\n")
 
-		outPfx		<-sprintf("%s/%s",outDir,curSet)
+		outPfx	<-sprintf("%s/%s",outDir,curSet)
 		outPfx	<- writeConsensusNets(datDir=dirList[[curSet]],
 			outPfx=outPfx,consCutoff=10,pctPass=pctPass)
 

@@ -8,7 +8,14 @@ clinNetsPathNets	KIRC_featSel_pathway_170426	featSel_pathways_170426	no	100	red
 clinNetsPathBest	KIRC_clinRNA_best	clinRNA_best	yes	100	purple
 rnaOne	KIRC_oneNetPer_170426	yes	hotpink1
 pathOnly	pathway_170502	pathwaysOnly_170502	yes	100	dodgerblue3
+pathOnly_noFS	pathOnly_noFS_170809	pathOnly_noFS_170809	yes	100	orange
+pseudo_featSel	pseudo_featSel_170809	pseudo_featSel_170809	yes	100	darkorange
+scrambled	scrambled_170809	scrambled_170809	no	100	purple
+scrambled2	scrambled2_170810	scrambled2_170809	yes	100	purple
+realPseudo	realPseudo_170810	realPseudo_170810	yes	100	brown
 pathRnd_D_noFS	pathRandom_designD_rmFSgenes_170717	pathOnly_randomD_noFS_170717	yes	100	deeppink2
+pathRnd_D_pseudo_noFS	randomD_pseudoPath_noFS_170804	randomD_pseudoPath_noFS_170804	yes	100	deeppink2
+pathRndDpseudonoPath	randomD_pseudoPath_noPathGenes_170804	randomD_pseudoPath_noPathGenes_170804	yes	100	deeppink2
 pathOnly80	pathway80_170720	pathway80_170720	yes	100	brown4
 pathOnly90	pathway90_170720	pathway90_170720	yes	100	brown2
 pathOnly95	pathway95_170720	pathway95_170720	yes	100	brown1

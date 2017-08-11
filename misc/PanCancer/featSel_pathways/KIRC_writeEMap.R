@@ -4,7 +4,7 @@ setInfoFile <- "/Users/shraddhapai/Documents/Software/netDx/misc/PanCancer/featS
 setInfo <- read.delim(setInfoFile,sep="\t",h=T,as.is=T)
 
 #setInfo <- subset(setInfo, name %in% "pathOnly")
-setInfo <- subset(setInfo, name %in% "pathOnly") #c("pathOnly80","pathOnly90","pathOnly95"))
+setInfo <- subset(setInfo, name %in% "pathOnly_noFS") #c("pathOnly80","pathOnly90","pathOnly95"))
 
 # pathways only
 datRoot <- "/Users/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_KIRC/output"
@@ -53,6 +53,6 @@ for (curSet in 1:nrow(setInfo)) {
 		cat(sprintf("\t%s\n",gp))
 		nFile <- sprintf("%s_%s_netScores.txt",scorePfx, gp)
 		writeEMap(nFile, xprList,netInfo=NULL,
-				minScore=8,outPfx=sprintf("%s/nets_gt_8/%s",emapDir,gp))
+				minScore=7,outPfx=sprintf("%s/%s",emapDir,gp))
 	}
 }

@@ -25,6 +25,9 @@ writeConsensusNets <- function(datDir,
 
 	outPfx <- sprintf("%s_thresh%i_pctPass%1.2f", outPfx,consCutoff, pctPass)
 	for (gp in predClasses) {
+	cat("**********************\n")
+	cat(sprintf("%s\n",gp))
+	cat("**********************\n")
 		rngDirs <- dir(path=datDir, pattern="^rng")
 		rngDirs <- setdiff(rngDirs, rngDirs[grep("tar.gz",rngDirs)])
 
@@ -33,6 +36,7 @@ writeConsensusNets <- function(datDir,
 	for (curDir in rngDirs) {
 		scoreFile <- sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt",
 				 datDir,curDir,gp,gp)
+		cat(sprintf("\t%s\n",curDir))
 		tmp	 <- read.delim(scoreFile,sep="\t",h=T,as.is=T)
 		colnames(tmp)[1] <- "PATHWAY_NAME"
 		netColl[[curDir]] <- tmp

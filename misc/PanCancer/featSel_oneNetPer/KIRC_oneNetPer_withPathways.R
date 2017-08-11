@@ -10,11 +10,12 @@ GMmemory <- 4L
 trainProp <- 0.8
 cutoff <- 9
 
-inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
-outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
+rootDir <- "/home/shraddhapai/BaderLab"
+inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
+outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/AllPlusPathways_%s",outRoot,dt)
+megaDir <- sprintf("%s/AllPlusPathways2_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -146,6 +147,13 @@ combList <- list(
     clinicalAcnv=c("clinical_cont","cnv.profile"),    
     all="all")  
 
+
+idx <- grep("mRNA_",rownames(alldat))
+rna <- rownames(alldat)[idx]
+rna <- sub("mRNA_","",rna)
+rna <- sub("\\..*","",rna)
+rownames(alldat)[idx] <- rna
+
 # now add pathways
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
    path.package("netDx.examples"))
@@ -182,10 +190,10 @@ netList2 <- makePSN_NamedMatrix(alldat,
 	sparsify=TRUE,append=TRUE)
 
 # group by pathway
-netList3 <- makePSN_NamedMatrix(dats_train$rna, rownames(dats_train$rna),
+netList3 <- makePSN_NamedMatrix(alldat, rownames(alldat),
  pathwayList,netDir,verbose=FALSE,
   numCores=numCores,writeProfiles=TRUE,append=TRUE)
-cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
+cat(sprintf("Made %i RNA pathway nets\n", length(netList3)))
 
 netList <- c(netList,netList2,netList3)
 cat(sprintf("Total of %i nets\n", length(netList)))
@@ -194,7 +202,7 @@ cat(sprintf("Total of %i nets\n", length(netList)))
 megadbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores)
 
 # first loop - over train/test splits
-for (rngNum in 1:20) {
+for (rngNum in 21:40) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -222,13 +230,19 @@ for (rngNum in 1:20) {
 		netDir,simMetric="custom",customFunc=normDiff2,
 		verbose=FALSE,numCores=numCores,
 		sparsify=TRUE,append=TRUE)
-	netList <- c(netList,netList2)
+
+	# group by pathway
+	netList3 <- makePSN_NamedMatrix(alldat_train, rownames(alldat_train),
+ 		pathwayList,netDir,verbose=FALSE,
+  		numCores=numCores,writeProfiles=TRUE,append=TRUE)
+		cat(sprintf("Made %i RNA pathway nets\n", length(netList3)))
+	netList <- c(netList,netList2,netList3)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
 
 	# second loop - over combinations of input data
- 	for (cur in  names(combList)) {
+ 	for (cur in  "all") {
 		t0 <- Sys.time()
 	    cat(sprintf("%s\n",cur))
 	    pDir <- sprintf("%s/%s",outDir, cur)

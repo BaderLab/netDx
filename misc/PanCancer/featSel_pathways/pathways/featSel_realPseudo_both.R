@@ -116,9 +116,12 @@ pathwayList <- readPathways(pathFile)
 ### Pathways are real and pseudo
 fsNets	<- sub(".profile","",fsNets)
 fsPath	<- pathwayList[which(names(pathwayList)%in% fsNets)]
-pathGenes <- unique(unlist(pathwayList))
+
+fullPathways <- readPathways(pathFile,MIN_SIZE=1,MAX_SIZE=100000)
+pathGenes <- unique(unlist(fullPathways))
 uni_genes <- unique(rownames(dats$rna))
 uni_genes <- uni_genes[which(!uni_genes %in% pathGenes)]
+rm(fullPathways)
 
 old <- length(unique(rownames(dats$rna)))
 cat(sprintf("%i of %i genes are non-pathway, make new universe\n", 
@@ -144,7 +147,7 @@ sink(logFile,split=TRUE)
 cat(sprintf("After merging real and pseudo, we get %i pathways\n", 
 	length(pathwayList)))
 tryCatch({
-for (rngNum in 21:40) {
+for (rngNum in 32:40) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))

@@ -1,5 +1,5 @@
 #' feature selection for GBM from PanCancer survival dataset
-#' pathway nets but excluding any that included FS genes.
+#' pseudo pathways made of genes not in any pathways
 #
 rm(list=ls())
 require(netDx)
@@ -15,7 +15,7 @@ inDir <- sprintf("%s/PanCancer_KIRC/input",rootDir)
 outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_pseudoPath2_%s",outRoot,dt)
+megaDir <- sprintf("%s/featSel_pseudoPath_%s",outRoot,dt)
 
 # -----------------------------------------------------------
 ## count the number of consensus nets per group and whether clinical
@@ -108,15 +108,18 @@ numCores <- 8L
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
+logFile <- sprintf("%s/log.txt",megaDir)
+sink(logFile,split=TRUE)
+tryCatch({
+
 # list networks
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
    path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 
 ### Remove pathways that contain any genes in FSnets
-fsNets	<- sub(".profile","",fsNets)
-fsPath	<- pathwayList[which(names(pathwayList)%in% fsNets)]
-pathGenes <- unique(unlist(pathwayList))
+fullPathways <- readPathways(pathFile,MIN_SIZE=1,MAX_SIZE=100000)
+pathGenes <- unique(unlist(fullPathways))
 uni_genes <- unique(rownames(dats$rna))
 uni_genes <- uni_genes[which(!uni_genes %in% pathGenes)]
 
@@ -144,10 +147,7 @@ for (i in names(pathwayList)) {
 	cat(sprintf("rna\t%s\n",i),file=netFile,append=TRUE)
 }
 
-logFile <- sprintf("%s/log.txt",megaDir)
-sink(logFile,split=TRUE)
-tryCatch({
-for (rngNum in 21:40) {
+for (rngNum in 1:20) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))

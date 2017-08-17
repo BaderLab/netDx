@@ -10,6 +10,8 @@ This page has guidelines for developing functions for the netDx software package
 5. Make sure there is no junk code in the function.
 6. Your @example may need new data to be added to the package. If so, add that.
 7. Rebuild and <a name="testit">test the new functionality</a>. Broken packages add frustration. Build the documentation and the package (`devtools::document()`) and the package (`R CMD INSTALL`). Re-attach the new package (`detach(package:netDx,unload=T);require(netDx)`. 
+8. Repeat steps 1-7 till ready. 
+9. When ready, generate a pull request.
 
 <a name="tag"></a>
 ## Basic tags

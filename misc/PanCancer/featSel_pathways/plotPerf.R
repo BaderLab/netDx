@@ -58,14 +58,13 @@ for (ctr in 2:nrow(setInfo)) {
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
 		"rnaOne","pathOnly","pathOnly_noFS","pseudo_featSel",
-	"scrambled2", "realPseudo",
-	"pathRndDpseudonoPath")
+	"scrambled2")
 	#	"pathFull_AltClass", "pathAlt_noFS",
 	#	"pathOnly80","pathOnly90","pathOnly95")
 mega_roc <- mega_roc[,which(colnames(mega_roc) %in% keepnm)]
 mega_pr <- mega_pr[,which(colnames(mega_pr) %in% keepnm)]
 
-#postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=18,height=6)
+postscript(sprintf("%s/KIRC_perf_%s.eps",outRoot,dt),width=6,height=6)
 	tryCatch({
 		par(bty='n',mar=c(3,4,1,1),mfrow=c(2,1))#mfrow=c(2,2))
 for (cur_dat in c("roc","pr")) {
@@ -163,5 +162,5 @@ for (cur_dat in c("roc","pr")) {
 	}, error=function(ex){
 		print(ex)
 	}, finally={
-	#dev.off()
+	dev.off()
 	})

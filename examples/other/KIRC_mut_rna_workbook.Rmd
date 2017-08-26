@@ -1,0 +1,248 @@
+---
+title: 'Sample NetDx Predictor: Building a predictor using only genetic data'
+output:
+  html_document: default
+  html_notebook: default
+---
+
+**Predictor using Kidney renal cell cancer mutation data**
+
+* Yuan et al. 2014 (http://www.nature.com/nbt/journal/v32/n7/full/nbt.2940.html)
+
+**Using patient mutation data, generate similarity networks consisting of patients that share mutations across similar biological pathways. Predict unseen patient subclass based on these similarity networks**
+
+**This example will do the following:**
+
+  * Take patient input data from Yuan et al. and split into train/test groups (80%/20% respectively)
+  * Using kidney cancer mutation data for these patients, map mutations to biological pathways for the train set
+  * Run feature selection using 10 fold cross validation on these biological pathways to isolate the ones that are most informative
+  * Generate patient similarity networks (one for each pathway) and make subclass predictions for the test set based on the feature selected similarity networks
+
+```{r, message=F, warning=F}
+# Feature selection for KIRC from PanCancer survival dataset
+# 10-fold CV predictor design with mutation data
+
+#Load in the require packages to run the netDx predictor
+require(netDx)
+require(netDx.examples)
+
+
+#Set the processing parameters
+numCores <- 8L
+GMmemory <- 4L
+trainProp <- 0.8
+cutoff <- 9
+
+#Identify where all the input data is and where to put the output
+outRoot <- sprintf("%s/KIRC", getwd())
+
+#Create an output folder with today's date
+dt <- format(Sys.Date(),"%y%m%d")
+megaDir <- sprintf("%s/KIRC_mut_pathwaysOnly_%s",outRoot,dt)
+```
+
+Load in the required packages and set up our input and output
+directories
+```{r}
+#Load in all the pre-formated data required to run the predictor
+data(sample_predictor_KIRC_mut_data)
+```
+
+* **`data`** will take a set of R variables stored in a 'rda'
+file and load them into the current environment
+
+```{r}
+#Now we will start to build the classifier
+
+#Create the output directory, delete any directory with the same name
+if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
+dir.create(megaDir)
+```
+
+
+```{r}
+#Store all output to the terminal in a log file that we can reference later
+logFile <- sprintf("%s/log.txt",megaDir)
+sink(logFile,split=TRUE)
+#Run the predictor just once
+rngNum=1
+```
+* **rngNum** Is set to 1 here as we only want to run the predictor once using one train/test split. If we wanted to run over several splits, we woulf create a for-loop and iterate over rngNum (ex. for(rngNum in 1:100))
+
+```{r}
+	#Create the output directory for this run number
+	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
+	dir.create(outDir)
+	
+	#Split patients into train and test groups
+	pheno_all$TT_STATUS <-   splitTestTrain(pheno_all,pctT=trainProp,
+											  setSeed=rngNum*5)
+	
+	#Extract just the train set patients to be used for feature selection
+	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
+	dats_train <- lapply(dats,function(x) {
+						 x[,which(colnames(x) %in% pheno$ID)]})
+	pat_GR_train <- pat_GR_all[which(pat_GR_all$ID %in% pheno$ID)]
+```
+
+* **`splitTestTrain`** will take the input patients and split them into a train and test groups where "trainProp" is the percentage of train patients
+
+```{r}
+  #create output directory to store nets
+	netDir <- sprintf("%s/networks",outDir)
+	pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+	   path.package("netDx.examples"))
+  #take the pathway information and store it in a data format that is readable by the learner
+	pathwayList <- readPathways(pathFile)
+	data(genes)
+	#store all pathway gene information in genomic ranges objects
+	gene_GR     <- GRanges(genes$chrom,IRanges(genes$txStart,genes$txEnd),
+	  	name=genes$name2)
+	#map genes to pathways which will limit all genes to pathway genes
+	path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+	names(path_GRList) <- paste("MUT_",names(path_GRList),sep="")
+
+	
+	# add somatic mutations at pathway-level
+	netList <- makePSN_RangeSets(pat_GR_train, path_GRList, netDir,
+		numCores=numCores)
+	cat(sprintf("Total of %i nets\n", length(netList)))
+	# now create a genemania database
+	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
+
+
+```
+
+* **`makePSN_RangeSets`** Creates patient similarity interaction networks based on range sets
+
+* **`GRanges`** is a genomic rages object, which will store the pathway information in a data structure that allows us to check for overlaps with mutations easily. 
+
+* **`mapNamedRangesToSets`** we have named ranges each
+corresponding to genes, and we wish to group these ranges based on metabolic pathway
+
+* **`readPathways`** will take the pathway information and store
+it in a data format that is readable by the learner
+* The goal here is to set up our pathway information so that the
+patient data (mutations in genes) can be mapped to geneomic pathways
+```{r}
+	# Get the unique subtypes so we can run feature selection once   for each
+	subtypes <- unique(pheno$STATUS)
+	# run 10-fold cross validation per subtype
+	for (g in subtypes) {
+    #create a directory for the current subtype
+    pDir <- sprintf("%s/%s",outDir,g)
+    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
+	  dir.create(pDir)
+
+		cat(sprintf("\n******\nSubtype %s\n",g))
+		pheno_subtype <- pheno
+		# label patients not in the current class as a "nonpred"
+		pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
+		resDir    <- sprintf("%s/GM_results",pDir)
+		# query for feature selection comprises of training
+		# samples from the class of interest
+		trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
+
+		# Run Cross validation using the training set of patients that fall under the current subtype
+		GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
+			nrow(pheno_subtype),verbose=T, numCores=numCores,
+			GMmemory=GMmemory)
+
+		# patient similarity ranks
+		prank <- dir(path=resDir,pattern="PRANK$")
+		# network ranks
+		nrank <- dir(path=resDir,pattern="NRANK$")
+		cat(sprintf("Got %i prank files\n",length(prank)))
+
+	  # Compute network scores
+		pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
+		head(pTally)
+		# write network scores to file
+		tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
+		write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+	}
+```
+The primary goal here is for each phenotype subtype, get the patients that fall under that subtype and run cross validation
+
+* **`GM_runCV_featureSet`** will use GeneMANIA to run cross-validation with a provided subset of networks
+
+* **`GM_networkTally`** will simply tally the score of networks through cross-validation
+
+```{r}
+  # Class prediction
+	# now create GM databases for each class
+	# should contain train + test patients
+	# and be limited to nets that pass feature selection
+	pheno <- pheno_all
+	predRes <- list()
+	#Run once for each subtype
+	for (g in subtypes) {
+		pDir <- sprintf("%s/%s",outDir,g)
+		# get feature selected net names
+		pTally <- read.delim(
+			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
+			sep="\t",h=T,as.is=T)
+		pTally <- pTally[which(pTally[,2]>=cutoff),1]
+		pTally <- sub(".profile","",pTally)
+		pTally <- sub("_cont","",pTally)
+		cat(sprintf("%s: %i pathways\n",g,length(pTally)))
+		netDir <- sprintf("%s/networks",pDir)
+
+    # add somatic mutations at pathway-level
+		idx <- which(names(path_GRList) %in% pTally)
+		if (any(idx)) {
+			cat(sprintf("mutations: included %i nets\n", length(idx)))
+			netList3 <- makePSN_RangeSets(pat_GR_all,
+				path_GRList[idx],
+				netDir,numCores=numCores)
+        }
+
+		# create genemania database
+		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
+		# query of all training samples for this class
+		qSamps <- pheno$ID[which(pheno$STATUS %in% g &
+								 pheno$TT_STATUS%in%"TRAIN")]
+
+		qFile <- sprintf("%s/%s_query",pDir,g)
+		#write genemania query files
+		GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
+		#get results file after running genemania queries
+		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
+		#get the ROC curves for the query
+		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
+	}
+```
+The goal here is to use the feature selected networks to generate predictions for patient class
+
+* **`GM_writeQueryFile`** will write a GeneMANIA query file based on the input parameters
+* **`runGeneMANIA`** runs input queries through GeneMANIA
+* **`GM_getQueryROC`** processes the GM PRANK files to get the ROC curve for the query
+
+
+```{r}
+  #Assign patient class by ranking GeneMANIA predictors 
+  #and write to file
+	predClass <- GM_OneVAll_getClass(predRes)
+	out <- merge(x=pheno_all,y=predClass,by="ID")
+	outFile <- sprintf("%s/predictionResults.txt",outDir)
+	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+  
+	#Calculate the accuracy of the predictions by comparing
+	#predicted class versus assigned class
+	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
+	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
+		nrow(out), acc*100))
+  
+	#Generate several performance values and store them for future
+	#analysis
+	require(ROCR)
+	ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
+						out$STATUS=="SURVIVEYES")
+	save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",outDir))
+
+```
+Our final step will be to assign patient classes to our unseen test set,  calcualte various performance results (accuracy, AUCROC, AUCPR etc) and store both for future analysis
+
+* **`GM_OneVAll_getClass`** will take the GeneMANIA predictors for each class and assign the class with the higher score to each patient
+* **`prediction`** will generate several performance values for the prediction results by comparing the assigned class and the predicted class for each patient. We can use these values to determine how well the predictor did.
+

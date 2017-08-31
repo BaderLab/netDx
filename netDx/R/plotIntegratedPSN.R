@@ -49,12 +49,6 @@
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
 	topX=0.2, aggFun="MEAN",outDir=".",verbose=TRUE,...) {
 
-require(EasycyRest) # https://github.com/shraddhapai/EasycyRest
-require(httr)
-require(netDx)
-require(ggplot2)
-require(RColorBrewer)
-
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")
 if (missing(netNames)) stop("netNames is missing.")
@@ -211,11 +205,14 @@ response <- httr::GET(url=layout.url)
 apply.style.url <- sprintf("%s/apply/styles/%s/%i",
 	base.url,styleName,network.suid)
 response <- httr::GET(apply.style.url)
+# fit content so png isn't cropped
+fit.url 	<- sprintf("%s/apply/fit/%s",base.url,network.suid)
+response	<- httr::GET(fit.url)
 # export to png
-export.url <- sprintf("%s/networks/%s/views/first.png",
+export.url	<- sprintf("%s/networks/%s/views/first.png",
 	base.url,network.suid,sep="/")
-response <- httr::GET(export.url)
-pngFile <- sprintf("%s/outputPDN.png",outDir)
+response 		<- httr::GET(export.url)
+pngFile 		<- sprintf("%s/outputPDN.png",outDir)
 writeBin(response$content, pngFile)
 
 out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,

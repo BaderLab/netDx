@@ -25,7 +25,7 @@ You must have Java, Python and R installed. Within R, you must have BioConductor
 of these you need to install. If you already have all these, skip to the next section.
 
 #### Java (1.8+ recommended, but will probably work on 1.6+)
-netDx uses the GeneMANIA algorithm to integrate patient networks and recommend patients by similarity (Mostafavi and Morris (2008). *Genome Biol* 9:Suppl 1). GeneMANIA is currently implemented in Java, making this interpreter a requirement for netDx. 
+netDx uses the GeneMANIA algorithm to integrate patient networks and recommend patients by similarity (Mostafavi and Morris (2008). *Genome Biol* 9:Suppl 1). GeneMANIA is currently implemented in Java, making this interpreter a requirement for netDx.
 
 At command line, run `java --version`. You should see output like this:
 ```
@@ -78,7 +78,9 @@ This section assumes you have Java, Python, R and Bioconductor installed. From c
 ```
 $ cd netDx-master/
 $ R
-> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","igraph"))
+> install.packages(c('devtools','curl'))
+> devtools::install_github("igraph/rigraph")
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2"))
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)
 > install.packages("knitr") # needed to run examples
@@ -89,17 +91,19 @@ Run the medulloblastoma vignette to make sure the netDx pipeline works from end 
 Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed. You will also need to install the R package `knitr` to compile the Sweave file.  If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. Alternately, you may run the vignette through an interactive R session:
 
 ```
-$ cd netDx/examples/
+$ cd netDx-master/examples/
 $ R
 > require(knitr)
 > knit2pdf("Medulloblastoma.Rnw")
 ```
-This should generate `Medulloblastoma.pdf` in the `examples/` directory. 
+This should generate `Medulloblastoma.pdf` in the `examples/` directory.
 
 ## Known issues with compiling pdfs
 
-#### (Linux) 
-If you are getting an error saying that R cannot find `/usr/bin/texti2dvi`, install the `texinfo` package.
+#### (Linux)
+If you are getting an error saying that R cannot find `/usr/bin/texti2dvi`, install the `texinfo` and 'texlive' packages in linux. You can use the commands:
+apt-get install texinfo
+apt-get install texlive
 
 #### (OS/X): "`pdfLaTex` not found" error
 When compiling the pdf, you may get a message saying that `pdfLaTex` is not installed. We have had one such report on OS/X and it is known to occur after an upgrade to OS X Mavericks. The following steps resolved the issue (paraphrased from [this post](http://stackoverflow.com/questions/22081991/rmarkdown-pandoc-pdflatex-not-found)):

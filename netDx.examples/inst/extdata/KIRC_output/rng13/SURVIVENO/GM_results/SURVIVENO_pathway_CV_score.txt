@@ -1,0 +1,4 @@
+name	score
+stage_cont	10
+grade_cont	10
+age_cont	5

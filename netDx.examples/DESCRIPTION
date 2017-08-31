@@ -1,11 +1,12 @@
 Package: netDx.examples
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Title: Example data to run netDx vignettes
+Version: 0.1
+Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
+	person("Ahmad","Shah",role="aut"))
+Description: Example data to run netDx vignettes
 Depends:
     R (>= 3.1)
 Requires: netDx
 License: What license is it under?
 LazyData: false
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -5,6 +5,7 @@ This file describes netDx output files and formats
 * [Overall directory tree](#overall_dir)
 	* [Example 1: Luminal A prediction from gene expresion and CNV: No resampling](#ex1)
 	* [Example 2: Predictor with three resamplings](#ex2)
+	* [Example 3: Predictor with nested cross-validation](#ex3)
 * **File formats:** \[<a href="#intfile">\*\_cont.txt</a>][<a href="#nrank">\*.NRANK</a>\]\[<a href="#prank">\*.PRANK</a>\]\[<a href="#cvscore">pathway_CV_score.txt or pathway_cumTally.txt</a>\]\[<a href="#profile">\*.profile</a>\]\[<a href="#query">\*.query</a>\]
 
 <a name="overall_dir"></a>
@@ -69,6 +70,37 @@ outRoot
 		- part2/ # same structure as part1
 		- part3/ # same structure as part1
 		- pathway_cumTally.txt # cumulative net score for predictive class	
+```
+<a name="ex3"></a>
+### Example 3: Predictor with nested cross-validation
+In this design, the predictor has two loops for feature selection
+#. An outer loop where the data are split into several (say K1) train/blind test groups
+#. An inner loop where 10-fold cross validation is performed on each split.
+The result is that there are K1 sets of network scores, each ranging from 0 to 10. There are also K1 sets of blind test predictions from which the mean and variation of predictor performance can be measured.
+
+The output format recommended by netDx, and expected by downstream analysis code is as follows:
+```
+dataset_yymmdd/
+  + rng1/
+    + tmp/       # directory created by netDx, containing input data for GeneMANIA database
+    + networks/  # PSN created by calls to makePSN_NamedMatrix()
+    +-- Class1
+       + tmp/
+       + networks/                               # networks for test classification for this split
+       + GM_results/                             # results of inner loop (10-fold CV)
+       + Class1_pathway_CV_score.txt             # network scores for inner CV fold
+       +--- CV_1.query                           # query for CV fold
+       +--- CV_1.query-results.report.txt.NRANK  # network weights for CV fold
+       +--- CV_1.query-results.report.txt.PRANK  # patient sim ranking for CV fold (not used)
+       ...
+       +--- CV_10.query                           # query for CV fold
+       +--- CV_10.query-results.report.txt.NRANK  # network weights for CV fold
+       +--- CV_10.query-results.report.txt.PRANK  # patient sim ranking for CV fold (not used)
+    +-- Class2
+    + predictionResults.txt  # test predictions for this train/test split
+  + rng2/
+  ...
+  + rngK1/
 ```
 
 ## File formats

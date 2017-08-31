@@ -10,6 +10,7 @@ trainProp <- 0.8
 cutoff <- 9
 maxRng <- 25 		# num train/test splits to check performance on
 
+#rootDir <- "/mnt/data2/BaderLab"
 rootDir <- "/home/shraddhapai/BaderLab"
 inDir 	<- sprintf("%s/PanCancer_KIRC/input",rootDir)
 outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
@@ -36,32 +37,22 @@ if (!analysisMode %in% c("none","consNets","bestConsNets","randomNets")){
 # count the number of consensus nets per group and whether clinical
 # is part of this. will affect sampling downstream.
 netCount <- list()
-fsNets <- c() # nets feature selected in the original analysis and that
-			  # we should exclude now.
 if (analysisMode == "randomNets") {
 for (nm in names(netScoreFile)) {
 	netScores	<- read.delim(netScoreFile[[nm]],sep="\t",h=T,as.is=T)
 	netNames 	<- netScores[,1]
 	netScores <- netScores[,-1]
-
-	wasHighScoring <- netScores >=7 
-	wasHighScoring <- rowSums(wasHighScoring,na.rm=TRUE)
-	idx <- which(wasHighScoring>=70)
-	cat(sprintf("%i high-scoring nets removed\n", length(idx)))
-	cat("-----\n"); print(netNames[idx]); cat("-----\n")
-	fsNets <- c(fsNets, netNames[idx])
-
 	netCount[[nm]] <- colSums(netScores>=cutoff,na.rm=TRUE)
 	cat(sprintf("%s: # fs nets\n", nm))
 	print(summary(netCount[[nm]]))
 }
 }
 
-for (sampRNG in seq(1,50,5)) {
+for (sampRNG in seq(155,250,5)) {
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/randomPathNotFS_%s_%s_%s",outRoot,analysisMode,sampRNG,dt)
+megaDir <- sprintf("%s/pathOnly_%s_%s_%s",outRoot,analysisMode,sampRNG,dt)
 #### <<<< makeConsProfiles code block 
 
 # -----------------------------------------------------------
@@ -161,7 +152,6 @@ tryCatch({
 			pTally	<- read.delim(
 				sprintf("%s/pathways_thresh10_pctPass0.70_%s_AllNets.txt", 
 						consNetDir,g),sep="\t",h=T,as.is=T)[,1]
-			pTally <- pTally[!pTally %in% fsNets] # REMOVE informative nets
 			cur_randNum <- netCount[[g]][ceil(sampRNG/5)]
 			cat(sprintf("**** Sampling %i nets randomly ****\n",cur_randNum))
 			set.seed(sampRNG);

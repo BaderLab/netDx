@@ -12,7 +12,8 @@ trainProp <- 0.8
 cutoff <- 9
 maxRng <- 25 		# num train/test splits to check performance on
 
-rootDir <- "/mnt/data2/BaderLab"
+#rootDir <- "/mnt/data2/BaderLab"
+rootDir <- "/home/shraddhapai/BaderLab"
 inDir 	<- sprintf("%s/PanCancer_KIRC/input",rootDir)
 outRoot <- sprintf("%s/PanCancer_KIRC/output",rootDir)
 
@@ -59,7 +60,7 @@ for (nm in names(netScoreFile)) {
 }
 }
 
-for (sampRNG in seq(355,500,5)) {
+for (sampRNG in seq(1,100,5)) {
 
 if (!file.exists(outRoot)) dir.create(outRoot)
 dt <- format(Sys.Date(),"%y%m%d")

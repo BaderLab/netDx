@@ -1,0 +1,154 @@
+---
+title: "Plot results of netDx predictor"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+Following a complete predictor run, you will want to evaluate the performance of the predictor and examine the nature of feature-selected variables. This document describes the predictor design and output directory structure that will allow you to do this.
+
+**STOP!** For this example to work, you must have [Cytoscape](http://cytoscape.org) installed. Make sure you launch Cytoscape and have it in the background, before continuing.
+
+### Predictor Design
+
+Here we assume that a predictor was run using a **nested cross-validation design**. In nested cross-validation, cross-validation is performed repeatedly over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits Here is simplistic pseudo-code where the data are split 100 times, and 10-fold cross validation is performed for every split. 
+
+*(Note: these aren't real function calls; this block just serves to illustrate the concept of the nested CV design for our purposes)*
+```{r,eval=FALSE}
+outerLoop <- 100     # num times to split data into train/blind test samples
+innerLoop <- 10      # num folds for cross-validation, also max score for a network
+netScores <- list()  # collect <outerLoop> set of netScores
+perf <- list()       # collect <outerLoop> set of test evaluations
+
+for k in 1:outerLoop
+ [train, test] <- splitData(80:20) # split data using RNG seed
+ netScores[[k]] <- runCV(train)
+ perf[[k]] <- collectPerformance(netScores[[k]], test)
+end
+```
+
+### Output directory structure
+netDx expects a nested directory structure with the predictor results. The top level should contain one directory for each train/test split. Within each of these directories are the predictor results for the corresponding cross-validation. Here is the directory structure for a dataset with rootDirectory `dataset_yymmdd`.
+
+```
+dataset_yymmdd/
+  + rng1/
+    + tmp/       # directory created by netDx, containing input data for GeneMANIA database
+    + networks/  # PSN created by calls to makePSN_NamedMatrix()
+    +-- Class1
+       + tmp/
+       + networks/                               # networks for test classification for this split
+       + GM_results/                             # results of inner loop (10-fold CV)
+       + Class1_pathway_CV_score.txt             # network scores for inner CV fold
+       +--- CV_1.query                           # query for CV fold
+       +--- CV_1.query-results.report.txt.NRANK  # network weights for CV fold
+       ...
+       +--- CV_10.query                           
+       +--- CV_10.query-results.report.txt.NRANK  
+    +-- Class2
+    + predictionResults.txt  # test predictions for this train/test split
+  + rng2/
+  + rng3/
+  + rng4/
+  ...
+  + rng100/
+```
+### Set up
+
+```{r,eval=TRUE}
+suppressMessages(require(netDx))
+suppressMessages(require(netDx.examples))
+```
+
+### Load data for plotting
+In this example, we use data from The Cancer Genome Atlas **REF**, downloaded from the PanCancer Survival project **REF**. We use gene expression profiles from renal clear cell carcinoma tumours to predict poor and good survival after Yuan et al. (2014) **REF**. The data consists of 150 patients and the two classes in question are 
+
+```{r,eval=TRUE}
+phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
+lnames <- load(phenoFile)
+head(pheno)
+```
+
+Create a directory to store output in:
+```{r}
+outDir <- "./plots"
+if (!file.exists(outDir)) dir.create(outDir)
+```
+
+Now compile the data.
+Get the list of all outer loop directories:
+```{r}
+inDir <- sprintf("%s/extdata/KIRC_output",
+	path.package("netDx.examples"))
+all_rngs <- list.dirs(inDir, recursive = FALSE)
+print(head(basename(all_rngs)))
+```
+
+Each `rngX/` directory contains the results of a particular train/test split.
+```{r,eval=TRUE}
+dir(all_rngs[1])
+```
+
+### Plotting overall predictor performance
+Get test prediction files for all the loops (`predictionResults.txt`):
+```{r,eval=TRUE,fig.width=6,fig.height=6}
+predClasses <- c("SURVIVEYES","SURVIVENO")
+predFiles <- unlist(lapply(all_rngs, function(x) 
+		paste(x, "predictionResults.txt", sep = "/")))
+predPerf <- plotPerf(inDir, predClasses=predClasses)
+```
+
+
+### Getting overall feature scores
+In this design, each network can score between 0 and 10 (max number of cross-validation folds) for each split. As we have done 100 splits, the scores can be viewed as a matrix X which is N-by-100, where N is the number of networks. X[i,j] is the score for network i for split j.
+
+```{r,eval=TRUE}
+featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
+```
+
+The size of `featScores` should correspond to number of networks that score >0 
+at least once (rows) and the number of train/test splits (here, 100):
+
+```{r,eval=TRUE}
+dim(featScores[[1]])
+```
+The first column shows feature names:
+```{r,eval=TRUE}
+head(featScores[[1]][,1:10])
+```
+
+Let us define **feature-selected networks** as those that score 10 out of 10 in 
+at least 70% of the train/test splits.
+```{r,eval=TRUE}
+featSelNet <- lapply(featScores, function(x) {
+	callFeatSel(x, fsCutoff=10, fsPctPass=0.7)
+})
+```
+
+Let's take a look at the top networks for each class:
+```{r,eval=TRUE}
+tmp <- lapply(featSelNet,print)
+```
+
+### Plotting the Enrichment Map
+We can now visualize the relationship between these nets.
+
+*Code TBA*
+
+### Plotting the integrated patient similarity network
+Now that we have identified a subset of class-predictive features, we take a view of patient similarity using just these networks.
+
+```{r,eval=TRUE}
+netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
+	netNames=featSelNet)
+```
+![View of patient similarity in KIRC using feature-selected networks](outputPDN.png){width=50%}
+
+`netInfo` contains the path to the full integrated similarity network, the pruned *dis*similarity network shown in Cytoscape, the PNG file (shown above)
+
+```{r,eval=TRUE}
+summary(netInfo)
+```
+

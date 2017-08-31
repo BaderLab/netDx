@@ -84,6 +84,13 @@ $ R
 > install.packages("knitr") # needed to run examples
 ```
 
+To run Cytoscape-related functionality, such as network visualizations of patient similarity networks and enrichment maps, you will need EasyCyrest and r2cytoscape. Let us install directly from the github packages:
+
+```
+>devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
+>devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
+```
+
 ## Test functionality
 Run the medulloblastoma vignette to make sure the netDx pipeline works from end to end.
 Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed. You will also need to install the R package `knitr` to compile the Sweave file.  If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. Alternately, you may run the vignette through an interactive R session:

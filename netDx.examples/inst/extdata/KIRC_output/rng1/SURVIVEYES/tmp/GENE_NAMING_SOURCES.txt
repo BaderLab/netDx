@@ -1,0 +1,2 @@
+1	Other	1	Other
+2	Entrez Gene ID	0	Entrez Gene ID

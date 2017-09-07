@@ -15,7 +15,7 @@ Description: Builds a patient classifier based on patient similarities. Gets
 Imports: bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
 Depends:
     R (>= 3.1.1),bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
-Suggests: netDx.examples, reshape2, igraph, gplots
+Suggests: netDx.examples, reshape2, igraph, gplots,EasycyRest,RJSONIO
 License: GPL>=2.0
 LazyData: false
 URL: http://netdx.org

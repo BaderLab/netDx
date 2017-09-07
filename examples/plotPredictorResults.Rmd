@@ -9,6 +9,21 @@ output:
 
 Following a complete predictor run, you will want to evaluate the performance of the predictor and examine the nature of feature-selected variables. This document describes the predictor design and output directory structure that will allow you to do this.
 
+# Requirements
+This tutorial and these functions use the latest software to allow network visualizations in the popular Cytoscape software directly from R. For this example to work, you will require the following components to be installed:
+
+* Cytoscape must be installed and running
+* EnrichmentMap (vXXX) and AutoAnnotate (vXXX) apps must be installed from the Cytoscape app store
+* R packages: httr, RJSONIO.
+* R packages in active development by the Bader lab: r2cytoscape and EasycyRest.
+
+```{r}
+# launch Cytoscape
+# create a test network to make sure all is working otherwise alert user.
+# check if AA 1.2 
+```
+
+
 **STOP!** For this example to work, you must have [Cytoscape](http://cytoscape.org) installed. Make sure you launch Cytoscape and have it in the background, before continuing.
 
 ### Predictor Design
@@ -73,7 +88,7 @@ head(pheno)
 
 Create a directory to store output in:
 ```{r}
-outDir <- "./plots"
+outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 ```
 
@@ -135,12 +150,61 @@ tmp <- lapply(featSelNet,print)
 ### Plotting the Enrichment Map
 We can now visualize the relationship between these nets.
 
-*Code TBA*
+Get the set of valid gene sets.
+```{r}
+pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+           path.package("netDx.examples"))
+pathwayList <- readPathways(pathFile)
+```
+Filter for the genes measured in this dataset
+```{r}
+xpr_genes <- sprintf("%s/extdata/EMap_input/genenames.txt",
+      path.package("netDx.examples"))
+xpr_genes <- read.delim(xpr_genes,h=FALSE,as.is=TRUE)[,1]
+head(xpr_genes)
+```
+Filter:
+```{r}
+pathwayList <- lapply(pathwayList, function(x) x[which(x %in% xpr_genes)])
+```
+
+As used here, the EnrichmentMap is a network visualization of top-scoring features. The nodes are input features and edges show shared units among the nodes. For example, for pathway-level features, each node would be a pathway and edges would indicate shared genes among those pathways.
+
+For an enrichment map in netDx, you need two files:
+#.**GMT file:** A file with top-scoring genesets in the GMT format, similar to the example pathway file.
+#.**Node attribute table:** A table containing the names of features and the maximum score each achieves across cross-validation.
+
+Here we generate the above two files for each patient class. We have two sets of files because each class has its own set of selected features and therefore, its own enrichment map (EM).
+
+In addition to objects we have seen before, this step requires a table indicating what type of data each network represents. This may be used to assign visual features (e.g. node shapes) to distinguish different data sources in the EM.
+
+```{r}
+netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
+      path.package("netDx.examples"))
+netInfo <- read.delim(netInfoFile,sep="\t",h=TRUE,as.is=TRUE)
+head(netInfo)
+```
+
+Create the EnrichmentMap input:
+```{r}
+EMap_input <- writeEMapInput_many(featScores,pathwayList,
+      netInfo,outDir=outDir)
+```
+
+Finally, plot the EnrichmentMap:
+```{r}
+for (curGroup in names(EMap_input)) {
+	plotEmap(gmtFile=EMap_input[[curGroup]][1], 
+		nodeAttrFile=EMap_input[[curGroup]][2],
+		netName=curGroup)
+}
+```
+
 
 ### Plotting the integrated patient similarity network
 Now that we have identified a subset of class-predictive features, we take a view of patient similarity using just these networks.
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 	netNames=featSelNet)
 ```
@@ -148,7 +212,7 @@ netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 
 `netInfo` contains the path to the full integrated similarity network, the pruned *dis*similarity network shown in Cytoscape, the PNG file (shown above)
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 summary(netInfo)
 ```
 

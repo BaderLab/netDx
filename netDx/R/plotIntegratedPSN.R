@@ -41,7 +41,6 @@
 #' 4) netPng: (char) path to png file with patient dissimilarity network
 #' created by Cytoscape
 #' modify the network
-#' @import EasycyRest 
 #' @import httr
 #' @import ggplot2
 #' @import RColorBrewer

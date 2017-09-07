@@ -1,0 +1,12 @@
+Network Group	Network	Weight	Title	Authors	Year	Publication	PMID	URL	Processing Method	Interactions	Source	Source URL	Tags
+dummy_group		100.00
+	stage_cont	18.26								4300			
+	PLATELET_ADHESION_TO_EXPOSED_COLLAGEN.profile	16.80								0			
+	METABOLISM_OF_WATER-SOLUBLE_VITAMINS_AND_COFACTORS.profile	15.49								0			
+	grade_cont	10.40								4312			
+	REACTIONS_SPECIFIC_TO_THE_COMPLEX_N-GLYCAN_SYNTHESIS_PATHWAY.profile	9.98								0			
+	THYROXINE_BIOSYNTHESIS.profile	7.02								0			
+	age_cont	6.48								4703			
+	ABACAVIR_TRANSPORT_AND_METABOLISM.profile	6.35								0			
+	BILE_SALT_AND_ORGANIC_ANION_SLC_TRANSPORTERS.profile	4.72								0			
+	REGULATION_OF_IFNA_SIGNALING.profile	4.51								0			

@@ -92,7 +92,7 @@ if (any(grep("PSNstyle",curStyles))) {
 	cat("style exists not creating\n")
 } else {
 	cat("Creating style\n")
-	nodeFills <- map_NodeFillDiscrete("GROUP",predClasses,pal)
+	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
 	defaults <- list("NODE_SHAPE"="ellipse",
 			"NODE_SIZE"=50,
 			"EDGE_TRANSPARENCY"=120,
@@ -212,7 +212,7 @@ export.url	<- sprintf("%s/networks/%s/views/first.png",
 	base.url,network.suid,sep="/")
 response 		<- httr::GET(export.url)
 pngFile 		<- sprintf("%s/outputPDN.png",outDir)
-writeBin(response$content, pngFile)
+exportImage(pngFile,"PNG")
 
 out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
 		incNets=alreadyAdded,network_suid=network.suid,

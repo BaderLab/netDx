@@ -181,7 +181,7 @@ In addition to objects we have seen before, this step requires a table indicatin
 ```{r}
 netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
       path.package("netDx.examples"))
-netInfo <- read.delim(netInfoFile,sep="\t",h=TRUE,as.is=TRUE)
+netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 head(netInfo)
 ```
 
@@ -193,7 +193,7 @@ EMap_input <- writeEMapInput_many(featScores,pathwayList,
 
 Finally, plot the EnrichmentMap:
 ```{r}
-for (curGroup in names(EMap_input)) {
+for (curGroup in names(EMap_input)[1:2]) {
 	plotEmap(gmtFile=EMap_input[[curGroup]][1], 
 		nodeAttrFile=EMap_input[[curGroup]][2],
 		netName=curGroup)
@@ -208,7 +208,7 @@ Now that we have identified a subset of class-predictive features, we take a vie
 netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 	netNames=featSelNet)
 ```
-![View of patient similarity in KIRC using feature-selected networks](outputPDN.png){width=50%}
+![View of patient similarity in KIRC using feature-selected networks](./outputPDN.png){width=50%}
 
 `netInfo` contains the path to the full integrated similarity network, the pruned *dis*similarity network shown in Cytoscape, the PNG file (shown above)
 

@@ -18,13 +18,14 @@
 #' @param maxScore (integer) maximum possible score in one round of cross-
 #' validation. e.g. for 10-fold cross-validation, maxScore=10.
 #' @param trimFromName (char) strings to trim from name with sub()
+#' @param verbose (logical) print messages
 #' @return
 #' 1) <outPfx>.gmt file - for enrichment map
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
 #' @export
 writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
-	pctPass=0.70,maxScore=10,trimFromName=c(".profile","_cont")) {
+	pctPass=0.70,maxScore=10,trimFromName=c(".profile","_cont"),verbose=FALSE) {
 
 	dt <- format(Sys.Date(),"%y%m%d")
 	netNames <- featScores[,1];
@@ -35,7 +36,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	for (sc in 3:maxScore) {
 			tmp <- rowSums(featScores >= sc)
 			idx <- which(tmp >= floor(pctPass * ncol(featScores)))
-			cat(sprintf("\t%i : %i pass\n", sc, length(idx)))
+			if (verbose) cat(sprintf("\t%i : %i pass\n", sc, length(idx)))
 			maxNetS[idx,1] <- sc
 	}
 	idx <- which(!is.na(maxNetS))

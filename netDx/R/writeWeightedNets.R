@@ -137,7 +137,10 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
 		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
-		cat(sprintf("Edge wt filter: %i -> %i interactions\n", oldcount,nrow(ints)))
+		if (verbose) {
+			cat(sprintf("Edge wt filter: %i -> %i interactions\n", 	
+				oldcount,nrow(ints)))
+		}
 		if (nrow(ints)>=1) {
 			midx <- rbind(as.matrix(ints[,c(1:2)]),
 						  as.matrix(ints[,c(2:1)]))

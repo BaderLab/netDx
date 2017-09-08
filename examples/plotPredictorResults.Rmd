@@ -171,8 +171,9 @@ pathwayList <- lapply(pathwayList, function(x) x[which(x %in% xpr_genes)])
 As used here, the EnrichmentMap is a network visualization of top-scoring features. The nodes are input features and edges show shared units among the nodes. For example, for pathway-level features, each node would be a pathway and edges would indicate shared genes among those pathways.
 
 For an enrichment map in netDx, you need two files:
-#.**GMT file:** A file with top-scoring genesets in the GMT format, similar to the example pathway file.
-#.**Node attribute table:** A table containing the names of features and the maximum score each achieves across cross-validation.
+
+1. **GMT file:** A file with top-scoring genesets in the GMT format, similar to the example pathway file.
+2. **Node attribute table:** A table containing the names of features and the maximum score each achieves across cross-validation.
 
 Here we generate the above two files for each patient class. We have two sets of files because each class has its own set of selected features and therefore, its own enrichment map (EM).
 
@@ -193,22 +194,34 @@ EMap_input <- writeEMapInput_many(featScores,pathwayList,
 
 Finally, plot the EnrichmentMap:
 ```{r}
+pngFiles <- list()
 for (curGroup in names(EMap_input)[1:2]) {
-	plotEmap(gmtFile=EMap_input[[curGroup]][1], 
-		nodeAttrFile=EMap_input[[curGroup]][2],
-		netName=curGroup)
+	pngFiles[[curGroup]] <- plotEmap(gmtFile=EMap_input[[curGroup]][1], 
+		                        nodeAttrFile=EMap_input[[curGroup]][2],
+		                        netName=curGroup)
 }
 ```
 
+Here is the enrichment map showing the top-scoring networks for `SURVIVEYES`:
 
-### Plotting the integrated patient similarity network
+![Emap SURVIVEYES](./plots/EnrichmentMap_SURVIVEYES.png)
+
+And here is the map for the `SURVIVENO` class:
+
+![Emap SURVIVENO](./plots/EnrichmentMap_SURVIVENO.png){width=50%}
+
+The nodes show top-scoring features, which are here pathways. Edges connect features with shared units; in this context, pathways with shared genes. More intensely coloured nodes are "hotter". 
+
+Outside of this R notebook, the EnrichmentMaps should now be present in the active Cytoscape session. The user may now further customize the network view.
+
+### Computing the integrated patient similarity network
 Now that we have identified a subset of class-predictive features, we take a view of patient similarity using just these networks.
 
 ```{r,eval=FALSE}
 netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
-	netNames=featSelNet)
+	netNames=featSelNet,outDir=outDir)
 ```
-![View of patient similarity in KIRC using feature-selected networks](./outputPDN.png){width=50%}
+![View of patient similarity in KIRC using feature-selected networks](./plots/outputPDN.png){width=50%}
 
 `netInfo` contains the path to the full integrated similarity network, the pruned *dis*similarity network shown in Cytoscape, the PNG file (shown above)
 

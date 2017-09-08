@@ -46,7 +46,7 @@
 #' @import RColorBrewer
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
-	topX=0.2, aggFun="MEAN",outDir=".",verbose=TRUE,...) {
+	topX=0.2, aggFun="MEAN",outDir=".",verbose=FALSE,...) {
 
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")
@@ -89,9 +89,9 @@ pal <- suppressWarnings(brewer.pal(name="Dark2",n=length(predClasses)))
 
 # create Cytoscape style for PSN
 if (any(grep("PSNstyle",curStyles))) {
-	cat("style exists not creating\n")
+	cat("* Style exists, not creating\n")
 } else {
-	cat("Creating style\n")
+	cat("* Creating style\n")
 	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
 	defaults <- list("NODE_SHAPE"="ellipse",
 			"NODE_SIZE"=50,
@@ -208,9 +208,6 @@ response <- httr::GET(apply.style.url)
 fit.url 	<- sprintf("%s/apply/fit/%s",base.url,network.suid)
 response	<- httr::GET(fit.url)
 # export to png
-export.url	<- sprintf("%s/networks/%s/views/first.png",
-	base.url,network.suid,sep="/")
-response 		<- httr::GET(export.url)
 pngFile 		<- sprintf("%s/outputPDN.png",outDir)
 exportImage(pngFile,"PNG")
 

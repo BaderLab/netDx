@@ -18,7 +18,7 @@
 #' @param ... other parameters to makePSN_NamedMatrix() or makePSN_RangedSets()
 #' @return (char) vector of network names. Side effect of creating the nets
 createPSN_MultiData <- function(dataList,groupList,netDir,filterSet=NULL,
-			customFunc) {
+			customFunc,...) {
 
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")

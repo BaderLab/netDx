@@ -8,11 +8,11 @@ require(netDx)
 require(netDx.examples)
 
 # VM1
-inDir <- "/mnt/data2/BaderLab/PanCancer_KIRC/input"
-outRoot <- "/mnt/data2/BaderLab/PanCancer_KIRC/output"
+inDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input"
+outRoot <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_pathways_%s",outRoot,dt)
+megaDir <- sprintf("%s/nestCV_%s",outRoot,dt)
 
 # -----------------------------------------------------------
 # process input
@@ -80,6 +80,7 @@ dats <- lapply(dats, function(x) {
 })
 
 
+
 # Define net groupings
 clinList <- list(age="age",grade="grade",stage="stage")
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
@@ -88,31 +89,13 @@ pathwayList <- readPathways(pathFile)
 groupList <- list(rna=pathwayList,clinical=clinList)
 rm(pheno_nosurv)
 
-# User-defined function to make nets
-KIRC_makeNets <- function(dataList, groupList, netDir,...) {
-	netList <- c()
-	# make RNA nets: group by pathway
-	if (!is.null(groupList[["rna"]])) { 
-	netList <- makePSN_NamedMatrix(dataList$rna, 
-					rownames(dataList$rna),
-			   	pathwayList,netDir,verbose=FALSE, 
-			  	writeProfiles=TRUE,...) 
-	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
-	}
-	
-	# make clinical nets
-	netList2 <- c()
-	if (!is.null(groupList[["clinical"]])) {
-	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
-		rownames(dataList$clinical),
-		groupList[["clinical"]],netDir, simMetric="custom",customFunc=normDiff,
-		sparsify=TRUE,verbose=TRUE,append=TRUE,...)
-	}
-	cat(sprintf("Made %i clinical nets\n", length(netList2)))
-	netList <- unlist(c(netList,netList2)) 
-	cat(sprintf("Total of %i nets\n", length(netList)))
-	return(netList)
-}
+save(pheno,dats, groupList, file="nestedCV_input.rda")
 
+
+source("runPredictor_nested.R")
+source("makeNets.R")
+source("KIRC_makeNets.R")
+source("normDiff.R")
 runPredictor_nested(pheno,dataList=dats, groupList=groupList,
-		makeNetFunc=KIRC_makeNets,outDir=megaDir,numCores=8L)
+		makeNetFunc=KIRC_makeNets,outDir=megaDir,numCores=8L,
+		nFoldCV=10L, CVcutoff=9L,numSplits=3L)

@@ -39,7 +39,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	colnames(cur)<-c("x","y")
 	out[[k]]<-cur
 	
-	points(x,y,type="l",col="gray90", lwd=5)
+	points(x,y,type="l",col="gray90", lwd=3)
 }
 
 	# plot average trendline
@@ -49,7 +49,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	cur <- cbind(cur_y, k)
 	colnames(cur) <- c("x","y","k")
 	out[[k]] <- cur
-		points(x,y,type="l",col=meanCol,lwd=9)
+		points(x,y,type="l",col=meanCol,lwd=4)
 
 	text(0.8*xlim[2],0.1*ylim[2],sprintf("N=%i",length(inList)-is_empty),
 		cex=1.3)

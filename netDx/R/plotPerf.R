@@ -97,9 +97,9 @@ plotPerf <- function(inDir, predClasses) {
 		.plotAvg <- function(res, name) {
 		 	mu <- mean(res,na.rm=TRUE)
   		sem <- sd(res,na.rm=TRUE)/sqrt(length(res))
- 			plot(1, mu,type='n',bty='n',ylab=sprintf("%s \n(mean+/-SEM)",name),
-       	 xaxt='n',ylim=c(0.5,1.0),las=1,cex.axis=1.4,xlim=c(0.8,1.2),
-				cex.axis=1.4)
+ 			plot(1, mu,type='n',bty='n',ylab=sprintf("%s (mean+/-SEM)",name),
+       	 xaxt='n',ylim=c(0.4,1.0),las=1,cex.axis=1.4,xlim=c(0.8,1.2),
+				cex.axis=1.4,xlab="")
     	abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
     	points(1,mu,type='p',cex=1.4,pch=16)
     

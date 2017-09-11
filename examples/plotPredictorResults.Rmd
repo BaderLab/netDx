@@ -7,28 +7,62 @@ output:
   word_document: default
 ---
 
-Following a complete predictor run, you will want to evaluate the performance of the predictor and examine the nature of feature-selected variables. This document describes the predictor design and output directory structure that will allow you to do this.
+Following a complete predictor run, you will want to evaluate the performance of the predictor and examine the nature of feature-selected variables. 
 
-# Requirements
-This tutorial and these functions use the latest software to allow network visualizations in the popular Cytoscape software directly from R. For this example to work, you will require the following components to be installed:
+# Software Requirements
+For this example to work, you will require the following components to be installed. You may have already installed these when you first setup netDx but if not, make sure these are set up now:
 
-* Cytoscape must be installed and running
-* EnrichmentMap (vXXX) and AutoAnnotate (vXXX) apps must be installed from the Cytoscape app store
-* R packages: httr, RJSONIO.
-* R packages in active development by the Bader lab: r2cytoscape and EasycyRest.
+* Cytoscape must be installed and running.
+* Cytoscape apps EnrichmentMap (v3.0.0) and AutoAnnotate (v1.2) must be installed.
+* R packages: `httr`, `RJSONIO`
+* R packages r2cytoscape and EasycyRest.
+
+**Note:If Cytoscape is not running, this example will not work!**
+
+Let us see if the required dependencies can be installed and/or loaded:
 
 ```{r}
-# launch Cytoscape
-# create a test network to make sure all is working otherwise alert user.
-# check if AA 1.2 
+#httr
+tryCatch(expr = { library(httr)}, 
+          error = function(e) { install.packages("httr")}, finally = library(httr))
+
+#RJSONIO
+tryCatch(expr = { library(RJSONIO)}, 
+          error = function(e) { install.packages("RJSONIO")}, finally = library(RJSONIO))
+
+#r2cytoscape
+tryCatch(expr = { library(r2cytoscape)}, 
+          error = function(e) { devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')}, finally = library(r2cytoscape))
+
+# EasycyRest
+tryCatch(expr = { library(EasycyRest); detach(package:EascyRest,unload=TRUE)}, 
+          error = function(e) { devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')}, finally = {})
 ```
 
+Now let us test if Cytoscape is open:
 
-**STOP!** For this example to work, you must have [Cytoscape](http://cytoscape.org) installed. Make sure you launch Cytoscape and have it in the background, before continuing.
+```{r}
+# Basic settings
+version.url <-"http://localhost:1234/v1/version"
+cytoscape.open <- TRUE
+
+tryCatch(expr = { GET(version.url)}, 
+         error = function(e) { return (cytoscape.open = FALSE)}, finally =function(r){ return(cytoscape.open = TRUE)})
+         
+if(!cytoscape.open){
+  #try and launch cytoscape
+ stop("Cytoscape is not open.  Please launch cytoscape.")
+} else{
+  cytoscape.version <-  GET(version.url)
+  cy.version <- fromJSON(rawToChar(cytoscape.version$content))
+  print(cy.version)
+}
+```
 
 ### Predictor Design
 
-Here we assume that a predictor was run using a **nested cross-validation design**. In nested cross-validation, cross-validation is performed repeatedly over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits Here is simplistic pseudo-code where the data are split 100 times, and 10-fold cross validation is performed for every split. 
+For this example, the predictor has been run using a **nested cross-validation design**. In nested cross-validation, cross-validation is performed repeatedly over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits. 
+Conceptually, this is what the higher-level logic looks like for a nested cross-validation design with 10-fold CV in the inner loop, and 100 splits in the outer loop:
 
 *(Note: these aren't real function calls; this block just serves to illustrate the concept of the nested CV design for our purposes)*
 ```{r,eval=FALSE}
@@ -78,7 +112,7 @@ suppressMessages(require(netDx.examples))
 ```
 
 ### Load data for plotting
-In this example, we use data from The Cancer Genome Atlas **REF**, downloaded from the PanCancer Survival project **REF**. We use gene expression profiles from renal clear cell carcinoma tumours to predict poor and good survival after Yuan et al. (2014) **REF**. The data consists of 150 patients and the two classes in question are 
+In this example, we use data from The Cancer Genome Atlas (http://cancergenome.nih.gov/), downloaded from the PanCancer Survival project (https://www.synapse.org/#!Synapse:syn1710282). We use gene expression profiles from renal clear cell carcinoma tumours to predict poor and good survival after Yuan et al. (2014) (Refs 1-2). The data consists of 150 tumours. Here we work only with the gene expression profiles generated.
 
 ```{r,eval=TRUE}
 phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
@@ -90,10 +124,11 @@ Create a directory to store output in:
 ```{r}
 outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
+setwd(outDir)
 ```
 
-Now compile the data.
-Get the list of all outer loop directories:
+Now compile the paths to output files. First get the list of all directories corresponding to the outer loops:
+
 ```{r}
 inDir <- sprintf("%s/extdata/KIRC_output",
 	path.package("netDx.examples"))
@@ -101,13 +136,18 @@ all_rngs <- list.dirs(inDir, recursive = FALSE)
 print(head(basename(all_rngs)))
 ```
 
-Each `rngX/` directory contains the results of a particular train/test split.
+
+Each `rngX/` directory contains the results of a particular train/test split. The two classes in question are `SURVIVEYES` (good survival) and `SURVIVENO` (poor survival).
+
 ```{r,eval=TRUE}
 dir(all_rngs[1])
 ```
 
 ### Plotting overall predictor performance
-Get test prediction files for all the loops (`predictionResults.txt`):
+First we evaluate the average performance of the predictor over the 100 train/blind test splits. Performance is defined as the Area under the Receiver Operator Characteristic curve (AUROC) or Area under the Precision-Recall curve (AUPR).
+
+First compile prediction files for all the 100 splits in the example data. These paths are stored in `predFiles`. Then call the performance-plotting function, which is `plotPerf()`.
+
 ```{r,eval=TRUE,fig.width=6,fig.height=6}
 predClasses <- c("SURVIVEYES","SURVIVENO")
 predFiles <- unlist(lapply(all_rngs, function(x) 
@@ -116,8 +156,13 @@ predPerf <- plotPerf(inDir, predClasses=predClasses)
 ```
 
 
-### Getting overall feature scores
-In this design, each network can score between 0 and 10 (max number of cross-validation folds) for each split. As we have done 100 splits, the scores can be viewed as a matrix X which is N-by-100, where N is the number of networks. X[i,j] is the score for network i for split j.
+### Feature-level scores
+Feature-level scores are one of the outputs of feature-selection. These indicate the predictive strength of a feature, so that networks with higher scores indicate those with greater predictive power for the class in question. Note that in netDx, feature selection occurs once per patient class (i.e. here, once for `SURVIVEYES` and once for `SURVIVENO`), so each feature gets a predictive score for each class.
+
+This nested design has an outer loop of 100 splits with 10-fold cross-validation in the inner loop. Each network can therefore score between 0 and 10 (max number of cross-validation folds) for a given split. For the 100 splits, feature scores can be viewed as a matrix *X* which is *N*-by-100, where `N` is the number of networks. *X[i,j]* is the score for network *i* for split *j*. 
+
+
+***Note:***In practice, we do not include networks that never score >0, so the number of rows is < *N*.
 
 ```{r,eval=TRUE}
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
@@ -134,6 +179,7 @@ The first column shows feature names:
 head(featScores[[1]][,1:10])
 ```
 
+
 Let us define **feature-selected networks** as those that score 10 out of 10 in 
 at least 70% of the train/test splits.
 ```{r,eval=TRUE}
@@ -148,7 +194,9 @@ tmp <- lapply(featSelNet,print)
 ```
 
 ### Plotting the Enrichment Map
-We can now visualize the relationship between these nets.
+An EnrichmentMap is a network-based visualization for a group of overlapping sets (Ref 3). Here, we use this visualization to examine which pathways and functional themes are feature-selected for each patient class. So, this is a network where nodes are **features** (here, pathways), and edges indicate **shared members between the features** (here, genes common to the pathway).
+
+By clustering and annotating the EnrichmentMap using the AutoAnnotate app (Ref 4), we can identify functional themes that are common among high-scoring features. 
 
 Get the set of valid gene sets.
 ```{r}
@@ -168,14 +216,12 @@ Filter:
 pathwayList <- lapply(pathwayList, function(x) x[which(x %in% xpr_genes)])
 ```
 
-As used here, the EnrichmentMap is a network visualization of top-scoring features. The nodes are input features and edges show shared units among the nodes. For example, for pathway-level features, each node would be a pathway and edges would indicate shared genes among those pathways.
+To create an enrichment map in netDx, you need two files:
 
-For an enrichment map in netDx, you need two files:
-
-1. **GMT file:** A file with top-scoring genesets in the GMT format, similar to the example pathway file.
+1. **A .gmt file:** A file with top-scoring genesets in the GMT format, similar to the example pathway file.
 2. **Node attribute table:** A table containing the names of features and the maximum score each achieves across cross-validation.
 
-Here we generate the above two files for each patient class. We have two sets of files because each class has its own set of selected features and therefore, its own enrichment map (EM).
+Here we generate the above two files for each patient class. We have two sets of files because each class has its own set of predictive features and therefore, its own enrichment map (EM).
 
 In addition to objects we have seen before, this step requires a table indicating what type of data each network represents. This may be used to assign visual features (e.g. node shapes) to distinguish different data sources in the EM.
 
@@ -198,34 +244,61 @@ pngFiles <- list()
 for (curGroup in names(EMap_input)[1:2]) {
 	pngFiles[[curGroup]] <- plotEmap(gmtFile=EMap_input[[curGroup]][1], 
 		                        nodeAttrFile=EMap_input[[curGroup]][2],
-		                        netName=curGroup)
+		                        netName=curGroup,outDir=outDir)
 }
 ```
 
-Here is the enrichment map showing the top-scoring networks for `SURVIVEYES`:
+The enrichment map showing the top-scoring networks for `SURVIVEYES` should now be active in Cytoscape. It should look like this:
 
-![Emap SURVIVEYES](./plots/EnrichmentMap_SURVIVEYES.png)
+![EnrichmentMap for the SURVIVEYES class](./plotPredictorResults_images/SURVIVEYES.png)
 
-And here is the map for the `SURVIVENO` class:
+Nodes are coloured by the highest consistent score the particular feature achieved; consistency is defined as having achieved the score for >70% of the splits. 
 
-![Emap SURVIVENO](./plots/EnrichmentMap_SURVIVENO.png){width=50%}
+**Note:** Node labels for individual features have been turned off to remove visual clutter. These can be enabled interactively in Cytoscape.
 
-The nodes show top-scoring features, which are here pathways. Edges connect features with shared units; in this context, pathways with shared genes. More intensely coloured nodes are "hotter". 
+There should also be a second EnrichmentMap for the 'SURVIVENO' class.
 
-Outside of this R notebook, the EnrichmentMaps should now be present in the active Cytoscape session. The user may now further customize the network view.
+![EnrichmentMap for the SURVIVENO class](./plotPredictorResults_images/SURVIVENO.png){width=50%}
+
 
 ### Computing the integrated patient similarity network
-Now that we have identified a subset of class-predictive features, we take a view of patient similarity using just these networks.
+An integrated patient network is constructed by aggregating feature-selected networks for all classes. It represents the overall view of patient similarity that results from identifying predictive networks through the netDx predictor.
 
-```{r,eval=FALSE}
+For the visualization we actually prefer to magnify **dissimilarity** so that similar patients are closer (i.e. have smaller edge weight) and dissimilar patients are farther apart (i.e. have larger edge weight). So the network generated in this step is really a **dissimilarity network**. The steps for computing this network are:
+
+1. Concatenate all feature-selected networks
+2. For all patient pairs, collapse edges by taking the mean similarity.
+3. Convert to dissimilarity (`1-mean_similarity`).
+4. For the Cytoscape visualization, keep a certain fraction of the top edges (e.g. top 20% disimilarities).
+
+The function `plotIntegratedPSN()` runs these computations. It therefore needs access to the folder that contains all the feature-selected networks. Here we provide `rng1/` for that purpose using the `baseDir` argument.
+
+```{r,eval=TRUE}
 netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 	netNames=featSelNet,outDir=outDir)
 ```
-![View of patient similarity in KIRC using feature-selected networks](./plots/outputPDN.png){width=50%}
+The Cytoscape session should now show a network that looks like this: 
+![View of patient similarity in KIRC using feature-selected networks. Nodes are patients, with fill colour indicating patient class. Patients of type SURVIVENO are shown in orange, while those of type SURVIVEYES are shown in green. Edges are weighted by average dissimilarity. Only top 20% of the largest weights are used here. ](./plotPredictorResults_images/PSN.png)
 
-`netInfo` contains the path to the full integrated similarity network, the pruned *dis*similarity network shown in Cytoscape, the PNG file (shown above)
 
-```{r,eval=FALSE}
+The returned `netInfo` object contains several pieces of information related to the integrated network shown above, including the path to the full similarity network (`aggPSN_FULL`), the pruned dissimilarity network (`aggPDN_pruned`), and information about the resulting view in Cytoscape (`network_suid` and `netView`).
+
+
+```{r,eval=TRUE}
 summary(netInfo)
 ```
+
+# sessionInfo
+
+```{r}
+sessionInfo()
+```
+
+# References
+1. Yuan, Y. *et al.* (2014) Assessing the clinical utility of cancer genomic and proteomic data across tumor types. *Nat Biotechnol* **32**, 644-52.
+2. The Cancer Genome Atlas Research Network (2013). Comprehensive molecular characterization of clear cell renal cell carcinoma. *Nature* **499**, 43-9.
+3. Merico, D., Isserlin, R. & Bader, G.D. (2011). Visualizing gene-set enrichment results using the Cytoscape plug-in enrichment map. *Methods Mol Biol* **781**, 257-77.
+4. Kucera, M., Isserlin, R., Arkhangorodsky, A. & Bader, G.D. (2016). AutoAnnotate: A Cytoscape app for summarizing networks with semantic annotations. *F1000Res* **5**, 1717.
+
+
 

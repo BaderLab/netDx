@@ -153,7 +153,8 @@ for (rngNum in 1:numSplits) {
 
 		createPSN_MultiData(dataList=dats,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
-			customFunc=makeNetFunc,numCores=numCores)
+			customFunc=makeNetFunc,numCores=numCores,
+			filterSet=pTally)
 		dbDir <- GM_createDB(netDir,pheno$ID,pDir,numCores=numCores)
 
 		# run query for this class

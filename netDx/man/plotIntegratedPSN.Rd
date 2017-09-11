@@ -5,7 +5,7 @@
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
-  topX = 0.2, aggFun = "MEAN", outDir = ".", verbose = TRUE, ...)
+  topX = 0.2, aggFun = "MEAN", outDir = ".", verbose = FALSE, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.
@@ -23,7 +23,7 @@ the names of patient similarity networks to combine for the integrated
 network. These should probably be feature-selected networks}
 
 \item{topX}{(numeric between 0 and 1) fraction of strongest edges to keep
-e.g. topX=0.2 will keep 20% top edges}
+e.g. topX=0.2 will keep 20\% top edges}
 
 \item{aggFun}{(char) function to aggregate edges from different PSN}
 
@@ -42,7 +42,6 @@ keeping the strongest edges.
 3) network_suid: (char) Cytoscape network identifier, so user may further
 4) netPng: (char) path to png file with patient dissimilarity network
 created by Cytoscape
-modify the network
 }
 \description{
 Visualize integrated patient similarity network based on selected features

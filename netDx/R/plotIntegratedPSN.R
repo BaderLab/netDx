@@ -25,7 +25,7 @@
 #' the names of patient similarity networks to combine for the integrated 
 #' network. These should probably be feature-selected networks
 #' @param topX (numeric between 0 and 1) fraction of strongest edges to keep
-#' e.g. topX=0.2 will keep 20% top edges
+#' e.g. topX=0.2 will keep 20\% top edges
 #' @param aggFun (char) function to aggregate edges from different PSN
 #' @param outDir (char) path to directory for tmp work
 #' @param verbose (logical) print detailed messages
@@ -40,7 +40,6 @@
 #' 3) network_suid: (char) Cytoscape network identifier, so user may further
 #' 4) netPng: (char) path to png file with patient dissimilarity network
 #' created by Cytoscape
-#' modify the network
 #' @import httr
 #' @import ggplot2
 #' @import RColorBrewer
@@ -171,6 +170,7 @@ write.table(newNetIDs,file=netInfo_combinedF,sep="\t",
 col=F,row=F,quote=F)
 
 # aggregate
+cat("* Computing aggregate net\n")
 aggNetFile <- netDx::writeWeightedNets(ptFile[[1]],
 	netInfo=netInfo_combinedF,
 	poolDir,keepNets=newNetIDs[,2],outDir,
@@ -190,26 +190,39 @@ aggNet_pruned <- netDx::pruneNetByStrongest(aggNet,pheno$ID, topX=topX)
 outFile <- sprintf("%s/%s_prunedNet_top%1.2f.txt",outDir,setName,topX)
 write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
 	quote=FALSE)
+
+cat("* Creating network in Cytoscape\n")
 # layout network in Cytoscape
 network.suid <- EasycyRest::createNetwork(
 	nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
 	netName=sprintf("%s_%s_top%1.2f",setName,aggFun,topX),
 	collName="KIRC"
 )
+cat("* Applying layout\n")
 # spring-embedded layout on edge 'weight' column
 layout.url <- sprintf("%s/apply/layouts/kamada-kawai/%s?column=weight",
 	base.url,network.suid, sep="/")
 response <- httr::GET(url=layout.url)
 # apply style
+cat("* Applying style\n")
 apply.style.url <- sprintf("%s/apply/styles/%s/%i",
 	base.url,styleName,network.suid)
 response <- httr::GET(apply.style.url)
-# fit content so png isn't cropped
-fit.url 	<- sprintf("%s/apply/fit/%s",base.url,network.suid)
-response	<- httr::GET(fit.url)
+
+# fit content
+fitCommand <- sprintf("%s/commands/view/fit content",base.url)
+response	<- httr::GET(fitCommand)
+
 # export to png
+cat("* Exporting to PNG\n")
 pngFile 		<- sprintf("%s/outputPDN.png",outDir)
-exportImage(pngFile,"PNG")
+if (file.exists(pngFile)) unlink(pngFile) # avoid the "overwrite file?"
+																						# dialog
+	exportURL <- sprintf("%s/commands/view/export?OutputFile=%s",
+			base.url,pngFile)
+#print(exportURL)
+	response	<- httr::GET(exportURL)
+#exportImage(pngFile,"PNG")
 
 out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
 		incNets=alreadyAdded,network_suid=network.suid,

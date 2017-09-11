@@ -5,7 +5,8 @@
 \title{write enrichment map for consensus nets}
 \usage{
 writeEMapInput(featScores, namedSets, netInfo, outPfx = "curr",
-  pctPass = 0.7, maxScore = 10, trimFromName = c(".profile", "_cont"))
+  pctPass = 0.7, maxScore = 10, trimFromName = c(".profile", "_cont"),
+  verbose = FALSE)
 }
 \arguments{
 \item{featScores}{(data.frame) network scores across rounds of cross 
@@ -29,6 +30,8 @@ map}
 validation. e.g. for 10-fold cross-validation, maxScore=10.}
 
 \item{trimFromName}{(char) strings to trim from name with sub()}
+
+\item{verbose}{(logical) print messages}
 
 \item{consCutoff}{(integer) nets must pass this cutoff in at least
 pctPass of the iterations to be written to file}

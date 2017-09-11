@@ -53,9 +53,35 @@ megaDir <- outDir
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
+
+# set aside for testing within each split
+pheno_all <- pheno; 
+
+logFile <- sprintf("%s/log.txt",megaDir)
+sink(logFile,split=TRUE)
+cat("Predictor started at:\n")
+print(Sys.time())
+tryCatch({
+
+# run featsel once per subtype
+subtypes <- unique(pheno$STATUS)
+
+cat(sprintf("-------------------------------\n"))
+cat(sprintf("# patients = %i\n", nrow(pheno)))
+cat(sprintf("# classes = %i { %s }\n", length(subtypes),
+	paste(subtypes,collapse=",")))
+cat("Sample breakdown by class\n")
+print(table(pheno$STATUS))
+cat(sprintf("Nested CV design = %i CV x %i splits\n", nFoldCV, numSplits))
+cat(sprintf("Datapoints:\n"))
+for (nm in names(dataList)) {
+	cat(sprintf("\t%s: %i units\n", nm, nrow(dataList[[nm]])))
+}
+
 # create master list of possible networks
+cat("# input nets provided:\n")
 netFile <- sprintf("%s/inputNets.txt", megaDir)
-cat(sprintf("NetType\tNetName\n",file=netFile))
+cat("NetType\tNetName\n",file=netFile)
 for (nm in names(groupList)) {
 	curNames <- names(groupList[[nm]])
 	for (nm2 in curNames) {
@@ -63,12 +89,9 @@ for (nm in names(groupList)) {
 	}
 }
 
-# set aside for testing within each split
-pheno_all <- pheno; 
-
-logFile <- sprintf("%s/log.txt",megaDir)
-sink(logFile,split=TRUE)
-tryCatch({
+cat("\n\nCustom function to generate input nets:\n")
+print(makeNetFunc)
+cat(sprintf("-------------------------------\n\n"))
 
 for (rngNum in 1:numSplits) {
 	cat(sprintf("-------------------------------\n"))
@@ -83,13 +106,11 @@ for (rngNum in 1:numSplits) {
 	dats_train <- lapply(dats,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
 
+	netDir <- sprintf("%s/networks",outDir)
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
-			netDir=sprintf("%s/networks",outDir),
-			customFunc=makeNetFunc,numCores=numCores)
+			netDir=netDir,customFunc=makeNetFunc,numCores=numCores)
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
 	
-	# run featsel once per subtype
-	subtypes <- unique(pheno$STATUS)
 
   # run cross-validation for each subtype
 	for (g in subtypes) {
@@ -103,12 +124,14 @@ for (rngNum in 1:numSplits) {
 			print(table(pheno_subtype$STATUS,useNA="always"))
 		
 			# Cross validation
+			resDir <- sprintf("%s/GM_results",pDir)
 			GM_runCV_featureSet(trainPred, 
-				resDir=sprintf("%s/GM_results", dbDir$dbDir, 
+				outDir=resDir, GM_db=dbDir$dbDir, 
 				nrow(pheno_subtype),verbose=T, numCores=numCores,
-				nFold=nFoldCV,CVmemory=CVmemory)
+				nFold=nFoldCV,GMmemory=CVmemory)
 	
 	  	# Compute network score
+			nrank <- dir(path=resDir,pattern="NRANK$")
 			pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
 			tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 			write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
@@ -122,7 +145,7 @@ for (rngNum in 1:numSplits) {
 		pTally <- read.delim(
 			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
 			sep="\t",h=T,as.is=T)
-		pTally <- pTally[which(pTally[,2]>=cutoff),1]
+		pTally <- pTally[which(pTally[,2]>=CVcutoff),1]
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
@@ -153,15 +176,16 @@ for (rngNum in 1:numSplits) {
 	if (!keepAllData) {
     system(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       
         outDir,outDir,outDir))                                                  
-    system(sprintf("rm -r %s/SURVIVENO/dataset %s/SURVIVENO/networks",          
-        outDir,outDir))                                                         
-    system(sprintf("rm -r %s/SURVIVEYES/dataset %s/SURVIVEYES/networks",        
-        outDir,outDir))
+	for (g in subtypes) {
+    system(sprintf("rm -r %s/%s/dataset %s/%s/networks",
+        outDir,g,outDir,g))
 	}
-}
+	}}
 }, error=function(ex){
 	print(ex)
 }, finally={
+	cat("Predictor completed at:\n")
+	print(Sys.time())
 	sink(NULL)
 })
 

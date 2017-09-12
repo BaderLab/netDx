@@ -75,6 +75,23 @@ This section assumes you have Java, Python, R and Bioconductor installed. From c
 
 *Note: For now, R package dependencies must be separately installed using the install.packages() call as shown below. netDx will be submitted to CRAN following publication; thereafter, dependencies can be automatically installed with the call to install netDx.*
 
+On Unix systems you may need one or more of these packages as these are dependencies for R packages:
+
+```
+sudo apt-get install zlib1g-dev libssl-dev libssh2-1-dev
+```
+
+If you are on a Debian system (Debian, Ubuntu) you may need to run this:
+```
+sudo apt-get install libcurl-devel
+```
+
+If you are on an RPM system you may be need to run this:
+```
+sudo apt-get install libcurl4-openssl-dev
+```
+
+
 ```
 $ cd netDx-master/
 $ R
@@ -86,10 +103,20 @@ $ R
 
 To run Cytoscape-related functionality, such as network visualizations of patient similarity networks and enrichment maps, you will need EasyCyrest and r2cytoscape. Let us install directly from the github packages:
 
+On Unix systems you may need to run the following commands:
 ```
+$ sudo apt-get install libssl-dev # for openssl & httr
+$ sudo apt-get install xml2-config # for XML & r2cytoscape
+```
+
+```
+>install.packages(c("openssl","httr","RJSONIO"))
 >devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
 >devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
 ```
+
+Note: On Unix systems, installing `httr` requires a prior install of the `openssl` package. If the `openssl` install fails with a message like: `ERROR: configuration failed for package 'openssl'`, you will need to install openssl for your system. e.g. for Debian and Ubuntu, install `libssl-dev`
+
 
 ## Test functionality
 Run the medulloblastoma vignette to make sure the netDx pipeline works from end to end.

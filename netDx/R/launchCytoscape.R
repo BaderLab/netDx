@@ -9,7 +9,7 @@
 #' Cytoscape to launch. If cyrest tries to run commands too soon, you may
 #' want to increase this duration.
 #' @return No value. Side effect of launching Cytoscape.
-#' @example
+#' @examples
 #' launchCytoscape()
 #' @export
 launchCytoscape <- function(cytoPath="/Applications",sleepTime=30) {

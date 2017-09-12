@@ -58,8 +58,14 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
 		dir.create(outDir)
 	} else {
-		cat("You asked for append but the directory doesn't exist. Helpfully creating it\n")
-		if (!file.exists(outDir)) dir.create(outDir)
+		if (!file.exists(outDir)) {
+				cat("You asked for append but the directory doesn't exist. Helpfully creating it\n")
+				dir.create(outDir)
+		}
+	}
+
+	if (simMetric!="custom" & writeProfiles==TRUE) {
+		stop("writeProfiles must only be TRUE with simMetric is set to pearson. For all other metrics, set writeProfiles=FALSE")
 	}
 
 	cl	<- makeCluster(numCores)

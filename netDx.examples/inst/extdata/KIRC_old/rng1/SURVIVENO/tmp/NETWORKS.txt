@@ -1,2 +1,0 @@
-1	grade_cont	1	grade_cont.txt	0	1
-2	stage_cont	2	stage_cont.txt	0	1

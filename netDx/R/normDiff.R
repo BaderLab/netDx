@@ -5,6 +5,7 @@
 #' When number of variables is 2-5, use avgNormDiff() which 
 #' takes the average of normalized difference for individual variables
 #' @param (numeric) vector of values, one per patient (e.g. ages)
+#' @export
 normDiff <- function(x) {
     #if (nrow(x)>=1) x <- x[1,]
     nm <- colnames(x)

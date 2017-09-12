@@ -1,11 +1,11 @@
 #' write enrichment map for consensus nets
 #'
-#' @param featScores (data.frame) network scores across rounds of cross 
-#' validation. Rows are networks and columns are network name followed by 
+#' @param featScores (data.frame) network scores across rounds of cross
+#' validation. Rows are networks and columns are network name followed by
 #' scores for cross-validation rounds. Output of getFeatureScores()
 #' @param namedSets (list) list of nets and units (e.g.e pathway names and
 #' genes). Should only contain units profiled in this dataset
-#' @param netInfo (data.frame) Table of network name (netName) and type 
+#' @param netInfo (data.frame) Table of network name (netName) and type
 #' (netType). Type is used to assign shapes to nodes:
 #'d(fea  clinical                                          clinical
 #'       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
@@ -23,6 +23,18 @@
 #' 1) <outPfx>.gmt file - for enrichment map
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
+#' @examples
+#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
+#' outDir <- paste(getwd(),"plots",sep="/")
+#' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
+#' gp <- names(featScores)[1]
+#' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+#'           path.package("netDx.examples"))
+#' pathwayList <- readPathways(pathFile)
+#' pathwayList <- pathwayList[c(1:5)]
+#' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
+#' output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
+#'                   outPfx=sprintf("%s/%s",outDir,gp),...)
 #' @export
 writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	pctPass=0.70,maxScore=10,trimFromName=c(".profile","_cont"),verbose=FALSE) {
@@ -74,5 +86,3 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
          paste(toupper(substring(s, 1, 1)), substring(s, 2),
                sep = "", collapse = " ")
      }
-
-

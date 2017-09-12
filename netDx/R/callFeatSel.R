@@ -11,10 +11,10 @@
 #' splits to be considered feature-selected
 #' @return (char) names of nets that pass feature-selection
 #' @example
-#' indir <- sprintf("%s/inst/extdata/KIRC_example_data", 
-#'		path.package("netDx_software_update"))
+#' indir <- sprintf("%s/extdata/KIRC_example_data",
+#'		path.package("netDx.examples"))
 #' netScores <- genNetScores(indir, c("SURVIVEYES","SURVIVENO"))
-#' fs_nets <- getFSnets(netScores, 7, 0.5)
+#' fs_nets <- callFeatSel(netScores, 7, 0.5)
 #' @export
 callFeatSel <- function(netScores,fsCutoff, fsPctPass) {
   fs_nets <- c()

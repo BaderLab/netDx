@@ -2,27 +2,27 @@
 #'
 #' @details Generates a Cytoscape network where nodes are patients and edges
 #' are weighted by aggregate pairwise patient similarity.
-#' Integrated PSN plotting is intended to run 
+#' Integrated PSN plotting is intended to run
 #' after feature selection, which identifies the subset of input networks
 #' predictive for each class of interest. The method of generating the network
 #' is as follows:
-#' All networks feature-selected in either patient category are concatenated; 
+#' All networks feature-selected in either patient category are concatenated;
 #' where a network is feature-selected in both categories, it is included once.
 #' The similarity between two patients in the integrated network is the mean of
-#' corresponding pairwise similarities. Dissimilarity is defined as 
-#' 1-similarity, and Dijkstra distances are computed on this resulting network. 
+#' corresponding pairwise similarities. Dissimilarity is defined as
+#' 1-similarity, and Dijkstra distances are computed on this resulting network.
 #' For visualization, only edges representing the top fraction of distances
 #' (strongest edge weights) are included.
 #' @param pheno (data.frame) sample metadata, requires ID and STATUS column.
 #' The status column will be used to retrieve patient class names
 #' @param baseDir (char) path to the results directory one level above class-
-#' specific interaction networks. 
+#' specific interaction networks.
 #' Standard nested cross-validation: <dataDir>/rng1 so the program finds
 #' <dataDir>/rng1/<classA>/tmp/INTERACTIONS/
 #' Single round of cross-validation: <dataDir>, so the program finds
 #' <dataDir>/<classA>/tmp/INTERACTIONS/
 #' @param netNames (list) keys are classes, and each value is a vector with
-#' the names of patient similarity networks to combine for the integrated 
+#' the names of patient similarity networks to combine for the integrated
 #' network. These should probably be feature-selected networks
 #' @param topX (numeric between 0 and 1) fraction of strongest edges to keep
 #' e.g. topX=0.2 will keep 20\% top edges
@@ -33,13 +33,23 @@
 #  1) aggPSN_Full: (char) path to aggregated patient similarity network. This
 #' is the unpruned network and not the one displayed in Cytoscape. Edges are
 #' weighted by similarity
-#' 2) aggPDN_pruned: (char) path to file with pruned patient dissimilarity 
+#' 2) aggPDN_pruned: (char) path to file with pruned patient dissimilarity
 #' network, derived by inverting edge weights of the net in aggPSN_Full and
 #' keeping the strongest edges.
 #' 2) incNets: (char) vector of networks used for integration
 #' 3) network_suid: (char) Cytoscape network identifier, so user may further
 #' 4) netPng: (char) path to png file with patient dissimilarity network
 #' created by Cytoscape
+#' @examples
+#' phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
+#' load(phenoFile)
+#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
+#' outDir <- paste(getwd(),"plots",sep="/")
+#' featSelNet <- lapply(featScores, function(x) {
+#' callFeatSel(x, fsCutoff=10, fsPctPass=0.7)
+#' })
+#' plotIntegratedPSN(pheno=phenoFile,baseDir=sprintf("%s/rng1",inDir),
+#'	netNames=featSelNet,outDir=outDir)
 #' @import httr
 #' @import ggplot2
 #' @import RColorBrewer
@@ -131,7 +141,7 @@ for (gps in names(ptFile)) {
 
 	idx <- which(pTally %in% alreadyAdded)
 	if (any(idx)) {
-		if (verbose) 
+		if (verbose)
 			cat(sprintf("Found a net already added before, removing: {%s}\n",
 				paste(pTally[idx],collapse=",")))
 		pTally <- pTally[-idx]
@@ -230,4 +240,3 @@ out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
 
 return(out)
 }
-

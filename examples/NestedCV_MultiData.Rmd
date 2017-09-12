@@ -1,0 +1,210 @@
+---
+title: "Nested Cross-Validation with Multiple Datatypes"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+# Introduction
+
+For this example, the predictor will run a **nested cross-validation design**. In nested cross-validation, cross-validation is performed repeatedly over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits. 
+Conceptually, this is what the higher-level logic looks like for a nested cross-validation design with 10-fold CV in the inner loop, and 100 splits in the outer loop:
+
+*(Note: these aren't real function calls; this block just serves to illustrate the concept of the nested CV design for our purposes)*
+```{r,eval=FALSE}
+outerLoop <- 100     # num times to split data into train/blind test samples
+innerLoop <- 10      # num folds for cross-validation, also max score for a network
+netScores <- list()  # collect <outerLoop> set of netScores
+perf <- list()       # collect <outerLoop> set of test evaluations
+
+for k in 1:outerLoop
+ [train, test] <- splitData(80:20) # split data using RNG seed
+ netScores[[k]] <- runCV(train)
+ perf[[k]] <- collectPerformance(netScores[[k]], test)
+end
+```
+
+# Setup
+
+```{r}
+suppressWarnings(suppressMessages(require(netDx)))
+suppressWarnings(suppressMessages(require(netDx.examples)))
+```
+
+# Data 
+
+In this example, we use data from The Cancer Genome Atlas (http://cancergenome.nih.gov/), downloaded from the PanCancer Survival project (https://www.synapse.org/#!Synapse:syn1710282). We integrate gene expression profiles and clinical variables from renal clear cell carcinoma tumours to predict poor and good survival (Refs 1-2). The data are from 150 tumours and the classes are `SURVIVEYES` and `SURVIVENO`.
+
+```{r,eval=T}
+load(sprintf("%s/extdata/nestedCV_input.rda",
+             path.package("netDx.examples")))
+head(pheno)
+```
+
+# Feature design or Making custom patient similarity networks
+
+netDx allows the user to define a custom function that takes patient data and variable groupings as input, and returns a set of patient similarity networks (PSN) as output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype. When running the predictor (next section), the user simply passes this custom function as an input variable (the `makeNetFunc` parameter).
+
+***Note:*** While netDx provides a high degree of flexibility in achieving your design of choice, it is up to the user to ensure that the design, i.e. the similarity metric and variable groupings, is appropriate for your application. Domain knowledge is almost likely required for good design. 
+
+netDx requires that this function take some generic parameters as input. These include:
+
+* `dataList`: the patient data
+* `groupList`: sets of input data that would correspond to individual networks (e.g. genes grouped into pathways)
+* `netDir`: the directory where the resulting PSN would be stored.
+
+This section provides more details on these variables.
+
+### dataList
+This contains the input patient data for the predictor.
+Each key is a datatype, while each value is the corresponding data matrix. Note that columns are patients and rows are unit names (e.g. genes for rna, or variable names for clinical data).
+
+**Important:** The software expects the patient order in the columns to match the row order in the `pheno` table. 
+
+```{r,eval=TRUE}
+names(dats)
+```
+
+```{r,eval=TRUE}
+head(dats[["rna"]][,1:6])
+```
+
+```{r,eval=TRUE}
+head(dats[["clinical"]][,1:6])
+```
+
+Look at the number of units per datatype:
+```{r,eval=TRUE}
+lapply(dats, nrow)
+```
+
+### groupList
+This tells the predictor which units should be grouped together in a network. For examples, genes may be grouped into a network representing a pathway. This object is a list; the names match those of `dataList` while each value is itself a list and reflects a potential network.
+
+```{r,eval=TRUE}
+names(groupList)
+```
+
+For example, here are the networks to be created with RNA data. Genes corresponding to pathways are to be grouped into individual network. Such a groupList would create pathway-level networks:
+
+```{r,eval=TRUE}
+groupList[["rna"]][1:3]
+```
+
+But for clinical data, we want to keep each variable as its own network:
+
+```{r,eval=TRUE}
+head(groupList[["clinical"]])
+```
+
+To speed up this example, reduce the number of input networks created:
+```{r,eval=TRUE}
+groupList[["rna"]] <- groupList[["rna"]][1:3]
+```
+
+### netDir
+This is just the path to the directory where the networks are to be stored.
+
+## The custom similarity function
+This function is defined by the user and tells the predictor how to create networks from the provided input data.
+
+Notice that it takes `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably `numCores`.
+
+In this particular example, the custom similarity function does the following:
+
+1. Creates *pathway-level networks from RNA* data using the default Pearson correlation measure `makePSN_NamedMatrix(writeProfiles=TRUE,...)`
+2. Creates *variable-level networks from clinical* data using a custom similarity function of normalized difference: `makePSN_NamedMatrix(writeProfiles=FALSE,simMetric="custom",customFunc=normDiff)`.
+
+
+```{r}
+KIRC_makeNets <- function(dataList, groupList, netDir,...) {
+	netList <- c()
+	# make RNA nets: group by pathway
+	if (!is.null(groupList[["rna"]])) { 
+	netList <- makePSN_NamedMatrix(dataList$rna, 
+					rownames(dataList$rna),
+			   	groupList[["rna"]],netDir,verbose=FALSE, 
+			  	writeProfiles=TRUE,...) 
+	netList <- unlist(netList)
+	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
+	}
+	
+	# make clinical nets,one net for each variable
+	netList2 <- c()
+	if (!is.null(groupList[["clinical"]])) {
+	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
+		rownames(dataList$clinical),
+		groupList[["clinical"]],netDir,
+		simMetric="custom",customFunc=netDx::normDiff, # custom function
+		sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+	}
+	netList2 <- unlist(netList2)
+	cat(sprintf("Made %i clinical nets\n", length(netList2)))
+	netList <- c(netList,netList2) 
+	cat(sprintf("Total of %i nets\n", length(netList)))
+	return(netList)
+}
+```
+
+**Note:** `dataList` and `groupList` are generic containers that can contain whatever object the user requires to create PSN. **The custom function gives the user complete flexibility in feature design**. For instance, a dataset with mutation data may pass `GenomicRanges` objects in `dataList`, to represent patient mutations, and `groupList` would contain `GenomicRanges` corresponding to loci to be grouped together in the resulting network.
+
+# Run nested cross-validation
+
+Finally we call the function that runs the netDx predictor. We provide:
+
+* number of train/test splits (outer loop of nested CV: `numSplits` parameter), 
+* number of folds for cross-validation (inner loop: `nFoldCV`), 
+* cutoff for networks within an inner loop (`CVcutoff`),
+* and the information to create the PSN, including patient data (`dataList`), how variables are to be grouped into networks (`groupList`) and the custom function to generate features (`makeNetFunc`).
+
+Running the below takes a lot of time so we have commented it out. Feel free to uncomment and run. Change `numCores` to match the number of cores available on your machine for parallel processing.
+
+The call below runs nested two-fold cross-validation over 2 splits. Within each split, it:
+* splits data into train/blindtest using the default split of 80:20
+* runs 2-fold cross-validation using the training samples
+* uses networks that score >=1 out of 2 (`CVcutoff`) to classify blind test samples.
+
+**!!! Note:**Setting `numCores`>1 will not work in Rstudio. Use `knitr::purl("NestedCV_MultiData.Rmd")` to extract the R code into its own file, change `numCores` and run in an interactive R client (i.e. by calling "R" on command-line). **!!!**
+ 
+```{r,eval=TRUE}
+runPredictor_nestedCV(pheno,
+   dataList=dats,groupList=groupList,
+   makeNetFunc=KIRC_makeNets, ### custom network creation function
+   outDir=sprintf("%s/nestedCV_output",getwd()), ## absolute path
+   numCores=1L,nFoldCV=2L, CVcutoff=1L,numSplits=2L)
+```
+
+# Looking at results
+The results directory contains the log file (`log.txt`) and results for each split are stored in its own directory (here, `rng1/` and `rng2/`).
+
+```{r,eval=TRUE}
+outDir <- sprintf("%s/nestedCV_output",getwd())
+dir(outDir)
+```
+
+Look into one of the split directories. `predictionResults.txt` contains blind test prediction labels for that split. There is one directory with cross-validation results per class
+```{r}
+dir(sprintf("%s/rng1",outDir))
+pred <- read.delim(sprintf("%s/rng1/predictionResults.txt",outDir),h=T,as.is=T)
+head(pred)
+```
+
+The cross-validation results are in the `<className>/GM_results/` directory. The set of network scores for the split are in `<className>/GM_results/<className>_pathway_CV_score.txt`.
+
+```{r}
+dir(sprintf("%s/rng1/SURVIVEYES",outDir))
+sc <- read.delim(sprintf("%s/rng1/SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt",outDir),
+   sep="\t",h=T,as.is=T)
+head(sc)
+```
+
+
+# sessionInfo
+
+```{r}
+sessionInfo()
+```
+
+# References
+1. Yuan, Y. *et al.* (2014) Assessing the clinical utility of cancer genomic and proteomic data across tumor types. *Nat Biotechnol* **32**, 644-52.
+2. The Cancer Genome Atlas Research Network (2013). Comprehensive molecular characterization of clear cell renal cell carcinoma. *Nature* **499**, 43-9.

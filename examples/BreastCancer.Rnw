@@ -72,7 +72,7 @@ pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
 subtypes <- c(subtypes,"other") # add residual
 
 pheno$TT_STATUS <- splitTestTrain(pheno,
-    pctT = TRAIN_PROP,setSeed = 42,predClass = "LumA" )
+    pctT = TRAIN_PROP,setSeed = 42)
 @
 
 \section{Create patient similarity networks}

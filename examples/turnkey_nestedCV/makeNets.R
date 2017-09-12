@@ -33,10 +33,12 @@ if (missing(customFunc)) stop("customFunc must be suppled.\n")
 if (!is.null(filterSet)) {
 	cat("Filter set provided; only making nets for those provided here\n")
 	for (k in 1:length(groupList)) {
-			idx <- which(filterSet %in% names(groupList[[k]]))
+			idx <- which(names(groupList[[k]]) %in% filterSet)
 			cat(sprintf("\t%s: %i of %i nets left\n",names(groupList)[k],
 				length(idx),length(groupList[[k]])))
-			if (any(idx)) groupList[[k]] <- groupList[[k]][idx]
+			if (length(idx)>0) {
+					groupList[[k]] <- groupList[[k]][idx]
+			}
 			else groupList[[k]] <- NULL
 	}	
 }

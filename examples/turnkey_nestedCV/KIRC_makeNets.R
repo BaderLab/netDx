@@ -5,8 +5,9 @@ KIRC_makeNets <- function(dataList, groupList, netDir,...) {
 	if (!is.null(groupList[["rna"]])) { 
 	netList <- makePSN_NamedMatrix(dataList$rna, 
 					rownames(dataList$rna),
-			   	pathwayList,netDir,verbose=FALSE, 
+			   	groupList[["rna"]],netDir,verbose=FALSE, 
 			  	writeProfiles=TRUE,...) 
+	netList <- unlist(netList)
 	cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
 	}
 	
@@ -18,8 +19,9 @@ KIRC_makeNets <- function(dataList, groupList, netDir,...) {
 		groupList[["clinical"]],netDir, simMetric="custom",customFunc=normDiff,
 		sparsify=TRUE,verbose=TRUE,append=TRUE,...)
 	}
+	netList2 <- unlist(netList2)
 	cat(sprintf("Made %i clinical nets\n", length(netList2)))
-	netList <- unlist(c(netList,netList2)) 
+	netList <- c(netList,netList2) 
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	return(netList)
 }

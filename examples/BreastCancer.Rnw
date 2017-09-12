@@ -2,6 +2,7 @@
 \usepackage{caption}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \title{netDx use case \linebreak Integrate gene expression and CNV for \linebreak binary classification of breast tumour}
 \author{Shraddha Pai}
@@ -29,7 +30,7 @@ The workflow is shown in Figure 1. The algorithm proceeds in two steps:
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{tcga_brca.png}
+\includegraphics[width=\textwidth]{images/tcga_brca.png}
 \caption{netDx workflow for a binary tumour classifier from gene expression and CNV data. \newline A. Two sets of patient similarity networks are generated: the first based on correlation of gene expression in cellular pathways (magenta), and the second based on shared overlap of CNVs in cellular pathways (teal). Each datatype generates ~1,000-2,000 networks, and these are integrated into a single database by GeneMANIA. \newline B. Feature selection is separately carried out for the `LumA' class for the `other' class. A GeneMANIA query is run on the integrated database is queried 10 times; each time a different 9/10th of the training ``+'' samples is used as query. A network's score is the frequency with which GeneMANIA marks it as being informative. Networks scoring 9 or 10 out of 10 are feature selected. Before patient classification, two enriched databases are constructed (orange and grey cylinders); each contain feature selected nets and train as well as test samples. \newline C. Patient similarity to a class is ranked by running a query against the class database; this is done once per class.  Test patients are assigned to the class for which they have the highest-ranking similarity.}
 \end{center}
 \end{figure}
@@ -72,7 +73,7 @@ pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
 subtypes <- c(subtypes,"other") # add residual
 
 pheno$TT_STATUS <- splitTestTrain(pheno,
-    pctT = TRAIN_PROP,setSeed = 42,predClass = "LumA" )
+    pctT = TRAIN_PROP,setSeed = 42)
 @
 
 \section{Create patient similarity networks}

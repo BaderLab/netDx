@@ -98,4 +98,4 @@ source("KIRC_makeNets.R")
 source("normDiff.R")
 runPredictor_nested(pheno,dataList=dats, groupList=groupList,
 		makeNetFunc=KIRC_makeNets,outDir=megaDir,numCores=8L,
-		nFoldCV=10L, CVcutoff=9L,numSplits=3L)
+		nFoldCV=10L, CVcutoff=9L,numSplits=2L)

@@ -1,6 +1,7 @@
 \documentclass{article}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \title{netDx use case: 4-way classification: Medulloblastoma tumour subtype}
 \author{Shraddha Pai}
@@ -15,7 +16,7 @@ The netDx workflow is shown in Figure 1. We use gene signatures identified by pr
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{mblastoma.png}
+\includegraphics[width=\textwidth]{images/mblastoma.png}
 \caption{netDx workflow for a 4-way classification of medulloblastoma tumour from known gene signatures. \newline A. A GeneMANIA database is built for each subtype. The networks are at the gene-level, with a custom similarity metric (see Section 3); each subtype-specific database contains networks for the genes in the corresponding subtype signature. The networks and database contain all training and test patients. \newline B. A sample is classified by running four GeneMANIA queries, one per subtype. In each case, the query comprises of training samples for that subtype. The query results in subtype-specific similarity ranking. After such ranks have been obtained for all four subtypes, the sample is assigned to the class for which it has the highest rank.}
 \end{center}
 \end{figure}

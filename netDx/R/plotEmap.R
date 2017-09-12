@@ -11,10 +11,15 @@
 #' Cytoscape session. Only change this if you know what you're doing.
 #' @param verbose (logical) print messages
 #' @examples
+#' #refer to writeEMapInput_many.R for working writeEMapInput_many() example
 #' EMap_input <- writeEMapInput_many(featScores,pathwayList,
 #'      netInfo,outDir=outDir)
-#' plotEmap(gmt_file = EMap_input[[1]][1], node_attrFile = EMap_input[[1]][2],
-#'  netName="HighRisk")
+#' outDir <- paste(getwd(),"plots",sep="/")
+#' if (!file.exists(outDir)) dir.create(outDir)
+#' gmtFile <- EMap_input[[1]][1]
+#' nodeAttrFile <- EMap_input[[1]][2]
+#' plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk",
+#'	outDir=outDir)
 #' @import r2cytoscape
 #' @import httr
 #' @importFrom RJSONIO fromJSON

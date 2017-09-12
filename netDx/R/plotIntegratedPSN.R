@@ -45,10 +45,12 @@
 #' load(phenoFile)
 #' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
 #' outDir <- paste(getwd(),"plots",sep="/")
+#' if (!file.exists(outDir)) dir.create(outDir)
+#' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 #' featSelNet <- lapply(featScores, function(x) {
 #' callFeatSel(x, fsCutoff=10, fsPctPass=0.7)
 #' })
-#' plotIntegratedPSN(pheno=phenoFile,baseDir=sprintf("%s/rng1",inDir),
+#' plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 #'	netNames=featSelNet,outDir=outDir)
 #' @import httr
 #' @import ggplot2

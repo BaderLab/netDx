@@ -33,6 +33,8 @@
 #' netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
 #'      path.package("netDx.examples"))
 #' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
+#' outDir <- paste(getwd(),"plots",sep="/")
+#' if (!file.exists(outDir)) dir.create(outDir)
 #' EMap_input <- writeEMapInput_many(featScores,pathwayList,
 #'      netInfo,outDir=outDir)
 #' @export

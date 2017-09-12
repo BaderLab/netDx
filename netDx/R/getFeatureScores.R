@@ -12,19 +12,10 @@
 #' @return (list) one key per patient class. Value is matrix of network
 #' scores across all train/test splits. Each score is the output of
 #' the inner fold of CV.
-#' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_example_data",
+#' @example
+#' inDir <- sprintf("%s/extdata/KIRC_output",
 #' 		path.package("netDx.examples"))
-#' all_rngs <- list.dirs(inDir, recursive = FALSE)
-#' all_classone_files <- unlist(lapply(all_rngs, function(x)
-#' 		paste(x, "SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt",
-#'		sep = "/")))
-#'  all_classtwo_files <- unlist(lapply(all_rngs, function(x)
-#' 		paste(x, "SURVIVENO/GM_results/SURVIVENO_pathway_CV_score.txt",
-#' 		sep = "/")))
-#'  input_list <- list("SURVIVEYES" = all_classone_files,
-#'                      "SURVIVENO" = all_classtwo_files)
-#' net_scores <- getFeatureScores(inDir, c("SURVIVEYES","SURVIVENO"))
+#' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 #' @export
 getFeatureScores <- function(inDir,predClasses) {
 	if (missing(inDir)) stop("inDir not provided");

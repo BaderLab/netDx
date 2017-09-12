@@ -26,6 +26,7 @@
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
 #' outDir <- paste(getwd(),"plots",sep="/")
+#' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 #' gp <- names(featScores)[1]
 #' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
@@ -34,7 +35,7 @@
 #' pathwayList <- pathwayList[c(1:5)]
 #' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
-#'                   outPfx=sprintf("%s/%s",outDir,gp),...)
+#'                   outPfx=sprintf("%s/%s",outDir,gp))
 #' @export
 writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	pctPass=0.70,maxScore=10,trimFromName=c(".profile","_cont"),verbose=FALSE) {

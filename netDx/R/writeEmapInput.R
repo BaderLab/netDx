@@ -7,7 +7,7 @@
 #' genes). Should only contain units profiled in this dataset
 #' @param netInfo (data.frame) Table of network name (netName) and type
 #' (netType). Type is used to assign shapes to nodes:
-#'d(fea  clinical                                          clinical
+#'  clinical                                          clinical
 #'       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
 #'       rna                              RETINOL_BIOSYNTHESIS
 #' @param pctPass (numeric between 0 and 1) fraction of iterations that

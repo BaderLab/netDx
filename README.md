@@ -117,9 +117,6 @@ $ R
 > install.packages("netDx.examples",type="source",repos=NULL)
 > install.packages("knitr") # needed to run examples
 ```
-
-To run Cytoscape-related functionality, such as network visualizations of patient similarity networks and enrichment maps, you will need EasyCyrest and r2cytoscape. Let us install directly from the github packages:
-
 On Unix systems you may need to run the following commands:
 ```
 $ sudo apt-get install libssl-dev # for openssl & httr

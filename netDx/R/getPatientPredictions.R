@@ -1,36 +1,37 @@
 #' Calculates patient-level classification accuracy across train/test splits
 #'
-#' @details Takes all the predictions across the different train/test splits, 
+#' @details Takes all the predictions across the different train/test splits,
 #' and for each patient, generates a score indicating how many times they were
 #' classified by netDx as belonging to each of the classes. The result is that
 #' we get a measure of individual classification accuracy across the different
 #' train/test splits.
 #' @param predFiles (char) vector of paths to all test predictions
-#' (e.g. 100 files for a 100 train/test split design). 
-#' Alternately, the user can also  provide a single directory name, and allow 
-#' the script to retrieve prediction files. 
+#' (e.g. 100 files for a 100 train/test split design).
+#' Alternately, the user can also  provide a single directory name, and allow
+#' the script to retrieve prediction files.
 #' Format is "rootDir/rngX/predictionResults.txt"
-#' @param pheno (data.frame) ID=patient ID, STATUS=ground truth (known class 
-#' label). This table is required to get the master list of all patients, as 
+#' @param pheno (data.frame) ID=patient ID, STATUS=ground truth (known class
+#' label). This table is required to get the master list of all patients, as
 #' not every patient is classified in every split.
 #' @return (list) of length 2.
 #' 1) (data.frame) rows are patients, (length(predFiles)+2) columns.
-#' Columns 1:length(predFiles): Predicted labels for a given split (NA if 
-#' patient was training sample for the split). 
-#' Column (length(predFiles)+1): 
+#' Columns 1:length(predFiles): Predicted labels for a given split (NA if
+#' patient was training sample for the split).
+#' Column (length(predFiles)+1):
 #' split, value is NA. Columns are : ID, REAL_STATUS, predStatus1,...
 #' predStatusN.
 #' Side effect of plotting a dot plot of % accuracy. Each dot is a patient, and
 #' the value is "% splits for which patient was classified correctly".
 #' @example
-#' indir <- sprintf("%s/inst/extdata/KIRC_example_data", 
-#' 		path.package("netDx_software_update"))
-#' load("test_pheno.Rdata")
+#' indir <- sprintf("%s/extdata/KIRC_example_data",
+#' 		path.package("netDx.examples"))
+#' phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
+#' load(phenoFile)
 #' all_rngs <- list.dirs(root_pred_dir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {
 #'			paste(x, "predictionResults.txt", sep = "/"))
 #' })
-#' pred_mat <- getPatientPredAccuracy(all_pred_files, pheno)
+#' pred_mat <- getPatientPredictions(all_pred_files, pheno)
 #' @import ggplot2
 #' @export
 getPatientPredictions <- function(predFiles,pheno) {
@@ -72,7 +73,7 @@ uq_mat <- cbind(uq_mat, pheno$STATUS,pctCorr)
 spos <- gregexpr("\\/",predFiles)
 # get the name of the iteration (rngX) assuming directory structure
 # rngX/pathway_CV_score.txt
-fNames <- lapply(1:length(spos), function(x) {	
+fNames <- lapply(1:length(spos), function(x) {
   n <- length(spos[[x]])
 	y <- substr(predFiles[x], spos[[x]][n-1]+1,spos[[x]][n]-1)
 	y
@@ -85,10 +86,9 @@ colnames(out) <- c(fNames,"STATUS","pctCorrect")
 p <- ggplot(out,aes(x=pctCorrect))+ geom_dotplot()
 p <- p + ggtitle(sprintf("Patient-level classification accuracy (N=%i)",
 		length(predFiles)))
-p <- p + theme(axis.text=element_text(size=13), 
+p <- p + theme(axis.text=element_text(size=13),
 		axis.title=element_text(size=13))
 print(p)
 
 return(list(predictions=output_mat,plot=p))
 }
-

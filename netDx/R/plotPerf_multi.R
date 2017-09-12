@@ -7,7 +7,7 @@
 #' @param ylab (char) y-axis label
 #' @param meanCol (char) colour for mean trendline
 #' @return No value. Side effect of plotting ROC and PR curves
-#' @example
+#' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
 #' all_rng <- list.files(path = inDir, pattern = "rng.")
 #' fList <- sprintf("%s/%s/predictionResults.txt", inDir,all_rng)

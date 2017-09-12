@@ -22,15 +22,14 @@
 #' predStatusN.
 #' Side effect of plotting a dot plot of % accuracy. Each dot is a patient, and
 #' the value is "% splits for which patient was classified correctly".
-#' @example
-#' indir <- sprintf("%s/extdata/KIRC_example_data",
-#' 		path.package("netDx.examples"))
+#' @examples
+#' inDir <- sprintf("%s/extdata/KIRC_output",
+#'    path.package("netDx.examples"))
 #' phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
 #' load(phenoFile)
-#' all_rngs <- list.dirs(root_pred_dir, recursive = FALSE)
+#' all_rngs <- list.dirs(inDir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {
-#'			paste(x, "predictionResults.txt", sep = "/"))
-#' })
+#'     paste(x, "predictionResults.txt", sep = "/")}))
 #' pred_mat <- getPatientPredictions(all_pred_files, pheno)
 #' @import ggplot2
 #' @export

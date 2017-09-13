@@ -64,7 +64,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		}
 	}
 
-	if (simMetric!="custom" & writeProfiles==TRUE) {
+	if (simMetric!="pearson" & writeProfiles==TRUE) {
 		stop("writeProfiles must only be TRUE with simMetric is set to pearson. For all other metrics, set writeProfiles=FALSE")
 	}
 

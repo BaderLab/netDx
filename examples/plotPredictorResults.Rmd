@@ -1,5 +1,5 @@
 ---
-title: "Plot results of netDx predictor"
+title: "Plot netDx results"
 output:
   html_document: 
    toc: true

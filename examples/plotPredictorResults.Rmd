@@ -17,7 +17,7 @@ For this example to work, you will require the following components to be instal
 * R packages: `httr`, `RJSONIO`
 * R packages r2cytoscape and EasycyRest.
 
-**Note:If Cytoscape is not running, this example will not work!**
+**Note: If Cytoscape is not running, this example will not work!**
 
 Let us see if the required dependencies can be installed and/or loaded:
 
@@ -198,13 +198,13 @@ An EnrichmentMap is a network-based visualization for a group of overlapping set
 
 By clustering and annotating the EnrichmentMap using the AutoAnnotate app (Ref 4), we can identify functional themes that are common among high-scoring features. 
 
-Get the set of valid gene sets.
+Get the set of valid gene sets:
 ```{r}
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
            path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 ```
-Filter for the genes measured in this dataset
+Filter for the genes measured in this dataset:
 ```{r}
 xpr_genes <- sprintf("%s/extdata/EMap_input/genenames.txt",
       path.package("netDx.examples"))
@@ -256,9 +256,9 @@ Nodes are coloured by the highest consistent score the particular feature achiev
 
 **Note:** Node labels for individual features have been turned off to remove visual clutter. These can be enabled interactively in Cytoscape.
 
-There should also be a second EnrichmentMap for the 'SURVIVENO' class.
+There should also be a second EnrichmentMap for the `SURVIVENO` class:
 
-![EnrichmentMap for the SURVIVENO class](./plotPredictorResults_images/SURVIVENO.png){width=50%}
+![EnrichmentMap for the SURVIVENO class](./plotPredictorResults_images/SURVIVENO.png){width=70%}
 
 
 ### Computing the integrated patient similarity network

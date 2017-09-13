@@ -1,14 +1,14 @@
 #' Plots various measures of predictor performance for binary classifiers
-#' 
-#' @details Plots individual and average ROC/PR curves. mean+/-SEM performance for a predictor run using nested 
+#'
+#' @details Plots individual and average ROC/PR curves. mean+/-SEM performance for a predictor run using nested
 #' cross-validation or a similar repeated design.
-#' predictionResults.txt contains a (data.frame) 
-#' @param inDir (char) path to predictionResults.txt files. 
+#' predictionResults.txt contains a (data.frame)
+#' @param inDir (char) path to predictionResults.txt files.
 #' if inDir is a single char and not a vector of prediction files, the expected
-#' directory structure is <inDir>/rng<X>/predictionResults.txt". 
+#' directory structure is <inDir>/rng<X>/predictionResults.txt".
 #' Otherwise inDir is assumed
 #' to be a vector, each with absolute paths to predictionResults.txt
-#' @param predClasses (char) vector of class names. 
+#' @param predClasses (char) vector of class names.
 #' @return (list) each key corresponds to an input file in inDir.
 #' Value is a list with:
 #' 1) stats: "stats" component of perfCalc
@@ -17,15 +17,20 @@
 #' 4) auroc: Area under ROC curve
 #' 5) aupr: Area under PR curve
 #' 6) accuracy: Accuracy
-#' 
+#'
 #' Side effect of plotting in a 2x2 format:
 #' 1) mean+/-SEM AUROC
 #' 2) mean+/-SEM AUPR
 #' 3) ROC curve for all runs plus average
 #' 4) PR curve for all runs plus average
+#' @examples
+#' inDir <- sprintf("%s/extdata/KIRC_output",
+#' path.package("netDx.examples"))
+#' plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
 #' @import ROCR
 #' @import pracma
 #' @export
+
 plotPerf <- function(inDir, predClasses) {
 
   if (missing(inDir)) stop("inDir not provided");
@@ -53,7 +58,7 @@ plotPerf <- function(inDir, predClasses) {
 	}
 
   mega <- list()
-  for (fName in fList) { 
+  for (fName in fList) {
       out <- list()
         overall_acc <- numeric()
         curRoc	<- list()
@@ -64,7 +69,7 @@ plotPerf <- function(inDir, predClasses) {
         pred_col1 <- sprintf("%s_SCORE",predClasses[1])
         pred_col2 <- sprintf("%s_SCORE",predClasses[2])
 
-			idx1 <- which(colnames(dat) == pred_col1) 
+			idx1 <- which(colnames(dat) == pred_col1)
 			idx2 <- which(colnames(dat) == pred_col2)
         pred <- ROCR::prediction(dat[,idx1]-dat[,idx2],
 					dat$STATUS==predClasses[1])
@@ -102,7 +107,7 @@ plotPerf <- function(inDir, predClasses) {
 				cex.axis=1.4,xlab="")
     	abline(h=c(0.7,0.8),col='cadetblue3',lty=3,lwd=3)
     	points(1,mu,type='p',cex=1.4,pch=16)
-    
+
     	# error bars
     	segments(x0=1, y0=mu-sem,y1=mu+sem,lwd=3)
     	segments(x0=1-0.01, x1=1+0.01,y0=mu-sem,y1=mu-sem)
@@ -126,4 +131,3 @@ plotPerf <- function(inDir, predClasses) {
 
 		return(mega)
 }
-

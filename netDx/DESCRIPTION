@@ -1,7 +1,8 @@
 Package: netDx
 Title: Learns Patient Binary Classification based on Similarity Networks
-Version: 0.93
+Version: 1.0
 Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
+	person("Ahmad","Shah", role="aut"),
 	person("Shirley","Hui",role="aut"),
 	person("Ruth","Isserlin",role="aut"),
 	person("Hussam","Kaka", role="aut"),
@@ -14,7 +15,7 @@ Description: Builds a patient classifier based on patient similarities. Gets
 Imports: bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
 Depends:
     R (>= 3.1.1),bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
-Suggests: netDx.examples, reshape2, igraph, gplots
+Suggests: netDx.examples, reshape2, igraph, gplots,EasycyRest,RJSONIO
 License: GPL>=2.0
 LazyData: false
 URL: http://netdx.org

@@ -66,7 +66,7 @@ for (ctr in 1:nrow(setInfo)) {
 	outFile <- sprintf("%s/%s/KIRC_results_%s.Rdata",
 		outRoot,setInfo$outdir[ctr],cur)
 
-	kset <- c(1:40,61:82)#c(1:40,41:53,61:73) #c(1:7,21:27,41:43,61:63,81:83)#c(1:49,51:68,76:92)#1:100#c(1:15,26:37,51:58,76:82) #1:maxk
+	kset <- 1:100 #c(1:40,61:82)#c(1:40,41:53,61:73) #c(1:7,21:27,41:43,61:63,81:83)#c(1:49,51:68,76:92)#1:100#c(1:15,26:37,51:58,76:82) #1:maxk
 	cat(sprintf("%s:Num runs=%i\n", cur,maxk))
 
 	val		<- matrix(NA,nrow=maxk,ncol=1)

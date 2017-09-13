@@ -29,16 +29,7 @@ Given network scores over a set of trian/test splits, compiles these
 into a matrix for downstream analysis. See the section on "Output Files"
 }
 \examples{
-inDir <- sprintf("\%s/inst/extdata/KIRC_example_data", 
-		path.package("netDx_software_update"))
-all_rngs <- list.dirs(inDir, recursive = FALSE)
-all_classone_files <- unlist(lapply(all_rngs, function(x) 
-		paste(x, "SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt", 
-	sep = "/")))
- all_classtwo_files <- unlist(lapply(all_rngs, function(x) 
-		paste(x, "SURVIVENO/GM_results/SURVIVENO_pathway_CV_score.txt", 
-		sep = "/")))
- input_list <- list("SURVIVEYES" = all_classone_files,
-                     "SURVIVENO" = all_classtwo_files)
-net_scores <- genNetScores(inDir, c("SURVIVEYES","SURVIVENO"))
+inDir <- sprintf("\%s/extdata/KIRC_output",
+		path.package("netDx.examples"))
+netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 }

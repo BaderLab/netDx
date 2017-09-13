@@ -111,7 +111,7 @@ $ R
 > install.packages("netDx.examples",type="source",repos=NULL)
 > install.packages("knitr") # needed to run examples
 ```
-On Unix systems you may need to run the following commands:
+On Unix systems you may need to install the libraries below at command-line:
 ```
 $ sudo apt-get install libssl-dev # for openssl & httr
 $ sudo apt-get install xml2-config # for XML & r2cytoscape

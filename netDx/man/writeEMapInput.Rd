@@ -9,16 +9,16 @@ writeEMapInput(featScores, namedSets, netInfo, outPfx = "curr",
   verbose = FALSE)
 }
 \arguments{
-\item{featScores}{(data.frame) network scores across rounds of cross 
-validation. Rows are networks and columns are network name followed by 
+\item{featScores}{(data.frame) network scores across rounds of cross
+validation. Rows are networks and columns are network name followed by
 scores for cross-validation rounds. Output of getFeatureScores()}
 
 \item{namedSets}{(list) list of nets and units (e.g.e pathway names and
 genes). Should only contain units profiled in this dataset}
 
-\item{netInfo}{(data.frame) Table of network name (netName) and type 
+\item{netInfo}{(data.frame) Table of network name (netName) and type
 (netType). Type is used to assign shapes to nodes:
-d(fea  clinical                                          clinical
+ clinical                                          clinical
       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
       rna                              RETINOL_BIOSYNTHESIS}
 
@@ -43,4 +43,18 @@ pctPass
 }
 \description{
 write enrichment map for consensus nets
+}
+\examples{
+inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx.examples"))
+outDir <- paste(getwd(),"plots",sep="/")
+if (!file.exists(outDir)) dir.create(outDir)
+featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
+gp <- names(featScores)[1]
+pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
+          path.package("netDx.examples"))
+pathwayList <- readPathways(pathFile)
+pathwayList <- pathwayList[c(1:5)]
+netInfo <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
+output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
+                  outPfx=sprintf("\%s/\%s",outDir,gp))
 }

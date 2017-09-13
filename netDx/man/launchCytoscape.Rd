@@ -10,7 +10,7 @@ launchCytoscape(cytoPath = "/Applications", sleepTime = 30)
 \item{cytoPath}{(char) Absolute path to installed Cytoscape software}
 
 \item{sleepTime}{(integer) number of seconds to sleep while waiting for
-Cytoscape to launch. If cyrest tries to run commands too soon, you may 
+Cytoscape to launch. If cyrest tries to run commands too soon, you may
 want to increase this duration.}
 }
 \value{
@@ -21,7 +21,10 @@ launches Cytoscape
 }
 \details{
 Known issues. The output associated with Cytoscape launch causes
-the terminal to be useless for further interaction because although it 
+the terminal to be useless for further interaction because although it
 executes typed commands, it doesn't print the characters to the screen.
 This script should only be used in completely non-interactive sessions.
+}
+\examples{
+launchCytoscape()
 }

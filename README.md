@@ -140,7 +140,9 @@ $ R
 This should generate `Medulloblastoma.pdf` in the `examples/` directory.
 
 ## Run BreastCancer LumA example
-This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature.* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. We do not recommend running it on a machine with less than 8Gb RAM.
+This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature.* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. 
+
+**We do not recommend running it on a Mac with less than 8Gb RAM. A Unix machine manages memory differently and may require as much as 32Gb RAM. If such a machine is not available, set `numCores=2L` in the `.Rnw` file before running.**
 
 ```
 $ cd netDx/examples/

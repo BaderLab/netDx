@@ -12,7 +12,7 @@
 #' @return (list) one key per patient class. Value is matrix of network
 #' scores across all train/test splits. Each score is the output of
 #' the inner fold of CV.
-#' @example
+#' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
 #' 		path.package("netDx.examples"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))

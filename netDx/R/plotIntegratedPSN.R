@@ -119,8 +119,8 @@ if (length(ptFile)>=2) {
 for (k in 2:length(ptFile)) {
 	tmp <- system(sprintf("diff %s %s", ptFile[[1]],ptFile[[k]]),intern=TRUE)
 	if (!is.null(attr(tmp,"status"))){
-		cat(sprintf("Gene IDs for %s doesn't match that for %s.\n", predClass[k],
-				predClass[1]))
+		cat(sprintf("Gene IDs for %s doesn't match that for %s.\n", 
+				predClasses[k],predClasses[1]))
 		cat("These should be identical. Please check.\n")
 	}
 }

@@ -29,6 +29,12 @@ outF=scrambled2_Dell_170826.tar.gz
 ssh $DELL "cd $indir; tar cvfz ~/${outF} rng*/predictionResults.txt rng*/SURVIVE*/*/*CV_score.txt" 
 scp $DELL:~/${outF} .
 
+# DELL - 4
+indir=/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pathwaysScramble2_2_170826
+outF=scrambled2_2_Dell_170826.tar.gz
+ssh $DELL "cd $indir; tar cvfz ~/${outF} rng*/predictionResults.txt rng*/SURVIVE*/*/*CV_score.txt" 
+scp $DELL:~/${outF} .
+
 # VM1
 indir=/mnt/data2/BaderLab/PanCancer_KIRC/output/pathwaysScramble_170824
 outF=scrambled2_VM1_170824.tar.gz
@@ -48,3 +54,4 @@ tar xvfz scrambled2_VM3_170824.tar.gz
 tar xvfz scrambled2_Dell2_170824.tar.gz
 tar xvfz scrambled2_Dell_170824.tar.gz
 tar xvfz scrambled2_Dell_170826.tar.gz
+tar xvfz scrambled2_2_Dell_170826.tar.gz

@@ -25,6 +25,10 @@ createPSN_MultiData <- function(dataList,groupList,netDir,filterSet=NULL,
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (missing(netDir)) stop("netDir must be supplied.\n")
+
+if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
+dir.create(netDir)
+
 if (!is.null(filterSet)) {
 	if (length(filterSet)<1) 
 		stop("filterSet is empty. It needs to have at least one net to proceed.")

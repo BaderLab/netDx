@@ -105,7 +105,7 @@ for (rngNum in 1:numSplits) {
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 											  setSeed=rngNum*5)
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
-	dats_train <- lapply(dats,function(x) { 
+	dats_train <- lapply(dataList,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
 
 	netDir <- sprintf("%s/networks",outDir)
@@ -153,7 +153,7 @@ for (rngNum in 1:numSplits) {
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
 
-		createPSN_MultiData(dataList=dats,groupList=groupList,
+		createPSN_MultiData(dataList=dataList,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
 			customFunc=makeNetFunc,numCores=numCores,
 			filterSet=pTally)

@@ -119,8 +119,13 @@ for (rngNum in 1:numSplits) {
 		}
 
 	netDir <- sprintf("%s/networks",outDir)
-	createPSN_MultiData(dataList=dats_train,groupList=groupList,
+	netList <- createPSN_MultiData(dataList=dats_train,groupList=groupList,
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores)
+	if(typeof(dataList[[1]]) == 'S4'){
+		p <- countPatientsInNet(netDir,netList, pheno$ID)
+		tmp	<- updateNets(p,pheno,writeNewNets=FALSE)
+		pheno	<- tmp[[2]]
+	}
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores)
 
 
@@ -163,7 +168,7 @@ for (rngNum in 1:numSplits) {
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
 
-		createPSN_MultiData(dataList=dataList,groupList=groupList,
+		netList<- createPSN_MultiData(dataList=dataList,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
 			customFunc=makeNetFunc,numCores=numCores,
 			filterSet=pTally)

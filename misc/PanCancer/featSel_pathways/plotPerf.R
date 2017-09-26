@@ -57,7 +57,7 @@ for (ctr in 2:nrow(setInfo)) {
 
 colnames(mega_roc) <- sub("clinical","clin",colnames(mega_roc))
 keepnm <- c("clinOne","clinNets","clinNetsPathBest",
-		"rnaOne","pathOnly","pathOnly_noFS","pseudo_featSel",
+		"rnaOne","pathOnly","pseudo_featSel",
 	"scrambled2")
 	#	"pathFull_AltClass", "pathAlt_noFS",
 	#	"pathOnly80","pathOnly90","pathOnly95")
@@ -155,8 +155,8 @@ for (cur_dat in c("roc","pr")) {
 #	.wmwtest("pathOnly","pathOnly90","less")
 #	.wmwtest("pathOnly","pathOnly95","less")
 	#.wmwtest("pathFull_AltClass","pathAlt_noFS","greater")
-	#.wmwtest("rna","pathOnly","less")
-	.wmwtest("pathOnly","pathOnly_noFS","greater")
+	.wmwtest("rnaOne","pathOnly","less")
+#	.wmwtest("pathOnly","pathOnly_noFS","greater")
 #	}
 }
 	}, error=function(ex){

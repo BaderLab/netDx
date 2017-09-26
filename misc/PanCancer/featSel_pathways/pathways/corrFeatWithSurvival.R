@@ -23,8 +23,10 @@ toTitleCase <- function(str) {
 	str2
 }
 
+# -------------------------------------------------------------
+# define input files
 ### input directory for data
-rootDir <- "/Users/shraddhapai/Documents/Research/BaderLab"
+rootDir <- "/Users/shraddhapai/DropBox/netDx/BaderLab"
 outDir <- sprintf("%s/2017_PanCancer_Survival",rootDir)
 
 # must define universe of clinical variables
@@ -47,41 +49,38 @@ consNetDir <- list(
 	KIRC=sprintf("%s/2017_TCGA_KIRC/output/pathOnly_consNets_170509", rootDir)
 )
 
-
 consListingDir <- outDir
 dt <- format(Sys.Date(),"%y%m%d")
-
-# ########## Loop over cancer datasets
-for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
-	cat(sprintf("--------------------------\n"))
-	cat(sprintf("%s\n--------------------------\n\n",curSet))
+curSet <- "KIRC"
 	
-	dataDir <- consNetDir[[curSet]]
-	profileDir <- list(
-		SURVIVEYES=sprintf("%s/SURVIVEYES/networks",dataDir),
-		SURVIVENO=sprintf("%s/SURVIVENO/networks",dataDir)
+dataDir <- consNetDir[[curSet]]
+profileDir <- list(
+	SURVIVEYES=sprintf("%s/SURVIVEYES/networks",dataDir),
+	SURVIVENO=sprintf("%s/SURVIVENO/networks",dataDir)
+)
+	
+# the pathway scores for each class
+netScoreFile <- list(
+	SURVIVEYES=sprintf("%s/pathwaysOnly_170502/featSelNets/pathways_thresh10_pctPass0.70_SURVIVEYES_consNets.txt", outDir,curSet),
+	SURVIVENO=sprintf("%s/pathwaysOnly_170502/featSelNets/pathways_thresh10_pctPass0.70_SURVIVENO_consNets.txt", outDir,curSet)
 	)
 	
-	# the pathway scores for each class
-	netScoreFile <- list(
-		SURVIVEYES=sprintf("%s/pathwaysOnly_170502/%s_thresh10_pctPass0.70_SURVIVEYES_consNets.txt", outDir,curSet),
-		SURVIVENO=sprintf("%s/pathwaysOnly_170502/%s_thresh10_pctPass0.70_SURVIVENO_consNets.txt", outDir,curSet)
-	)
-	
-	# load survival data
-	curSurv <- read.delim(survList[[curSet]],sep="\t",h=T,as.is=T)
-	colnames(curSurv)[1] <- "ID"
+# -------------------------------------------------------------
+# begin work
 
-	clrs <- plotrix::color.scale(x=curSurv$is_alive,alpha=0.5,
-		extremes=c("orange","blue"))
-	curSurv$patColor <- clrs; rm(clrs)
+# load survival data
+curSurv <- read.delim(survList[[curSet]],sep="\t",h=T,as.is=T)
+colnames(curSurv)[1] <- "ID"
+
+clrs <- plotrix::color.scale(x=curSurv$is_alive,alpha=0.5,
+	extremes=c("orange","blue"))
+curSurv$patColor <- clrs; rm(clrs)
 	
-	# ----------------------------------------
-	# compare with survival on a per-feature basis
+# ----------------------------------------
+# compare with survival on a per-feature basis
 	for (gps in names(netScoreFile)) {
 		cat(sprintf("Group %s\n", gps))
 		pTally <- read.delim(netScoreFile[[gps]],sep="\t",h=T,as.is=T)[,1]
-
 	
 		resMat <- matrix(0, nrow=length(pTally), ncol=6)
 			isDone	<- rep(FALSE, length(pTally))
@@ -125,11 +124,20 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 					if (maxDim < 3) {i <- 1; j <- 2}
 					else { i <- 1; j <- 3}
 				} else { i <- 2; j <- 3}
-				
+
+				# draw decision boundary in automated manner
+				tmp2 <- tmp[,c("SURVIVE",sprintf("PC%i",i),sprintf("PC%i",j))]
+				colnames(tmp2) <- c("y","x1","x2")
+				mdl <- glm(y ~ ., data=tmp2,family=binomial)
+				slope <- coef(mdl)[2]/(-coef(mdl)[3])
+				intercept <- coef(mdl)[1]/(-coef(mdl)[3])
+
 				p <- ggplot(tmp,aes_string(x=sprintf("PC%i",i),
 					y=sprintf("PC%i",j)))
 				p <- p + geom_point(aes(colour=factor(SURVIVE)),alpha=0.6,
-						size=3)
+						size=2)
+				p <- p + geom_abline(intercept=intercept,slope=slope,
+					colour="gray50",lwd=2)
 				p <- p + ggtitle(sprintf("%s\ncor=%1.2f (p<%1.2e)",
 					rownames(resMat)[idx],
 					resMat[idx,k],10^-resMat[idx,3+k]))
@@ -138,11 +146,6 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 						axis.text=element_blank())
 				plotList[[plotCtr]] <- p
 				plotCtr <- plotCtr+1
-				#plot(pr$x[,i],pr$x[,j],
-				#	xlab=sprintf("PC%i",i),ylab=sprintf("PC%i",j),
-				#	pch=16,col=mysurv$patColor,
-			#		main=ttl,cex.axis=1.3,bty='n',cex=1.3,
-			#		cex.main=1.3)
 			}
 			#}
 			isDone[idx] <- TRUE
@@ -231,8 +234,11 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 				#print(p)
 		}
 
-		pdf(sprintf("%s/%s_%s_PCA_%s.pdf",outDir,curSet,gps,dt),
-			width=11,height=11)
+		outFile <- sprintf("%s/%s_%s_PCA_%s.pdf",outDir,curSet,gps,dt)
+		pdf(outFile,width=11,height=8)
+	
+		cat(sprintf("PC plot in:\n%s\n",outFile))
+
 		source("../multiplot.R")
 		tryCatch({
 			for (sidx in seq(1,length(plotList),9)) {
@@ -274,50 +280,49 @@ for (curSet in c("KIRC")) { #LUSC","KIRC","OV","GBM")) {
 		}
 		cat(sprintf("%i nets with p < 0.01\n",length(isTop)))
 	
-		# write table twice - first, all results. then those with p < 0.01
-		writeTables <- "all"
-		if (length(isTop)>=1) writeTables <- c(writeTables,"top")
-		for (writeVersion in writeTables) {
-			if (writeVersion == "top") resMat <- resMat[isTop,,drop=FALSE]
-		# plot correlation table
-		if (nrow(resMat)>30) vcex <- 1 
-		else if (nrow(resMat)>20) vcex <- 1.5
-		else vcex <-2.5
+	# write table twice - first, all results. then those with p < 0.01
+	writeTables <- "all"
+	if (length(isTop)>=1) writeTables <- c(writeTables,"top")
+	for (writeVersion in writeTables) {
+		if (writeVersion == "top") resMat <- resMat[isTop,,drop=FALSE]
+	# plot correlation table
+	if (nrow(resMat)>30) vcex <- 1 
+	else if (nrow(resMat)>20) vcex <- 1.5
+	else vcex <-2.5
 
-		par(mar = c(0.5, 35, 5.5, 0.5))
-		plotrix::color2D.matplot(resMat[,1:3],show.values=TRUE,axes=F,
-			xlab="",ylab="",vcex=vcex,vcol='black',
-			cs1=c(1,1,0),cs2=c(0,1,0), cs3=c(0,1,1),
-			xrange=c(-1,0,1),main=sprintf("%s:%s features",curSet,gps)) 
-		# column names
-		axis(3,at=seq_len(3)-0.5,labels=colnames(resMat)[1:3],
-				tick=F,cex.axis=2,line=-1)
-		# rownames
-		axis(2,at=seq_len(nrow(resMat))-0.5,
-			labels=sub(".profile","",rev(rownames(resMat))),tick=F,
-			las=1,cex.axis=1.7)
-		# plot pvalues
-		par(mar = c(0.5, 35, 6.5, 0.5))
-		plotrix::color2D.matplot(resMat[,4:6],show.values=TRUE,axes=F,
-			xlab="",ylab="",vcex=vcex,vcol='black',
-			cs1=c(1,0),cs2=c(1,0),cs3=c(1,1),
-			main=sprintf("%s:%s features",curSet,gps))
-		axis(3,at=seq_len(3)-0.5,labels=colnames(resMat)[4:6],
-				tick=F,cex.axis=1,line=-1)
-		axis(2,at=seq_len(nrow(resMat))-0.5,
-			labels=sub(".profile","",
-				sub("_cont","",rev(rownames(resMat)))),tick=F,
-			las=1,cex.axis=1)
-		}
+	par(mar = c(0.5, 35, 5.5, 0.5))
+	plotrix::color2D.matplot(resMat[,1:3],show.values=TRUE,axes=F,
+		xlab="",ylab="",vcex=vcex,vcol='black',
+		cs1=c(1,1,0),cs2=c(0,1,0), cs3=c(0,1,1),
+		xrange=c(-1,0,1),main=sprintf("%s:%s features",curSet,gps)) 
+	# column names
+	axis(3,at=seq_len(3)-0.5,labels=colnames(resMat)[1:3],
+			tick=F,cex.axis=2,line=-1)
+	# rownames
+	axis(2,at=seq_len(nrow(resMat))-0.5,
+		labels=sub(".profile","",rev(rownames(resMat))),tick=F,
+		las=1,cex.axis=1.7)
+	# plot pvalues
+	par(mar = c(0.5, 35, 6.5, 0.5))
+	plotrix::color2D.matplot(resMat[,4:6],show.values=TRUE,axes=F,
+		xlab="",ylab="",vcex=vcex,vcol='black',
+		cs1=c(1,0),cs2=c(1,0),cs3=c(1,1),
+		main=sprintf("%s:%s features",curSet,gps))
+	axis(3,at=seq_len(3)-0.5,labels=colnames(resMat)[4:6],
+			tick=F,cex.axis=1,line=-1)
+	axis(2,at=seq_len(nrow(resMat))-0.5,
+		labels=sub(".profile","",
+			sub("_cont","",rev(rownames(resMat)))),tick=F,
+		las=1,cex.axis=1)
+	}
 
-		},error=function(ex) {
-			print(ex)
-		},finally={
-			dev.off()
-		})
-	
-		}
-}
+	},error=function(ex) {
+		print(ex)
+	},finally={
+		dev.off()
+	})
+
+	}
 
 
 

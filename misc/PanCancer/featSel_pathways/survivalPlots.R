@@ -85,8 +85,10 @@ abline(v=-log10(c(0.05,0.05/100)),col='red',lwd=3,lty=c(1,3))
 
 #x <- "KIRC_oneRNANet"
 #y <- "KIRC_pathwayOnly"
-#wmw <- wilcox.test(p_val_list[[x]],p_val_list[[y]],alternative="less")
-#cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
+x <- "clinNets"
+y <- "clinNetsPathBest"
+wmw <- wilcox.test(p_val_list[[x]],p_val_list[[y]],alternative="less")
+cat(sprintf("%s vs %s (p < %1.2e)\n",x,y,wmw$p.value))
 ###for(cur in names(p_val_list)){
 ###    log_5 <- -log(0.05, 10)
 ###    log_bon <- -log(0.0005, 10)

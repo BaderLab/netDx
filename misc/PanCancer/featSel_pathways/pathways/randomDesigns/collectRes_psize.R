@@ -54,7 +54,7 @@ dt <- format(Sys.Date(),"%y%m%d")
 outList <- list()
 megaList <- list()
 
-inDirRoot <- sprintf("%s/pathSize_170808",inRoot)
+inDirRoot <- sprintf("%s/pathSize_170919",inRoot)
 
 pDir <- dir(inDirRoot,"pSize")
 out <- list()
@@ -64,9 +64,9 @@ for (curp in pDir) {
 	gDir <- sprintf("%s/%s/%s",inDirRoot,curp,gDir)
 	
 	for (curg in gDir) {
-		cat(sprintf("%s:%s:Num runs=%i\n", curp,basename(gDir),length(kset)))
 	
 		rngDirs <- dir(curg,pattern="rng")
+		cat(sprintf("%s:%s:Num runs=%i\n", curp,basename(gDir),length(rngDirs)))
 		val		<- matrix(NA,nrow=length(rngDirs),ncol=1)
 		val_pr <- matrix(NA,nrow=length(rngDirs),ncol=1)
 ctr <- 1
@@ -91,15 +91,20 @@ idx <- order(as.integer(nm))
 
 out <- out[idx]
 
+names(out) <- sub("pSize","",names(out))
+names(out) <- sub("_numG10","",names(out))
+
 roc <- unlist(lapply(out,function(x) mean(x[[1]])))
 names(roc) <- names(out)
 roc_sem <- unlist(lapply(out,function(x) sd(x[[1]])/sqrt(length(x[[1]]))))
 pr <- unlist(lapply(out,function(x) mean(x[[2]])))
 pr_sem <- unlist(lapply(out,function(x) sd(x[[2]])/sqrt(length(x[[2]]))))
 
+postscript("psize_perf.eps",width=8,height=8)
+tryCatch({
 par(mfrow=c(2,1),mar=c(4,4,2,2),las=1,cex.axis=1.1,bty='n')
 plot(1:length(roc),roc,ylim=c(0.5,0.8),xaxt='n',
-		xlab="Num pathways sampled for GM db for test classification\nEach pathway contains 10 randomly-sampled non-pathway genes (pseudo pathway)",cex=1.2,pch=16)
+		xlab="Num pathways sampled for GM db for test classification\nEach pathway contains 10 randomly-sampled non-pathway genes (pseudo pathway)",cex=1.2,pch=16,ylab="AUROC (mean+/-SEM)")
 segments(x0=1:length(roc), y0=roc-roc_sem,
 	y1=roc+roc_sem,lwd=3)
 axis(side=1,at=1:length(roc),labels=names(out))
@@ -109,9 +114,15 @@ abline(h=seq(0.6,0.8,0.05),lty=3,col='grey50')
 ln <- unlist(lapply(out,function(x) length(x[[1]])))
 text(1:length(roc),0.55, sprintf("N=%i",ln))
 
-plot(1:length(pr),pr,ylim=c(0.5,0.8),xaxt='n',cex=1.2,pch=16)
+plot(1:length(pr),pr,ylim=c(0.5,0.8),xaxt='n',cex=1.2,pch=16,
+	ylab="AUPR (mean+/-SEM)")
 axis(side=1,at=1:length(pr),labels=names(out))
 segments(x0=1:length(pr), y0=pr-pr_sem,
 	y1=pr+pr_sem,lwd=3)
 title("PR")
 abline(h=seq(0.6,0.8,0.05),lty=3,col='grey50')
+},error=function(ex){
+	print(ex)
+},finally={
+	dev.off()
+})

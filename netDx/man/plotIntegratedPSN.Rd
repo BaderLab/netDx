@@ -5,7 +5,8 @@
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
-  topX = 0.2, aggFun = "MEAN", outDir = ".", verbose = FALSE, ...)
+  topX = 0.2, aggFun = "MEAN", outDir = ".", calcShortestPath = TRUE,
+  savePaths = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.
@@ -28,6 +29,13 @@ e.g. topX=0.2 will keep 20\% top edges}
 \item{aggFun}{(char) function to aggregate edges from different PSN}
 
 \item{outDir}{(char) path to directory for tmp work}
+
+\item{calcShortestPath}{(logical) if TRUE, computes weighted shortest path}
+
+\item{savePaths}{(logical) if TRUE, writes all pairwise shortest paths to file. 
+Unless you plan to analyse these separately from looking at the shortest path
+violin plots or integrated PSN in Cytoscape, probably good to set to FALSE.
+for all pairwise classes}
 
 \item{verbose}{(logical) print detailed messages}
 }

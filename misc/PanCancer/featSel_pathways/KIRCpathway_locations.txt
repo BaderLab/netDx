@@ -6,9 +6,9 @@ clinPathCons		consensus_170502	no	100	gray
 clinNets	KIRC_clinNets_170430	clinNets_170430	yes	100	red
 clinNetsPathNets	KIRC_featSel_pathway_170426	featSel_pathways_170426	no	100	red
 clinNetsPathBest	KIRC_clinRNA_best	clinRNA_best	yes	100	purple
-rnaOne	KIRC_oneNetPer_170426	yes	hotpink1
+rnaOne	KIRC_oneNetPer_170426		yes	100	hotpink1
 pathOnly	pathway_170502	pathwaysOnly_170502	yes	100	dodgerblue3
-pathOnly_noFS	pathOnly_noFS_170809	pathOnly_noFS_170809	yes	100	orange
+pathOnly_noFS	pathOnly_noFS_170809	pathOnly_noFS_170809	no	100	orange
 pseudo_featSel	pseudo_featSel_170813	pseudo_featSel_170813	yes	100	darkorange
 scrambled	scrambled_170809	scrambled_170809	no	100	purple
 scrambled2	scrambled2_170824	scrambled2_170809	yes	100	purple

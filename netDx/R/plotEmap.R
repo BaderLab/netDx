@@ -7,6 +7,12 @@
 #' @param netName (char) name for network in Cytoscape. Using the patient
 #' class name is a good idea. (e.g. SURVIVE_YES and SURVIVE_NO).
 #' @param outDir (char) path to directory where file should be stored.
+#' @param minScore (int) minimum score of node to show
+#' @param maxScore (int) maximum score of node to show
+#' @param colorScheme (char) colour scheme for nodes. "cont_heatmap" 
+#' sets a discrete map ranging from yellow to red for increasing scores. 
+#' "netDx_ms" is the colour scheme used in the netDx methods paper.
+#' This map is (<=6: white; 7-9: orange; 10: red)
 #' @param cytoscapeBaseURL (char) URL for CyREST connection to the active
 #' Cytoscape session. Only change this if you know what you're doing.
 #' @param verbose (logical) print messages
@@ -25,8 +31,15 @@
 #' @importFrom RJSONIO fromJSON
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
-	outDir,minScore=1,maxScore=10,cytoscapeBaseURL="http://localhost:1234/v1",
+	outDir,minScore=1,maxScore=10,colorScheme="cont_heatmap",
+	cytoscapeBaseURL="http://localhost:1234/v1",
 	verbose=FALSE){
+
+	validColSchemes <- c("cont_heatmap","netDx_ms")
+	if (!colorScheme %in% validColSchemes) {
+		stop(sprintf("colorScheme should be one of { %s }\n",
+			paste(validColSchemes,collapse=",")))
+	}
 
 	base.url <- cytoscapeBaseURL
   version.url = paste(base.url, "version", sep="/")
@@ -53,7 +66,8 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
   enrichmentmap.url <- paste(base.url,
 			"commands","enrichmentmap","build", sep="/")
   em_params <- list(analysisType = "generic",
-			gmtFile = gmtFile,pvalue=1, qvalue=1)
+			gmtFile = gmtFile,pvalue=1, qvalue=1,
+			similaritycutoff=0.05,coeffecients="JACCARD") # typo in current EM
   response <- GET(url=enrichmentmap.url, query=em_params)
 
   response <- renameNetwork(netName, network = character(0))
@@ -86,9 +100,18 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 
 		# define colourmap
 		scoreVals <- minScore:maxScore
-		colfunc <- colorRampPalette(c("yellow", "red"))
-		gradient_cols <- colfunc(length(scoreVals))
-		style_cols <- colfunc(length(scoreVals)) #gradient_cols[scoreVals[1:length(scoreVals)]]
+		style_cols <- ""
+		if (colorScheme=="cont_heatmap") {
+			colfunc <- colorRampPalette(c("yellow", "red"))
+			gradient_cols <- colfunc(length(scoreVals))
+			style_cols <- colfunc(length(scoreVals)) #gradient_cols[scoreVals[1:length(scoreVals)]]
+		} else if (colorScheme=="netDx_ms") {
+			if (minScore < 1 | maxScore > 10) 
+				stop("The 'netDx_ms' colorScheme requires minScore and maxScore to be between 1 and 10.")
+			style_cols <- rep("white", length(scoreVals))
+			style_cols[which(scoreVals>=7)] <- "orange"
+			style_cols[which(scoreVals==10)] <- "red"
+	} 
 
   	style_mapping <- mapVisualProperty(
 			visual.prop='node fill color',
@@ -98,8 +121,9 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 			network=netName)
  		defaults <- list("NODE_SHAPE"="ellipse",
   			"NODE_SIZE"=30,
-  			"EDGE_TRANSPARENCY"=120,
-  			"NODE_TRANSPARENCY"=120)
+  			"EDGE_TRANSPARENCY"=200,
+  			"NODE_TRANSPARENCY"=255,
+				"EDGE_STROKE_UNSELECTED_PAINT"="#999999")
  		sty <- r2cytoscape::createStyle(styleName,
   		defaults=defaults,
   		mappings=list(style_mapping))

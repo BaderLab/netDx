@@ -1,13 +1,13 @@
 ---
-title: "Plot netDx results: One function"
+title: 'Plot netDx results: One function'
 output:
-  html_document: 
-   toc: true
-   toc_depth: 2
-  html_notebook: 
-   toc: true
-   toc_depth: 2
   pdf_document: default
+  html_notebook:
+    toc: yes
+    toc_depth: 2
+  html_document:
+    toc: yes
+    toc_depth: 2
   word_document: default
 ---
 

@@ -38,7 +38,7 @@
 #'	pathwayList    <- readPathways(pathFile)
 #' 
 #' @export
-readPathways <- function(fname,MIN_SIZE=10L, MAX_SIZE=500L, 
+readPathways <- function(fname,MIN_SIZE=10L, MAX_SIZE=200L, 
 	EXCLUDE_KEGG=TRUE,IDasName=FALSE,verbose=TRUE,getOrigNames=FALSE) {
 
 # change locale to accommodate nonstandard chars in pathway names

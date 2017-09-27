@@ -4,15 +4,14 @@
 #' @details Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
 #' infinite distances are excluded before computing average shortest path 
 #' for a network. This function requires the igraph package to be installed.
-#' The showNetDist option requires the gplots package to be installed.
 #' @param net (data.frame) network on which to compute shortest path. 
 #' SOURCE, TARGET, WEIGHTS. 
 #' Column names are ignored but expects a header row. Distances will be 
 #' computed based on the third column
 #' @param pheno (data.frame) Node information. ID (node name) and GROUP
 #' (cluster name)
-#' @param showNetDist (logical) show distance heatmap (requires gplots 
-#' library)
+#' @param plotDist (logical) if TRUE, creates a violin plot showing the 
+#' shortest path distributions for each group.
 #' @param verbose (logical) print messages
 #' @examples data(silh); 
 #' colnames(silh$net)[3] <- "weight"
@@ -24,7 +23,8 @@
 #' belong to the corresponding cluster. In addition, there is an "overall" 
 #' entry for the mean shortest distance for the entire network.
 #' @export
-compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){	
+compareShortestPath <- function(net,pheno, plotDist=FALSE,
+	verbose=TRUE){	
 	colnames(net) <- c("source","target","weight")
 
 	if (verbose) {
@@ -55,10 +55,6 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){
 	if (verbose)
 		cat(sprintf("All-all shortest path = %2.3f (SD=%2.3f) (N=%i distances)\n",
 					tmp[1],tmp[2],tmp[3]))
-	if (showNetDist) {
-			gplots::heatmap.2(t(d_overall),trace='none',scale='none',
-			dendrogram='none',main="node-level shortest path")
-	}
 
 	cnames <- unique(pheno$GROUP)
 	dset <- list()
@@ -105,6 +101,18 @@ compareShortestPath <- function(net,pheno,showNetDist=FALSE,verbose=TRUE){
 
 	dset[["overall"]] <- .getAvgD(d_overall)
 	dall[["overall"]] <- .getAllD(d_overall)
-	return(list(avg=dset,all=dall))
 
+	if (plotDist) {	
+		par(las=1,bty='n')
+		dl <- data.frame(intType=rep(names(dall),lapply(dall,length)),
+				dijk=unlist(dall))
+		plotList <- list()
+		p <-ggplot(dl,aes(intType, dijk))
+		p <- p + ylab("Pairwise Dijkstra distance\n(smaller is better)") 
+		p <- p + xlab("Pair groups")
+		p2 <- p+geom_violin(scale="width")+geom_boxplot(width=0.02) 
+		print(p2)
+		}
+
+	return(list(avg=dset,all=dall,plot=p2))
 }

@@ -5,7 +5,7 @@
 \title{compare intra-cluster shortest distance to overall shortest distance of the
  network}
 \usage{
-compareShortestPath(net, pheno, showNetDist = FALSE, verbose = TRUE)
+compareShortestPath(net, pheno, plotDist = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{net}{(data.frame) network on which to compute shortest path. 
@@ -16,8 +16,8 @@ computed based on the third column}
 \item{pheno}{(data.frame) Node information. ID (node name) and GROUP
 (cluster name)}
 
-\item{showNetDist}{(logical) show distance heatmap (requires gplots 
-library)}
+\item{plotDist}{(logical) if TRUE, creates a violin plot showing the 
+shortest path distributions for each group.}
 
 \item{verbose}{(logical) print messages}
 }
@@ -37,7 +37,6 @@ compare intra-cluster shortest distance to overall shortest distance of the
 Uses Dijkstra's algorithm for weighted edges. Pairwise nodes with
 infinite distances are excluded before computing average shortest path 
 for a network. This function requires the igraph package to be installed.
-The showNetDist option requires the gplots package to be installed.
 }
 \examples{
 data(silh); 

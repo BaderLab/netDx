@@ -30,7 +30,6 @@
 #' @import ROCR
 #' @import pracma
 #' @export
-
 plotPerf <- function(inDir, predClasses) {
 
   if (missing(inDir)) stop("inDir not provided");
@@ -117,6 +116,7 @@ plotPerf <- function(inDir, predClasses) {
 		}
 
 		# plot average +/-SEM
+		
 		par(mfrow=c(2,2))
 		x <- unlist(lapply(mega, function(x) x$auroc))
 		.plotAvg(x,"AUROC")

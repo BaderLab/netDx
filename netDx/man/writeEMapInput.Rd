@@ -5,8 +5,8 @@
 \title{write enrichment map for consensus nets}
 \usage{
 writeEMapInput(featScores, namedSets, netInfo, outPfx = "curr",
-  pctPass = 0.7, maxScore = 10, trimFromName = c(".profile", "_cont"),
-  verbose = FALSE)
+  pctPass = 0.7, minScore = 1, maxScore = 10,
+  trimFromName = c(".profile", "_cont"), verbose = FALSE)
 }
 \arguments{
 \item{featScores}{(data.frame) network scores across rounds of cross
@@ -25,6 +25,9 @@ genes). Should only contain units profiled in this dataset}
 \item{pctPass}{(numeric between 0 and 1) fraction of iterations that
 a net's score must pass consCutoff for, to be included in the consensus
 map}
+
+\item{minScore}{(integer) features with score below this cutoff are
+excluded from downstream analyses}
 
 \item{maxScore}{(integer) maximum possible score in one round of cross-
 validation. e.g. for 10-fold cross-validation, maxScore=10.}

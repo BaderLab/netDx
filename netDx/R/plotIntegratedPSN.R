@@ -28,6 +28,11 @@
 #' e.g. topX=0.2 will keep 20\% top edges
 #' @param aggFun (char) function to aggregate edges from different PSN
 #' @param outDir (char) path to directory for tmp work
+#' @param calcShortestPath (logical) if TRUE, computes weighted shortest path
+#' @param savePaths (logical) if TRUE, writes all pairwise shortest paths to file. 
+#' Unless you plan to analyse these separately from looking at the shortest path
+#' violin plots or integrated PSN in Cytoscape, probably good to set to FALSE.
+#' for all pairwise classes
 #' @param verbose (logical) print detailed messages
 #' @return (list) information about the integrated network
 #  1) aggPSN_Full: (char) path to aggregated patient similarity network. This
@@ -57,7 +62,8 @@
 #' @import RColorBrewer
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
-	topX=0.2, aggFun="MEAN",outDir=".",verbose=FALSE,...) {
+	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
+	verbose=FALSE,...) {
 
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")
@@ -193,6 +199,52 @@ aggNetFile <- netDx::writeWeightedNets(ptFile[[1]],
 # read in aggregated similarity net and convert to dissimilarity for net view
 aggNet<- read.delim(aggNetFile,sep="\t",h=T,as.is=T)[,1:3]
 colnames(aggNet) <- c("AliasA","AliasB","weight")
+
+# calculate shortest paths among and between classes
+if (calcShortestPath) {
+	pdf(sprintf("%s/shortest_paths.pdf",outDir),width=11,height=6)
+	tryCatch({
+		x <- compareShortestPath(aggNet, pheno,verbose=FALSE,plotDist=TRUE)
+	},error=function(ex){
+		print(ex)
+	}, finally={
+		dev.off()
+	})
+
+	gp <- unique(pheno$GROUP)
+	oppName <- paste(gp[1],gp[2],sep="-")
+	
+	curDijk <- matrix(NA,nrow=1,ncol=6)
+	colnames(curDijk) <- c(gp[1],gp[2],oppName,"overall",
+				sprintf("p%s-Opp",gp[1]),sprintf("p%s-Opp",gp[2]))
+	
+	# mean shortest path		
+	cat("Shortest path averages &\n")
+	cat("p-values (one-sided WMW)\n")
+	cat("------------------------------------\n")
+	for (k in 1:length(x$all)) {
+		cur <- names(x$all)[k]
+		idx <- which(colnames(curDijk) %in% cur)
+		curDijk[1,idx] <- median(x$all[[k]])
+		cat(sprintf("\t%s: Median = %1.2f ", cur,curDijk[1,idx]))
+		if (cur %in% gp) {
+			tmp <- wilcox.test(x$all[[cur]],x$all[[oppName]],
+				alternative="less")$p.value
+			curDijk[4+k] <- tmp
+			cat(sprintf(" p(<Opp) = %1.2e\n", curDijk[4+k]))
+		}
+	}
+	write.table(curDijk,file=sprintf("%s/shortest_paths.txt",outDir),
+		sep="\t",col=T,row=T,quote=F)
+	#print(t(curDijk))
+
+	if (savePaths) {
+		shortest_path <- x
+		save(shortest_path,file=sprintf("%s/shortest_paths.rda",outDir))
+	}
+	
+	}
+
 aggNet[,3] <- 1-aggNet[,3]  # convert similarity to dissimilarity
 
 }
@@ -208,10 +260,12 @@ cat("* Creating network in Cytoscape\n")
 network.suid <- EasycyRest::createNetwork(
 	nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
 	netName=sprintf("%s_%s_top%1.2f",setName,aggFun,topX),
-	collName="KIRC"
+	collName=setName
 )
 cat("* Applying layout\n")
 # spring-embedded layout on edge 'weight' column
+minwt <- min(aggNet_pruned$weight)
+maxwt <- max(aggNet_pruned$weight)
 layout.url <- sprintf("%s/apply/layouts/kamada-kawai/%s?column=weight",
 	base.url,network.suid, sep="/")
 response <- httr::GET(url=layout.url)

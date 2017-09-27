@@ -13,6 +13,11 @@
 #' If set to NULL, no EnrichmentMap plotted. If provided, must be limited to 
 #' the units measured in the dataset. For example, pathway definitions should
 #' contain only the genes measured in the input data, and not all genes.
+#' @param eMap_colorScheme (char) color scheme for node fills in the Enrichment
+#' map. See plotEmap::colorScheme()
+#' @param eMap_min, eMap_max (int) min/max feature score to include in 
+#' enrichment map
+#' @param setName (char) name of analysis. Used in plot titles
 #' @return (list) output from all individual result scripts called.
 #' 1) predPerf: output of plotPerf()
 #' 2) featScores:
@@ -25,18 +30,31 @@
 #' 6) PSN: Output of plotIntegratedPSN()
 #' @export
 plotAllResults <- function(pheno, inDir,outDir,fsCutoff=10L,fsPctPass=0.7,
-	pathwaySet=NULL) {
+	pathwaySet=NULL, eMap_colorScheme="cont_heatmap",
+	eMap_min=1,eMap_max=10,setName="predictor") {
 
 predClasses <- unique(pheno$STATUS)
 cat("* Plotting average and detailed performance\n")
-predPerf <- plotPerf(inDir, predClasses=predClasses)
-featScores <- getFeatureScores(inDir,predClasses=predClasses)
+
 
 if (file.exists(outDir)) {
 	unlink(outDir,recursive=TRUE)
 }
-
 dir.create(outDir)
+
+# performance
+postscript(sprintf("%s/perf.eps", outDir),height=11,width=6)
+tryCatch({
+	predPerf <- plotPerf(inDir, predClasses=predClasses)
+},error=function(ex) {
+	print(ex)
+},finally={
+	dev.off()
+})
+
+# compute feature scores
+featScores <- getFeatureScores(inDir,predClasses=predClasses)
+
 dir.create(sprintf("%s/featScores",outDir))
 featSelNet <- sapply(names(featScores), function(nm) {
 	x <- featScores[[nm]]
@@ -49,6 +67,12 @@ featSelNet <- sapply(names(featScores), function(nm) {
 })
 
 
+cat("* Generating overall patient similarity view\n")
+dir.create(sprintf("%s/PSN",outDir))
+netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
+	netNames=featSelNet,outDir=sprintf("%s/PSN",outDir),setName=setName)
+
+
 if (!is.null(pathwaySet)) {
 	dir.create(sprintf("%s/EMap",outDir))
 
@@ -56,21 +80,20 @@ if (!is.null(pathwaySet)) {
 	netInfo <- read.delim(sprintf("%s/inputNets.txt",inDir),
 		sep="\t",h=FALSE,as.is=TRUE)
 	EMap_input <- writeEMapInput_many(featScores,pathwaySet,
-      netInfo,outDir=sprintf("%s/EMap",outDir))
+      netInfo,outDir=sprintf("%s/EMap",outDir),
+			minScore=eMap_min,maxScore=eMap_max)
 
 	# generate enrichmentmaps
 	pngFiles <- list()
 	for (curGroup in names(EMap_input)[1:2]) {
 		pngFiles[[curGroup]] <- plotEmap(gmtFile=EMap_input[[curGroup]][1], 
 	       nodeAttrFile=EMap_input[[curGroup]][2],
-	       netName=curGroup,outDir=sprintf("%s/EMap",outDir))
+	       netName=curGroup,outDir=sprintf("%s/EMap",outDir),
+					colorScheme=eMap_colorScheme,
+					minScore=eMap_min,maxScore=eMap_max)
 	}
 }
 
-cat("* Generating overall patient similarity view\n")
-dir.create(sprintf("%s/PSN",outDir))
-netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
-	netNames=featSelNet,outDir=sprintf("%s/PSN",outDir))
 
 out <- list()
 out[["predPerf"]] <- predPerf

@@ -84,6 +84,10 @@ for (gps in names(ptFile)) {
 	
 	if (setName %in% c("OV_oneClinNet","oneClinNet")) {
 		pTally <- "clinical" # hard-coded for oneClinNet scenario
+	} else if (setName %in% "oneRNANet") {
+		pTally <- "rna"
+	} else if (setName %in% "oneProtNet") {
+		pTally <- "prot"
 	} else {
 		netScores	<- read.delim(netScoreFile[[gps]],sep="\t",h=T,as.is=T)
 		netNames 	<- netScores[,1]
@@ -163,6 +167,17 @@ surv$STATUS <- survStr
 pheno <- merge(x=pheno,y=surv,by="ID")
 pheno$X <- NULL
 colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
+
+
+if (setName %in% "OV_oneClinNet") { ### OV pheno$GROUP results in 
+			### creation of SURVIVENO-YES instead of YES-NO
+			### which throws off the network layout method.
+		  ### swap a couple rows to induce same ordering
+			### as other tumour setes
+			tmp <- pheno; tmp[1,] <- pheno[2,]; tmp[2,] <- pheno[1,];
+			pheno <- tmp
+		}	
+
 write.table(pheno,file=sprintf("%s/%s_PSN_pheno.txt",
 	outDir,outPfx),sep="\t",col=T,row=F,quote=F)
 
@@ -178,7 +193,7 @@ tryCatch({
 	p <- p + ylab("Pairwise Dijkstra distance\n(smaller is better)") 
 	p <- p + xlab("Pair groups")
 	p <- p + ggtitle(setName)
-	p2 <- p+geom_violin()+geom_boxplot(width=0.02) # + geom_jitter(width = 0.1,cex=0.3, alpha=0.5)
+	p2 <- p+geom_violin(scale="width")+geom_boxplot(width=0.02) # + geom_jitter(width = 0.1,cex=0.3, alpha=0.5)
 	print(p2)
 
 	boxplot(x$all,pars=list(boxwex=0.4),cex.axis=0.8,
@@ -190,8 +205,13 @@ tryCatch({
 	dev.off()
 })
 for (k in 1:length(x$all)) {
-	idx <- which(colnames(curDijk)==names(x$all)[k])
+	cat(sprintf("k=%i\n", k))
+
+	idx <- which(colnames(curDijk) %in% names(x$all)[k])
+	cat(sprintf("%s: idx=%i\n", names(x$all)[k], idx))
 	curDijk[1,idx] <- median(x$all[[k]])
+	cat(sprintf("%s: idx=%i, median = %1.2f\n", names(x$all)[k],idx,
+		curDijk[1,idx]))
 }
 
 # compute Dijkstra p-values

@@ -5,7 +5,8 @@
 \title{Wrapper to plot all predictor results}
 \usage{
 plotAllResults(pheno, inDir, outDir, fsCutoff = 10L, fsPctPass = 0.7,
-  pathwaySet = NULL)
+  pathwaySet = NULL, eMap_colorScheme = "cont_heatmap", eMap_min = 1,
+  eMap_max = 10, setName = "predictor")
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata. Must have ID and STATUS column}
@@ -24,6 +25,14 @@ must score >= fsCutoff to be called feature-selected}
 If set to NULL, no EnrichmentMap plotted. If provided, must be limited to 
 the units measured in the dataset. For example, pathway definitions should
 contain only the genes measured in the input data, and not all genes.}
+
+\item{eMap_colorScheme}{(char) color scheme for node fills in the Enrichment
+map. See plotEmap::colorScheme()}
+
+\item{eMap_min, }{eMap_max (int) min/max feature score to include in 
+enrichment map}
+
+\item{setName}{(char) name of analysis. Used in plot titles}
 }
 \value{
 (list) output from all individual result scripts called.

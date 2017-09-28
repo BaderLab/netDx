@@ -17,6 +17,7 @@ For more information and FAQ, visit **http://netdx.org**
   * [Run breastcancer LumA example](#brca)
   * [See full list of examples](#other-examples)
   * [Known issues with compiling pdfs](#pdfissue)
+* [Other examples](#other-examples)
 
 **Other useful information:**
 * [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2016). netDx: Patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418
@@ -178,6 +179,7 @@ However, if you find yourself having to mess with the PATH variable, try reinsta
 
 <a name="brca"></a>
 
+<a name="other-examples"></a>
 ## Other examples
 The `examples/` directory contains R notebooks (`.Rmd`) that teach basic functionality useful for any predictor building. These include plotting predictor results and running nested cross-validation, the design we recommend to use after feature design. 
 

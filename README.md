@@ -117,7 +117,7 @@ $ R
 On Unix systems you may need to install the libraries below at command-line:
 ```
 $ sudo apt-get install libssl-dev # for openssl & httr
-$ sudo apt-get install libxml2-dev # for XML & r2cytoscape
+$ sudo apt-get install libxml2-dev xml2 # for XML & r2cytoscape
 ```
 
 ```

@@ -52,10 +52,10 @@ At command line, run `python --version`. You should see output like this:
 Python 2.7.9 :: Anaconda 2.1.0 (x86_64)
 ```
 
-#### R (3.2+ recommended)
+#### R (3.3.1+ recommended)
 At command line, run `R --version`. You should see output like this:
 ```
-R version 3.2.4 (2016-03-10) -- "Very Secure Dishes"
+RR version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
 Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
 
@@ -68,7 +68,7 @@ http://www.gnu.org/licenses/.
 
 If not, [install R](https://www.r-project.org/).
 
-#### BioConductor (2.3+ recommended)
+#### BioConductor (Biobase 2.34.0+ recommended)
 [BioConductor](http://bioconductor.org/) is a system of R objects and software specifically for biological applications.
 Once you have R installed, install the `biobase` and `GenomicRanges` packages via the BioConductor installer:
 ```

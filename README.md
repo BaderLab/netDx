@@ -17,7 +17,7 @@ For more information and FAQ, visit **http://netdx.org**
   * [Run breastcancer LumA example](#brca)
   * [See full list of examples](#other-examples)
   * [Known issues with compiling pdfs](#pdfissue)
-* [Other examples](#other-examples)
+* [All other examples](#other-examples)
 
 **Other useful information:**
 * [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2016). netDx: Patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418

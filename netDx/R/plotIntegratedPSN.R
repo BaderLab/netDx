@@ -111,7 +111,7 @@ if (any(grep("PSNstyle",curStyles))) {
 	cat("* Creating style\n")
 	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
 	defaults <- list("NODE_SHAPE"="ellipse",
-			"NODE_SIZE"=50,
+			"NODE_SIZE"=30,
 			"EDGE_TRANSPARENCY"=120,
 			"EDGE_STROKE_UNSELECTED_PAINT"="#999999",
 			"NODE_TRANSPARENCY"=120)

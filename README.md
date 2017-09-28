@@ -8,7 +8,7 @@ This repo contains two R packages, each of which need to be separately installed
 
 The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
 
-For more information and FAQ, visit **http://netdx.org**
+The main website for netDx is **http://netdx.org**.
 
 * [Install netDx](#install-netdx)
   * [Prerequisites](#prerequisites)
@@ -20,7 +20,7 @@ For more information and FAQ, visit **http://netdx.org**
 * [All other examples](#other-examples)
 
 **Other useful information:**
-* [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2016). netDx: Patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418
+* [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2017). netDx: Interpretable patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418
 * Once you have run the included netDx examples, [read the user manual](http://netdx-manual.readthedocs.io/en/latest/) to learn how to design features or predictors. 
 
 ## Install netDx

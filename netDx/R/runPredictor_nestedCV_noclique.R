@@ -43,7 +43,7 @@
 #' @examples see examples/NestedCV_MultiData.Rmd for example use.
 #' @export
 
-runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
+runPredictor_nestedCV_noclique <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	typeList=NULL,nFoldCV=10L,trainProp=0.8,numSplits=10L,
 	numCores,CVmemory=4L,CVcutoff=9L,keepAllData=FALSE) {
 

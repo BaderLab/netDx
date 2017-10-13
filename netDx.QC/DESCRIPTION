@@ -1,0 +1,10 @@
+Package: netDx.QC
+Title: Quality Control for netDx Input Data
+Version: 0.0.0.9000
+Authors@R: person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre"))
+Description: Tests for data signal, data exploration (e.g. pca), univariate filtering (t-tests, plink assoc etc.,)
+Depends: R (>= 3.3.1)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1

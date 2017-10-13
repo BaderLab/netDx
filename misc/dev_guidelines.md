@@ -110,4 +110,4 @@ In 3:
 > detach(package:netDx,unload=TRUE);require(netDx) # detach/reattach pkg
 > runExample(test_data)
 ```
-
+Great tutorial on quickly building an R package: https://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/

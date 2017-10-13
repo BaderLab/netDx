@@ -116,7 +116,9 @@ Shows power of `devtools` and `roxygen2` R packages in quickly making and doc-in
 ## github 
 
 Getting account: **Note: Academic users can apply for a github academic account with unlimited private repos for free.** See https://education.github.com/discount_requests/new 
+
 Cheat sheet for commands: https://services.github.com/on-demand/downloads/github-git-cheat-sheet.pdf
+
 Good intro tutorial to github: https://guides.github.com/activities/hello-world/
 
 ### Branches

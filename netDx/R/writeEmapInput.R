@@ -42,6 +42,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 
 	dt <- format(Sys.Date(),"%y%m%d")
 	netNames <- featScores[,1];
+	netNames <- sub('binary_','',netNames)
 	featScores <- featScores[,-1]
 
 	# compute the max score per net for pctPass % of trials

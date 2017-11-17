@@ -56,6 +56,9 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 			gmtFile = gmtFile,pvalue=1, qvalue=1)
   response <- GET(url=enrichmentmap.url, query=em_params)
 
+	#coeffecients="Jaccard"
+	#similaritycutoff
+
   response <- renameNetwork(netName, network = character(0))
 
   #annotate the network using AutoAnnotate app

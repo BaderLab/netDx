@@ -71,6 +71,9 @@ plotPerf <- function(inDir, predClasses) {
 
 			idx1 <- which(colnames(dat) == pred_col1)
 			idx2 <- which(colnames(dat) == pred_col2)
+      if(!any(dat$STATUS==predClasses[1])){
+        next;
+      }
         pred <- ROCR::prediction(dat[,idx1]-dat[,idx2],
 					dat$STATUS==predClasses[1])
 

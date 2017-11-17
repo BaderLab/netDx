@@ -43,11 +43,12 @@ writeEMapInput_many <- function(featScores, namedSets_valid, netTypes,
 
 gmt_attr_files <- list()
 for (gp in names(featScores)) {
-	cur_out_files <- writeEMapInput(featScores[[gp]],namedSets_valid,netTypes,
-			outPfx=sprintf("%s/%s",outDir,gp),...)
+	if(nrow(featScores[[gp]])!=0){
+		cur_out_files <- writeEMapInput(featScores[[gp]],namedSets_valid,netTypes,
+				outPfx=sprintf("%s/%s",outDir,gp),...)
 
-  gmt_attr_files[[gp]] <- cur_out_files
-
+	  gmt_attr_files[[gp]] <- cur_out_files
+	}
 }
 return(gmt_attr_files)
 }

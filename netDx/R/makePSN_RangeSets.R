@@ -1,13 +1,13 @@
 #' Create patient similarity interaction networks based on range sets
 #'
-#' @details Creates patient similarity networks when data consist of 
-#' genomic events associated with patients. Examples include CNV or 
+#' @details Creates patient similarity networks when data consist of
+#' genomic events associated with patients. Examples include CNV or
 #' indel data for patients. To generate networks from full matrices such
 #' gene expression data, use \code{makePSN_NamedMatrix} instead.
 #' Genomic ranges corresponding to events in patients (gr) should be named.
 #' One network is created per named range set (rangeSet). Each set
 #' reflects a group of related loci ; for example, genomic ranges associated
-#' with genes in the same cellular pathway. 
+#' with genes in the same cellular pathway.
 #' Currently, the only similarity measure supported is binary; two patients
 #' are related in a network N if they both overlap elements of set N.
 #' @param gr (GRanges) patient ranges. Metadata should contain:
@@ -17,15 +17,15 @@
 #' 	Key is the name of the range set, and value is a GRanges object with
 #' corresponding ranges
 #' @param netDir (char) path to directory where networks should be written
-#' @param simMetric (char) Similarity metric. Currently only 'coincide' 
+#' @param simMetric (char) Similarity metric. Currently only 'coincide'
 #' is supported; two patients share an edge if they overlap elements in the
 #' the same gene set. E.g. Two patients with CNVs that overlap different
 #' genes of the same pathway would be related, but patients overlapping
-#' genes that don't share a pathway (or, more accurately, a named-set 
+#' genes that don't share a pathway (or, more accurately, a named-set
 #' grouping) would not be related. The edge weight is therefore binary.
 #' @param verbose (logical) print detailed messages
 #' @param numCores (integer) num cores for parallel processing
-#' @param quorum (integer) minimum number of patients in a network for the 
+#' @param quorum (integer) minimum number of patients in a network for the
 #' network to be constructed
 #' @return Vector of network filenames
 #' @examples
@@ -135,12 +135,12 @@ outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
 		pat_pairs <- cbind(pat_pairs,pScore);
 
 		# write network for pathway
-		outFile		<- sprintf("%s/%s_cont.txt",netDir,curP)
+		outFile		<- sprintf("%s/binary_%s_cont.txt",netDir,curP)
 		write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)
 		outFile <- basename(outFile)
 	##	outFiles 	<- c(outFiles, basename(outFile))
-		
+
 		}
 	##	status	<- 1;
     } ## else {
@@ -150,7 +150,7 @@ outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
     if (idx %% 100==0) cat(".")
     if (verbose) cat("\n")
 	##inc_status[idx] <- status
-	
+
 	if (!verbose) {
 		if (idx %% 100 == 0) cat(".")
 		if (idx %% 1000 == 0) cat("\n")

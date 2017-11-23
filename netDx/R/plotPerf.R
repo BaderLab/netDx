@@ -64,6 +64,10 @@ plotPerf <- function(inDir, predClasses) {
         curRoc	<- list()
         curPr	<- list()
 
+        if(!file.exists(fName)){
+          cat("no predictions for this rng\n")
+          next;
+        }
         dat <- read.delim(fName,sep="\t",h=T,as.is=T)
 
         pred_col1 <- sprintf("%s_SCORE",predClasses[1])
@@ -71,7 +75,7 @@ plotPerf <- function(inDir, predClasses) {
 
 			idx1 <- which(colnames(dat) == pred_col1)
 			idx2 <- which(colnames(dat) == pred_col2)
-      if(!any(dat$STATUS==predClasses[1])){
+      if(!any(dat$STATUS==predClasses[1]) | !any(dat$STATUS==predClasses[2])){
         next;
       }
         pred <- ROCR::prediction(dat[,idx1]-dat[,idx2],

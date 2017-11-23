@@ -64,6 +64,8 @@ pheno_all <- pheno;
 #track clique status
 stat_mat <- list()
 
+num_preds <- 0
+
 #If typeList not given, make it assuming all continuous data types
 if(is.null(typeList)){
 	typeList <- list()
@@ -190,7 +192,6 @@ for (rngNum in 1:numSplits) {
 				}
 
 				cat("Running clique-filtering\n")
-				cliqueReps <- 20L
 				netInfo <- cliqueFilterNets(temp_netdir,pheno_train_og,outDir,
 					predClass=g,numReps=cliqueReps,numCores=numCores)
 				pvals   <- as.numeric(netInfo[,"pctl"])
@@ -274,6 +275,7 @@ for (rngNum in 1:numSplits) {
 	## Class prediction for this split
 	pheno <- pheno_all
 	predRes <- list()
+	no_pred <- 0
 	for (g in subtypes) {
 		pDir <- sprintf("%s/%s",outDir,g)
 		pTally <- read.delim(
@@ -283,6 +285,11 @@ for (rngNum in 1:numSplits) {
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		pTally <- sub("binary_","",pTally)
+		if(identical(pTally, character(0))){
+			print("NO PTALLY!!!!!!!!!")
+			no_pred <- 1
+			next;
+		}
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
 
@@ -302,15 +309,19 @@ for (rngNum in 1:numSplits) {
 		#doesn't work if we do not reset pheno
 		pheno <- pheno_all
 	}
+ 	if(no_pred != 1){
+		predClass <- GM_OneVAll_getClass(predRes)
+		out <- merge(x=pheno_all,y=predClass,by="ID")
+		outFile <- sprintf("%s/predictionResults.txt",outDir)
+		write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
 
-	predClass <- GM_OneVAll_getClass(predRes)
-	out <- merge(x=pheno_all,y=predClass,by="ID")
-	outFile <- sprintf("%s/predictionResults.txt",outDir)
-	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-
-	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-		nrow(out), acc*100))
+		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
+		cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
+			nrow(out), acc*100))
+		num_preds <- num_preds + 1
+	}else{
+		cat(sprintf("no prediction made for rng %s, no feat sel nets", rngNum))
+	}
 
 	if (!keepAllData) {
     system(sprintf("rm -r %s/dataset %s/tmp %s/networks %s/networks_bin",
@@ -320,6 +331,8 @@ for (rngNum in 1:numSplits) {
         outDir,g,outDir,g))
 	}
 	}}
+	num_pred_total <- (num_preds/numSplits)*100
+	cat(sprintf("%s percent of splits had predictions generated \n",num_pred_total))
 	stat_df <- do.call(rbind, lapply(stat_mat, data.frame, stringsAsFactors=FALSE))
 	write.csv(stat_df, file = sprintf("%s/networkInfo.csv",megaDir), quote = FALSE)
 }, error=function(ex){

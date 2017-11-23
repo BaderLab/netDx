@@ -1,0 +1,40 @@
+Predictor started at:
+[1] "2017-09-15 15:38:36 EDT"
+-------------------------------
+# patients = 1094
+# classes = 2 { case,control }
+Sample breakdown by class
+
+   case control 
+    524     570 
+Nested CV design = 2 CV x 2 splits
+Datapoints:
+# input nets provided:
+
+
+Custom function to generate input nets:
+function(dataList, groupList, netDir,...) {
+    # make RNA nets: group by pathway
+    if (!is.null(groupList[["cnv"]])) {
+      netList <- makePSN_RangeSets(dataList[['cnv']], groupList[['cnv']],netDir,verbose=F)
+      return(netList)
+  }
+}
+-------------------------------
+
+-------------------------------
+RNG seed = 1
+-------------------------------
+Setting seed for reproducibility: 5
+         IS_TRAIN
+STATUS    TRAIN TEST
+  case      419  105
+  control   456  114
+	LOCUS_NAMES column not provided; computing overlap of patients
+		with regions
+Time difference of 0.8039191 secs
+* Preparing patient-locus matrix
+	0 unique patients, 8758 unique locus symbols
+<simpleError in big.matrix(0, nrow = length(uq_patients), ncol = length(uq_loci),     type = "integer"): A big.matrix must have at least one row and one column>
+Predictor completed at:
+[1] "2017-09-15 15:39:20 EDT"

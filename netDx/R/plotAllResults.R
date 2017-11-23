@@ -35,7 +35,7 @@ featScores <- getFeatureScores(inDir,predClasses=predClasses)
 if (file.exists(outDir)) {
 	unlink(outDir,recursive=TRUE)
 }
-
+#
 dir.create(outDir)
 dir.create(sprintf("%s/featScores",outDir))
 featSelNet <- sapply(names(featScores), function(nm) {
@@ -44,7 +44,7 @@ featSelNet <- sapply(names(featScores), function(nm) {
 		write.table(x,file=sprintf("%s/featScores/%s_featScores.txt",outDir,nm),
 			sep="\t",row=TRUE,col=TRUE,quote=F)
 		y <- callFeatSel(x, fsCutoff=fsCutoff, fsPctPass=fsPctPass)
-		write.table(x,file=sprintf("%s/featScores/%s_FeatSel_cutoff%i_pct%1.2f.txt",
+		write.table(y,file=sprintf("%s/featScores/%s_FeatSel_cutoff%i_pct%1.2f.txt",
 			outDir,nm,fsCutoff,fsPctPass),sep="\t",col=F,row=F,quote=F)
 		y
 	}else{

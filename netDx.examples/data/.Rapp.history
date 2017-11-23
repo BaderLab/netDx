@@ -1,0 +1,4 @@
+load("/Users/ahmadshah/netDx/netDx.examples/data/pat_GR_all.rda")
+ls()
+pat_GR_all
+install.packages("survminer")

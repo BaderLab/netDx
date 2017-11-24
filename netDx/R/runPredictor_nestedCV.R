@@ -61,7 +61,9 @@ dir.create(megaDir)
 # set aside for testing within each split
 pheno_all <- pheno;
 
-#track clique status
+#track clique status. Stores RNG number, number of binary nets before clique
+#filtering, binary nets after clique filtering, non binary nets, patients
+#before clique filtering and patients after clique filtering
 stat_mat <- list()
 
 num_preds <- 0
@@ -112,12 +114,11 @@ cat(sprintf("-------------------------------\n\n"))
 
 for (rngNum in 1:numSplits) {
 	stat_mat[[rngNum]] <- list(rng = rngNum,
-															binNets_preCFilter = '',
-															binNets_postCFilter = '',
-															nonBinNets = '',
-															patients_preCFilter = '',
-															patients_postCFilter = ''
-	)
+	binNets_preCFilter = '',
+	binNets_postCFilter = '',
+	nonBinNets = '',
+	patients_preCFilter = '',
+	patients_postCFilter = '')
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -174,6 +175,7 @@ for (rngNum in 1:numSplits) {
 
 			#Run clique-filtering only for binary nets
 			if(length(bin_netList) >= 1){
+				cat("* Running clique filtering\n")
 				temp_netdir <- paste(netDir,"_bin", sep = '')
 				if (!file.exists(temp_netdir)){
 					dir.create(temp_netdir)
@@ -201,6 +203,8 @@ for (rngNum in 1:numSplits) {
 				p_train  	<- p_train_og[,
 					which(colnames(p_train_og) %in% rownames(netInfo))]
 
+				cat((sprintf("%i nets survive clique filtering (cliqueReps = %i ;
+					 pvalue_thresh = %1.2f \n", nrow(netInfo), cliqueReps, cliquePthresh))	
 				stat_mat[[rngNum]][['binNets_postCFilter']] <- nrow(netInfo)
 
 				# update nets after clique-filtering

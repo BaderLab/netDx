@@ -27,6 +27,8 @@
 #' grouped for the corresponding pathwayList.
 #' @param makeNetFunc (function) user-defined function for creating the set
 #' of input PSN provided to netDx. See createPSN_MultiData()::customFunc.
+#' @param typeList (list) keys are datatypes and values are either "binary"
+#' or "continuous" to identify data type. I.e. typeList[['cnv']] <- 'binary'
 #' @param outDir (char) directory where results will be stored. If this
 #' directory exists, its contents will be overwritten
 #' @param trainProp (numeric 0 to 1) Percent samples to use for training

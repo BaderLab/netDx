@@ -46,7 +46,7 @@
 #' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 #' sparsifyNet(x,outFile="tmp.txt")
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
-		numPatients=100L,keepTies=TRUE,verbose=TRUE){
+		numPatients,keepTies=TRUE,verbose=TRUE){
 if (class(net)=="data.frame") {
 	dat <- net
 } else if (class(net)=="character"){

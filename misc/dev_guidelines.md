@@ -110,4 +110,31 @@ In 3:
 > detach(package:netDx,unload=TRUE);require(netDx) # detach/reattach pkg
 > runExample(test_data)
 ```
+Great tutorial on quickly building an R package: https://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/.
+Shows power of `devtools` and `roxygen2` R packages in quickly making and doc-ing packages.
+
+## github 
+
+Getting account: **Note: Academic users can apply for a github academic account with unlimited private repos for free.** See https://education.github.com/discount_requests/new 
+
+Cheat sheet for commands: https://services.github.com/on-demand/downloads/github-git-cheat-sheet.pdf
+
+Good intro tutorial to github: https://guides.github.com/activities/hello-world/
+
+### Branches
+Git uses *branches* to separate code that is in dev, from the `master`. You may use a branch to make any kind of new development (new package, functionality) or bug fix. Basically anything you want to manage without it being in the *master* and affecting other people.
+Steps are:
+* Locally: Make sure you have the latest `master` version. `git pull`.
+* Locally: Create a branch: `$ git checkout -b [name_of_your_new_branch]`
+* Locally: Switch to the branch (this can happen automatically but make sure by typing `git branch -a`)
+* Local, check remote: Maybe do a first test where you add a dummy file, commit and push. And check on github.com to make sure change doesn't affect master.
+* Local: Do your work.  Maybe over days. Add, commit, delete, etc., Your work will not affect the main. 
+* Remote: When you're ready to merge, create a pull request (do this on the repo page on github.com).
+* Remote: Colleagues will review the work, and there could be more than one round of feedback through github.
+* Remote: When code is ready, it will be merged into master.
+* Remote and local: delete your branch. This task is done. `$ git branch -d [name_of_your_new_branch]`. You will probably need to go to the repo page on github.com and delete your branch there as well.
+
+Nice cheatsheet with commands: https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches
+
+* When you're You can 
 

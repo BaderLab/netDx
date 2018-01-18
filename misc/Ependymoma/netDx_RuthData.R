@@ -1,20 +1,38 @@
-# BRCA example with nested cv
+# Ependymoma
+rm(list=ls())
 
 require(netDx)
 require(netDx.examples)
-data(TCGA_BRCA)
 
-subtypes<- c("LumA")
-pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
-subtypes <- c(subtypes,"other") # add residual
+rootDir <- "/home/shraddhapai/BaderLab/2017_Ependymoma"
+inDir <- sprintf("%s/input",rootDir)
+outDir <- sprintf("%s/output",rootDir)
+
+xpr <- read.delim(sprintf("%s/original_data/Toronto-comparison2-without-spinals/TOR-ST-PFPURE-PFMIX-SEP16.gct",inDir),skip=2,h=T,as.is=T)
+rownames(xpr) <- xpr[,1]
+xpr <- xpr[,-(1:2)]
+sampType <- scan(sprintf("%s/original_data/Toronto-comparison2-without-spinals/TOR-ST-PFPURE-PFMIX-SEP16.cls",inDir),skip=2)
+sampType <- as.integer(sampType)
+
+# from Ruth
+#  st = 0, PFPURE = 1 and PFMIX = 2
+pheno <- data.frame(ID=colnames(xpr),INT_STATUS=sampType)
+pheno$ID <- as.character(pheno$ID)
+st <- c("ST","PFPURE","PFMIX")
+pheno$STATUS <- st[sampType+1]
+
+# exclude ST
+idx <- which(pheno$STATUS=="ST") 
+pheno <- pheno[-idx,]
+xpr <- xpr[,-idx]
+xpr <- log(xpr+1)
 
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
     path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 head(pathwayList)
 
-
-BRCA_makeNets <- function(dataList, groupList, netDir,...) {
+makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c()
 	# make RNA nets: group by pathway
 	if (!is.null(groupList[["rna"]])) { 
@@ -29,15 +47,15 @@ BRCA_makeNets <- function(dataList, groupList, netDir,...) {
 	return(netList)
 }
 
-rootDir <- "/home/shraddhapai/BaderLab/2017_BRCA/output/"
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/BRCA_%s",rootDir,dt)
+megaDir <- sprintf("%s/Epen_%s",outDir,dt)
+if (!file.exists(megaDir)) dir.create(megaDir)
 
 gps <- list(rna=pathwayList)
 dats <- list(rna=xpr)
 
 runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
-   makeNetFunc=BRCA_makeNets, ### custom network creation function
-   outDir=megaDir,
-   numCores=10L,nFoldCV=10L, CVcutoff=9L,numSplits=25L)
+   makeNetFunc=makeNets, ### custom network creation function
+   outDir=sprintf("%s/pred",megaDir),
+   numCores=10L,nFoldCV=3L, CVcutoff=2L,numSplits=10L)

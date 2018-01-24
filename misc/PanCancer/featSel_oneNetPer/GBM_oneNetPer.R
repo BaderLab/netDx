@@ -18,7 +18,7 @@ inDir <- "/home/spai/BaderLab/PanCancer_GBM/input"
 outRoot <- "/home/spai/BaderLab/PanCancer_GBM/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/featSel_oneNetPer_%s",outRoot,dt)
+megaDir <- sprintf("%s/manyCV_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions

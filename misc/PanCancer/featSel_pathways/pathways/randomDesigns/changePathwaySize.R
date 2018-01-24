@@ -127,7 +127,7 @@ cat(sprintf("%i of %i genes are non-pathway, make new universe\n",
 realPathways <- pathwayList; rm(pathwayList)
 
 tryCatch({
-for (pathSize in c(1)) {
+for (pathSize in c(30,50,90,150,250,350,500)) {
 	dir2 <- sprintf("%s/pSize%i", megaDir,pathSize)
 	dir.create(dir2)
 	for (numGenesInPath in 10) {

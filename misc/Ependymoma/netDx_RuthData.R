@@ -5,30 +5,17 @@ require(netDx)
 require(netDx.examples)
 
 rootDir <- "/home/shraddhapai/BaderLab/2017_Ependymoma"
-inDir <- sprintf("%s/input",rootDir)
+inDir <- sprintf("%s/input/netDx_prepared",rootDir)
 outDir <- sprintf("%s/output",rootDir)
-
-xpr <- read.delim(sprintf("%s/original_data/Toronto-comparison2-without-spinals/TOR-ST-PFPURE-PFMIX-SEP16.gct",inDir),skip=2,h=T,as.is=T)
-rownames(xpr) <- xpr[,1]
-xpr <- xpr[,-(1:2)]
-sampType <- scan(sprintf("%s/original_data/Toronto-comparison2-without-spinals/TOR-ST-PFPURE-PFMIX-SEP16.cls",inDir),skip=2)
-sampType <- as.integer(sampType)
-
-# from Ruth
-#  st = 0, PFPURE = 1 and PFMIX = 2
-pheno <- data.frame(ID=colnames(xpr),INT_STATUS=sampType)
-pheno$ID <- as.character(pheno$ID)
-st <- c("ST","PFPURE","PFMIX")
-pheno$STATUS <- st[sampType+1]
+pathFile <-sprintf("%s/anno/Human_AllPathways_November_01_2017_symbol.gmt",
+	rootDir)
+load(sprintf("%s/Ependymoma_cohortMerged_180125.Rdata",inDir))
 
 # exclude ST
 idx <- which(pheno$STATUS=="ST") 
 pheno <- pheno[-idx,]
 xpr <- xpr[,-idx]
-xpr <- log(xpr+1)
-
-pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
-    path.package("netDx.examples"))
+    
 pathwayList <- readPathways(pathFile)
 head(pathwayList)
 
@@ -54,8 +41,10 @@ if (!file.exists(megaDir)) dir.create(megaDir)
 gps <- list(rna=pathwayList)
 dats <- list(rna=xpr)
 
+pheno$STATUS <- droplevels(pheno$STATUS)
+
 runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred",megaDir),
-   numCores=10L,nFoldCV=3L, CVcutoff=2L,numSplits=10L)
+   numCores=4L,nFoldCV=10L, CVcutoff=9L,numSplits=10L)

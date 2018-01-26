@@ -11,26 +11,9 @@ require(cluster)
 source("runLM.R")
 source("silh.R") # silhouette
 source("pcByClass.R"); # PCA by class
+source("simFuns.R")
 
 # ----------------------------------------------------------------------
-# Other similarity measures
-cos.sim <- function(m) {
-	out <- matrix(NA,nrow=ncol(m),ncol=ncol(m))
-	rownames(out) <- colnames(m); 
-	colnames(out) <- colnames(m)
-	idx <- combn(ncol(m),2)
-	for (k in 1:ncol(idx)) {
-		i <-idx[1,k]; j <- idx[2,k]
-		out[i,j] <- lsa::cosine(m[,i],m[,j])
-	}
-	return(out)
-}
-
-dist.sim <- function(m,d="euclidean") {
-	m <- na.omit(t(m))
-	out <- 1/(1+as.matrix(dist(m,method=d)))
-	out
-}
 
 # given psn plot intra- and inter-class similarity
 # matrix must have upper populated, lower can be empty
@@ -188,7 +171,7 @@ cat("----------------\n")
 cat("Before\n")
 cat("----------------\n")
 plotSim(cor(xpr),name="Pearson")
-plotSim(cos.sim(xpr),name="cosine")
+plotSim(sim.cos(xpr),name="cosine")
 dev.off()
 
 xpr <- xpr[which(rownames(xpr) %in% rownames(res)),]
@@ -198,9 +181,9 @@ cat("After\n")
 cat("----------------\n")
 plotSim(cor(xpr),name="Pearson")
 plotSim(cos.sim(xpr),name="cosine")
-plotSim(dist.sim(xpr,"euclidean"),name="euclidean")
-plotSim(dist.sim(xpr,"manhattan"),name="manhattan")
-plotSim(dist.sim(xpr,"minkowski"),name="minkowski")
+plotSim(sim.dist(xpr,"euclidean"),name="euclidean")
+plotSim(sim.dist(xpr,"manhattan"),name="manhattan")
+plotSim(sim.dist(xpr,"minkowski"),name="minkowski")
 dev.off()
 
 },error=function(ex){print(ex)

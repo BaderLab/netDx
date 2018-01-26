@@ -23,7 +23,7 @@ cumvar_pct <- cumvar/sum(pr$sdev^2)
 par(mfrow=c(2,3))
 cb <- combn(4,2)
 groups <- factor(groups)
-clrs <- brewer.pal(name=pal, n=length(levels(groups)))
+clrs <- suppressWarnings(brewer.pal(name=pal, n=length(levels(groups))))
 for (k in 1:ncol(cb)){
 	plot(pr$x[,cb[1,k]],pr$x[,cb[2,k]],col=clrs[groups],bty='n',
 		 	xlab=sprintf("Proj, PC %i", cb[1,k]),

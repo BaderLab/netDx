@@ -11,20 +11,9 @@ require(cluster)
 source("runLM.R")
 source("silh.R") # silhouette
 source("pcByClass.R"); # PCA by class
+source("simFuns.R")
 
 # ----------------------------------------------------------------------
-# Other similarity measures
-cos.sim <- function(m) {
-	out <- matrix(NA,nrow=ncol(m),ncol=ncol(m))
-	rownames(out) <- colnames(m); 
-	colnames(out) <- colnames(m)
-	idx <- combn(ncol(m),2)
-	for (k in 1:ncol(idx)) {
-		i <-idx[1,k]; j <- idx[2,k]
-		out[i,j] <- lsa::cosine(m[,i],m[,j])
-	}
-	return(out)
-}
 
 # given psn plot intra- and inter-class similarity
 # matrix must have upper populated, lower can be empty
@@ -37,6 +26,15 @@ out <- list(
 	pm=s1$value[union(which(s1$Var1 %in% c1 & s1$Var2 %in% c2),
 			which(s1$Var1 %in% c2 & s1$Var2 %in% c1))]
 )
+cat(sprintf("Similarity by %s\n",name))
+cat("Median similarity\n")
+cat(sprintf("pp=%1.2f ; mm=%1.2f; pm = %1.2f\n",
+	median(out$pp),median(out$mm),median(out$pm)))
+cat(sprintf("pp < pm: p < %1.2e\n", 
+	wilcox.test(out$pp,out$pm,alternative="greater")$p.value))
+cat(sprintf("mm < pm: p < %1.2e\n", 
+	wilcox.test(out$mm,out$pm,alternative="greater")$p.value))
+cat("------------\n")
 boxplot(out,main=name)
 }
 
@@ -45,25 +43,30 @@ tis <- "KIRC"
 
 # GBM
 if (tis=="GBM") {
-xprFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/input/GBM_mRNA_core.txt"
-phenoFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/input/GBM_binary_survival.txt"
+	xprFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/input/GBM_mRNA_core.txt"
+	phenoFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/input/GBM_binary_survival.txt"
 } else if (tis == "KIRC"){
-xprFile <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input/KIRC_mRNA_core.txt"
-phenoFile <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input/KIRC_binary_survival.txt"
+	xprFile <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input/KIRC_mRNA_core.txt"
+	phenoFile <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input/KIRC_binary_survival.txt"
 } else if (tis == "OV") {
-xprFile <- "/home/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_OV/input/OV_mRNA_core.txt"
-phenoFile <- "/home/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_OV/input/OV_binary_survival.txt"
+	xprFile <- "/home/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_OV/input/OV_mRNA_core.txt"
+	phenoFile <- "/home/shraddhapai/DropBox/netDx/BaderLab/2017_TCGA_OV/input/OV_binary_survival.txt"
 } else if (tis == "LUSC") {
-phenoFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/LUSC_binary_survival.txt"
-xprFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/LUSC_RPPA_core.txt"
+	phenoFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/LUSC_binary_survival.txt"
+	#xprFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/LUSC_RPPA_core.txt"
+	xprFile <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/LUSC_mRNA_core.txt"
 }
+
+logFile <- sprintf("~/Desktop/%s.log",tis)
+sink(logFile,split=TRUE)
+tryCatch({
 require(combinat)
 xpr <- read.delim(xprFile,sep="\t",h=T,as.is=T)
 sname <- xpr[,1]; xpr<- xpr[,-1]
 xpr <- t(xpr)
 xpr <- xpr[-nrow(xpr),]
 
-if (tis %in% "KIRC")  xpr <- log(xpr+1) 
+if (tis %in% c("KIRC","LUSC"))  xpr <- log(xpr+1) 
 #before_num <- xpr
 class(xpr) <- "numeric"
 colnames(xpr) <- sname
@@ -159,11 +162,30 @@ cat(sprintf("Best cutoff = %1.2f; %i measures; sil width = %1.2f\n",
 		sil_width[idx,1], sil_width[idx,2],sil_width[idx,3]))
 bestThresh <- sil_width[idx,1]
 
-res <- subset(res, adj.P.Val < sil_width)
-xpr <- xpr[which(rownames(xpr) %in% rownames(res)),]
+res <- subset(res, adj.P.Val < bestThresh)
 
-pdf(sprintf("~/Desktop/%s_postFilt_sim.pdf",tis))
+# ----
+# plot pairwise sim before/after filt
+pdf(sprintf("~/Desktop/%s_preFilt_sim.pdf",tis))
+cat("----------------\n")
+cat("Before\n")
+cat("----------------\n")
 plotSim(cor(xpr),name="Pearson")
-plotSim(cos.sim(xpr),name="cosine")
+plotSim(sim.cos(xpr),name="cosine")
 dev.off()
 
+xpr <- xpr[which(rownames(xpr) %in% rownames(res)),]
+pdf(sprintf("~/Desktop/%s_postFilt_sim.pdf",tis))
+cat("----------------\n")
+cat("After\n")
+cat("----------------\n")
+plotSim(cor(xpr),name="Pearson")
+plotSim(cos.sim(xpr),name="cosine")
+plotSim(sim.dist(xpr,"euclidean"),name="euclidean")
+plotSim(sim.dist(xpr,"manhattan"),name="manhattan")
+plotSim(sim.dist(xpr,"minkowski"),name="minkowski")
+dev.off()
+
+},error=function(ex){print(ex)
+},finally={sink(NULL)
+})

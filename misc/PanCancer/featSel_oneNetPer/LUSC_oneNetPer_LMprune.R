@@ -63,10 +63,10 @@ inFiles <- list(
 	survival=sprintf("%s/LUSC_binary_survival.txt",inDir)
 	)
 datFiles <- list(
-	#rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
-	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir)
-#	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
-#	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
+	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
+	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir),
+	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
+	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
 )
 
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
@@ -109,6 +109,7 @@ for (nm in names(datFiles)) {
 	rownames(tmp) <- tmp[,1]
 	tmp <- t(tmp[,-1])
 	class(tmp) <- "numeric"
+	if (nm == "rna") tmp <- log(tmp+1)
 	dats[[nm]] <- tmp
 }
 
@@ -139,16 +140,16 @@ alldat <- do.call("rbind",dats)
 pheno_all <- pheno
 
 combList <- list(    
-    #clinicalArna=c("clinical_cont","rna.profile"),    
+    clinicalArna=c("clinical_cont","rna.profile"),    
     clinicalAprot=c("clinical_cont","prot.profile"),
     clinical="clinical_cont",
-	#mir="mir.profile",
-	#rna="rna.profile",
-	prot="prot.profile"
-	#cnv="cnv.profile",
-    #clinicalAmir=c("clinical_cont","mir.profile"),    
-    #clinicalAcnv=c("clinical_cont","cnv.profile"),    
-    #all="all")  
+	mir="mir.profile",
+	rna="rna.profile",
+	prot="prot.profile",
+	cnv="cnv.profile",
+    clinicalAmir=c("clinical_cont","mir.profile"),    
+    clinicalAcnv=c("clinical_cont","cnv.profile"),    
+    all="all"  
 )
 
 cat(sprintf("Clinical variables are: { %s }\n", 
@@ -165,14 +166,32 @@ sink(logFile,split=TRUE)
 tryCatch({
 
 # apply pruning to proteomic data
-pdf(sprintf("%s/prot_prune.pdf",megaDir))
-res <- runLM(dats$prot,pheno_all$STATUS,topVar=50)
-dev.off()
-res <- subset(res,adj.P.Val < 0.6)
-cat(sprintf("\t*** LM pruning, %i variables left\n",
-	nrow(res)))
-dats$prot <- dats$prot[which(rownames(dats$prot) %in% rownames(res)),]
-netSets$prot <- rownames(dats$prot)
+curwd <- getwd()
+setwd("..")
+source("LMprune.R")
+source("runLM.R")
+source("silh.R")
+require(cluster)
+setwd(curwd)
+for (nm in setdiff(names(dats),"clinical")) {
+print(nm)
+	if (nrow(dats[[nm]])>10000) topVar <- 50 else topVar <- 100
+	pdf(sprintf("%s/%s_prune.pdf",megaDir,nm))
+	prune <- LMprune(dats[[nm]],pheno_all$STATUS,topVar=topVar)
+	dev.off()
+	if (!is.na(prune)) {
+		res <- prune$res
+		res <- subset(res, adj.P.Val < prune$bestThresh)
+		tmp <- dats[[nm]];orig_ct <- nrow(tmp)
+		tmp <- tmp[which(rownames(tmp)%in% rownames(res))]
+		dats[[nm]] <- tmp
+		netSets[[nm]] <- rownames(tmp)
+		cat(sprintf("%s: Pruning with cutoff %1.2f\n", nm,prune$bestThresh))
+		cat(sprintf("\t%i of %i left\n", nrow(tmp),orig_ct))
+	} else {
+		cat(sprintf("%s: not pruning\n",nm))
+	}
+}
 
 ## Create the mega database with all patients and all nets.
 ## This will be used to predict test samples by subsetting just for feature

@@ -52,9 +52,27 @@ sim.normDiff2 <- function(x) {
 	sim
 }
 
+#' plot similarity matrix
+#' 
+#' @param x (matrix) similarity matrix
+#' @return No value. Side effect of plotting the matrix with cell-colours
+#' indicating strength of similarity. 
+#' @examples 
+#' rawDat <- matrix(rnorm(100),ncol=10)
+#' sim <- abs(cor(rawDat))
+#' plotSimMat(sim)
+#' plotSimMat(NetPreProc::Sparsify.matrix(sim,k=5)) # sparsified
+plotSimMat <- function(x) {
+cellClrs <- matrix(NA, nrow=nrow(x),ncol=ncol(x))
+plotrix::color2D.matplot(x,xrange=c(0,1),
+	extremes=c("lightblue","darkblue"),
+	na.color='grey50',show.values=(ncol(x)<15))
+}
+
 # given psn plot intra- and inter-class similarity
 # matrix must have upper populated, lower can be empty
-#' @param c1,c2 - patients in each of the two groups
+#' @param s1 (matrix) similarity matrix
+#' @param c1,c2 (char) vector of patients in each of the two groups
 plotSim <- function(s1,name="simfun",c1,c2) {
 	s1[lower.tri(s1,diag=TRUE)] <- NA
 	s1 <- na.omit(melt(s1))

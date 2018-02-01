@@ -3,14 +3,15 @@ rm(list=ls())
 
 #dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/multiCutoff_180119"
 #dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prune_180125"
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/pruneCheckIntegr_180126"
+#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/pruneCheckIntegr_180126"
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/pruneRBF_180130"
 #dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prunePCA_180126"
 
-rngDir <- paste(sprintf("%s/rng",dataDir), 7:100,sep="")
+rngDir <- paste(sprintf("%s/rng",dataDir), 1:10,sep="")
 
 require(netDx)
 for (cutoff in 7:9) {
-	c7 <- sprintf("%s/clinicalAprot/cutoff%i/predictionResults.txt",rngDir,cutoff)
+	c7 <- sprintf("%s/clinical/cutoff%i/predictionResults.txt",rngDir,cutoff)
 	torm <- c()
 	for (idx in 1:length(c7)) {
 		dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)

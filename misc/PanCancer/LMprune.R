@@ -3,16 +3,16 @@
 #' runs univariate filtering. loops over various fdr cutoffs, evaluating
 #' group separation by silhouette score. picks cutoff with best silhouette
 #' score
-#' @param groups (factor, integer or numeric) clusters
 #' @param m (data.frame or matrix) rows are measures, columns are samples
+#' @param groups (factor, integer or numeric) clusters
 #' @param topVar (number 10-100) keep values with top-variance
 #' @return (list) 1) sil_width=avg silh width for various cutoffs
 #' 2) bestThresh= cutoff with best silhouette score
 #' 3) res: output of runLM().univariate test results 
-LMprune <- function(groups,m,topVar=100,verbose=FALSE) {
+LMprune <- function(m,groups,topVar=100,verbose=FALSE) {
 
-source("runLM.R")
-source("silh.R")
+#source("runLM.R")
+#source("silh.R")
 res <- runLM(m,groups,topVar=topVar)
 
 if (min(res$adj.P.Val) > 0.9) {

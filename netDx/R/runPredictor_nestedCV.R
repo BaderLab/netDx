@@ -44,7 +44,7 @@
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores,CVmemory=4L,CVcutoff=9L,
-	keepAllData=FALSE) {
+	keepAllData=FALSE) { 
 
 ### tests# pheno$ID and $status must exist
 if (missing(dataList)) stop("dataList must be supplied.\n")

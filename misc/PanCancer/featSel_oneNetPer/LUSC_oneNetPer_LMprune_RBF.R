@@ -81,9 +81,12 @@ clinical$stage[clinical$stage=="Stage IIIA"| clinical$stage=="Stage IIIB"] <- "I
 clinical$stage <- as.factor(clinical$stage)
 clinical <- clinical[, -which(colnames(clinical)=="gender")]
 clinical <- t(clinical[,c("age","stage")])
+
 clinical[1,] <- as.integer(clinical[1,])
 clinical[2,] <- as.integer(as.factor(clinical[2,]))
 class(clinical) <- "numeric"
+ztrans <- function(x) (x-mean(x,na.rm=TRUE))/(sd(x,na.rm=TRUE))
+clinical[1,] <- ztrans(clinical[1,])
 # =======================
 dats$clinical <- clinical; rm(clinical)
 
@@ -194,7 +197,7 @@ netList2 <- makePSN_NamedMatrix(alldat,
 	rownames(alldat),netSets["clinical"],
 	netDir,simMetric="custom",customFunc=sim.rbf,
 	verbose=FALSE,numCores=numCores,
-	sparsify=TRUE,append=TRUE)
+	sparsify=TRUE,useSparsify2=TRUE,append=TRUE)
 netList <- c(netList,netList2)
 cat(sprintf("Total of %i nets\n", length(netList)))
 	
@@ -229,7 +232,7 @@ for (rngNum in 1:10) {
 		rownames(alldat_train),netSets["clinical"],
 		netDir,simMetric="custom",customFunc=sim.rbf,
 		verbose=FALSE,numCores=numCores,
-		sparsify=TRUE,append=TRUE)
+		sparsify=TRUE,useSparsify2=TRUE,append=TRUE)
 	netList <- c(netList,netList2)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	

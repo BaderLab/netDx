@@ -33,6 +33,8 @@
 #' are not included in the corresponding interaction network
 #' @param verbose (logical) print detailed messages
 #' @param numCores (integer) number of cores for parallel network generation
+#' @param useExtLib (logical) if TRUE, uses NetPreProc::Sparsify.matrix()
+#' with user-supplied k; else uses the implementation in this file
 #' @param writeProfiles (logical) use GeneMANIA's ProfileToNetworkDriver to
 #' create interaction networks. If TRUE, this function writes subsets 
 #' of the original data corresponding to networks to file (profiles). 
@@ -53,7 +55,7 @@
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson", cutoff=0.3,verbose=TRUE,
 	numCores=1L,writeProfiles=FALSE,
-	sparsify=FALSE,append=FALSE,...){
+	sparsify=FALSE,useSparsify2=FALSE,append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
 		dir.create(outDir)
@@ -67,6 +69,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	if (simMetric!="pearson" & writeProfiles==TRUE) {
 		stop("writeProfiles must only be TRUE with simMetric is set to pearson. For all other metrics, set writeProfiles=FALSE")
 	}
+	
+	if (!sparsify & useSparsify2) { stop("if useSparsify=TRUE then sparsify must also be set to TRUE\n")}
 
 	cl	<- makeCluster(numCores)
 	registerDoParallel(cl)
@@ -91,26 +95,36 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
-				idx <- which(upper.tri(sim,diag=F))
-				ij <- matrix_getIJ(dim(sim),idx)
+				if (!useSparsify2) {# prepare for internal sparsifier
+					idx <- which(upper.tri(sim,diag=F))
+					ij <- matrix_getIJ(dim(sim),idx)
+	
+					# make interaction network
+					pat_pairs <- data.frame(p1=rownames(sim)[ij[,1]], 
+										p2=colnames(sim)[ij[,2]], 
+										similarity=sim[idx])
 
-				# make interaction network
-				pat_pairs <- data.frame(p1=rownames(sim)[ij[,1]], 
-									p2=colnames(sim)[ij[,2]], 
-									similarity=sim[idx])
-
-				too_weak    <- which(pat_pairs[,3] < cutoff | 
-									is.na(pat_pairs[,3]))
-				if (any(too_weak)) {
-					if (verbose) 
-						cat(sprintf("\t%i weak connections\n", 
-									length(too_weak)))
-					pat_pairs <- pat_pairs[-too_weak,]
+					too_weak    <- which(pat_pairs[,3] < cutoff | 
+										is.na(pat_pairs[,3]))
+					if (any(too_weak)) {
+						if (verbose) 
+							cat(sprintf("\t%i weak connections\n", 
+										length(too_weak)))
+						pat_pairs <- pat_pairs[-too_weak,]
+					}
+				} else {	 # stick to sim matrix
+					pat_pairs <- sim
 				}
 
 				if (sparsify) {
+					if (useSparsify2) {
+					cat("using sparsify2\n")
+					 sparsify2(pat_pairs,outFile)
+					} else {
+					cat("using original sparsifier method\n")
 					sparsifyNet(pat_pairs,outFile,numPatients=nrow(sim),
 								verbose=FALSE)
+					}
 				} else {
 				write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)

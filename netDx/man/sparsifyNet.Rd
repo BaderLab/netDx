@@ -5,7 +5,7 @@
 \title{Sparsifies patient similarity network}
 \usage{
 sparsifyNet(net, outFile, k = 50L, MAX_INT = 600L, MAX_PCT = 0.02,
-  numPatients = 100L, keepTies = TRUE, verbose = TRUE)
+  numPatients, keepTies = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{net}{(char or data.frame) If of type char, should path to 

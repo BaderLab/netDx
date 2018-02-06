@@ -6,7 +6,7 @@
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
   cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = FALSE,
-  sparsify = FALSE, append = FALSE, ...)
+  sparsify = FALSE, useSparsify2 = FALSE, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -44,6 +44,9 @@ with default parameters. Only used when writeProfiles=FALSE}
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 
 \item{...}{passed to \code{getSimilarity()}}
+
+\item{useExtLib}{(logical) if TRUE, uses NetPreProc::Sparsify.matrix()
+with user-supplied k; else uses the implementation in this file}
 }
 \value{
 (char) Basename of files to which networks are written.  

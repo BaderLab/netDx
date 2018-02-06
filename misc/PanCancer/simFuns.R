@@ -102,11 +102,18 @@ plotrix::color2D.matplot(x,xrange=c(0,1),
 
 # given psn plot intra- and inter-class similarity
 # matrix must have upper populated, lower can be empty
-#' @param s1 (matrix) similarity matrix
+#' @param s1 (matrix) similarity matrix. If 3-column table provided, assumes
+#' it's a SIF
 #' @param c1,c2 (char) vector of patients in each of the two groups
 plotSim <- function(s1,name="simfun",c1,c2) {
-	s1[lower.tri(s1,diag=TRUE)] <- NA
-	s1 <- na.omit(melt(s1))
+	if (ncol(s1) == 3) {
+		cat("assuming SIF provided\n")
+		colnames(s1) <- c("Var1","Var2","value")
+		# do nothing
+	} else {
+		s1[lower.tri(s1,diag=TRUE)] <- NA
+		s1 <- na.omit(melt(s1))
+	}
 	out <- list(
 		pp=s1$value[which(s1$Var1 %in% c1 & s1$Var2 %in% c1)],
 		mm=s1$value[which(s1$Var1 %in% c2 & s1$Var2 %in% c2)],

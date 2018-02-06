@@ -37,9 +37,8 @@
 #' @param numPatients (integer) number of patients in the network. See 
 #' Details.
 #' @param keepTies (logical) keep edge ties. See Details 
-#' @param useExtLib (logical) if TRUE, uses NetPreProc::Sparsify.matrix()
-#' with user-supplied k; else uses the implementation in this file
 #' @param verbose (logical) print messages
+#' @param cutoff (value between 0 and 1) min edge value to keep
 #' @return No value. Writes sparsified matrix to \code{outFile}
 #' @export
 #' @examples
@@ -48,20 +47,19 @@
 #' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 #' sparsifyNet(x,outFile="tmp.txt")
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
-		numPatients,keepTies=TRUE,useExtLib=FALSE,verbose=TRUE){
+		numPatients,keepTies=TRUE,verbose=TRUE,cutoff=0.3){
 if (class(net)=="data.frame") {
 	dat <- net
 } else if (class(net)=="character"){
 	netFile <- net
 	dat <- read.delim(netFile,sep="\t",as.is=T,h=F)
 }
-dat <- dat[order(dat[,1]),]
 
+	dat <- dat[order(dat[,1]),]
+	idx <- which(dat[,3]<cutoff)
 
-if (useExtLib) {
-	browser()
-	
-} else {
+	if (any(idx)) dat[idx,3] <- NA
+	dat <- na.omit(dat)
 	curPat <- dat[1,1] # initialize
 	sidx <- 1; eidx <- NA;
 	ctr <- 1
@@ -114,7 +112,7 @@ if (useExtLib) {
 	n1 <- length(totalInter)
 	
 	if (!keepTies) {
-		totalInter <- totalInter[!duplicated(totalInter)]		
+	totalInter <- totalInter[!duplicated(totalInter)]		
 	}
 	totalInter <- sort(totalInter,decreasing=TRUE)
 	n <- length(totalInter)
@@ -127,10 +125,10 @@ if (useExtLib) {
 	outInter <- totalInter[1:tokeep]
 df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
 write.table(df,file=outFile,sep="\t",append=TRUE,col=F,row=F,quote=F)
-}
+oldCt <- nrow(dat)
 
 cat(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 
-			nrow(dat), newCt,(newCt/nrow(dat))*100))
+			oldCt, newCt,(newCt/oldCt)*100))
 cat("Time taken:\n")
 print(Sys.time()-t0)
 

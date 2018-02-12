@@ -5,7 +5,7 @@
 \title{Create patient networks from full matrix of named measurements}
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
-  cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = FALSE,
+  cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = TRUE,
   sparsify = FALSE, useSparsify2 = FALSE, append = FALSE, ...)
 }
 \arguments{
@@ -24,7 +24,8 @@ that are input to network generation}
 \item{outDir}{(char) path to directory where networks are written}
 
 \item{simMetric}{(char) measure of similarity. See \code{getSimilarity()}
-for details}
+for details. If writeProfiles is set to TRUE, must be one of pearson
+(Pearson correlation) or MI (correlation by mutual information).}
 
 \item{cutoff}{(numeric) patients with similarity smaller than this value
 are not included in the corresponding interaction network}
@@ -40,6 +41,9 @@ If FALSE, uses  getSimilarity() and writes interaction networks.}
 
 \item{sparsify}{(logical) sparsify networks by calling sparsifyNets()
 with default parameters. Only used when writeProfiles=FALSE}
+
+\item{useSparsify2}{(logical). Currently for testing only. A cleaner
+sparsification routine.}
 
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 

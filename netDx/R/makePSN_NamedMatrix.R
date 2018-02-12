@@ -28,7 +28,8 @@
 #' that are input to network generation
 #' @param outDir (char) path to directory where networks are written
 #' @param simMetric (char) measure of similarity. See \code{getSimilarity()}
-#' for details
+#' for details. If writeProfiles is set to TRUE, must be one of pearson
+#' (Pearson correlation) or MI (correlation by mutual information).
 #' @param cutoff (numeric) patients with similarity smaller than this value
 #' are not included in the corresponding interaction network
 #' @param verbose (logical) print detailed messages
@@ -41,6 +42,8 @@
 #' If FALSE, uses  getSimilarity() and writes interaction networks.
 #' @param sparsify (logical) sparsify networks by calling sparsifyNets()
 #' with default parameters. Only used when writeProfiles=FALSE
+#' @param useSparsify2 (logical). Currently for testing only. A cleaner
+#' sparsification routine.
 #' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
@@ -54,7 +57,7 @@
 #' @export
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson", cutoff=0.3,verbose=TRUE,
-	numCores=1L,writeProfiles=FALSE,
+	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
@@ -66,14 +69,15 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		}
 	}
 
-	if (simMetric!="pearson" & writeProfiles==TRUE) {
-		stop("writeProfiles must only be TRUE with simMetric is set to pearson. For all other metrics, set writeProfiles=FALSE")
+	if ((!simMetric %in% c("pearson","MI"))  & writeProfiles==TRUE) {
+	print(simMetric)
+		stop("writeProfiles must only be TRUE with simMetric set to pearson or MI. For all other metrics, set writeProfiles=FALSE")
 	}
 	
 	if (!sparsify & useSparsify2) { stop("if useSparsify=TRUE then sparsify must also be set to TRUE\n")}
 
 	cl	<- makeCluster(numCores)
-	registerDoParallel(cl)
+	registerDoParallel(cl,outfile=sprintf("%s/makePSN_log.txt",outDir))
 
 	# process pathways in parallel
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {
@@ -82,7 +86,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		if (verbose) cat(sprintf("%i members\n", length(idx)))
 
 		minMembers <- 1 
-		if (simMetric=="pearson") minMembers <- 3;
+		if (simMetric=="pearson") minMembers <- 5;
 
 		oFile <- NULL
  		# has sufficient connections to make network

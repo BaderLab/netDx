@@ -5,7 +5,7 @@
 \title{Sparsifies patient similarity network}
 \usage{
 sparsifyNet(net, outFile, k = 50L, MAX_INT = 600L, MAX_PCT = 0.02,
-  numPatients, keepTies = TRUE, verbose = TRUE)
+  numPatients, keepTies = TRUE, verbose = TRUE, cutoff = 0.3)
 }
 \arguments{
 \item{net}{(char or data.frame) If of type char, should path to 
@@ -29,6 +29,8 @@ Details.}
 \item{keepTies}{(logical) keep edge ties. See Details}
 
 \item{verbose}{(logical) print messages}
+
+\item{cutoff}{(value between 0 and 1) min edge value to keep}
 }
 \value{
 No value. Writes sparsified matrix to \code{outFile}

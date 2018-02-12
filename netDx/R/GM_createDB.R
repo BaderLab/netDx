@@ -19,6 +19,9 @@
 #' @param netSfx (char) pattern for finding network files in \code{netDir}.
 #' @param verbose (logical) print messages
 #' @param numCores (integer) num cores for parallel processing
+#' @param P2N_threshType (char) Most users shouldn't have to change this.
+#' ProfileToNetworkDriver's threshold option. One of "off|auto". 
+#' @param P2N_maxMissing (integer 5-100)
 #' @param GMmemory (integer) Memory for GeneMANIA (in Gb)
 #' @param ... params for \code{GM_writeBatchFile()}
 #' @return (list). "dbDir": path to GeneMANIA database 
@@ -35,14 +38,18 @@
 #'		writeProfiles=TRUE); 
 #'	db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
 #' @export
-GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
-	netSfx="_cont.txt$",verbose=TRUE,numCores=1L,
-	GMmemory=4L, ...) {
+GM_createDB <- function(netDir,patientID,outDir,simMetric="pearson",
+	netSfx="_cont.txt$",verbose=TRUE,numCores=1L, P2N_threshType="off",
+	P2N_maxMissing=100,GMmemory=4L, ...) {
 	# tmpDir/ is where all the prepared files are stored.
 	# GeneMANIA uses tmpDir as input to create the generic database. 
 	# The database itself will be in outDir/
 	tmpDir <- sprintf("%s/tmp",outDir)
 	dataDir <- sprintf("%s/dataset",outDir)
+
+	if (P2N_maxMissing < 5) PSN_maxMissing <- 5
+	if (P2N_maxMissing >100) PSN_maxMissing <- 100
+	if (!P2N_threshType %in% c("off","auto")) P2N_threshType <- "off"
 
 	if (file.exists(tmpDir))  unlink(tmpDir,recursive=TRUE)
 	if (file.exists(dataDir)) unlink(dataDir,recursive=TRUE)
@@ -109,12 +116,19 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 	if (length(netList1)>0) {
 		cat("\t* Converting profiles to interaction networks\n")
 
-		cl	<- makeCluster(numCores)
+		cl	<- makeCluster(numCores,outfile=sprintf("%s/P2N_log.txt",tmpDir))
 		registerDoParallel(cl)
+	
+		if (simMetric=="pearson") {
+			corType <- "PEARSON"
+		} else if (simMetric == "MI") {
+			corType <- "MUTUAL_INFORMATION"
+		}
 
 		cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", GMmemory,GM_jar)
-		cmd3 <- "-proftype continuous -cor PEARSON"
-		cmd5 <- "-threshold off -maxmissing 100.0"
+		cmd3 <- sprintf("-proftype continuous -cor %s",corType)
+		cmd5 <- sprintf("-threshold %s -maxmissing %1.1f", P2N_threshType,
+			P2N_maxMissing)
 		profDir <- sprintf("%s/profiles",tmpDir)
 		netOutDir <- sprintf("%s/INTERACTIONS",tmpDir)
 		tmpsfx <- sub("\\$","",netSfx)
@@ -125,6 +139,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="cor_pearson",
 			cmd4 <- sprintf("-syn %s/1.synonyms -keepAllTies -limitTies",
 							tmpDir)
 			cmd <- sprintf("%s %s %s %s %s", cmd1,cmd2,cmd3,cmd4,cmd5)
+			print(cmd)
 			system(cmd)
 		}
 		))

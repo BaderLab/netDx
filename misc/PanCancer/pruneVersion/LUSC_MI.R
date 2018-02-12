@@ -21,7 +21,7 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/prunedPearson_%s",outRoot,dt)
+megaDir <- sprintf("%s/prunedMI_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -63,10 +63,10 @@ inFiles <- list(
 	survival=sprintf("%s/LUSC_binary_survival.txt",inDir)
 	)
 datFiles <- list(
-	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
-	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir),
- 	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
-	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
+#	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
+	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir)
+# 	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
+#	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
 )
 
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
@@ -140,16 +140,16 @@ alldat <- do.call("rbind",dats)
 pheno_all <- pheno
 
 combList <- list(    
-    clinicalArna=c("clinical_cont","rna.profile"),    
+    #clinicalArna=c("clinical_cont","rna.profile"),    
     clinicalAprot=c("clinical_cont","prot.profile"),
-    clinical="clinical_cont",
-	mir="mir.profile",
-	rna="rna.profile",
-	prot="prot.profile",
-	cnv="cnv.profile",
-    clinicalAmir=c("clinical_cont","mir.profile"),    
-    clinicalAcnv=c("clinical_cont","cnv.profile"),    
-    all="all"  
+    #clinical="clinical_cont",
+	#mir="mir.profile",
+	#rna="rna.profile",
+	prot="prot.profile"
+	#cnv="cnv.profile",
+    #clinicalAmir=c("clinical_cont","mir.profile"),    
+    #clinicalAcnv=c("clinical_cont","cnv.profile"),    
+    #all="all"  
 )
 
 cat(sprintf("Clinical variables are: { %s }\n", 
@@ -177,8 +177,7 @@ require(cluster)
 setwd(curwd)
 for (nm in setdiff(names(dats),"clinical")) {
 print(nm)
-	if (nrow(dats[[nm]])>10000 | nm == "prot") 
-		topVar <- 50 else topVar <- 100
+	if (nrow(dats[[nm]])>10000 | nm == "prot") topVar <- 50 else topVar <- 100
 	#topVar <- 50
 	pdf(sprintf("%s/%s_prune.pdf",megaDir,nm))
 	prune <- LMprune(dats[[nm]],pheno_all$STATUS,topVar=topVar)
@@ -211,22 +210,22 @@ netDir <- sprintf("%s/networks",megaDir)
 nonclin <- setdiff(names(netSets),"clinical")
 netList <- makePSN_NamedMatrix(alldat,
 	rownames(alldat),netSets[nonclin],netDir,
-	verbose=FALSE,numCores=numCores,writeProfiles=TRUE,
-	simMetric="pearson")
+	simMetric="MI",
+	verbose=FALSE,numCores=numCores,writeProfiles=TRUE)
 netList2 <- makePSN_NamedMatrix(alldat, 
 	rownames(alldat),netSets["clinical"],
-	netDir,simMetric="custom",customFunc=normDiff2,writeProfiles=FALSE,
+	netDir,simMetric="custom",customFunc=normDiff2,
 	verbose=FALSE,numCores=numCores,
-	sparsify=TRUE,append=TRUE)
+	sparsify=TRUE,append=TRUE,writeProfiles=FALSE)
 netList <- c(netList,netList2)
 cat(sprintf("Total of %i nets\n", length(netList)))
 	
 # now create database
 megadbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores,
-	simMetric="pearson")
+	simMetric="MI")
 
 # first loop - over train/test splits
-for (rngNum in 1:100) {
+for (rngNum in 1:10) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -248,18 +247,18 @@ for (rngNum in 1:100) {
 	netList <- makePSN_NamedMatrix(alldat_train, 
 		rownames(alldat_train),netSets[nonclin],
 		netDir,verbose=FALSE,numCores=numCores,
-		writeProfiles=TRUE,simMetric="pearson")
+		writeProfiles=TRUE,simMetric="MI")
 	netList2 <- makePSN_NamedMatrix(alldat_train, 
 		rownames(alldat_train),netSets["clinical"],
-		netDir,simMetric="custom",customFunc=normDiff2,writeProfiles=FALSE,
+		netDir,simMetric="custom",customFunc=normDiff2,
 		verbose=FALSE,numCores=numCores,
-		sparsify=TRUE,append=TRUE)
+		sparsify=TRUE,append=TRUE,writeProfiles=FALSE)
 	netList <- c(netList,netList2)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores,
-		simMetric="pearson")
+		simMetric="MI")
 
 	# second loop - over combinations of input data
  	for (cur in  names(combList)) {

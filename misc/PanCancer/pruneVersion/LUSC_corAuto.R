@@ -1,3 +1,4 @@
+#' correlation but threshold=auto.
 #' PanCancer binarized survival: LUSC: Feature selection with one net per
 #' datatype
 #' 10-fold CV predictor design 
@@ -21,7 +22,7 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/prunedPearson_%s",outRoot,dt)
+megaDir <- sprintf("%s/pruneAuto_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -223,10 +224,10 @@ cat(sprintf("Total of %i nets\n", length(netList)))
 	
 # now create database
 megadbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores,
-	simMetric="pearson")
+	simMetric="pearson",P2N_threshType="auto")
 
 # first loop - over train/test splits
-for (rngNum in 1:100) {
+for (rngNum in 1:25) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -259,7 +260,7 @@ for (rngNum in 1:100) {
 	
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores,
-		simMetric="pearson")
+		simMetric="pearson",P2N_threshType="auto")
 
 	# second loop - over combinations of input data
  	for (cur in  names(combList)) {

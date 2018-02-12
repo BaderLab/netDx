@@ -3,20 +3,17 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-#dataDir_each <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/pruneClinRNA_alone_180125"
+dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruned_180204"
 
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/prune_180204"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/PCA1net_180126"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/PCAmultinet_180126"
-
-settypes <- c("clinical","mir","rna","cnv","dnam",
-	"clinicalArna","clinicalAmir","clinicalAdnam","clinicalAcnv","all")
-outmat <- matrix(NA,nrow=length(settypes),ncol=9)
-meas <- paste(rep(7:9,each=3),c("auroc","aupr","accuracy"),sep="_")
+settypes <- c("clinical","mir","rna","prot","cnv","dnam",
+	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAdnam",
+	"clinicalAcnv","all")
+outmat <- matrix(NA,nrow=length(settypes),ncol=3)
+meas <- paste(rep(9,each=3),c("auroc","aupr","accuracy"),sep="_")
 rownames(outmat)<- settypes
 colnames(outmat) <- meas
 ctr <- 1
-outD <- sprintf("GBM_%s",basename(dataDir))
+outD <- sprintf("KIRC_%s",basename(dataDir))
 if (!file.exists(outD)) dir.create(outD)
 
 for (settype in settypes) {
@@ -27,8 +24,8 @@ for (settype in settypes) {
 	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
 
 colctr <- 1
-for (cutoff in 7:9) {
-	c7 <- sprintf("%s/%s/cutoff%i/predictionResults.txt",
+for (cutoff in 9) {
+	c7 <- sprintf("%s/%s/predictionResults.txt",
 				  rngDir,settype,cutoff)
 	torm <- c()
 	for (idx in 1:length(c7)) {

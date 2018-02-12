@@ -1,32 +1,56 @@
-#' plot LUSC results with multiple CV cutoffs
+#' plot GBM results with multiple CV cutoffs
 rm(list=ls())
-
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/multiCutoff_180119"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prune_180125"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/pruneCheckIntegr_180126"
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/pruneRBF_180130"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prunePCA_180126"
-
-rngDir <- paste(sprintf("%s/rng",dataDir), 1:10,sep="")
-
 require(netDx)
+require(reshape2)
+
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prunedMI_180212"
+
+settypes <- c("prot","clinicalAprot") #"mir","rna","prot","cnv",
+	#"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
+outmat <- matrix(NA,nrow=length(settypes),ncol=9)
+meas <- paste(rep(7:9,each=3),c("auroc","aupr","accuracy"),sep="_")
+rownames(outmat)<- settypes
+colnames(outmat) <- meas
+ctr <- 1
+outD <- sprintf("LUSC_%s",basename(dataDir))
+if (!file.exists(outD)) dir.create(outD)
+
+for (settype in settypes) {
+###	if (settype %in% "clinicalArna") 
+###		dataDir <- dataDir_both
+###	else 
+###		dataDir <- dataDir_each
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:10,sep="")
+
+colctr <- 1
 for (cutoff in 7:9) {
-	c7 <- sprintf("%s/clinical/cutoff%i/predictionResults.txt",rngDir,cutoff)
+	c7 <- sprintf("%s/%s/cutoff%i/predictionResults.txt",
+				  rngDir,settype,cutoff)
 	torm <- c()
 	for (idx in 1:length(c7)) {
 		dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)
 		x1 <- sum(dat$STATUS=="SURVIVEYES")
 		x2 <- sum(dat$STATUS=="SURVIVENO")
-	#	cat(sprintf("%i: %i YES, %i NO\n", idx,x1,x2))
 		if (x1<1 & x2<1) torm <- c(torm, idx)
 	}
 	cat(sprintf("%i: removing %i\n", cutoff,length(torm)))
 	if (length(torm)>0) c7 <- c7[-torm]
-	postscript(sprintf("LUSC_cutoff%i.eps",cutoff));
+	postscript(sprintf("%s/%s_cutoff%i.eps",outD,settype,cutoff));
 	x <- plotPerf(c7,c("SURVIVEYES","SURVIVENO"))
-	y <- unlist(lapply(x,function(i) i$auroc))
-	cat(sprintf("%i, mean auroc= %1.2f\n", cutoff, mean(y)))
 	dev.off()
-}
 
-###
+	y1 <- unlist(lapply(x,function(i) i$auroc))
+	y2 <- unlist(lapply(x,function(i) i$aupr))
+	y3 <- unlist(lapply(x,function(i) i$accuracy))
+	outmat[ctr,colctr+(0:2)] <- c(mean(y1),mean(y2),mean(y3))
+
+	colctr <- colctr+3
+}
+ctr <- ctr+1
+}
+print(round(outmat,digits=2))
+
+write.table(round(outmat,digits=2),file=sprintf("%s/perf.txt",outD),sep="\t",
+			col=T,row=T,quote=F)
+
+

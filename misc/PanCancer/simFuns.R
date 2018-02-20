@@ -2,6 +2,37 @@
 #' these will be eventually moved into netDx
 require(reshape2)
 
+#' mutual information
+sim.mi <- function(m) {
+	tmp <- infotheo::discretize(m)
+	infotheo::mutinformation(tmp)
+}
+
+#' radial basis function
+#' @param m (matrix) data, columns are patients
+#' @param nm (char) kernel to use, prefix to kernlab::*dot() functions.
+#' e.g. rbf,tanh,laplace
+sim.kern <- function(m,nm="rbf",sigma=0.05) {
+	if (nm=="rbf") {
+		func <- kernlab::rbfdot(sigma)
+		cat(sprintf("Sigma = %1.2f\n", sigma))
+	} else if (nm == "tanh") {
+		cat("using tanh\n")
+		func <- kernlab::tanhdot()
+	}
+	idx <- combinat::combn(1:ncol(m),2)
+	out <- matrix(NA,nrow=ncol(m),ncol=ncol(m))
+	for (comb in 1:ncol(idx)) {
+		i <- idx[1,comb]; j <- idx[2,comb]
+		x <- func(m[,i],m[,j])
+		out[i,j] <- x; out[j,i] <- x
+	}
+	diag(out) <- 1
+	colnames(out)<- colnames(m);
+	rownames(out) <- colnames(m)
+	out
+}
+
 #' cosine similarity
 sim.cos <- function(m) {
 	out <- matrix(NA,nrow=ncol(m),ncol=ncol(m))

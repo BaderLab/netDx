@@ -2,6 +2,8 @@
 
 # count num nets in databases creating for 'pick best cutoff' phase
 
+# this is a test
+
 inDir=/home/spai/tmp/TCGA_BRCA_xprCNV/predictor
 
 subtypes=(LumA other);

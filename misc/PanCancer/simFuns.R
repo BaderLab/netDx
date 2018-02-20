@@ -66,7 +66,7 @@ plotSimMat <- function(x) {
 cellClrs <- matrix(NA, nrow=nrow(x),ncol=ncol(x))
 plotrix::color2D.matplot(x,xrange=c(0,1),
 	extremes=c("lightblue","darkblue"),
-	na.color='grey50',show.values=(ncol(x)<15))
+	na.color=NA,show.values=(ncol(x)<15),border='grey90')
 }
 
 # given psn plot intra- and inter-class similarity

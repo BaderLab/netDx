@@ -6,11 +6,11 @@ require(survival)
 require(survminer)
 source("plot.survfit.custom.R")
 
-tumourType <- "OV"
+tumourType <- "KIRC"
 
 rootDir <-  "/Users/shraddhapai/Dropbox/netDx/BaderLab"
 if (tumourType=="KIRC") {
-	dataDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneNetPer_normDiff_170518",rootDir)
+	dataDir <- sprintf("%s/2017_TCGA_KIRC/output/pruned_180204",rootDir)
 	survFile <- sprintf("%s/2017_TCGA_KIRC/input/KIRC_OS_core.txt",rootDir)
 	clinFile <- sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir)
 } else if (tumourType=="LUSC") {

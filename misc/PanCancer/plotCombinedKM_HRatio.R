@@ -4,19 +4,21 @@ rm(list=ls())
 require(rms)
 require(survival)
 require(survminer)
-source("plot.survfit.custom.R")
+source("survival_plots/plot.survfit.custom.R")
 
-tumourType <- "OV"
+tumourType <- "GBM"
 
 rootDir <-  "/Users/shraddhapai/Dropbox/netDx/BaderLab"
 if (tumourType=="KIRC") {
-	dataDir <- sprintf("%s/2017_TCGA_KIRC/output/KIRC_oneNetPer_normDiff_170518",rootDir)
+	dataDir <- sprintf("%s/2017_TCGA_KIRC/output/pruned_180204",rootDir)
 	survFile <- sprintf("%s/2017_TCGA_KIRC/input/KIRC_OS_core.txt",rootDir)
 	clinFile <- sprintf("%s/2017_TCGA_KIRC/input/KIRC_clinical_core.txt",rootDir)
-} else if (tumourType=="LUSC") {
-	dataDir <- sprintf("%s/2017_TCGA_LUSC/output/LUSC_oneNetPer_170425",rootDir)
-	survFile <- sprintf("%s/2017_TCGA_LUSC/input/LUSC_OS_core.txt",rootDir)
-	clinFile <- sprintf("%s/2017_TCGA_LUSC/input/LUSC_clinical_core.txt",rootDir)
+	repIter <- 17
+} else if (tumourType=="GBM") {
+	dataDir <- sprintf("%s/2017_TCGA_GBM/output/pruned_180204",rootDir)
+	survFile <- sprintf("%s/2017_TCGA_GBM/input/GBM_OS_core.txt",rootDir)
+	clinFile <- sprintf("%s/2017_TCGA_GBM/input/GBM_clinical_core.txt",rootDir)
+	repIter <- 21
 } else if (tumourType=="OV") {
 	dataDir <- sprintf("%s/2017_TCGA_OV/output/OV_oneNetPer_170425",rootDir)
 	survFile <- sprintf("%s/2017_TCGA_OV/input/OV_OS_core.txt",rootDir)
@@ -30,16 +32,25 @@ pheno <- merge(x=survDat,y=clinDat,by="feature")
 plotDF <- list() # compiles survival curves across all iterations
 megaDF <- list()
 hratio <- c() # cum hazards ratio for all iterations
+keepCoxph <- c() # for representative iter
+keepSurv <- c() # for representative iter
 for (k in 1:100) {
 	print(k)
-	dat <- read.delim(sprintf("%s/rng%i/clinical/predictionResults.txt",
+	if (tumourType=="KIRC") {
+	dat <- read.delim(sprintf("%s/rng%i/clinicalAdnam/predictionResults.txt",
 		dataDir,k),sep="\t",h=T,as.is=T)
+	} else if (tumourType =="GBM") {
+	dat <- read.delim(sprintf("%s/rng%i/all/cutoff9/predictionResults.txt",
+		dataDir,k),sep="\t",h=T,as.is=T)
+	}
+
 	colnames(dat)[1] <- "feature"
 	dat <- merge(x=dat,y=pheno,by="feature")
 
 	# force first entry to be YES and second to be NO so we can tell them apart
 	# in the output.
-	dat$PRED_CLASS <- factor(dat$PRED_CLASS,levels=c("SURVIVEYES","SURVIVENO"))
+	dat$PRED_CLASS <- factor(dat$PRED_CLASS,
+		levels=c("SURVIVEYES","SURVIVENO"))
 
 	megaDF[[k]] <- dat
 
@@ -52,19 +63,32 @@ for (k in 1:100) {
 	fit <- npsurv(SurvObj ~ PRED_CLASS, data = dat,
 		conf.type = "log-log")
 
-	par(mfrow=c(1,2))
+	#par(mfrow=c(1,2))
 	out <- plot.survfit.custom(fit)
-	plot(0,0,type='n',xlim=c(0,max(out$ends$x)),ylim=c(0,1))
+	#plot(0,0,type='n',xlim=c(0,max(out$ends$x)),ylim=c(0,1))
 	out[[1]] <- as.data.frame(out[[1]])
 	out[[2]] <- as.data.frame(out[[2]])
-#	lines(out[[1]]$xx,out[[1]]$yy,col='green')
-#	lines(out[[2]]$xx,out[[2]]$yy,col='red')
 
 	newdf <- out[[1]]; newdf$PRED_CLASS <- "SURVIVEYES"; newdf$split <- k
 	newdf2 <- out[[2]]; newdf2$PRED_CLASS <- "SURVIVENO"; newdf2$split <- k
 	
 	plotDF[[k]] <- rbind(newdf,newdf2)
+
+	if (k == repIter) {
+		keepCoxph <- model
+		keepSurv <- dat
+	}
 }
+
+cat("Plot representative iter (separately found to have auroc closest to average auroc\n")
+require(forestmodel)
+fit <- npsurv(SurvObj~PRED_CLASS,data=keepSurv,conf.type="log-log")
+pdf(sprintf("%s_survPlot.pdf",tumourType))
+p <- ggsurvplot(fit,pval=TRUE,conf.int=TRUE,palette=c("blue","red"),legend.title="Survival type")
+print(p)
+p2 <- forest_model(keepCoxph)
+print(p2)
+dev.off()
 
 # approach 1: pool all results and make a single KM curve
 res <- do.call("rbind",megaDF)

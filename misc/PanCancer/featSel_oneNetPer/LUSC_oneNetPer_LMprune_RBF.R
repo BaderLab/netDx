@@ -6,6 +6,7 @@ rm(list=ls())
 require(netDx)
 require(netDx.examples)
 source("../runLM.R")
+#source("../simFuns.R")
 
 numCores <- 8L
 GMmemory <- 4L
@@ -21,39 +22,24 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/pruneCheckIntegr_%s",outRoot,dt)
+megaDir <- sprintf("%s/pruneRBFsigma25_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
 
-# takes average of normdiff of each row in x
-normDiff2 <- function(x) {
-	# normalized difference 
-	# x is vector of values, one per patient (e.g. ages)
-	normDiff <- function(x) {
-	    #if (nrow(x)>=1) x <- x[1,]
-	    nm <- colnames(x)
-	    x <- as.numeric(x)
-	    n <- length(x)
-	    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
-	    
-	    out <- matrix(NA,nrow=n,ncol=n);
-	    # weight between i and j is
-	    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
-	    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
-	    rownames(out) <- nm; colnames(out)<- nm
-	    out
+sim.rbf <- function(m,sigma=0.25) {
+	func <- kernlab::rbfdot(sigma)
+	idx <- combinat::combn(1:ncol(m),2)
+	out <- matrix(NA,nrow=ncol(m),ncol=ncol(m))
+	for (comb in 1:ncol(idx)) {
+		i <- idx[1,comb]; j <- idx[2,comb]
+		x <- func(m[,i],m[,j])
+		out[i,j] <- x; out[j,i] <- x
 	}
-
-	sim <- matrix(0,nrow=ncol(x),ncol=ncol(x))
-	for (k in 1:nrow(x)) {
-		tmp <- normDiff(x[k,,drop=FALSE])
-		sim <- sim + tmp
-		rownames(sim) <- rownames(tmp)
-		colnames(sim) <- colnames(tmp)
-	}
-	sim <- sim/nrow(x)
-	sim
+	diag(out) <- 1
+	colnames(out)<- colnames(m);
+	rownames(out) <- colnames(m)
+	out
 }
 
 # -----------------------------------------------------------
@@ -63,10 +49,10 @@ inFiles <- list(
 	survival=sprintf("%s/LUSC_binary_survival.txt",inDir)
 	)
 datFiles <- list(
-	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
-	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir),
-	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
-	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
+	#rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
+	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir)
+	#mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
+	#cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
 )
 
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
@@ -140,16 +126,16 @@ alldat <- do.call("rbind",dats)
 pheno_all <- pheno
 
 combList <- list(    
-    clinicalArna=c("clinical_cont","rna.profile"),    
+#    clinicalArna=c("clinical_cont","rna.profile"),    
     clinicalAprot=c("clinical_cont","prot.profile"),
     clinical="clinical_cont",
-	mir="mir.profile",
-	rna="rna.profile",
-	prot="prot.profile",
-	cnv="cnv.profile",
-    clinicalAmir=c("clinical_cont","mir.profile"),    
-    clinicalAcnv=c("clinical_cont","cnv.profile"),    
-    all="all"  
+#	mir="mir.profile",
+#	rna="rna.profile",
+	prot="prot.profile"
+#	cnv="cnv.profile",
+ #   clinicalAmir=c("clinical_cont","mir.profile"),    
+ #   clinicalAcnv=c("clinical_cont","cnv.profile"),    
+ #   all="all"  
 )
 
 cat(sprintf("Clinical variables are: { %s }\n", 
@@ -183,7 +169,7 @@ print(nm)
 		res <- prune$res
 		res <- subset(res, adj.P.Val < prune$bestThresh)
 		tmp <- dats[[nm]];orig_ct <- nrow(tmp)
-		tmp <- tmp[which(rownames(tmp)%in% rownames(res))]
+		tmp <- tmp[which(rownames(tmp)%in% rownames(res)),]
 		dats[[nm]] <- tmp
 		netSets[[nm]] <- rownames(tmp)
 		cat(sprintf("%s: Pruning with cutoff %1.2f\n", nm,prune$bestThresh))
@@ -206,7 +192,7 @@ netList <- makePSN_NamedMatrix(alldat,
 	verbose=FALSE,numCores=numCores,writeProfiles=TRUE)
 netList2 <- makePSN_NamedMatrix(alldat, 
 	rownames(alldat),netSets["clinical"],
-	netDir,simMetric="custom",customFunc=normDiff2,
+	netDir,simMetric="custom",customFunc=sim.rbf,
 	verbose=FALSE,numCores=numCores,
 	sparsify=TRUE,append=TRUE)
 netList <- c(netList,netList2)
@@ -216,7 +202,7 @@ cat(sprintf("Total of %i nets\n", length(netList)))
 megadbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores)
 
 # first loop - over train/test splits
-for (rngNum in 1:25) {
+for (rngNum in 1:10) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -241,7 +227,7 @@ for (rngNum in 1:25) {
 		writeProfiles=TRUE)
 	netList2 <- makePSN_NamedMatrix(alldat_train, 
 		rownames(alldat_train),netSets["clinical"],
-		netDir,simMetric="custom",customFunc=normDiff2,
+		netDir,simMetric="custom",customFunc=sim.rbf,
 		verbose=FALSE,numCores=numCores,
 		sparsify=TRUE,append=TRUE)
 	netList <- c(netList,netList2)

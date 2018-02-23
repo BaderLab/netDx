@@ -26,14 +26,11 @@ BRCA_makeNets <- function(dataList, groupList, netDir,...) {
 
 rootDir <- "/home/shraddhapai/BaderLab/2017_BRCA"
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/output/BRCA_%s",rootDir,dt)
+megaDir <- sprintf("%s/output/BRCA_OneRNAnet_%s",rootDir,dt)
 
-pathFile <- sprintf("%s/anno/Human_AllPathways_February_01_2018_symbol.gmt",
-	rootDir)
-pathwayList <- readPathways(pathFile)
-head(pathwayList)
+geneSet <- list(allrna=rownames(xpr))
 
-gps <- list(rna=pathwayList)
+gps <- list(rna=geneSet)
 dats <- list(rna=xpr)
 
 runPredictor_nestedCV(pheno,

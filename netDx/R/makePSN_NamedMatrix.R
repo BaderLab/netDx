@@ -76,8 +76,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	
 	if (!sparsify & useSparsify2) { stop("if useSparsify=TRUE then sparsify must also be set to TRUE\n")}
 
-	cl	<- makeCluster(numCores)
-	registerDoParallel(cl,outfile=sprintf("%s/makePSN_log.txt",outDir))
+	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
+	registerDoParallel(cl)
 
 	# process pathways in parallel
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {

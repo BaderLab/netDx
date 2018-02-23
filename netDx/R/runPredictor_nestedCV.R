@@ -40,17 +40,20 @@
 #' @param keepAllData (logical) if TRUE keeps all intermediate files, even
 #' those not needed for assessing the predictor. Use very cautiously as for
 #' some designs, each split can result in using 1Gb of data.
+#' @param startAt (integer) which of the splits to start at (e.g. if the
+#' job aborted part-way through)
 #' @examples see examples/NestedCV_MultiData.Rmd for example use.
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores,CVmemory=4L,CVcutoff=9L,
-	keepAllData=FALSE) { 
+	keepAllData=FALSE,startAt=1L) { 
 
 ### tests# pheno$ID and $status must exist
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
+if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
 
 megaDir <- outDir
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
@@ -95,7 +98,7 @@ cat("\n\nCustom function to generate input nets:\n")
 print(makeNetFunc)
 cat(sprintf("-------------------------------\n\n"))
 
-for (rngNum in 1:numSplits) {
+for (rngNum in startAt:numSplits) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))

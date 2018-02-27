@@ -26,7 +26,7 @@ BRCA_makeNets <- function(dataList, groupList, netDir,...) {
 
 rootDir <- "/home/shraddhapai/BaderLab/2017_BRCA"
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/output/BRCA_%s",rootDir,dt)
+megaDir <- sprintf("%s/output/BRCA_part2_%s",rootDir,dt)
 
 pathFile <- sprintf("%s/anno/Human_AllPathways_February_01_2018_symbol.gmt",
 	rootDir)
@@ -40,4 +40,5 @@ runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=BRCA_makeNets, ### custom network creation function
    outDir=megaDir,
-   numCores=4L,nFoldCV=10L, CVcutoff=9L,numSplits=100L)
+   numCores=8L,nFoldCV=10L, CVcutoff=9L,numSplits=100L,CVmemory=13L,
+	startAt=3L)

@@ -148,7 +148,7 @@ require(cluster)
 setwd(curwd)
 
 # first loop - over train/test splits
-for (rngNum in 1:25) {
+for (rngNum in 1:100) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -174,13 +174,14 @@ for (rngNum in 1:25) {
 		pdf(sprintf("%s/%s_prune.pdf",megaDir,nm))
 		prune <- LMprune(dats_train[[nm]],pheno$STATUS,topVar=topVar)
 		dev.off()
+			netSets_iter[[nm]] <- rownames(tmp)
 		if (!is.na(prune)) {
-			if (prune$bestThresh < 1) {
+			if (prune$bestThresh < 0.9) {
 			res <- prune$res
 			res <- subset(res, adj.P.Val < prune$bestThresh)
 			tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)
 			tmp <- tmp[which(rownames(tmp)%in% rownames(res)),]
-			netSets_iter[[nm]] <- tmp
+			dats_train[[nm]] <- tmp
 			netSets_iter[[nm]] <- rownames(tmp)
 			cat(sprintf("%s: Pruning with cutoff %1.2f\n", nm,prune$bestThresh))
 			cat(sprintf("\t%i of %i left\n", nrow(tmp),orig_ct))

@@ -157,9 +157,6 @@ dir.create(megaDir)
 logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
-
-#### -----------------------------------------------------
-### BEGIN PRUNING CODE
 # apply pruning to proteomic data 
 curwd <- getwd()
 setwd("..")
@@ -170,7 +167,7 @@ require(cluster)
 setwd(curwd)
 
 # first loop - over train/test splits
-for (rngNum in 1:25) {
+for (rngNum in 1:100) {
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -179,31 +176,35 @@ for (rngNum in 1:25) {
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
-											  setSeed=rngNum*5)
+	  setSeed=rngNum*5)
 	write.table(pheno_all,file=sprintf("%s/tt_split.txt",outDir),sep="\t",
 		col=T,row=F,quote=F)
 	# --------------------------------------------
 	# feature selection - train only
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
-## pruneTrain code ------
+
+	## pruneTrain code ------
 	dats_train <- lapply(dats, function(x) x[,which(colnames(x) %in% pheno$ID),
 			drop=F])
 	netSets_iter <- list()
 	for (nm in setdiff(names(dats_train),"clinical")) {
-	print(nm)
+		print(nm)
 		if (nrow(dats_train[[nm]])>10000) topVar <- 50 else topVar <- 100
 		pdf(sprintf("%s/%s_prune.pdf",megaDir,nm))
 		prune <- LMprune(dats_train[[nm]],pheno$STATUS,topVar=topVar)
 		dev.off()
+
+			netSets_iter[[nm]] <- rownames(tmp)
 		if (!is.na(prune)) {
-			if (prune$bestThresh < 1) {
+			if (prune$bestThresh < 0.9) {
 			res <- prune$res
 			res <- subset(res, adj.P.Val < prune$bestThresh)
 			tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)
 			tmp <- tmp[which(rownames(tmp)%in% rownames(res)),]
 			dats_train[[nm]] <- tmp
 			netSets_iter[[nm]] <- rownames(tmp)
-			cat(sprintf("%s: Pruning with cutoff %1.2f\n", nm,prune$bestThresh))
+			cat(sprintf("%s: Pruning with cutoff %1.2f\n", 
+				nm,prune$bestThresh))
 			cat(sprintf("\t%i of %i left\n", nrow(tmp),orig_ct))
 			}
 		} else {
@@ -313,10 +314,11 @@ for (rngNum in 1:25) {
 
 			# query of all training samples for this class
 			qSamps <- pheno_all$ID[which(pheno_all$STATUS %in% g & 
-									 pheno_all$TT_STATUS%in%"TRAIN")]
+				 pheno_all$TT_STATUS%in%"TRAIN")]
 		
 			qFile <- sprintf("%s/%s_query",pDir2,g)
-			GM_writeQueryFile(qSamps,incNets=pTally,nrow(pheno_all),qFile)
+			GM_writeQueryFile(qSamps,incNets=pTally,
+				nrow(pheno_all),qFile)
 			resFile <- runGeneMANIA(testdbDir$dbDir,qFile,resDir=pDir2)
 			predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
 				pheno_all,g)
@@ -325,7 +327,8 @@ for (rngNum in 1:25) {
 		predClass <- GM_OneVAll_getClass(predRes)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults.txt",pDir)
-		write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+		write.table(out,file=outFile,sep="\t",col=T,row=F,
+			quote=F)
 		
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
@@ -333,7 +336,7 @@ for (rngNum in 1:25) {
 		
 		require(ROCR)
 		ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
-							out$STATUS=="SURVIVEYES")
+				out$STATUS=="SURVIVEYES")
 		save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",pDir))
 		}
         
@@ -342,7 +345,6 @@ for (rngNum in 1:25) {
         outDir,outDir,outDir))
     system(sprintf("rm -r %s/dataset %s/networks", 
         outDir,outDir))
-
 }
 	pheno_all$TT_STATUS <- NA
 	rng_t1 <- Sys.time()

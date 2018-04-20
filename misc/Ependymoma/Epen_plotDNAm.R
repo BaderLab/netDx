@@ -5,17 +5,28 @@ require(netDx.examples)
 #rootDir <- "/Users/shraddhapai/Dropbox/netDx/BaderLab/2017_Ependymoma"
 rootDir <- "/home/shraddhapai/BaderLab/2017_Ependymoma"
 
+phenoFile <- "/home/shraddhapai/BaderLab/2018_Epen_DNAm/input/GSE90496_pData.txt"
+pheno <- read.delim(phenoFile,sep="\t",h=T,as.is=T)
+ttype <- pheno$characteristics_ch1
+
 inFile <- sprintf("%s/input/netDx_prepared/Ependymoma_cohortMerged_180125.Rdata",rootDir)
 load(inFile)
-
-# exclude ST
-idx <- which(pheno$STATUS=="ST") 
-pheno <- pheno[-idx,]
-xpr <- xpr[,-idx]
-
-pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
-           path.package("netDx.examples"))
-pathwayList <- readPathways(pathFile)
+# ----------------------
+# input processing
+pheno <- read.delim(phenoFile,sep="\t",h=T,as.is=T)
+ttype <- pheno$characteristics_ch1
+idx <- which(ttype %in% c("methylation class: EPN, PF A","methylation class: EPN, PF B"))
+cat(sprintf("Got %i samples\n",length(idx)))
+pheno <- pheno[idx,] # limit to EPN samples
+cpos <- regexpr("sample", pheno$title)
+bpos <- regexpr("\\[reference", pheno$title)
+str <- as.integer(substr(pheno$title, cpos+7, bpos-2)) # get sample number
+pheno$ID <- paste("SAMPLE", str,sep=".")
+pheno <- pheno[,c("ID","characteristics_ch1")]
+st <- rep("",nrow(pheno))
+st[grep("PF A", pheno[,2])] <- "PFA"
+st[grep("PF B", pheno[,2])] <- "PFB"
+pheno$STATUS <- st
 
 #out <- plotAllResults(pheno, sprintf("%s/pred",rootDir),
 #							 outDir=sprintf("%s/plot",rootDir),
@@ -32,8 +43,8 @@ predClasses <- unique(pheno$STATUS)
 postscript(sprintf("%s/perf.eps",outDir))
 predPerf <- plotPerf(inDir, predClasses=predClasses)
 dev.off()
-auroc <- unlist(lapply(predPerf, function(x) x$auroc))
-aupr <- unlist(lapply(predPerf, function(x) x$aupr))
+auroc <- unlist(lapply(predPerf, function(x) x$auroc*100))
+aupr <- unlist(lapply(predPerf, function(x) x$aupr*100))
 acc <- unlist(lapply(predPerf, function(x) x$accuracy))
 
 cat("--------------\n")

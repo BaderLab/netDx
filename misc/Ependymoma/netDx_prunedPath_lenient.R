@@ -35,16 +35,47 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/Epen_2_%s",outDir,dt)
+megaDir <- sprintf("%s/Epen_prunedPathway_0.01_%s",outDir,dt)
 if (!file.exists(megaDir)) dir.create(megaDir)
 
 gps <- list(rna=pathwayList)
 dats <- list(rna=xpr)
-
 pheno$STATUS <- droplevels(pheno$STATUS)
+
+#### -----------------------------------------------------
+### BEGIN PRUNING CODE
+# apply pruning to proteomic data 
+curwd <- getwd()
+setwd("../PanCancer")
+source("LMprune.R")
+source("runLM.R")
+source("silh.R")
+require(cluster)
+setwd(curwd)
+for (nm in setdiff(names(dats),"clinical")) {
+print(nm)
+	#if (nrow(dats[[nm]])>10000) topVar <- 50 else topVar <- 100
+	pdf(sprintf("%s/%s_prune.pdf",megaDir,nm))
+	prune <- LMprune(dats[[nm]],pheno$STATUS,topVar=100)
+	dev.off()
+	if (!is.na(prune)) {
+		if (prune$bestThresh < 1) {
+		res <- prune$res
+		res <- subset(res, adj.P.Val < 0.01)
+		tmp <- dats[[nm]];orig_ct <- nrow(tmp)
+		tmp <- tmp[which(rownames(tmp)%in% rownames(res)),]
+		dats[[nm]] <- tmp
+		cat(sprintf("%s: Pruning with cutoff %1.2f\n", nm,prune$bestThresh))
+		cat(sprintf("\t%i of %i left\n", nrow(tmp),orig_ct))
+		}
+	} else {
+		cat(sprintf("%s: not pruning\n",nm))
+	}
+}
+#### ----------------------------------------------------------
 
 runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred",megaDir),
-   numCores=8L,nFoldCV=10L, CVcutoff=9L,numSplits=10L,startAt=8L)
+   numCores=8L,nFoldCV=10L, CVcutoff=9L,numSplits=10L,startAt=1L)

@@ -191,7 +191,7 @@ for (rngNum in 1:100) {
 	cat("Pruning\n")
 	for (nm in setdiff(names(dats_train),"clinical")) {
 		print(nm)
-		if (nrow(dats_train[[nm]])>10000 | nm == "prot") 
+		if (nrow(dats_train[[nm]])>10000)
 			topVar <- 50 else topVar <- 100
 		#topVar <- 50
 		pdf(sprintf("%s/%s_prune.pdf",outDir,nm))
@@ -202,7 +202,6 @@ for (rngNum in 1:100) {
 		if (!is.na(prune)) {
 			if (prune$bestThresh < 0.9) {
 			res <- prune$res
-			if (nm == "prot") prune$bestThresh <- 0.6
 			res <- subset(res, adj.P.Val < prune$bestThresh)
 			tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)
 			tmp <- tmp[which(rownames(tmp)%in% rownames(res)),]

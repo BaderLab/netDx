@@ -21,7 +21,7 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/prunePCA_%s",outRoot,dt)
+megaDir <- sprintf("%s/pruneTest_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions

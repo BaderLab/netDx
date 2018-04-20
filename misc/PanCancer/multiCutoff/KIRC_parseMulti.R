@@ -3,7 +3,7 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruned_180204"
+dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruneTrain_180419"
 
 settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAdnam",
@@ -16,12 +16,13 @@ ctr <- 1
 outD <- sprintf("KIRC_%s",basename(dataDir))
 if (!file.exists(outD)) dir.create(outD)
 
+auc_set <- list()
 for (settype in settypes) {
 ###	if (settype %in% "clinicalArna") 
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:50,sep="")
 
 colctr <- 1
 for (cutoff in 9) {
@@ -44,12 +45,24 @@ for (cutoff in 9) {
 	y2 <- unlist(lapply(x,function(i) i$aupr))
 	y3 <- unlist(lapply(x,function(i) i$accuracy))
 	outmat[ctr,colctr+(0:2)] <- c(mean(y1),mean(y2),mean(y3))
+	auc_set[[settype]] <- y1
 
 	colctr <- colctr+3
 }
 ctr <- ctr+1
 }
 print(round(outmat,digits=2))
+
+meds <- unlist(lapply(auc_set,median))
+mu <- unlist(lapply(auc_set,mean))
+err <- unlist(lapply(auc_set,sd))
+
+auc_set <- auc_set[order(meds)]
+
+pdf("kirc_auc.pdf",width=13,height=5);
+ boxplot(auc_set,cex.axis=0.6); 
+	abline(h=median(auc_set[["clinical"]]));dev.off()
+
 
 write.table(round(outmat,digits=2),file=sprintf("%s/perf.txt",outD),sep="\t",
 			col=T,row=T,quote=F)

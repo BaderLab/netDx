@@ -16,12 +16,13 @@ ctr <- 1
 outD <- sprintf("OV_%s",basename(dataDir))
 if (!file.exists(outD)) dir.create(outD)
 
+auc_set <- list()
 for (settype in settypes) {
 ###	if (settype %in% "clinicalArna") 
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:14,sep="")
 
 colctr <- 1
 for (cutoff in 9) {
@@ -44,12 +45,30 @@ for (cutoff in 9) {
 	y2 <- unlist(lapply(x,function(i) i$aupr))
 	y3 <- unlist(lapply(x,function(i) i$accuracy))
 	outmat[ctr,colctr+(0:2)] <- c(mean(y1),mean(y2),mean(y3))
+	auc_set[[settype]] <- y1
 
 	colctr <- colctr+3
 }
 ctr <- ctr+1
 }
+
+#auc_set <- auc_set[which(names(auc_set)%in% c("clinical","rna","clinicalArna","all"))]
+
 print(round(outmat,digits=2))
+pdf("ov_auc.pdf",width=16,height=5);
+ boxplot(auc_set,cex.axis=0.6,pars=list(boxwex=0.3)); 
+	abline(h=median(auc_set[["clinical"]]));
+
+mu <- unlist(lapply(auc_set,mean))
+err <- unlist(lapply(auc_set,sd))
+xpos <-  barplot(mu,las=1,cex=1.3,cex.names=0.8,
+	ylim=c(0,1),main="OV")
+segments(x0=xpos,y0=mu-err,y1=mu+err)
+
+wmw <- wilcox.test(auc_set[["all"]],auc_set[["clinicalArna"]],alternative="greater")
+cat(sprintf("All > clin+rna: p < %1.2e\n", wmw$p.value))
+
+dev.off()
 
 write.table(round(outmat,digits=2),file=sprintf("%s/perf.txt",outD),sep="\t",
 			col=T,row=T,quote=F)

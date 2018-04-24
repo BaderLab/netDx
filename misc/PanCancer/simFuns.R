@@ -46,12 +46,6 @@ sim.cos <- function(m) {
 	return(out)
 }
 
-#' similarity from distance-based measures
-sim.dist <- function(m,d="euclidean") {
-	m <- na.omit(t(m))
-	out <- 1/(1+as.matrix(dist(m,method=d)))
-	out
-}
 
 # normalized difference 
 # x is vector of values, one per patient (e.g. ages)
@@ -105,7 +99,8 @@ plotrix::color2D.matplot(x,xrange=c(0,1),
 #' @param s1 (matrix) similarity matrix. If 3-column table provided, assumes
 #' it's a SIF
 #' @param c1,c2 (char) vector of patients in each of the two groups
-plotSim <- function(s1,name="simfun",c1,c2) {
+plotSim <- function(s1,name="simfun",c1,c2,logT=FALSE) {
+	if (logT) s1 <- log10(s1+.Machine$double.eps)
 	if (ncol(s1) == 3) {
 		cat("assuming SIF provided\n")
 		colnames(s1) <- c("Var1","Var2","value")

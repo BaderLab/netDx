@@ -3,7 +3,7 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/prunedPearson_180212"
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/ridge_180420"
 
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -21,10 +21,10 @@ for (settype in settypes) {
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:93,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
 
 colctr <- 1
-for (cutoff in 9) {
+for (cutoff in 7:9) {
 	c7 <- sprintf("%s/%s/cutoff%i/predictionResults.txt",
 				  rngDir,settype,cutoff)
 	torm <- c()

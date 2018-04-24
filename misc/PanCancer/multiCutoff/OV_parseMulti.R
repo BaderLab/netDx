@@ -3,8 +3,9 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/OV/output/pruned_180206"
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/OV/output/pruneTrain_180420"
 
+maxRng <- 100
 settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAdnam",
 	"clinicalAcnv","all")
@@ -22,7 +23,7 @@ for (settype in settypes) {
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:14,sep="")
+rngDir <- paste(sprintf("%s/rng",dataDir), 1:maxRng,sep="")
 
 colctr <- 1
 for (cutoff in 9) {
@@ -53,8 +54,12 @@ ctr <- ctr+1
 }
 
 #auc_set <- auc_set[which(names(auc_set)%in% c("clinical","rna","clinicalArna","all"))]
-
+cat("-----------------\n")
+cat(sprintf("OV: Base dir: %s\n", basename(dataDir)))
+cat(sprintf("%i splits\n", length(auc_set[[1]])))
+cat("-----------------\n")
 print(round(outmat,digits=2))
+cat("-----------------\n")
 pdf("ov_auc.pdf",width=16,height=5);
  boxplot(auc_set,cex.axis=0.6,pars=list(boxwex=0.3)); 
 	abline(h=median(auc_set[["clinical"]]));

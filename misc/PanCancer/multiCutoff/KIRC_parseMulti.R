@@ -3,7 +3,9 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruneTrain_180419"
+#dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/outdated/nestCV_170911"
+dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/lasso_180420"
+#dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruneTrain_180419"
 
 settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAdnam",
@@ -22,7 +24,7 @@ for (settype in settypes) {
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:50,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:73,sep="")
 
 colctr <- 1
 for (cutoff in 9) {
@@ -51,6 +53,7 @@ for (cutoff in 9) {
 }
 ctr <- ctr+1
 }
+cat(sprintf("Base dir: %s\n", dirname(dataDir)))
 print(round(outmat,digits=2))
 
 meds <- unlist(lapply(auc_set,median))

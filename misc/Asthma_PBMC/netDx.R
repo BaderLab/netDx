@@ -66,4 +66,4 @@ runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred",megaDir),
-   numCores=2L,nFoldCV=10L, CVcutoff=9L,numSplits=100L,CVmemory=13L)	
+   numCores=4L,nFoldCV=10L, CVcutoff=9L,numSplits=100L,CVmemory=13L)	

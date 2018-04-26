@@ -5,7 +5,6 @@
 rm(list=ls())
 require(netDx)
 require(netDx.examples)
-source("../runLM.R")
 
 numCores <- 8L
 GMmemory <- 4L
@@ -160,7 +159,7 @@ sink(logFile,split=TRUE)
 tryCatch({
 # apply pruning to proteomic data 
 curwd <- getwd()
-setwd("..")
+setwd("../..")
 source("LMprune.R")
 source("runLM.R")
 source("silh.R")
@@ -169,7 +168,7 @@ setwd(curwd)
 
 
 # first loop - over train/test splits
-for (rngNum in 1:100) {
+for (rngNum in 14:15){
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))

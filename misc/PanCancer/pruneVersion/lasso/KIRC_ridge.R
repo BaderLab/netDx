@@ -15,7 +15,7 @@ inDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/input"
 outRoot <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/ridge_%s",outRoot,dt)
+megaDir <- sprintf("%s/ridgeAbsFix_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
@@ -189,8 +189,8 @@ for (rngNum in 1:100) {
 		fit <- cv.glmnet(x=t(na.omit(dats_train[[nm]])),
 			y=factor(pheno$STATUS), family="binomial", alpha=0)
 		# pick lambda that minimizes MSE
-		wt <- coef(fit,s="lambda.min")[,1]
-		vars <- names(wt)[which(wt>0)]
+		wt <- abs(coef(fit,s="lambda.min")[,1])
+		vars <- names(wt)[which(wt>.Machine$double.eps)]
 		if (length(vars) < 6) {# don't compute Pearson,just use all
 			cat(sprintf("rngNum %i: %s: <6 (%i):just use all\n",
 				rngNum,nm,length(vars)))

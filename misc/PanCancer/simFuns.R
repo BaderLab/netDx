@@ -127,7 +127,3 @@ plotSim <- function(s1,name="simfun",c1,c2,logT=FALSE) {
 	boxplot(out,main=name)
 }
 
-
-
-
-

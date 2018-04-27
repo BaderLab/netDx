@@ -11,8 +11,9 @@ dirSet <- list(
 #	rbf5="rbf0.5_noSex_180424",
 #	rbfother="rbf_noSex_180424",
 #	tanh="tanh_noSex_180424"
-	lasso_sp2="lassoGenes_180426",
-	lasso_sp1="lassoGenes_sparse1_180426"
+	ridge_fix="ridge_AbsFix_180426",
+	lassoGenes_sp1="lassoGenes_incClin_180426",
+	pamr="pamr_180425"
 )
 
 mega_auc <- list()
@@ -26,10 +27,10 @@ ctr <- 1
 auc_set <- list()
 for (settype in settypes) {
 	#print(dataDir)
-cutoff <-8
+cutoff <-9
 
-	if (any(grep("lasso",curdir))) {
-		rngDir <- paste("rng",1:8,sep="")
+	if (any(c(grep("lasso",curdir),grep("ridge",curdir)))) {
+		rngDir <- paste("rng",1:18,sep="")
 	} else {
 	rngDir <- dir(path=dataDir,pattern="rng")
 	}

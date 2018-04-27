@@ -6,9 +6,6 @@ require(reshape2)
 #dataDir_each <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/pruneClinRNA_alone_180125"
 
 dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/ridge_180420"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/pruneTrain_180419"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/PCA1net_180126"
-#dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/PCAmultinet_180126"
 
 settypes <- c("clinical","mir","rna","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAdnam","clinicalAcnv","all")

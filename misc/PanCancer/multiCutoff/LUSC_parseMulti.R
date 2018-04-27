@@ -3,7 +3,7 @@ rm(list=ls())
 require(netDx)
 require(reshape2)
 
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/ridge_180420"
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/lassoGenes_180426"
 
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -18,7 +18,7 @@ if (!file.exists(outD)) dir.create(outD)
 auc_set <- list()
 var_set <- list()
 for (settype in settypes) {
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 3:20,sep="")
 
 colctr <- 1
 for (cutoff in 7:9) {

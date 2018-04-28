@@ -7,13 +7,13 @@ require(reshape2)
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
 	base="noPrune_180423",
-#	rbf3="rbf0.3_noSex_180424",
-#	rbf5="rbf0.5_noSex_180424",
-#	rbfother="rbf_noSex_180424",
-#	tanh="tanh_noSex_180424"
+	rbf3="rbf0.3_noSex_180424",
+	rbf5="rbf0.5_noSex_180424",
+	rbfother="rbf_noSex_180424",
+	tanh="tanh_noSex_180424",
 	ridge_fix="ridge_AbsFix_180426",
 	lassoGenes_sp1="lassoGenes_incClin_180426",
-	pamr="pamr_180425"
+	pamrGenes="pamrGenes_incClin_180427"
 )
 
 mega_auc <- list()
@@ -60,4 +60,9 @@ mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 
 }
 
-pdf("test.pdf"); boxplot(mega_auc); dev.off()
+dt <- format(Sys.Date(),"%y%m%d")
+require(gplots)
+pdf(sprintf("GBM_%s.pdf",dt),width=18,height=6);
+boxplot2(mega_auc,las=1,cex.axis=1.7,cex.main=2,main="GBM"); 
+abline(h=0.5)
+dev.off()

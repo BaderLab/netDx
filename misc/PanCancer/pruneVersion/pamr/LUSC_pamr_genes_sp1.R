@@ -15,10 +15,25 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/pamr_%s",outRoot,dt)
+megaDir <- sprintf("%s/pamrGenes_sp1_%s",outRoot,dt)
 
 # ----------------------------------------------------------------
 # helper functions
+# x is vector of values, one per patient (e.g. ages)
+normDiff <- function(x) {
+	    #if (nrow(x)>=1) x <- x[1,]
+	    nm <- colnames(x)
+	    x <- as.numeric(x)
+	    n <- length(x)
+	    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+	    
+	    out <- matrix(NA,nrow=n,ncol=n);
+	    # weight between i and j is
+	    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
+	    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+	    rownames(out) <- nm; colnames(out)<- nm
+	    out
+}
 
 # takes average of normdiff of each row in x
 normDiff2 <- function(x) {
@@ -159,9 +174,12 @@ logFile <- sprintf("%s/log.txt",megaDir)
 sink(logFile,split=TRUE)
 tryCatch({
 
+mega_combList <- combList # this will change in each round
 
 # first loop - over train/test splits
-for (rngNum in 1:100) {
+for (rngNum in 1:20) {
+	combList <- mega_combList # clean slate
+
 	rng_t0 <- Sys.time()
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
@@ -184,9 +202,8 @@ for (rngNum in 1:100) {
 	netSets_iter <- list()
 	#-----------
 	# Begin Lasso UF
-	for (nm in names(dats_train)) { 
+	for (nm in setdiff(names(dats_train),"clinical")) {
 		print(nm)
-		# shrunken centroid for initial feature selection
 		tmp <- na.omit(dats_train[[nm]])
 		data <- list(x=tmp,y=factor(pheno$STATUS),genenames=rownames(tmp),
 			geneid=rownames(tmp))
@@ -195,40 +212,85 @@ for (rngNum in 1:100) {
 		data.cv <- pamr.cv(data.fit, data)
 		idx <- which.min(data.cv$error)
 		thresh <- data.cv$threshold[idx]
-		keepgenes <- pamr.listgenes(data.fit,data,thresh,data.cv)
-		cat(sprintf("%i:%s:PAMR thresh=%1.2f (idx=%i); %i left\n",
-		rngNum,	nm,thresh,idx,length(keepgenes[,1])))
+		vars <- c()
+		tryCatch({
+			vars <- pamr.listgenes(data.fit,data,thresh,data.cv)
+			cat(sprintf("%i:%s:PAMR thresh=%1.2f (idx=%i); %i left\n",
+				rngNum,	nm,thresh,idx,length(vars[,1])))
+		},error=function(ex){
+			cat("caught error\n");
+		})
 
-		tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)
-		tmp <- tmp[which(rownames(tmp)%in% keepgenes[,1]),]
+		if (length(vars)>0) {
+		varrank <- as.numeric(vars[,4]) #rank
+		vars <- vars[which(varrank<100),1] # keep top 100 genes
+		tmp <- dats_train[[nm]]
+		tmp <- tmp[which(rownames(tmp) %in% vars),,drop=FALSE]
 		dats_train[[nm]] <- tmp
-		netSets_iter[[nm]] <- rownames(tmp)
-		cat(sprintf("\t%i:%s:%i of %i left\n",rngNum,nm,nrow(tmp),orig_ct))
+			for (k in rownames(tmp)) {
+			netSets_iter[[k]] <- k
+			}
+		combList[[nm]] <- paste(sprintf("%s_cont", rownames(tmp)))
+		} else {
+			# leave dats_train as is, make a single net
+			netSets_iter[[nm]] <- rownames(dats_train[[nm]])
+		} 
 	}
+
+	combList[["clinicalArna"]] <- c(combList[["clinical"]],combList[["rna"]])
+	combList[["clinicalAmir"]] <- c(combList[["clinical"]],combList[["mir"]])
+	combList[["clinicalAcnv"]] <- c(combList[["clinical"]],combList[["cnv"]])
+	combList[["clinicalAprot"]] <- c(combList[["clinical"]],combList[["prot"]])
+
 	# END lasso UF
 	# ----------------------
+	cat("add combList changes\n")
 
 	alldat_train <- do.call("rbind",dats_train)
 	netSets_iter[["clinical"]] <- netSets[["clinical"]]
-#### ----------------------------------------------------------
 	
 	netDir <- sprintf("%s/networks",outDir)
-	nonclin <- setdiff(names(netSets),"clinical")
+	nonclin <- setdiff(names(netSets_iter),"clinical")
+
+# -------------------------------
+# make train db
+	netLen <- unlist(lapply(netSets_iter,length))
+	multiNet <- intersect(nonclin, names(netSets_iter[netLen>1]))
+	singNet <- intersect(nonclin, names(netSets_iter[netLen==1]))
+netList3 <- c()
+netList2 <- c()
+netList <- c()
+
+	if (length(singNet)>0) {
+	cat(sprintf("%i: %i single nets { %s }\n", rngNum, length(singNet),
+		paste(singNet,collapse=",")))
 	netList <- makePSN_NamedMatrix(alldat_train, 
-		rownames(alldat_train),netSets_iter[nonclin],
-		netDir,verbose=FALSE,numCores=numCores,
-		writeProfiles=TRUE,simMetric="pearson")
+		rownames(alldat_train),netSets_iter[singNet],netDir,
+		simMetric="custom",customFunc=normDiff,writeProfiles=FALSE,sparsify=TRUE,
+		useSparsify2=FALSE,
+		verbose=FALSE,numCores=numCores)
+	}
+
+	if (length(multiNet)>0) {
+	cat(sprintf("%i: %i multi nets { %s }\n", rngNum, length(multiNet),
+		paste(multiNet,collapse=",")))
+	netList3 <- makePSN_NamedMatrix(alldat_train, 
+		rownames(alldat_train),netSets_iter[multiNet],netDir,
+		writeProfiles=TRUE,
+		verbose=FALSE,numCores=numCores,append=TRUE)
+	}
 	netList2 <- makePSN_NamedMatrix(alldat_train, 
 		rownames(alldat_train),netSets_iter["clinical"],
 		netDir,simMetric="custom",customFunc=normDiff2,writeProfiles=FALSE,
 		verbose=FALSE,numCores=numCores,
-		sparsify=TRUE,append=TRUE)
-	netList <- c(netList,netList2)
+		sparsify=TRUE,append=TRUE,useSparsify2=FALSE)
+	netList <- c(netList,netList2,netList3)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
 	# now create database
 	dbDir	<- GM_createDB(netDir, pheno$ID, outDir,numCores=numCores,
 		simMetric="pearson")
+# -------------------------------
 
 	# second loop - over combinations of input data
  	for (cur in  names(combList)) {
@@ -278,31 +340,47 @@ for (rngNum in 1:100) {
 			write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
 		}
 
-		## Create the mega database with all patients and all nets.
-		## This will be used to predict test samples by subsetting just for feature
-		## selected nets in a given round
-		## Note that this is useful for all train/test splits because we can always
-		## change which samples are query and can always subset based on which nets
-		## are feature selected in a given round.
 		netDir <- sprintf("%s/test_networks",megaDir)
 		nonclin <- setdiff(names(netSets_iter),"clinical")
-		netList <- makePSN_NamedMatrix(alldat,
-			rownames(alldat),netSets_iter[nonclin],netDir,
-			verbose=FALSE,numCores=numCores,writeProfiles=TRUE,
-			simMetric="pearson")
+		
+		netLen <- unlist(lapply(netSets_iter,length))
+		multiNet <- intersect(nonclin, names(netSets_iter[netLen>1]))
+		singNet <- intersect(nonclin, names(netSets_iter[netLen==1]))
+
+# -------------------------------
+# make test db
+netList3 <- c()
+netList2 <- c()
+netList <- c()
+		
+		if (length(singNet)>0) {
+			netList <- makePSN_NamedMatrix(alldat,
+				rownames(alldat),netSets_iter[singNet],netDir,
+				simMetric="custom",customFunc=normDiff,writeProfiles=FALSE,sparsify=TRUE,
+				useSparsify2=FALSE,
+				verbose=FALSE,numCores=numCores)
+		}
+		if (length(multiNet)>0){ 
+			cat(sprintf("%i: %i multi nets { %s }\n", rngNum, length(multiNet),
+				paste(multiNet,collapse=",")))
+			netList3 <- makePSN_NamedMatrix(alldat, 
+				rownames(alldat),netSets_iter[multiNet],netDir,
+				writeProfiles=TRUE,
+				verbose=FALSE,numCores=numCores,append=TRUE)
+		}
 		netList2 <- makePSN_NamedMatrix(alldat, 
 			rownames(alldat),netSets_iter["clinical"],
-			netDir,simMetric="custom",customFunc=normDiff2,
-			writeProfiles=FALSE,
+			netDir,simMetric="custom",customFunc=normDiff2,writeProfiles=FALSE,
 			verbose=FALSE,numCores=numCores,
-			sparsify=TRUE,append=TRUE)
-		netList <- c(netList,netList2)
+			sparsify=TRUE,append=TRUE,useSparsify2=FALSE)
+		netList <- c(netList,netList2,netList3)
 		cat(sprintf("Total of %i nets\n", length(netList)))
 			
 		# now create database
 		megadbDir	<- GM_createDB(netDir, pheno_all$ID, 
 			megaDir,numCores=numCores,
 			simMetric="pearson")
+# -------------------------------
 
 		for (cutoff in 7:9) {
 		predRes <- list()

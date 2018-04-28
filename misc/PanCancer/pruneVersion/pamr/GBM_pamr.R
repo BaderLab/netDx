@@ -175,15 +175,21 @@ for (rngNum in 1:20) {
 		drop=FALSE])
 	netSets_iter <- list()
 	for (nm in names(dats_train)) {
+		print(nm)
 		# shrunken centroid for initial feature selection
 		tmp <- na.omit(dats_train[[nm]])
 		data <- list(x=tmp,y=factor(pheno$STATUS),genenames=rownames(tmp),
 			geneid=rownames(tmp))
+
 		set.seed(123); # reproducible
 		data.fit <- pamr.train(data)
 		data.cv <- pamr.cv(data.fit, data)
-		thresh <- data.cv$threshold[which.min(data.cv$threshold)]
+		idx <- which.min(data.cv$error)
+		thresh <- data.cv$threshold[idx]
 		keepgenes <- pamr.listgenes(data.fit,data,thresh,data.cv)
+if (nm %in% "mir") browser()
+		cat(sprintf("%i:%s:PAMR thresh=%1.2f (idx=%i); %i left\n",
+		rngNum,	nm,thresh,idx,length(keepgenes[,1])))
 
 		tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)
 		tmp <- tmp[which(rownames(tmp)%in% keepgenes[,1]),]
@@ -279,7 +285,7 @@ netList <- c(netList,netList2)
 cat(sprintf("Total of %i nets\n", length(netList)))
 # now create database
 testdbDir	<- GM_createDB(netDir, pheno_all$ID, megaDir,numCores=numCores)
-		for (cutoff in 7:9) {
+		for (cutoff in 9) {
 			predRes <- list()
 			for (g in subtypes) {
 				pDir2 <- sprintf("%s/%s",pDir,g)

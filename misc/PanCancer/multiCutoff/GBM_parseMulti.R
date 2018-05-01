@@ -5,7 +5,7 @@ require(reshape2)
 
 #dataDir_each <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/pruneClinRNA_alone_180125"
 
-dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/ridge_180420"
+dataDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output/lassoGenes_incClin_180426"
 
 settypes <- c("clinical","mir","rna","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAdnam","clinicalAcnv","all")
@@ -24,7 +24,7 @@ for (settype in settypes) {
 ###		dataDir <- dataDir_both
 ###	else 
 ###		dataDir <- dataDir_each
-	rngDir <- paste(sprintf("%s/rng",dataDir), 1:100,sep="")
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:20,sep="")
 
 colctr <- 1
 for (cutoff in 9) {

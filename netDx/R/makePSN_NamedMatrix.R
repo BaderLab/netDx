@@ -99,6 +99,10 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
+				if (is.null(sim)) {
+					cat(sprintf("%s: sim is null\n",curSet))
+					browser()
+				}
 				if (!useSparsify2) {# prepare for internal sparsifier
 					idx <- which(upper.tri(sim,diag=F))
 					ij <- matrix_getIJ(dim(sim),idx)
@@ -122,8 +126,11 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 
 				if (sparsify) {
 					if (useSparsify2) {
-					cat("using sparsify2\n")
+					tryCatch({
 					 sparsify2(pat_pairs,outFile)
+					},error=function(ex) {
+						cat("sparse caught error\n"); browser()
+					})
 					} else {
 					cat("using original sparsifier method\n")
 					sparsifyNet(pat_pairs,outFile,numPatients=nrow(sim),
@@ -132,11 +139,15 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 				} else {
 				write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)
+				print(basename(outFile))
+				cat("done\n")
 				}
 			}
+#cat("got here\n")
 			oFile <- basename(outFile)
 		}
 		oFile
+#cat("out of loop\n")
 	}
 	stopCluster(cl)
 	outFiles

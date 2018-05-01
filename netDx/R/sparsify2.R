@@ -16,7 +16,9 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000)  
 
    diag(W) <- 0;
 	 W[W < cutoff] <- NA
-   x <- apply(W,1,sort,decreasing=TRUE,na.last=NA);
+	x <- list()
+	for (i in 1:nrow(W)) { x[[i]] <- sort(W[i,],decreasing=TRUE,na.last=NA)}
+	names(x) <- rownames(W)
 	 for (k in 1:length(x)) {
 			cur <- x[[k]]
 			tokeep <- names(cur)[1:min(length(cur),maxInt)]
@@ -24,11 +26,9 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000)  
 		}
 	tmp <- na.omit(melt(W))
 	tmp <- tmp[order(tmp[,3],decreasing=TRUE),]
-	#maxEdge <- 0.02*ncol(W); 
 
 	maxEdge <- nrow(tmp)
 	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
-
 	tmp <- tmp[1:maxEdge,]
 	write.table(tmp,file=outFile,sep="\t",col=F,row=F,quote=F)
 

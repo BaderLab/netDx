@@ -9,7 +9,8 @@ dirSet <- list(
 	lasso="lasso_180426",
 	lassoGenes="lassoGenes_180426",
 	pamrGenes_sp2="pamrGenes_180427",
-	pamrGenes_sp1="pamrGenes_sp1_180427"
+	pamrGenes_sp1="pamrGenes_sp1_180427",
+	euc6K="eucscale_sp26000_180503"
 )
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -24,6 +25,8 @@ auc_set <- list()
 for (settype in settypes) {
 	if (curdir %in% "lassoGenes") {
 	rngDir <- paste(sprintf("%s/rng",dataDir), 3:rngMax,sep="")
+	} else if (any(grep("euc",curdir))) {
+	rngDir <- paste(sprintf("%s/rng",dataDir), 1:9,sep="")
 	} else {
 	rngDir <- paste(sprintf("%s/rng",dataDir), 1:rngMax,sep="")
 	}

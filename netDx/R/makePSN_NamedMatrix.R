@@ -44,6 +44,7 @@
 #' with default parameters. Only used when writeProfiles=FALSE
 #' @param useSparsify2 (logical). Currently for testing only. A cleaner
 #' sparsification routine.
+#' @param sparsify_edgeMax (numeric). 
 #' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
@@ -56,9 +57,10 @@
 
 #' @export
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
-	simMetric="pearson", cutoff=0.3,verbose=TRUE,
+	simMetric="pearson",verbose=TRUE,
 	numCores=1L,writeProfiles=TRUE,
-	sparsify=FALSE,useSparsify2=FALSE,append=FALSE,...){
+	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=1000,
+	append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
 		dir.create(outDir)
@@ -97,6 +99,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 							col=F,row=T,quote=F)
 			} else {
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
+				cat(sprintf("computing sim for %s\n",curSet))
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
 				if (is.null(sim)) {
@@ -127,7 +130,9 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 				if (sparsify) {
 					if (useSparsify2) {
 					tryCatch({
-					 sparsify2(pat_pairs,outFile)
+					 spmat <- sparsify2(pat_pairs,cutoff=cutoff,
+							EDGE_MAX=sparsify_edgeMax,
+							outFile)
 					},error=function(ex) {
 						cat("sparse caught error\n"); browser()
 					})

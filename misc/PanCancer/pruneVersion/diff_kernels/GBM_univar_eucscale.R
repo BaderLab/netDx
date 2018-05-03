@@ -12,6 +12,7 @@ require(glmnet)
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
+maxEdge <- 6000  ### max edge after sparsification
 
 args <- commandArgs(TRUE)
 
@@ -20,7 +21,7 @@ inDir <- sprintf("%s/input",rootDir)
 outRoot <- sprintf("%s/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/eucscale_%s",outRoot,dt)
+megaDir <- sprintf("%s/eucscale_sp2max%i_%s",outRoot,maxEdge,dt)
 cat(megaDir, file="test.txt",append=TRUE)
 
 # ----------------------------------------------------------------
@@ -65,6 +66,7 @@ normalize <- function(X) {
 
     W <- (densities + t(densities))/2
 	W <- normalize(W)
+	# remove patients with no datapoints (full column/row of NAs)
 	idx <- which(rowSums(is.na(euc))==ncol(W)-1)
 	if (any(idx)) { 
 		W <- W[-idx,]
@@ -210,14 +212,13 @@ for (rngNum in 1:20) {
 		wt <- abs(coef(fit,s="lambda.min")[,1])
 		vars <- setdiff(names(wt)[which(wt>.Machine$double.eps)],"(Intercept)")
 		cat(sprintf("rngNum %i: %s: %s pruned\n",rngNum,nm,length(vars)))
+
 		if (length(vars)>0) {
-		tmp <- dats_train[[nm]]
-		tmp <- tmp[which(rownames(tmp) %in% vars),,drop=FALSE]
-		dats_train[[nm]] <- tmp
-			for (k in rownames(tmp)) {
-			netSets_iter[[k]] <- k
-			}
-		combList[[nm]] <- paste(sprintf("%s_cont", rownames(tmp)))
+			tmp <- dats_train[[nm]]
+			tmp <- tmp[which(rownames(tmp) %in% vars),,drop=FALSE]
+			dats_train[[nm]] <- tmp
+			for (k in rownames(tmp)) { netSets_iter[[k]] <- k }
+			combList[[nm]] <- paste(sprintf("%s_cont", rownames(tmp)))
 		} else {
 			# leave dats_train as is, make a single net
 			netSets_iter[[nm]] <- rownames(dats_train[[nm]])
@@ -235,7 +236,6 @@ for (rngNum in 1:20) {
 # -------------------------------
 # make train db
 	netDir <- sprintf("%s/networks",outDir)
-	nonclin <- names(netSets_iter) 
 
 cat(sprintf("Making test nets for rng%i\n", rngNum))
 netList <- makePSN_NamedMatrix(alldat_train,
@@ -243,6 +243,7 @@ netList <- makePSN_NamedMatrix(alldat_train,
         simMetric="custom",customFunc=sim.eucscale,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=.Machine$double.eps,
+		sparsify_edgeMax=maxEdge,
         verbose=FALSE,numCores=numCores)
 
 	cat(sprintf("Total of %i nets\n", length(netList)))
@@ -310,6 +311,7 @@ netList <- makePSN_NamedMatrix(alldat,
         simMetric="custom",customFunc=sim.eucscale,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=.Machine$double.eps,
+		sparsify_edgeMax=maxEdge,
         verbose=TRUE,numCores=numCores)
 cat(sprintf("Total of %i nets\n", length(netList)))
 # now create database

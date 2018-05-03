@@ -13,7 +13,9 @@
 #' @import reshape2
 #' @export
 sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
-	includeAllNodes=TRUE)  {
+	includeAllNodes=TRUE,verbose=TRUE)  {
+	
+	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 

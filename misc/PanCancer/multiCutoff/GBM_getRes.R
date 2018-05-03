@@ -7,16 +7,21 @@ require(reshape2)
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
 	base="noPrune_180423",
-	rbf3="rbf0.3_noSex_180424",
-	rbf5="rbf0.5_noSex_180424",
-	rbfother="rbf_noSex_180424",
-	tanh="tanh_noSex_180424",
 	ridge_fix="ridge_AbsFix_180426",
 	lassoGenes_sp1="lassoGenes_incClin_180426",
-	pamrGenes="pamrGenes_incClin_180427"
+	pamrGenes="pamrGenes_incClin_180427",
+	#rbf0.05="lassoUni_rbf_0.05",
+	rbf0.1="lassoUni_rbf_0.1_180502",
+	rbf0.25="lassoUni_rbf_0.25_180502",
+	euc_1K="eucscale_sp2max1000_180503",
+	euc_6K="eucscale_sp2max6000_180503",
+	euc_6K_group="eucscale_sp2max6000_grouped_180503"
+	#rbf5="lassoUni_rbf_5",
+	#rbf10="lassoUni_rbf_10"
 )
 
 mega_auc <- list()
+numSplits <- list()
 for (curdir in names(dirSet)) {
 cat(sprintf("***** %s *****\n", curdir))
 dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])
@@ -31,9 +36,20 @@ cutoff <-9
 
 	if (any(c(grep("lasso",curdir),grep("ridge",curdir)))) {
 		rngDir <- paste("rng",1:18,sep="")
+	} else if (any(c(grep("rbf0.1",curdir)))){
+		rngDir <- paste("rng",1:8,sep="")
+	} else if (any(c(grep("rbf0.25",curdir)))){
+		rngDir <- paste("rng",1:8,sep="")
+	} else if (any(c(grep("euc_1K",curdir)))){
+		rngDir <- paste("rng",1:12,sep="")
+	} else if (curdir =="euc_6K"){
+		rngDir <- paste("rng",1:20,sep="")
+	} else if (curdir =="euc_6K_group"){
+		rngDir <- paste("rng",1:14,sep="")
 	} else {
 	rngDir <- dir(path=dataDir,pattern="rng")
 	}
+	numSplits[[curdir]] <- length(rngDir)
 
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	rngDir <- sprintf("%s/%s",dataDir,rngDir)
@@ -48,6 +64,7 @@ cutoff <-9
 	}
 	cat(sprintf("%i: removing %i\n", cutoff,length(torm)))
 	if (length(torm)>0) c7 <- c7[-torm]
+
 	postscript("tmp.eps")
 	x <- plotPerf(c7,c("SURVIVEYES","SURVIVENO"))
 	dev.off()
@@ -63,6 +80,9 @@ mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 dt <- format(Sys.Date(),"%y%m%d")
 require(gplots)
 pdf(sprintf("GBM_%s.pdf",dt),width=18,height=6);
-boxplot2(mega_auc,las=1,cex.axis=1.7,cex.main=2,main="GBM"); 
+boxplot( mega_auc,las=1,cex.axis=1.7,cex.main=2,main="GBM",
+	at=1:length(mega_auc)); 
+tmp <- unlist(numSplits)
+text(1:length(mega_auc),0.5,sprintf("N=%i",tmp))
 abline(h=0.5)
 dev.off()

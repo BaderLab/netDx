@@ -1,8 +1,8 @@
 #' plot GBM results with multiple CV cutoffs
-rm(list=ls())
 require(netDx)
 require(reshape2)
 
+LUSC_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output"
 dirSet <- list(
 	base="noPrune_180423",
@@ -10,7 +10,7 @@ dirSet <- list(
 	lassoGenes="lassoGenes_180426",
 	pamrGenes_sp2="pamrGenes_180427",
 	pamrGenes_sp1="pamrGenes_sp1_180427",
-	euc6K="eucscale_sp26000_180503"
+	euc6K="eucclean_180504"
 )
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -57,4 +57,10 @@ for (cutoff in 9) {
 mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 }
 dt <- format(Sys.Date(),"%y%m%d")
-pdf(sprintf("LUSC_%s.pdf",dt),width=13,height=6); boxplot(mega_auc,main="LUSC",cex.axis=1.7,cex.main=2,las=1); dev.off()
+pdf(sprintf("LUSC_%s.pdf",dt),width=13,height=6); 
+boxplot(mega_auc,main="LUSC",cex.axis=1.7,cex.main=2,las=1); 
+abline(h=0.5)
+dev.off()
+
+return(mega_auc)
+}

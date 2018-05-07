@@ -1,8 +1,8 @@
 #' plot GBM results with multiple CV cutoffs
-rm(list=ls())
 require(netDx)
 require(reshape2)
 
+OV_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/OV/output"
 
 maxRng <- 100
@@ -12,7 +12,8 @@ settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 dirSet <- list(
 	base="noPrune_180423",
 	prune="pruneTrain_180419",
-	lasso="lasso_180426"
+	lasso="lasso_180426",
+	euc6K="eucscale_180504"
 )
 
 mega_auc <- list()
@@ -32,8 +33,13 @@ for (curdir in names(dirSet)) {
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	
 		cutoff <- 9
+		if (curdir=="euc6K") {
+		c7 <- sprintf("%s/%s/cutoff9/predictionResults.txt",
+					  rngDir,settype,cutoff)
+		} else {
 		c7 <- sprintf("%s/%s/predictionResults.txt",
 					  rngDir,settype,cutoff)
+		}
 		torm <- c()
 		for (idx in 1:length(c7)) {
 			dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)
@@ -55,3 +61,7 @@ for (curdir in names(dirSet)) {
 
 dt <- format(Sys.Date(),"%y%m%d")
 pdf(sprintf("OV_%s.pdf",dt)); boxplot(mega_auc,las=1,cex.axis=1.8,main="OV",cex.main=2); dev.off()
+
+	return(mega_auc)
+
+}

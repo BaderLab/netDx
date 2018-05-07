@@ -1,16 +1,17 @@
 #' plot GBM results with multiple CV cutoffs
-rm(list=ls())
 require(netDx)
 require(reshape2)
 
 #dataDir <- "/home/shraddhapai/BaderLab/PanCancer_KIRC/output/pruneTrain_180419"
+
+KIRC_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/PanCancer_KIRC/output"
 
 dirSet <- list(
 	base="noPrune_180423",
 	lasso="lasso_180426",
 	pamr="pamr_180426",
-	euc6K="eucscale_sp26000_180503"
+	euc6K="eucclean_180503"
 #	ridge="ridgeAbsFix_180426"
 )
 
@@ -24,8 +25,6 @@ dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])
 	rngMax <- 20
 	if (any(grep("base",curdir))) {
 		rngMax <- 15
-	} else if (any(grep("euc",curdir))) {
-		rngMax <- 5
 	}	
 
 auc_set <- list()
@@ -34,8 +33,14 @@ for (settype in settypes) {
 
 colctr <- 1
 	cutoff <- 9
-	c7 <- sprintf("%s/%s/predictionResults.txt",
+	if (curdir=="euc6K") {
+		c7 <- sprintf("%s/%s/cutoff9/predictionResults.txt",
 				  rngDir,settype,cutoff)
+	} else {
+		c7 <- sprintf("%s/%s/predictionResults.txt",
+				  rngDir,settype,cutoff)
+	}
+	
 	torm <- c()
 	for (idx in 1:length(c7)) {
 		dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)
@@ -57,5 +62,7 @@ colctr <- 1
 pdf(sprintf("KIRC_%s.pdf",format(Sys.Date(),"%y%m%d"))); 
 boxplot(mega_auc,main="KIRC",cex.axis=1.7,cex.main=2,las=1); dev.off()
 
+return(mega_auc)
+}
 
 

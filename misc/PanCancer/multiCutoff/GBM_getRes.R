@@ -1,9 +1,9 @@
 #' plot GBM results for kernel variations
 
-rm(list=ls())
 require(netDx)
 require(reshape2)
 
+GBM_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
 	base="noPrune_180423",
@@ -13,8 +13,8 @@ dirSet <- list(
 	#rbf0.05="lassoUni_rbf_0.05",
 	rbf0.1="lassoUni_rbf_0.1_180502",
 	rbf0.25="lassoUni_rbf_0.25_180502",
-	euc_1K="eucscale_sp2max1000_180503",
-	euc_6K="eucscale_sp2max6000_180503",
+	#euc_1K="eucscale_sp2max1000_180503",
+	euc_6K="eucclean_180503",
 	euc_6K_group="eucscale_sp2max6000_grouped_180503"
 	#rbf5="lassoUni_rbf_5",
 	#rbf10="lassoUni_rbf_10"
@@ -45,7 +45,7 @@ cutoff <-9
 	} else if (curdir =="euc_6K"){
 		rngDir <- paste("rng",1:20,sep="")
 	} else if (curdir =="euc_6K_group"){
-		rngDir <- paste("rng",1:14,sep="")
+		rngDir <- paste("rng",1:20,sep="")
 	} else {
 	rngDir <- dir(path=dataDir,pattern="rng")
 	}
@@ -86,3 +86,6 @@ tmp <- unlist(numSplits)
 text(1:length(mega_auc),0.5,sprintf("N=%i",tmp))
 abline(h=0.5)
 dev.off()
+
+return(mega_auc)
+}

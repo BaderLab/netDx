@@ -36,7 +36,6 @@ cat(megaDir, file="test.txt",append=TRUE)
 #' @param nm (char) kernel to use, prefix to kernlab::*dot() functions.
 #' e.g. rbf,tanh,laplace
 sim.kern <- function(m,nm="rbf",sigmaVar=0.05) {
-
 	# z-transform
 	m <- (m-rowMeans(m,na.rm=TRUE))/apply(m,1,sd,na.rm=T)
 

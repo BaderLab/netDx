@@ -13,12 +13,13 @@ dirSet <- list(
 	base="noPrune_180423",
 	prune="pruneTrain_180419",
 	lasso="lasso_180426",
-	euc6K="eucscale_180504"
+	euc6K="eucscale_180504",
+	rbfclean="rbfclean_0.2_180507"
 )
 
 mega_auc <- list()
 for (curdir in names(dirSet)) {
-	if (curdir %in% c("lasso","pamr")) rngMax <- 20
+	if (curdir %in% c("lasso","pamr","euc6K","rbfclean")) rngMax <- 20
 	else if (curdir %in% "prune") rngMax <- 14
 	else rngMax <- 15
 
@@ -33,7 +34,7 @@ for (curdir in names(dirSet)) {
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	
 		cutoff <- 9
-		if (curdir=="euc6K") {
+		if (curdir %in% c("euc6K","rbfclean")) {
 		c7 <- sprintf("%s/%s/cutoff9/predictionResults.txt",
 					  rngDir,settype,cutoff)
 		} else {
@@ -60,7 +61,8 @@ for (curdir in names(dirSet)) {
 }
 
 dt <- format(Sys.Date(),"%y%m%d")
-pdf(sprintf("OV_%s.pdf",dt)); boxplot(mega_auc,las=1,cex.axis=1.8,main="OV",cex.main=2); dev.off()
+pdf(sprintf("OV_%s.pdf",dt),width=12,height=6); 
+boxplot(mega_auc,las=1,cex.axis=1.8,main="OV",cex.main=2); dev.off()
 
 	return(mega_auc)
 

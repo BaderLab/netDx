@@ -10,7 +10,13 @@ dirSet <- list(
 	lassoGenes="lassoGenes_180426",
 	pamrGenes_sp2="pamrGenes_180427",
 	pamrGenes_sp1="pamrGenes_sp1_180427",
-	euc6K="eucclean_180504"
+	rbfclean="rbfclean_0.20_180507",
+	euc6K="eucclean_180504",
+	eucimpute="eucscale_impute_180507",
+	pearscale="pearscale_180507",
+	ptop20c1="pearscale_top20_topClin1_180508",
+	ptop30c1="pearscale_top30_topClin1_180508",
+	ptop40c2="pearscale_top40_topClin2_180508"
 )
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -57,7 +63,7 @@ for (cutoff in 9) {
 mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 }
 dt <- format(Sys.Date(),"%y%m%d")
-pdf(sprintf("LUSC_%s.pdf",dt),width=13,height=6); 
+pdf(sprintf("LUSC_%s.pdf",dt),width=24,height=6); 
 boxplot(mega_auc,main="LUSC",cex.axis=1.7,cex.main=2,las=1); 
 abline(h=0.5)
 dev.off()

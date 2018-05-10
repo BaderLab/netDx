@@ -191,7 +191,7 @@ for (rngNum in 1:20) {
 		set.seed(123); # reproducible
 		data.fit <- pamr.train(data)
 		data.cv <- pamr.cv(data.fit, data)
-		thresh <- data.cv$threshold[which.min(data.cv$threshold)]
+		thresh <- data.cv$threshold[which.min(data.cv$error)]
 		keepgenes <- pamr.listgenes(data.fit,data,thresh,data.cv)
 
 		tmp <- dats_train[[nm]];orig_ct <- nrow(tmp)

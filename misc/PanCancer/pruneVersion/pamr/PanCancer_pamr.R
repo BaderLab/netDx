@@ -108,6 +108,7 @@ for (rngNum in rngVals) {
 		cat(sprintf("\t%i:pamr:%s:%i of %i left\n",rngNum,nm,nrow(tmp),orig_ct))
 		netSets_iter[[nm]] <- rownames(dats_train[[nm]])
 	}
+	netSets_iter[["clinical"]] <- rownames(dats_train[["clinical"]])
 	
 	if ("clinicalArna" %in% names(combList)) 
 		combList[["clinicalArna"]] <- c(combList[["clinical"]],combList[["rna"]])

@@ -187,7 +187,6 @@ for (rngNum in 1:20) {
 		idx <- which.min(data.cv$error)
 		thresh <- data.cv$threshold[idx]
 		keepgenes <- pamr.listgenes(data.fit,data,thresh,data.cv)
-if (nm %in% "mir") browser()
 		cat(sprintf("%i:%s:PAMR thresh=%1.2f (idx=%i); %i left\n",
 		rngNum,	nm,thresh,idx,length(keepgenes[,1])))
 

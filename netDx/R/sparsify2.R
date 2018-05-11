@@ -49,6 +49,10 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 				length(missing)))
 			for (k in missing) { # add the strongest edge for the patient
 				tmp <- x[[k]]
+				if (is.na(tmp[1])) {
+					cat("\tMissing edge is below cutoff; setting to cutoff\n")
+					tmp[1] <- cutoff
+				}
 				mmat <- rbind(mmat, c(k, names(tmp)[1],tmp[1]))
 			}
 		}	

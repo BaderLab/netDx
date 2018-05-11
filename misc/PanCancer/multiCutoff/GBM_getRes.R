@@ -7,16 +7,23 @@ GBM_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
 	base="noPrune_180423",
-	ridge_fix="ridge_AbsFix_180426",
-	lassoGenes_sp1="lassoGenes_incClin_180426",
-	pamrGenes="pamrGenes_incClin_180427",
-	#rbf0.05="lassoUni_rbf_0.05",
-	#euc_1K="eucscale_sp2max1000_180503",
-	euc_6K="eucclean_180503",
-	euc_6K_group="eucscale_sp2max6000_grouped_180503",
+#	ridge_fix="ridge_AbsFix_180426",
+#	lassoGenes_sp1="lassoGenes_incClin_180426",
+#	pamrGenes="pamrGenes_incClin_180427",
+#	euc_6K="eucclean_180503",
 	eucimpute="eucclean_impute_180507",
-	rbfclean="rbfclean_0.20_180507",
-	pearscale="pearscale_180507"
+	#rbfclean="rbfclean_0.20_180507",
+#	pearscale="pearscale_180507",
+	pearimpute="pearscale_impute_180508"
+#	pimp_40c2="pearimp_topX40_topClin2_180509",
+#	pimp_40c3="pearimp_topX40_topClin3_180509",
+#	pimp_100c3="pearimp_topX100_topClin3_180509",
+#	pimp_200c3="pearimp_topX200_topClin3_180509",
+#	pimp_20c3="pearimp_topX20_topClin3_180509",
+#	pimp_30c3="pearimp_topX30_topClin3_180509"
+#	eimp_100c3="eucimp_topX100_topClin3_180509",
+#	eimp_50c3="eucimp_topX50_topClin3_180509",
+#	eimp_20c3="eucimp_topX20_topClin3_180509"
 	#rbf5="lassoUni_rbf_5",
 	#rbf10="lassoUni_rbf_10"
 )
@@ -35,21 +42,22 @@ for (settype in settypes) {
 	#print(dataDir)
 cutoff <-9
 
-	if (any(c(grep("lasso",curdir),grep("ridge",curdir)))) {
-		rngDir <- paste("rng",1:18,sep="")
-	} else if (any(c(grep("rbf0.1",curdir)))){
-		rngDir <- paste("rng",1:8,sep="")
-	} else if (any(c(grep("rbf0.25",curdir)))){
-		rngDir <- paste("rng",1:8,sep="")
-	} else if (any(c(grep("euc_1K",curdir)))){
-		rngDir <- paste("rng",1:12,sep="")
-	} else if (curdir =="euc_6K"){
-		rngDir <- paste("rng",1:20,sep="")
-	} else if (curdir =="euc_6K_group"){
-		rngDir <- paste("rng",1:20,sep="")
-	} else {
-	rngDir <- dir(path=dataDir,pattern="rng")
-	}
+#	if (any(c(grep("lasso",curdir),grep("ridge",curdir)))) {
+#		rngDir <- paste("rng",1:18,sep="")
+#	} else if (any(c(grep("rbf0.1",curdir)))){
+#		rngDir <- paste("rng",1:8,sep="")
+#	} else if (any(c(grep("rbf0.25",curdir)))){
+#		rngDir <- paste("rng",1:8,sep="")
+#	} else if (any(c(grep("euc_1K",curdir)))){
+#		rngDir <- paste("rng",1:12,sep="")
+#	} else if (curdir =="euc_6K"){
+#		rngDir <- paste("rng",1:20,sep="")
+#	} else if (any(grep("pimp",curdir))){
+#		rngDir <- paste("rng",1:14,sep="")
+#	} else {
+	if (curdir=="base") rngMax<- 15 else rngMax <- 20
+	rngDir <- paste("rng",1:rngMax,sep="") #dir(path=dataDir,pattern="rng")
+#	}
 	numSplits[[curdir]] <- length(rngDir)
 
 	cat(sprintf("Got %i rng files\n",length(rngDir)))

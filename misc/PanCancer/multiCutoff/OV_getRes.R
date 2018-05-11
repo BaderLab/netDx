@@ -11,17 +11,18 @@ settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalAcnv","all")
 dirSet <- list(
 	base="noPrune_180423",
-	prune="pruneTrain_180419",
+#	prune="pruneTrain_180419",
 	lasso="lasso_180426",
-	euc6K="eucscale_180504",
-	rbfclean="rbfclean_0.2_180507"
+	euc6K="eucscale_180504"
+#	rbfclean="rbfclean_0.2_180507"
 )
 
 mega_auc <- list()
 for (curdir in names(dirSet)) {
-	if (curdir %in% c("lasso","pamr","euc6K","rbfclean")) rngMax <- 20
-	else if (curdir %in% "prune") rngMax <- 14
-	else rngMax <- 15
+#	if (curdir %in% c("lasso","pamr","euc6K","rbfclean")) rngMax <- 20
+#	else if (curdir %in% "prune") rngMax <- 14
+	
+	if (curdir=="base") rngMax <- 15 else rngMax <- 20
 
 	cat(sprintf("***** %s *****\n", curdir))
 	dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])

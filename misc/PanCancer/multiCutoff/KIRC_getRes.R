@@ -8,10 +8,12 @@ KIRC_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/PanCancer_KIRC/output"
 
 dirSet <- list(
-	base="noPrune_180423",
-	lasso="lasso_180426",
-	pamr="pamr_180426",
-	euc6K="eucclean_180503"
+	base="noPrune_180423"
+#	lasso="lasso_180426",
+#	lassocl="lassoclean_180509",
+#	pamr="pamr_180426",
+#	pamrcl="pamrclean_180509",
+#	euc6K="eucclean_180503"
 #	ridge="ridgeAbsFix_180426"
 )
 
@@ -25,7 +27,10 @@ dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])
 	rngMax <- 20
 	if (any(grep("base",curdir))) {
 		rngMax <- 15
-	}	
+}
+#	} else if (any(grep("lasso",curdir))) {
+#		rngMax <- 16
+#	}
 
 auc_set <- list()
 for (settype in settypes) {
@@ -33,7 +38,7 @@ for (settype in settypes) {
 
 colctr <- 1
 	cutoff <- 9
-	if (curdir=="euc6K") {
+	if (curdir %in% c("euc6K","lassocl","pamrcl")) {
 		c7 <- sprintf("%s/%s/cutoff9/predictionResults.txt",
 				  rngDir,settype,cutoff)
 	} else {
@@ -59,7 +64,7 @@ colctr <- 1
 	}
 	mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 }
-pdf(sprintf("KIRC_%s.pdf",format(Sys.Date(),"%y%m%d"))); 
+pdf(sprintf("KIRC_%s.pdf",format(Sys.Date(),"%y%m%d")),width=11,height=6); 
 boxplot(mega_auc,main="KIRC",cex.axis=1.7,cex.main=2,las=1); dev.off()
 
 return(mega_auc)

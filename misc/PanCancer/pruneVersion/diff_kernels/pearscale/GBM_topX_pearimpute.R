@@ -1,22 +1,27 @@
-#' PanCancer binarized survival: LUSC: Feature selection with one net per
+#' PanCancer binarized survival: GBM: Feature selection with one net per
 #' datatype
 #' 10-fold CV predictor design 
+#' multi cutoff evaluation
+#' also pruning RNA before running
 
 rm(list=ls())
 
-inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
+rootDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/GBM"
+inDir <- sprintf("%s/input",rootDir)
+outRoot <- sprintf("%s/output",rootDir)
+
 
 # -----------------------------------------------------------
 # process input
 inFiles <- list(
-	clinical=sprintf("%s/LUSC_clinical_core.txt",inDir),
-	survival=sprintf("%s/LUSC_binary_survival.txt",inDir)
+	clinical=sprintf("%s/GBM_clinical_core.txt",inDir),
+	survival=sprintf("%s/GBM_binary_survival.txt",inDir)
 	)
 datFiles <- list(
-	rna=sprintf("%s/LUSC_mRNA_core.txt",inDir),
-	prot=sprintf("%s/LUSC_RPPA_core.txt",inDir),
- 	mir=sprintf("%s/LUSC_miRNA_core.txt",inDir),
-	cnv=sprintf("%s/LUSC_CNV_core.txt",inDir)
+	rna=sprintf("%s/GBM_mRNA_core.txt",inDir),
+	mir=sprintf("%s/GBM_miRNA_core.txt",inDir),
+	dnam=sprintf("%s/GBM_methylation_core.txt",inDir),
+	cnv=sprintf("%s/GBM_CNV_core.txt",inDir)
 )
 
 pheno <- read.delim(inFiles$clinical,sep="\t",h=T,as.is=T)
@@ -30,25 +35,21 @@ survStr[surv$STATUS_INT>0] <- "SURVIVEYES"
 surv$STATUS <- survStr
 pheno <- merge(x=pheno,y=surv,by="ID")
 pheno$X <- NULL
+pheno_nosurv <- pheno[1:4]
 
 cat("Collecting patient data:\n")
 dats <- list() #input data in different slots
 cat("\t* Clinical\n")
-clinical <- pheno
+clinical <- pheno_nosurv
 rownames(clinical) <- clinical[,1];
 # =======================
-# LUSC-specific variables
-clinical$stage <- as.vector(clinical$stage)
-clinical$stage[clinical$stage=="Stage IA"| clinical$stage=="Stage IB"] <- "I"
-clinical$stage[clinical$stage=="Stage IIA"| clinical$stage=="Stage IIB"| clinical$stage=="Stage II"] <- "II"
-clinical$stage[clinical$stage=="Stage IIIA"| clinical$stage=="Stage IIIB"] <- "III"
-clinical$stage <- as.factor(clinical$stage)
-clinical <- clinical[, -which(colnames(clinical)=="gender")]
-clinical <- t(clinical[,c("age","stage")])
-clinical[1,] <- as.integer(clinical[1,])
-clinical[2,] <- as.integer(as.factor(clinical[2,]))
-class(clinical) <- "numeric"
+# GBM-specific variables
+clinical$performance_score[which(clinical$performance_score == "[Not Available]")] <- NA
+clinical$performance_score <- strtoi(clinical$performance_score)
+clinical$gender <- ifelse(pheno$gender=="FEMALE",1, 0)
 # =======================
+clinical$ID <- NULL
+clinical <- t(clinical)
 dats$clinical <- clinical; rm(clinical)
 
 # create master input net
@@ -59,7 +60,6 @@ for (nm in names(datFiles)) {
 	rownames(tmp) <- tmp[,1]
 	tmp <- t(tmp[,-1])
 	class(tmp) <- "numeric"
-	if (nm == "rna") tmp <- log(tmp+1)
 	dats[[nm]] <- tmp
 }
 
@@ -81,39 +81,41 @@ for (k in 2:length(dats)) {
 		browser()
 	} 
 }
+rm(pname)
 
 # input nets for each category
 netSets <- lapply(dats, function(x) rownames(x)) 
 
-# compile data
-alldat <- do.call("rbind",dats)
-pheno_all <- pheno
-
 combList <- list(    
-    clinicalArna=c("clinical_cont","rna.profile"),    
-    clinicalAprot=c("clinical_cont","prot.profile"),
-    clinical="clinical_cont",
-	mir="mir.profile",
-	rna="rna.profile",
-	prot="prot.profile",
-	cnv="cnv.profile",
-    clinicalAmir=c("clinical_cont","mir.profile"),    
-    clinicalAcnv=c("clinical_cont","cnv.profile"),    
+    clinicalAcnv=c("clinical_cont","cnv_cont"),    
+    clinical="clinical_cont",    
+	mir="mir_cont",
+	rna="rna_cont",
+	cnv="cnv_cont",
+	dnam="dnam_cont",
+    clinicalArna=c("clinical_cont","rna_cont"),
+    clinicalAmir=c("clinical_cont","mir_cont"),    
+    clinicalAdnam=c("clinical_cont","dnam_cont"),    
     all="all"  
 )
 
-cat(sprintf("Clinical variables are: { %s }\n", 
-	paste(rownames(dats$clinical),sep=",",collapse=",")))
-rm(pheno)
-rm(survStr,surv,tmp,nm,inDir,k,inFiles,datFiles,pname)
+pheno_all <- pheno
+
+# cleanup
+rm(pheno,pheno_nosurv)
+rm(rootDir,survStr,surv,tmp,nm,inDir,k,inFiles,datFiles)
 
 # -----------------------------------------------------------
 # run predictor
-source("PanCancer_topClin_pearscale_impute.R")
-outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
+source("PanCancer_topX_pearscale_impute.R")
+topX <- 20
+topClin <- 3
+
 dt <- format(Sys.Date(),"%y%m%d")
-topClin<-1
-megaDir <- sprintf("%s/pearscale_lasso_topClin%i_%s",outRoot,topClin,dt)
+megaDir <- sprintf("%s/pearimp_topX%i_topClin%i_%s",outRoot,topX,topClin,dt)
+cat(megaDir, file="test.txt",append=TRUE)
 runPredictor(mega_combList=combList,rngVals=1:20,netSets=netSets,
 	dats=dats,pheno_all=pheno_all,megaDir=megaDir,
-	cutoffSet=9)
+	cutoffSet=9,topX=topX,topClin=topClin)
+
+

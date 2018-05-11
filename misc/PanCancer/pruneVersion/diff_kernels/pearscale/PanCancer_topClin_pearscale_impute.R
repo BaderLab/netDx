@@ -55,7 +55,7 @@ normalize <- function(X) {
 
 # ----------------------------------------------------------------
 runPredictor <- function(mega_combList,rngVals,netSets,dats,pheno_all,megaDir,
-	cutoffSet,topX,topClin) {
+	cutoffSet) {
 require(netDx)
 require(netDx.examples)
 require(glmnet)
@@ -111,16 +111,15 @@ for (rngNum in rngVals) {
 			vars <- rownames(dats_train[[nm]])
 		else { 
 			fit <- cv.glmnet(x=t(dats_train[[nm]]),
-				y=factor(pheno$STATUS), family="binomial", alpha=0.5) # elastic net
+				y=factor(pheno$STATUS), family="binomial", alpha=1) # lasso
 			wt <- abs(coef(fit,s="lambda.min")[,1])
 			wt <- wt[-which(names(wt) %in% "(Intercept)")]
 			wt <- wt[order(wt,decreasing=TRUE)]
-
-			# limit to topX or topClin variables
-			if (nm %in% "clinical") { wt <- wt[1:min(topClin,length(wt))]}
-			else { wt <- wt[1:min(topX,length(wt))] }
-	
 			vars <- names(wt)[which(wt>.Machine$double.eps)]
+			if (nm %in% "clinical" & length(wt)>1) {
+				vars <- names(wt)[1]
+				cat(sprintf("Rng %i:keeping top clin: %s",rngNum,vars))
+			} 
 		}
 		cat(sprintf("rngNum %i: %s: %s pruned\n",rngNum,nm,length(vars)))
 		if (length(vars)>0) {

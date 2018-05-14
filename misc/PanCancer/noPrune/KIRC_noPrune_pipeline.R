@@ -114,7 +114,7 @@ rm(survStr,surv,tmp,nm,outRoot,inDir,dt,k,inFiles,datFiles,pname)
 # -----------------------------------------------------------
 # run predictor
 source("PanCancer_noPrune.R")
-runPredictor(mega_combList=combList,rngVals=1:20,netSets=netSets,
+runPredictor(mega_combList=combList,rngVals=9:20,netSets=netSets,
 	dats=dats,pheno_all=pheno_all,megaDir=megaDir,
 	cutoffSet=9,maxEdge=6000,spCutoff=0.3)
 

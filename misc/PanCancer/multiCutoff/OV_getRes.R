@@ -10,9 +10,11 @@ settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAdnam",
 	"clinicalAcnv","all")
 dirSet <- list(
-	base="noPrune_180423",
+#	base="noPrune_180423",
+	baserep="noprune_sp0.3_180511",
+	baserep1="noprune_sp1_180512",
 #	prune="pruneTrain_180419",
-	lasso="lasso_180426",
+#	lasso="lasso_180426",
 	euc6K="eucscale_180504"
 #	rbfclean="rbfclean_0.2_180507"
 )
@@ -22,7 +24,9 @@ for (curdir in names(dirSet)) {
 #	if (curdir %in% c("lasso","pamr","euc6K","rbfclean")) rngMax <- 20
 #	else if (curdir %in% "prune") rngMax <- 14
 	
-	if (curdir=="base") rngMax <- 15 else rngMax <- 20
+#	if (curdir=="base") rngMax <- 15 
+#	else if (curdir=="baserep") rngMax <- 20
+	rngMax <- 20
 
 	cat(sprintf("***** %s *****\n", curdir))
 	dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])
@@ -44,10 +48,14 @@ for (curdir in names(dirSet)) {
 		}
 		torm <- c()
 		for (idx in 1:length(c7)) {
+			if (file.exists(c7[idx])){
 			dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)
 			x1 <- sum(dat$STATUS=="SURVIVEYES")
 			x2 <- sum(dat$STATUS=="SURVIVENO")
 			if (x1<1 & x2<1) torm <- c(torm, idx)
+			} else {
+				torm <- c(torm,idx)
+			}
 		}
 		cat(sprintf("%i: removing %i\n", cutoff,length(torm)))
 		if (length(torm)>0) c7 <- c7[-torm]

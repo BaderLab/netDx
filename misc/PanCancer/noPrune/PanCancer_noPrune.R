@@ -44,7 +44,9 @@ require(netDx.examples)
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
-cutoff <- 9
+cutoff <- cutoffSet
+cat(sprintf("FS cutoff = %i\n", cutoff))
+
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
@@ -188,6 +190,7 @@ for (rngNum in rngVals) {
 			# feature selected nets pass cutoff threshold
 			pTally <- pTally[which(pTally[,2]>=cutoff),1]
 			cat(sprintf("%s: %i pathways\n",g,length(pTally)))
+			if (length(pTally)>=1) {
 
 			# query of all training samples for this class
 			qSamps <- pheno_all$ID[which(pheno_all$STATUS %in% g & 
@@ -199,22 +202,30 @@ for (rngNum in rngVals) {
 			resFile <- runGeneMANIA(testdbDir$dbDir,qFile,resDir=pDir2)
 			predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
 				pheno_all,g)
+			} else {
+				predRes[[g]] <- NA
+			}
 		}
 		
-		predClass <- GM_OneVAll_getClass(predRes)
-		out <- merge(x=pheno_all,y=predClass,by="ID")
-		outFile <- sprintf("%s/predictionResults.txt",pDir)
-		write.table(out,file=outFile,sep="\t",col=T,row=F,
-			quote=F)
-		
-		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-		cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-			nrow(out), acc*100))
-		
-		require(ROCR)
-		ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
-				out$STATUS=="SURVIVEYES")
-		save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",pDir))
+		if (any(is.na(predRes))) {
+			cat("One or more groups had zero feature selected nets\n")
+			cat("# no feature-selected nets.\n",file=outFile) 
+		}else {
+			predClass <- GM_OneVAll_getClass(predRes)
+			out <- merge(x=pheno_all,y=predClass,by="ID")
+			outFile <- sprintf("%s/predictionResults.txt",pDir)
+			write.table(out,file=outFile,sep="\t",col=T,row=F,
+				quote=F)
+			
+			acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
+			cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
+				nrow(out), acc*100))
+			
+			require(ROCR)
+			ROCR_pred <- prediction(out$SURVIVEYES_SCORE-out$SURVIVENO,
+					out$STATUS=="SURVIVEYES")
+			save(predRes,ROCR_pred,file=sprintf("%s/predRes.Rdata",pDir))
+		}
 		}
         
     #cleanup to save disk space

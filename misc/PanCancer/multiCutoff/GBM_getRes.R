@@ -6,7 +6,8 @@ require(reshape2)
 GBM_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
-	base="noPrune_180423",
+#	base="noPrune_180423",
+	baserep="noprune_impute_sp0.3_180511",
 #	ridge_fix="ridge_AbsFix_180426",
 #	lassoGenes_sp1="lassoGenes_incClin_180426",
 #	pamrGenes="pamrGenes_incClin_180427",
@@ -55,21 +56,32 @@ cutoff <-9
 #	} else if (any(grep("pimp",curdir))){
 #		rngDir <- paste("rng",1:14,sep="")
 #	} else {
-	if (curdir=="base") rngMax<- 15 else rngMax <- 20
+	#if (curdir=="base") rngMax<- 15 
+#if (curdir=="baserep") rngMax <- 20
+	rngMax <- 20
 	rngDir <- paste("rng",1:rngMax,sep="") #dir(path=dataDir,pattern="rng")
 #	}
 	numSplits[[curdir]] <- length(rngDir)
 
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	rngDir <- sprintf("%s/%s",dataDir,rngDir)
+	if (curdir %in% "baserep") {
+		c7 <- sprintf("%s/%s/predictionResults.txt",
+				  rngDir,settype)
+	} else {
 	c7 <- sprintf("%s/%s/cutoff%i/predictionResults.txt",
 				  rngDir,settype,cutoff)
+	}
 	torm <- c()
 	for (idx in 1:length(c7)) {
+		if (file.exists(c7[idx])){
 		dat <- read.delim(c7[idx],sep="\t",h=T,as.is=T)
 		x1 <- sum(dat$STATUS=="SURVIVEYES")
 		x2 <- sum(dat$STATUS=="SURVIVENO")
 		if (x1<1 & x2<1) torm <- c(torm, idx)
+		} else {
+			torm <- c(torm,idx)
+		}
 	}
 	cat(sprintf("%i: removing %i\n", cutoff,length(torm)))
 	if (length(torm)>0) c7 <- c7[-torm]
@@ -81,6 +93,9 @@ cutoff <-9
 	y1 <- unlist(lapply(x,function(i) i$auroc))
 	auc_set[[settype]] <- y1
 ctr <- ctr+1
+}
+if (curdir %in% "baserep") {
+	browser()
 }
 mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 

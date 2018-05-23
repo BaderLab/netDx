@@ -23,7 +23,10 @@ pathwayList <- readPathways(pathFile)
 
 #setName <- "Epen_prunedOneNet_0.001_180409"
 #setName <- "Epen_prunedPathway_0.01_180409"
-setName <- "Epen_prunedOneNet_0.001_180410"
+#setName <- "Epen_prunedOneNet_180522"
+#setName <- "Epen_prunedOneNet_0.001_180523"
+#setName <- "Epen_nopruneOneNet_180523"
+setName <- "Epen_lassoOutsideCV_180523"
 inDir <- sprintf("%s/output/%s/pred",rootDir,setName)
 outDir <- sprintf("%s/output/%s/plot",rootDir,setName)
 
@@ -36,11 +39,12 @@ auroc <- unlist(lapply(predPerf, function(x) x$auroc))
 aupr <- unlist(lapply(predPerf, function(x) x$aupr))
 acc <- unlist(lapply(predPerf, function(x) x$accuracy))
 
+den <- sqrt(length(auroc))
 cat("--------------\n")
 cat(sprintf("Performance: %s\n",setName))
-cat(sprintf("AUROC = %1.2f +/- %1.2f\n",mean(auroc),sd(auroc)))
-cat(sprintf("AUPR = %1.2f +/- %1.2f\n",mean(aupr),sd(aupr)))
-cat(sprintf("Accuracy = %1.2f +/- %1.2f\n",mean(acc),sd(acc)))
+cat(sprintf("AUROC = %1.2f +/- %1.2f\n",mean(auroc),sd(auroc)/den))
+cat(sprintf("AUPR = %1.2f +/- %1.2f\n",mean(aupr),sd(aupr)/den))
+cat(sprintf("Accuracy = %1.2f +/- %1.2f\n",mean(acc),sd(acc)/den))
 cat("--------------\n")
 
 

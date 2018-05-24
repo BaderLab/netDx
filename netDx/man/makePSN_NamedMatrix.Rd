@@ -5,8 +5,9 @@
 \title{Create patient networks from full matrix of named measurements}
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
-  cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = TRUE,
-  sparsify = FALSE, useSparsify2 = FALSE, append = FALSE, ...)
+  verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE,
+  useSparsify2 = FALSE, cutoff = 0.3, sparsify_edgeMax = 1000,
+  append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -27,9 +28,6 @@ that are input to network generation}
 for details. If writeProfiles is set to TRUE, must be one of pearson
 (Pearson correlation) or MI (correlation by mutual information).}
 
-\item{cutoff}{(numeric) patients with similarity smaller than this value
-are not included in the corresponding interaction network}
-
 \item{verbose}{(logical) print detailed messages}
 
 \item{numCores}{(integer) number of cores for parallel network generation}
@@ -44,6 +42,11 @@ with default parameters. Only used when writeProfiles=FALSE}
 
 \item{useSparsify2}{(logical). Currently for testing only. A cleaner
 sparsification routine.}
+
+\item{cutoff}{(numeric) patients with similarity smaller than this value
+are not included in the corresponding interaction network}
+
+\item{sparsify_edgeMax}{(numeric).}
 
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 

@@ -6,7 +6,8 @@
 \usage{
 runPredictor_nestedCV(pheno, dataList, groupList, outDir, makeNetFunc,
   nFoldCV = 10L, trainProp = 0.8, numSplits = 10L, numCores,
-  CVmemory = 4L, CVcutoff = 9L, keepAllData = FALSE)
+  CVmemory = 4L, CVcutoff = 9L, keepAllData = FALSE, startAt = 1L,
+  preFilter = FALSE)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -47,6 +48,15 @@ in a given split}
 \item{keepAllData}{(logical) if TRUE keeps all intermediate files, even
 those not needed for assessing the predictor. Use very cautiously as for
 some designs, each split can result in using 1Gb of data.}
+
+\item{startAt}{(integer) which of the splits to start at (e.g. if the
+job aborted part-way through)}
+
+\item{preFilter}{(logical) if TRUE uses lasso to prefilter dataList within 
+cross-validation loop. Only variables that pass lasso get included. The
+current option is not recommended for pathway-level features as most genes
+will be eliminated by lasso. Future variations may allow other prefiltering
+options that are more lenient.}
 }
 \description{
 Run nested cross-validation on data

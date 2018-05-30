@@ -113,7 +113,10 @@ source("PanCancer_topClin_pearscale_impute.R")
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 dt <- format(Sys.Date(),"%y%m%d")
 topClin<-1
-megaDir <- sprintf("%s/pearscale_lasso_topClin%i_%s",outRoot,topClin,dt)
+maxEdge <- 6000
+maxInt <- 40
+megaDir <- sprintf("%s/pearscale_lasso_topClin%i_max%i_%iK_%s",
+		outRoot,topClin,maxInt,maxEdge/1000,dt)
 runPredictor(mega_combList=combList,rngVals=1:20,netSets=netSets,
 	dats=dats,pheno_all=pheno_all,megaDir=megaDir,
-	cutoffSet=9)
+	cutoffSet=9,maxEdge=maxEdge, maxInt=maxInt)

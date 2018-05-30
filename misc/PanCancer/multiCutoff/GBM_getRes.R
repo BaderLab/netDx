@@ -7,15 +7,19 @@ GBM_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/GBM/output"
 dirSet <- list(
 #	base="noPrune_180423",
-	baserep="noprune_impute_sp0.3_180511",
+#	baserep="noprune_impute_sp0.3_180511",
+	baserep_sparser="noprune_impute_sp0.3_180528",
 #	ridge_fix="ridge_AbsFix_180426",
 #	lassoGenes_sp1="lassoGenes_incClin_180426",
 #	pamrGenes="pamrGenes_incClin_180427",
 #	euc_6K="eucclean_180503",
-	eucimpute="eucclean_impute_180507",
+#	eucimpute="eucclean_impute_180507",
+#	euci_new="eucclean_impute_180525",
+	euci_sparser="eucclean_impute_maxEdge3000_top50_180529",
 	#rbfclean="rbfclean_0.20_180507",
 #	pearscale="pearscale_180507",
-	pearimpute="pearscale_impute_180508"
+#	pearimpute="pearscale_impute_180508",
+	pearimp_new="pearscale_impute_180525"
 #	pimp_40c2="pearimp_topX40_topClin2_180509",
 #	pimp_40c3="pearimp_topX40_topClin3_180509",
 #	pimp_100c3="pearimp_topX100_topClin3_180509",
@@ -65,7 +69,7 @@ cutoff <-9
 
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	rngDir <- sprintf("%s/%s",dataDir,rngDir)
-	if (curdir %in% "baserep") {
+	if (curdir %in% c("baserep","baserep_new","baserep_sparser")) {
 		c7 <- sprintf("%s/%s/predictionResults.txt",
 				  rngDir,settype)
 	} else {
@@ -93,9 +97,6 @@ cutoff <-9
 	y1 <- unlist(lapply(x,function(i) i$auroc))
 	auc_set[[settype]] <- y1
 ctr <- ctr+1
-}
-if (curdir %in% "baserep") {
-	browser()
 }
 mega_auc[[curdir]] <- unlist(lapply(auc_set,mean))
 

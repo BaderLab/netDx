@@ -11,11 +11,13 @@ settypes <- c("clinical","mir","rna","prot","cnv","dnam",
 	"clinicalAcnv","all")
 dirSet <- list(
 #	base="noPrune_180423",
-	baserep="noprune_sp0.3_180511",
+	#baserep="noprune_sp0.3_180511",
+	baserep="noprune_sp0.3_180527",
 	baserep1="noprune_sp1_180512",
 #	prune="pruneTrain_180419",
 #	lasso="lasso_180426",
-	euc6K="eucscale_180504"
+#	euc6K="eucscale_180504",
+	euc_correct="eucscale_180528"
 #	rbfclean="rbfclean_0.2_180507"
 )
 
@@ -39,7 +41,7 @@ for (curdir in names(dirSet)) {
 	cat(sprintf("Got %i rng files\n",length(rngDir)))
 	
 		cutoff <- 9
-		if (curdir %in% c("euc6K","rbfclean")) {
+		if (curdir %in% c("euc6K","rbfclean","euc_correct")) {
 		c7 <- sprintf("%s/%s/cutoff9/predictionResults.txt",
 					  rngDir,settype,cutoff)
 		} else {

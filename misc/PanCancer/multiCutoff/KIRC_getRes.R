@@ -9,7 +9,9 @@ mainD <-  "/home/shraddhapai/BaderLab/PanCancer_KIRC/output"
 
 dirSet <- list(
 #	base="noPrune_180423",
-	baserep="noprune_sp0.3_180511"
+#	baserep="noprune_sp0.3_180511",
+	#baserep_new="noprune_sp0.3_180528",
+	baserep_sparser="noprune_sp0.3_maxInt30_180528"
 #	base_splow="noprune_180510"
 #	lasso="lasso_180426",
 #	lassocl="lassoclean_180509",
@@ -34,7 +36,12 @@ dataDir <- sprintf("%s/%s",mainD,dirSet[[curdir]])
 auc_set <- list()
 auc_var <- list()
 for (settype in settypes) {
+
+	if (curdir %in% "baserep_new") {
+	rngDir <- paste(sprintf("%s/rng",dataDir), 9:rngMax,sep="")
+	} else {
 	rngDir <- paste(sprintf("%s/rng",dataDir), 1:rngMax,sep="")
+	}
 
 	auc_var[[settype]] <- c()
 
@@ -70,7 +77,6 @@ colctr <- 1
 pdf(sprintf("KIRC_%s.pdf",format(Sys.Date(),"%y%m%d")),width=11,height=6); 
 boxplot(mega_auc,main="KIRC",cex.axis=1.7,cex.main=2,las=1); dev.off()
 
-browser()
 
 return(mega_auc)
 }

@@ -6,7 +6,11 @@ LUSC_getRes <- function() {
 mainD <-  "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output"
 dirSet <- list(
 #	base="noPrune_180423",
-	baserep="noPrune_sp0.3_180511",
+#	baserep="noPrune_sp0.3_180511",
+#	baserep_new="noPrune_sp0.3_180527",
+	baserep_new2="noPrune_sp0.3_maxEdge6_maxInt40_180529",
+#	plasso_303k="pearscale_lasso_topClin1_max30_3K_180528",
+#	plasso_306k="pearscale_lasso_topClin1_max30_180528",
 #	lasso="lasso_180426",
 #	lassoGenes="lassoGenes_180426",
 #	pamrGenes_sp2="pamrGenes_180427",
@@ -15,7 +19,10 @@ dirSet <- list(
 	#euc6K="eucclean_180504",
 #	eucimpute="eucscale_impute_180507",
 #	pearscale="pearscale_180507",
-	plassoc1="pearscale_lasso_topClin1_180509"
+	
+#plassoc1="pearscale_lasso_topClin1_180509",
+#	plassoc1_new="pearscale_lasso_topClin1_180528",
+	lassoc1_new="pearscale_lasso_topClin1_max40_6K_180529"
 )
 settypes <- c("clinical","mir","rna","prot","cnv",
 	"clinicalArna","clinicalAmir","clinicalAprot","clinicalAcnv","all")
@@ -42,7 +49,7 @@ for (settype in settypes) {
 
 
 for (cutoff in 9) {
-	if (curdir %in% "baserep") {
+	if (curdir %in% c("baserep","baserep_new","baserep_new2")) {
 		c7 <- sprintf("%s/%s/predictionResults.txt",
 				  rngDir,settype)
 	} else {
@@ -80,8 +87,6 @@ pdf(sprintf("LUSC_%s.pdf",dt),width=24,height=6);
 boxplot(mega_auc,main="LUSC",cex.axis=1.7,cex.main=2,las=1); 
 abline(h=0.5)
 dev.off()
-
-browser()
 
 return(mega_auc)
 }

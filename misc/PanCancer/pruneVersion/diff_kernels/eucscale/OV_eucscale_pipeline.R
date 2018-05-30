@@ -101,7 +101,6 @@ combList <- list(
 rm(pheno,pheno_nosurv)
 rm(survStr,surv,tmp,nm,outRoot,inDir,dt,k,inFiles,datFiles,pname)
 
-browser()
 # -----------------------------------------------------------
 # run predictor
 source("PanCancer_eucscale.R")

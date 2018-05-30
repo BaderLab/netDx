@@ -19,7 +19,8 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
-   diag(W) <- 0;
+	# don't want same patient edge twice, nor self-similarity
+   W[upper.tri(W,diag=TRUE)] <- NA 
 	 W[W < cutoff] <- NA
 	x <- list()
 	for (i in 1:nrow(W)) { x[[i]] <- sort(W[i,],decreasing=TRUE,na.last=TRUE)}
@@ -31,7 +32,7 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 		}
 	mmat <- na.omit(melt(W))
 	mmat <- mmat[order(mmat[,3],decreasing=TRUE),]
-
+	
 	maxEdge <- nrow(mmat)
 	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
 	mmat <- mmat[1:maxEdge,]

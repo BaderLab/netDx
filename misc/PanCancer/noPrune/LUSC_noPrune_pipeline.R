@@ -8,7 +8,6 @@ inDir <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/input/"
 outRoot <- "/home/shraddhapai/BaderLab/2017_PanCancer/LUSC/output/"
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/noPrune_sp0.3_%s",outRoot,dt)
 
 # -----------------------------------------------------------
 # process input
@@ -109,11 +108,15 @@ combList <- list(
 cat(sprintf("Clinical variables are: { %s }\n", 
 	paste(rownames(dats$clinical),sep=",",collapse=",")))
 rm(pheno)
-rm(survStr,surv,tmp,nm,outRoot,inDir,dt,k,inFiles,datFiles,pname)
+rm(survStr,surv,tmp,nm,inDir,k,inFiles,datFiles,pname)
 
 # -----------------------------------------------------------
 # run predictor
 source("PanCancer_noPrune.R")
+maxEdge <- 6000
+maxInt <- 40
+megaDir <- sprintf("%s/noPrune_sp0.3_maxEdge%i_maxInt%i_%s",
+		outRoot,maxEdge/1000,maxInt,dt)
 runPredictor(mega_combList=combList,rngVals=1:20,netSets=netSets,
 	dats=dats,pheno_all=pheno_all,megaDir=megaDir,
-	cutoffSet=9,maxEdge=6000,spCutoff=0.3)
+	cutoffSet=9,maxEdge=maxEdge,maxInt=maxInt,spCutoff=0.3)

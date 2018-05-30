@@ -55,7 +55,7 @@ normalize <- function(X) {
 
 # ----------------------------------------------------------------
 runPredictor <- function(mega_combList,rngVals,netSets,dats,pheno_all,megaDir,
-	cutoffSet) {
+	cutoffSet,maxEdge=6000,maxInt=30) {
 require(netDx)
 require(netDx.examples)
 require(glmnet)
@@ -63,7 +63,6 @@ require(glmnet)
 numCores <- 8L
 GMmemory <- 4L
 trainProp <- 0.8
-maxEdge <- 6000  ### max edge after sparsification
 
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
@@ -157,7 +156,7 @@ for (rngNum in rngVals) {
         simMetric="custom",customFunc=sim.pearscale,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=.Machine$double.eps,
-		sparsify_edgeMax=maxEdge,
+		sparsify_edgeMax=maxEdge,sparsify_maxInt=maxInt,
         verbose=FALSE,numCores=numCores)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	
@@ -235,7 +234,7 @@ for (rngNum in rngVals) {
         simMetric="custom",customFunc=sim.pearscale,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=.Machine$double.eps,
-		sparsify_edgeMax=maxEdge,
+		sparsify_edgeMax=maxEdge,sparsify_maxInt=maxInt,
         verbose=TRUE,numCores=numCores)
 	cat(sprintf("Total of %i nets\n", length(netList)))
 	# now create database

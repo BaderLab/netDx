@@ -11,8 +11,6 @@ inDir <- sprintf("%s/input",rootDir)
 outRoot <- sprintf("%s/output",rootDir)
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/eucclean_impute_%s",outRoot,dt)
-cat(megaDir, file="test.txt",append=TRUE)
 
 # -----------------------------------------------------------
 # process input
@@ -107,13 +105,20 @@ pheno_all <- pheno
 
 # cleanup
 rm(pheno,pheno_nosurv)
-rm(rootDir,survStr,surv,tmp,nm,outRoot,inDir,dt,k,inFiles,datFiles)
+rm(rootDir,survStr,surv,tmp,nm,inDir,k,inFiles,datFiles)
 
 # -----------------------------------------------------------
 # run predictor
 source("PanCancer_eucscale_impute.R")
+maxInt <- 50
+maxEdge <- 3000
+megaDir <- sprintf("%s/eucclean_impute_maxEdge%i_top%i_%s",
+	outRoot,maxEdge,maxInt,dt)
+cat(megaDir, file="test.txt",append=TRUE)
+
 runPredictor(mega_combList=combList,rngVals=1:20,netSets=netSets,
 	dats=dats,pheno_all=pheno_all,megaDir=megaDir,
+	maxEdge=maxEdge,maxInt=maxInt,
 	cutoffSet=9)
 
 

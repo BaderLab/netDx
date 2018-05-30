@@ -36,7 +36,7 @@ normDiff2 <- function(x) {
 
 # ----------------------------------------------------------------
 runPredictor <- function(mega_combList,rngVals,netSets,dats,pheno_all,megaDir,
-	cutoffSet,maxEdge,spCutoff) {
+	cutoffSet,spCutoff,maxInt=50L,maxEdge=6000) {
 
 require(netDx)
 require(netDx.examples)
@@ -88,7 +88,7 @@ for (rngNum in rngVals) {
         simMetric="custom",customFunc=normDiff2,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=spCutoff,
-		sparsify_edgeMax=maxEdge,
+		sparsify_edgeMax=maxEdge,sparsify_maxInt=maxInt,
         verbose=FALSE,numCores=numCores)
 	}
 	if (any(pearnet)) {
@@ -163,7 +163,7 @@ for (rngNum in rngVals) {
         simMetric="custom",customFunc=normDiff2,
         writeProfiles=FALSE,
         sparsify=TRUE,useSparsify2=TRUE,cutoff=spCutoff,
-		sparsify_edgeMax=maxEdge,
+		sparsify_edgeMax=maxEdge,sparsify_maxInt=maxInt,
         verbose=FALSE,numCores=numCores)
 	}
 	if (any(pearnet)) {

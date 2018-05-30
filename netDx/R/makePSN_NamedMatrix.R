@@ -60,6 +60,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson",verbose=TRUE,
 	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=1000,
+	sparsify_maxInt=50,
 	append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
@@ -132,7 +133,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 					tryCatch({
 					 spmat <- sparsify2(pat_pairs,cutoff=cutoff,
 							EDGE_MAX=sparsify_edgeMax,
-							outFile)
+							outFile=outFile,maxInt=sparsify_maxInt)
 					},error=function(ex) {
 						cat("sparse caught error\n"); browser()
 					})

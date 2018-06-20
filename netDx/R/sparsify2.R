@@ -24,12 +24,15 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	 W[W < cutoff] <- NA
 	x <- list()
 	for (i in 1:nrow(W)) { x[[i]] <- sort(W[i,],decreasing=TRUE,na.last=TRUE)}
+cat("past sorting\n")
 	names(x) <- rownames(W)
 	 for (k in 1:length(x)) {
+			print(k)
 			cur <- x[[k]]
 			tokeep <- names(cur)[1:min(length(cur),maxInt)]
 			W[k,which(!colnames(W)%in% tokeep)] <- NA
 		}
+cat("got past b\n")
 	mmat <- na.omit(melt(W))
 	mmat <- mmat[order(mmat[,3],decreasing=TRUE),]
 	
@@ -44,7 +47,7 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 		mmat[,2] <- as.character(mmat[,2])
 		univ <- c(mmat[,1],mmat[,2])
 		missing <- setdiff(rownames(W), univ)
-		cat(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
+		#cat(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
 		if (length(missing)>0) {
 			cat(sprintf("Sparsify2: found %i missing patients; adding strongest edge\n",
 				length(missing)))
@@ -59,6 +62,8 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 		}	
 	}
 	head(mmat)
+	mmat[,3] <- as.numeric(mmat[,3])
+	mmat[,3] <- round(mmat[,3],digits=4)
 	write.table(mmat,file=outFile,sep="\t",col=F,row=F,quote=F)
 	return(mmat)
 

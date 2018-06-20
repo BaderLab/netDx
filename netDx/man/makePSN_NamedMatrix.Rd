@@ -7,7 +7,7 @@
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
   verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE,
   useSparsify2 = FALSE, cutoff = 0.3, sparsify_edgeMax = 1000,
-  append = FALSE, ...)
+  sparsify_maxInt = 50, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -37,11 +37,8 @@ create interaction networks. If TRUE, this function writes subsets
 of the original data corresponding to networks to file (profiles). 
 If FALSE, uses  getSimilarity() and writes interaction networks.}
 
-\item{sparsify}{(logical) sparsify networks by calling sparsifyNets()
-with default parameters. Only used when writeProfiles=FALSE}
-
-\item{useSparsify2}{(logical). Currently for testing only. A cleaner
-sparsification routine.}
+\item{useSparsify2}{(logical). Cleaner sparsification
+sparsification routine. If FALSE, uses new matrix-based sparsify3}
 
 \item{cutoff}{(numeric) patients with similarity smaller than this value
 are not included in the corresponding interaction network}

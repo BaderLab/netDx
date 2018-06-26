@@ -1,8 +1,0 @@
-Vanilla predictor with one net per datatype.
-10-fold CV feature selection with 100 train/test splits.
-
-Run predictor: *_oneNetPer.R
-Collect AUCROC (must be on same VM as results): oneNetPer_collectRes.R
-	- need to change maxK to reflect max num iterations run for this dataset
-Tarball all CV_Scores and predictionResults.txt : oneNetPer_tarballResults.sh
-

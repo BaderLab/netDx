@@ -9,6 +9,9 @@
 #' if inDir is a list, it should have one key per class. The value should be the
 #' corresponding set of filenames for pathway_CV_score.txt
 #' @param predClasses (char) possible STATUS for patients
+#' @param getFullCons (logical) if TRUE, does not remove rows with NA.
+#' Recommended only when the number of input features is extensively 
+#' pruned by first-pass feature selection.
 #' @return (list) one key per patient class. Value is matrix of network
 #' scores across all train/test splits. Each score is the output of
 #' the inner fold of CV.
@@ -17,7 +20,7 @@
 #' 		path.package("netDx.examples"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 #' @export
-getFeatureScores <- function(inDir,predClasses) {
+getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 	if (missing(inDir)) stop("inDir not provided");
 	if (missing(predClasses))
 		stop("predClasses missing; please specify classes");
@@ -44,7 +47,6 @@ getFeatureScores <- function(inDir,predClasses) {
 			colnames(tmp)[1] <- "PATHWAY_NAME"
 				netColl[[scoreFile]] <- tmp
 		}
-
 			spos <- gregexpr("\\/",fList)
 			# get the name of the iteration (rngX) assuming directory structure
 			# rngX/<class>/GM_results>/pathway_CV_score.txt
@@ -58,12 +60,13 @@ getFeatureScores <- function(inDir,predClasses) {
 
 			# filter for nets meeting cutoff criteria
 			cat("* Computing consensus\n")
+
 			cons <- getNetConsensus(netColl); x1 <- nrow(cons)
 			na_sum <- rowSums(is.na(cons))
 			full_cons <- cons
 			cons <- cons[which(na_sum < 1),]
 
-			out[[gp]] <- cons
+			if (getFullCons) out[[gp]] <- full_cons else out[[gp]] <- cons
 	}
 	return(out)
 }

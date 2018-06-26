@@ -114,7 +114,8 @@ def write_network(organism_id, file_name, network_id):
     output_file = open(join(output_path, output_file_name), 'w')
     for line in open(file_name, 'rU'):
         data = line.strip().split('\t')
-	#print data[0];
+#	print data[0];
+#	print file_name;
 	#print symbols;
 
         for i in id_indexes:             

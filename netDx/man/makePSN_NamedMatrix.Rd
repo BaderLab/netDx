@@ -5,8 +5,9 @@
 \title{Create patient networks from full matrix of named measurements}
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
-  cutoff = 0.3, verbose = TRUE, numCores = 1L, writeProfiles = FALSE,
-  sparsify = FALSE, append = FALSE, ...)
+  verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE,
+  useSparsify2 = FALSE, cutoff = 0.3, sparsify_edgeMax = 1000,
+  sparsify_maxInt = 50, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -24,10 +25,8 @@ that are input to network generation}
 \item{outDir}{(char) path to directory where networks are written}
 
 \item{simMetric}{(char) measure of similarity. See \code{getSimilarity()}
-for details}
-
-\item{cutoff}{(numeric) patients with similarity smaller than this value
-are not included in the corresponding interaction network}
+for details. If writeProfiles is set to TRUE, must be one of pearson
+(Pearson correlation) or MI (correlation by mutual information).}
 
 \item{verbose}{(logical) print detailed messages}
 
@@ -38,12 +37,20 @@ create interaction networks. If TRUE, this function writes subsets
 of the original data corresponding to networks to file (profiles). 
 If FALSE, uses  getSimilarity() and writes interaction networks.}
 
-\item{sparsify}{(logical) sparsify networks by calling sparsifyNets()
-with default parameters. Only used when writeProfiles=FALSE}
+\item{useSparsify2}{(logical). Cleaner sparsification
+sparsification routine. If FALSE, uses new matrix-based sparsify3}
+
+\item{cutoff}{(numeric) patients with similarity smaller than this value
+are not included in the corresponding interaction network}
+
+\item{sparsify_edgeMax}{(numeric).}
 
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 
 \item{...}{passed to \code{getSimilarity()}}
+
+\item{useExtLib}{(logical) if TRUE, uses NetPreProc::Sparsify.matrix()
+with user-supplied k; else uses the implementation in this file}
 }
 \value{
 (char) Basename of files to which networks are written.  

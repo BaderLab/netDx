@@ -20,6 +20,9 @@ if (min(res$adj.P.Val) > 0.9) {
 	return(NA)
 }
 thresh_vec <- seq(min(res$adj.P.Val),0.9,0.05)
+if (min(res$adj.P.Val) < .Machine$double.eps) {
+	thresh_vec <- c(0.001,0.005,seq(0.01,0.04,0.01),thresh_vec)
+}
 sil_width <- matrix(NA,nrow=length(thresh_vec),ncol=3)
 colnames(sil_width) <- c("thresh","num_vars","avg_sil_width")
 
@@ -31,14 +34,18 @@ ct <- nrow(m)
 # evaluate effect of different Q cutoffs
 for (thresh in thresh_vec) {
 	if (verbose) cat(sprintf("cutoff %1.2f\n", thresh))
-	if (sum(res$adj.P.Val < thresh) < 5) {
+	if (sum(res$adj.P.Val < thresh) < 10) {
 		sil_width[ctr,2] <- 0
 		if (verbose) cat("\t < 5 values left - ignore\n")
 	} else {
 	res_cur <- subset(res, adj.P.Val < thresh)
 	if (verbose) cat(sprintf("\t%i of %i measures left\n",nrow(res_cur), ct,thresh))
 	m_cur <- m[which(rownames(m) %in% rownames(res_cur)),]
-	x <- silh(groups, m_cur,plotMe=FALSE)
+	zv <- apply(m_cur,2,function(x) sd(x)^2)
+	zv <- zv < .Machine$double.eps
+	m_cur <- m_cur[,!zv]
+	cur_groups <- groups[!zv]
+	x <- silh(cur_groups, m_cur,plotMe=FALSE)
 	y <- summary(x)
 	if (verbose)cat(sprintf("\tsilh = %1.2f,  %1.2f; avg = %1.2f\n",
 			thresh, y$clus.avg.widths[1],y$clus.avg.widths[2],

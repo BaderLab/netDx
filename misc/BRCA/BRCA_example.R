@@ -8,11 +8,6 @@ subtypes<- c("LumA")
 pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
 subtypes <- c(subtypes,"other") # add residual
 
-pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
-    path.package("netDx.examples"))
-pathwayList <- readPathways(pathFile)
-head(pathwayList)
-
 
 BRCA_makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c()
@@ -29,9 +24,14 @@ BRCA_makeNets <- function(dataList, groupList, netDir,...) {
 	return(netList)
 }
 
-rootDir <- "/home/shraddhapai/BaderLab/2017_BRCA/output/"
+rootDir <- "/home/shraddhapai/BaderLab/2017_BRCA"
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/BRCA_%s",rootDir,dt)
+megaDir <- sprintf("%s/output/BRCA_part2_%s",rootDir,dt)
+
+pathFile <- sprintf("%s/anno/Human_AllPathways_February_01_2018_symbol.gmt",
+	rootDir)
+pathwayList <- readPathways(pathFile)
+head(pathwayList)
 
 gps <- list(rna=pathwayList)
 dats <- list(rna=xpr)
@@ -40,4 +40,5 @@ runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=BRCA_makeNets, ### custom network creation function
    outDir=megaDir,
-   numCores=10L,nFoldCV=10L, CVcutoff=9L,numSplits=25L)
+   numCores=8L,nFoldCV=10L, CVcutoff=9L,numSplits=100L,CVmemory=13L,
+	startAt=3L)

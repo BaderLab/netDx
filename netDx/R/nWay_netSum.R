@@ -71,7 +71,10 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		predClass=predClass, setSeed=seed_resampling, verbose=TRUE)
 	p_full 		<- netmat
 	pheno_full	<- phenoDF
-	pheno_full <- pheno_full[,-which(colnames(pheno_full)%in%"TT_STATUS")]
+	if (any(colnames(pheno_full)%in% "TT_STATUS")) {
+		cat("** Warning, found TT_STATUS column. netDx adds its own column so this one will be removed **\n")
+		pheno_full <- pheno_full[,-which(colnames(pheno_full)%in%"TT_STATUS")]
+	}
 
 	pScore		<- list()
 	cliqueNets	<- list()

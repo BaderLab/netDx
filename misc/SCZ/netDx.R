@@ -54,11 +54,11 @@ idx <- which(pheno$Dx %in% c("Control","SCZ"))
 
 xpr <- xpr[,idx]
 pheno <- pheno[idx,]
-set.seed(123)
-idx1 <- sample(which(pheno$Dx %in% "Control"),70,F)
-idx2 <- sample(which(pheno$Dx %in% "SCZ"),70,F)
-idx <- c(idx1,idx2)
-pheno <- pheno[idx,]; xpr <- xpr[,idx]
+#set.seed(123)
+#idx1 <- sample(which(pheno$Dx %in% "Control"),100,F)
+#idx2 <- sample(which(pheno$Dx %in% "SCZ"),100,F)
+#idx <- c(idx1,idx2)
+#pheno <- pheno[idx,]; xpr <- xpr[,idx]
 
 pheno$STATUS <- pheno$Dx
 pheno$ID <- pheno$DLPFC_RNA_Sequencing_Sample_ID
@@ -82,7 +82,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/SCZ_%s",outDir,dt)
+megaDir <- sprintf("%s/SCZfull_%s",outDir,dt)
 if (!file.exists(megaDir)) dir.create(megaDir)
 
 gps <- list(rna=pathwayList)
@@ -92,4 +92,5 @@ runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred",megaDir),
-   numCores=4L,nFoldCV=10L, CVcutoff=9L,numSplits=10L)
+   numCores=2L,nFoldCV=10L, CVcutoff=9L,numSplits=25L,
+	CVmemory=26L)

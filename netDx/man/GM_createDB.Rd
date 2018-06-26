@@ -4,9 +4,9 @@
 \alias{GM_createDB}
 \title{Create GeneMANIA database}
 \usage{
-GM_createDB(netDir, patientID, outDir, simMetric = "cor_pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L, GMmemory = 4L,
-  ...)
+GM_createDB(netDir, patientID, outDir, simMetric = "pearson",
+  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
+  P2N_threshType = "off", P2N_maxMissing = 100, GMmemory = 4L, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -26,6 +26,11 @@ profiles to interaction networks.}
 \item{verbose}{(logical) print messages}
 
 \item{numCores}{(integer) num cores for parallel processing}
+
+\item{P2N_threshType}{(char) Most users shouldn't have to change this.
+ProfileToNetworkDriver's threshold option. One of "off|auto".}
+
+\item{P2N_maxMissing}{(integer 5-100)}
 
 \item{GMmemory}{(integer) Memory for GeneMANIA (in Gb)}
 

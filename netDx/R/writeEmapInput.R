@@ -40,7 +40,8 @@
 #'                   outPfx=sprintf("%s/%s",outDir,gp))
 #' @export
 writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
-	pctPass=0.70,minScore=1,maxScore=10,trimFromName=c(".profile","_cont"),verbose=FALSE) {
+	pctPass=0.70,minScore=1,maxScore=10,trimFromName=c(".profile","_cont"),
+	verbose=FALSE) {
 
 	netNames <- featScores[,1];
 	featScores <- featScores[,-1]
@@ -60,7 +61,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	for (tr in trimFromName) netNames <- sub(tr,"",netNames)
 
 	df1 <- data.frame(netName=netNames, maxScore=maxNetS)
-	colnames(netInfo) <- c("netType","netName")
+	#colnames(netInfo) <- c("netType","netName")
 	df2 <- merge(x=df1,y=netInfo,by="netName")
 
 	# write node attributes

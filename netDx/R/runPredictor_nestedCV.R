@@ -40,17 +40,26 @@
 #' @param keepAllData (logical) if TRUE keeps all intermediate files, even
 #' those not needed for assessing the predictor. Use very cautiously as for
 #' some designs, each split can result in using 1Gb of data.
+#' @param startAt (integer) which of the splits to start at (e.g. if the
+#' job aborted part-way through)
+#' @param preFilter (logical) if TRUE uses lasso to prefilter dataList within 
+#' cross-validation loop. Only variables that pass lasso get included. The
+#' current option is not recommended for pathway-level features as most genes
+#' will be eliminated by lasso. Future variations may allow other prefiltering
+#' options that are more lenient.
 #' @examples see examples/NestedCV_MultiData.Rmd for example use.
+#' @import glmnet
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores,CVmemory=4L,CVcutoff=9L,
-	keepAllData=FALSE) {
+	keepAllData=FALSE,startAt=1L, preFilter=FALSE) { 
 
 ### tests# pheno$ID and $status must exist
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
+if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
 
 megaDir <- outDir
 if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
@@ -95,7 +104,7 @@ cat("\n\nCustom function to generate input nets:\n")
 print(makeNetFunc)
 cat(sprintf("-------------------------------\n\n"))
 
-for (rngNum in 1:numSplits) {
+for (rngNum in startAt:numSplits) {
 	cat(sprintf("-------------------------------\n"))
 	cat(sprintf("RNG seed = %i\n", rngNum))
 	cat(sprintf("-------------------------------\n"))
@@ -107,6 +116,35 @@ for (rngNum in 1:numSplits) {
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
 	dats_train <- lapply(dataList,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
+
+	# prefilter with lasso
+	if (preFilter) {
+	set.seed(123)
+	cat("Prefiltering enabled\n")
+	for (nm in names(dats_train)) {
+		if (nrow(dats_train[[nm]])<2)  # only has one var, take it.
+			vars <- rownames(dats_train[[nm]])
+		else { 
+			fit <- cv.glmnet(x=t(na.omit(dats_train[[nm]])),
+					y=factor(pheno$STATUS), family="binomial", alpha=1) # lasso
+			wt <- abs(coef(fit,s="lambda.min")[,1])
+			vars <- setdiff(names(wt)[which(wt>.Machine$double.eps)],"(Intercept)")
+			}
+		if (length(vars)>0) {
+			tmp <- dats_train[[nm]]
+			tmp <- tmp[which(rownames(tmp) %in% vars),,drop=FALSE]
+			dats_train[[nm]] <- tmp
+		} else {
+			# leave dats_train as is, make a single net
+		} 
+		cat(sprintf("rngNum %i: %s: %s pruned\n",rngNum,nm,length(vars)))
+		}
+	}
+	
+	cat("# datapoints to make training nets\n")
+	for (nm in names(dats_train)) {
+		cat(sprintf("rngNum %i: %s: %i measures\n", rngNum,nm,nrow(dats_train[[nm]])))
+	}
 
 	netDir <- sprintf("%s/networks",outDir)
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
@@ -153,7 +191,15 @@ for (rngNum in 1:numSplits) {
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
 
-		createPSN_MultiData(dataList=dataList,groupList=groupList,
+		dats_tmp <- list()
+		for (nm in names(dataList)) {
+			passed <- rownames(dats_train[[nm]])
+			tmp <- dataList[[nm]]
+			# only variables passing prefiltering should be used to make PSN
+			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),] 
+	}		
+
+		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
 			customFunc=makeNetFunc,numCores=numCores,
 			filterSet=pTally)

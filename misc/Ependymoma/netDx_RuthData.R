@@ -7,7 +7,7 @@ require(netDx.examples)
 rootDir <- "/home/shraddhapai/BaderLab/2017_Ependymoma"
 inDir <- sprintf("%s/input/netDx_prepared",rootDir)
 outDir <- sprintf("%s/output",rootDir)
-pathFile <-sprintf("%s/anno/Human_AllPathways_November_01_2017_symbol.gmt",
+pathFile <-sprintf("%s/anno/Human_AllPathways_February_01_2018_symbol.gmt",
 	rootDir)
 load(sprintf("%s/Ependymoma_cohortMerged_180125.Rdata",inDir))
 
@@ -35,7 +35,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 
 dt <- format(Sys.Date(),"%y%m%d")
-megaDir <- sprintf("%s/Epen_%s",outDir,dt)
+megaDir <- sprintf("%s/Epen_2_%s",outDir,dt)
 if (!file.exists(megaDir)) dir.create(megaDir)
 
 gps <- list(rna=pathwayList)
@@ -47,4 +47,4 @@ runPredictor_nestedCV(pheno,
    dataList=dats,groupList=gps,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred",megaDir),
-   numCores=4L,nFoldCV=10L, CVcutoff=9L,numSplits=10L)
+   numCores=8L,nFoldCV=10L, CVcutoff=9L,numSplits=10L,startAt=8L)

@@ -38,6 +38,7 @@
 #' Details.
 #' @param keepTies (logical) keep edge ties. See Details 
 #' @param verbose (logical) print messages
+#' @param cutoff (value between 0 and 1) min edge value to keep
 #' @return No value. Writes sparsified matrix to \code{outFile}
 #' @export
 #' @examples
@@ -46,83 +47,88 @@
 #' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 #' sparsifyNet(x,outFile="tmp.txt")
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
-		numPatients,keepTies=TRUE,verbose=TRUE){
+		numPatients,keepTies=TRUE,verbose=TRUE,cutoff=0.3){
 if (class(net)=="data.frame") {
 	dat <- net
 } else if (class(net)=="character"){
 	netFile <- net
 	dat <- read.delim(netFile,sep="\t",as.is=T,h=F)
 }
-dat <- dat[order(dat[,1]),]
 
-curPat <- dat[1,1] # initialize
-sidx <- 1; eidx <- NA;
-ctr <- 1
+	dat <- dat[order(dat[,1]),]
+	idx <- which(dat[,3]<cutoff)
 
-newCt <- 0
-t0 <- Sys.time()
-system(sprintf("cat /dev/null > %s",outFile))
-while ((ctr < nrow(dat))) {
-	nextPat <- dat[ctr+1,1]
-
-	if (nextPat != curPat) {
-		eidx <- ctr
-		if (verbose) cat(sprintf("%s: %i-%i:", curPat,sidx,eidx))
-		# process cur pat's interactions. write to file
-		totalInter <- dat[sidx:eidx,3]
-		names(totalInter) <- dat[sidx:eidx,2]
-
-		if (!keepTies) {
-			totalInter <- totalInter[!duplicated(totalInter)]		
+	if (any(idx)) dat[idx,3] <- NA
+	dat <- na.omit(dat)
+	curPat <- dat[1,1] # initialize
+	sidx <- 1; eidx <- NA;
+	ctr <- 1
+	
+	newCt <- 0
+	t0 <- Sys.time()
+	system(sprintf("cat /dev/null > %s",outFile))
+	while ((ctr < nrow(dat))) {
+		nextPat <- dat[ctr+1,1]
+	
+		if (nextPat != curPat) {
+			eidx <- ctr
+			if (verbose) cat(sprintf("%s: %i-%i:", curPat,sidx,eidx))
+			# process cur pat's interactions. write to file
+			totalInter <- dat[sidx:eidx,3]
+			names(totalInter) <- dat[sidx:eidx,2]
+	
+			if (!keepTies) {
+				totalInter <- totalInter[!duplicated(totalInter)]		
+			}
+			totalInter <- sort(totalInter,decreasing=TRUE)
+			n <- length(totalInter)
+	
+			tokeep <- max(k,min(round(MAX_PCT*numPatients),600));
+			tokeep <- min(k,n);
+	
+			if (verbose) {
+				n1 <- length(totalInter)
+				cat(sprintf("%i -> %i ",n1, tokeep))
+				if (tokeep < n1) cat("*** trimmed")
+				cat("\n")
+			}
+			
+			outInter <- totalInter[1:tokeep]
+			df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
+			write.table(df,file=outFile,sep="\t",
+						append=TRUE,col=F,row=F,quote=F)
+			newCt <- newCt + nrow(df)
+	
+			curPat <- nextPat;
+			sidx <- ctr+1
 		}
-		totalInter <- sort(totalInter,decreasing=TRUE)
-		n <- length(totalInter)
-
-		tokeep <- max(k,min(round(MAX_PCT*numPatients),600));
-		tokeep <- min(k,n);
-
-		if (verbose) {
-			n1 <- length(totalInter)
-			cat(sprintf("%i -> %i ",n1, tokeep))
-			if (tokeep < n1) cat("*** trimmed")
-			cat("\n")
-		}
-		
-		outInter <- totalInter[1:tokeep]
-		df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
-		write.table(df,file=outFile,sep="\t",
-					append=TRUE,col=F,row=F,quote=F)
-		newCt <- newCt + nrow(df)
-
-		curPat <- nextPat;
-		sidx <- ctr+1
+		ctr <- ctr+1 
 	}
-	ctr <- ctr+1 
-}
-# last patient
-eidx <- nrow(dat)
-# process cur pat's interactions. write to file
-totalInter <- dat[sidx:eidx,3]
-names(totalInter) <- dat[sidx:eidx,2]
-n1 <- length(totalInter)
-
-if (!keepTies) {
+	# last patient
+	eidx <- nrow(dat)
+	# process cur pat's interactions. write to file
+	totalInter <- dat[sidx:eidx,3]
+	names(totalInter) <- dat[sidx:eidx,2]
+	n1 <- length(totalInter)
+	
+	if (!keepTies) {
 	totalInter <- totalInter[!duplicated(totalInter)]		
-}
-totalInter <- sort(totalInter,decreasing=TRUE)
-n <- length(totalInter)
-
-tokeep <- max(k,min(MAX_PCT*numPatients,600));
-tokeep <- min(k,n);
-
-if (verbose) cat(sprintf("%i -> %i\n",n1, tokeep))
-
-outInter <- totalInter[1:tokeep]
+	}
+	totalInter <- sort(totalInter,decreasing=TRUE)
+	n <- length(totalInter)
+	
+	tokeep <- max(k,min(MAX_PCT*numPatients,600));
+	tokeep <- min(k,n);
+	
+	if (verbose) cat(sprintf("%i -> %i\n",n1, tokeep))
+	
+	outInter <- totalInter[1:tokeep]
 df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
 write.table(df,file=outFile,sep="\t",append=TRUE,col=F,row=F,quote=F)
+oldCt <- nrow(dat)
 
 cat(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 
-			nrow(dat), newCt,(newCt/nrow(dat))*100))
+			oldCt, newCt,(newCt/oldCt)*100))
 cat("Time taken:\n")
 print(Sys.time()-t0)
 

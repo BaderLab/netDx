@@ -31,8 +31,8 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	# effectively empty out the slots that are not the top interactions
 	# create a "switch off" matrix with NA in non-top edges
 	W_order <- t(apply(W,1,order,decreasing=TRUE,na.last=TRUE))
-	W_order[which(W_order > 50)] <- NA
-	W_order[which(W_order <= 50)] <- .Machine$double.eps
+	W_order[which(W_order > maxInt)] <- NA
+	W_order[which(W_order <= maxInt)] <- .Machine$double.eps
 	W2 <- W + W_order # NA for non-top edges, unchanged for top edges
 	mmat <- na.omit(melt(W2,varnames=names(dimnames(W2))))
 	

@@ -5,6 +5,8 @@
 #' @param predClass (character) class label for which predictor is built
 #' @param plotIt (logical) if TRUE plots ROC curve
 #' @param verbose (logical) print messages
+#' @param useNewGM (logical) use new GeneMania Version for processing - 
+#' slightly different output format
 #' @export
 #' @return (list) 
 #' 1) predLbl: GeneMANIA scores (predicted labels). Higher score for
@@ -25,8 +27,14 @@
 #' 	 path.package("netDx"))
 #' x <- GM_getQueryROC(prankFile, pheno, "LumA")
 GM_getQueryROC <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
-   verbose=FALSE) {
-	dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T)
+   verbose=FALSE, useNewGM=FALSE) {
+  # Read in PRANK file
+  if (useNewGM){
+    # need to skip comment line with new format
+	  dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T, skip=1)
+  } else {
+    dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T)
+  }
 
 	# 1 is what we predict, 0 is the other class
 	pheno_DF$STATUS <- as.integer(pheno_DF$STATUS==predClass)

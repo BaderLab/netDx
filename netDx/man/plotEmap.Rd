@@ -4,8 +4,8 @@
 \alias{plotEmap}
 \title{Using GMT files, generate enrichment maps and apply Auto annotate app to them}
 \usage{
-plotEmap(gmtFile, nodeAttrFile, netName = "generic", outDir, minScore = 1,
-  maxScore = 10, colorScheme = "cont_heatmap",
+plotEmap(gmtFile, nodeAttrFile, netName = "generic", outDir,
+  minScore = 1, maxScore = 10, colorScheme = "cont_heatmap",
   cytoscapeBaseURL = "http://localhost:1234/v1", verbose = FALSE)
 }
 \arguments{

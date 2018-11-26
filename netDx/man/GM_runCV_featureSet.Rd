@@ -6,8 +6,8 @@
 \usage{
 GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
-  verbose = FALSE, numCores = 2L, GMmemory = 6L, seed_CVqueries = 42L,
-  ...)
+  verbose = FALSE, numCores = 2L, useNewGM = FALSE,
+  useGMThreads = FALSE, GMmemory = 6L, seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{trainID_pred}{(char) vector with universe of predictor class
@@ -33,7 +33,11 @@ The default value will likely never need to be changed.}
 
 \item{numCores}{(logical) num parallel threads for cross-validation}
 
-\item{GMmemory}{(integer) memory for GeneMANIA run, in Gb.}
+\item{useNewGM}{(logical) use new GeneMania Version for processing}
+
+\item{useGMThreads}{(logical) use Threading option from GeneMania instead of R for predictor building / change in runGeneMania3 and GM_runCV_featureSet}
+
+\item{GMmemory}{(integer) memory for GeneMANIA run, in GB.}
 
 \item{seed_CVqueries}{(integer) RNG seed for inner cross validation loop.
 Makes deterministic samples held-out for each GeneMANIA query (see

@@ -24,12 +24,15 @@ GM_parseReport <- function(resFile) {
 
 	# use *nix version of tail
 	} else if (any(grep("n[iu]x",os,ignore.case=TRUE))){
-
-	system(sprintf("sed -n '/^Network/,/Gene/p' %s | sed '/^Gene/q' | head -n -2 | tail -n+1> %s.NRANK",
-		resFile,resFile));
-	
-	system(sprintf("sed -n '/Gene\tScore/,/Network/p' %s | head -n -2 > %s.PRANK",
-		resFile,resFile))
+    # Looking for column names "Network Group	Network	Weight	Title	Authors	Year	Publication	PMID	URL	Processing Method	Interactions	Source	Source URL	Tags"
+    # only until occurence of "Gene 1	Gene 2	Weight	Type	Source" header - 
+    # indicating gene interactions
+    # later we further crop away "dummy_group		100.00" in networkTally for NRANK
+  	system(sprintf("sed -n '/^Network/,/Gene/p' %s | sed '/^Gene/q' | head -n -2 | tail -n+1> %s.NRANK",
+  		resFile,resFile));
+  	
+  	system(sprintf("sed -n '/Gene\tScore/,/Network/p' %s | head -n -2 > %s.PRANK",
+  		resFile,resFile))
 	} else {
 		stop("Extracting NRANK/PRANK doesn't currently work on Win")
 	}

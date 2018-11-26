@@ -4,7 +4,7 @@
 \alias{getFeatureScores}
 \title{Compile network scores into a matrix}
 \usage{
-getFeatureScores(inDir, predClasses)
+getFeatureScores(inDir, predClasses, getFullCons = FALSE)
 }
 \arguments{
 \item{inDir}{(char/list) directory containing directories with all split info
@@ -15,6 +15,10 @@ if inDir is a list, it should have one key per class. The value should be the
 corresponding set of filenames for pathway_CV_score.txt}
 
 \item{predClasses}{(char) possible STATUS for patients}
+
+\item{getFullCons}{(logical) if TRUE, does not remove rows with NA.
+Recommended only when the number of input features is extensively 
+pruned by first-pass feature selection.}
 }
 \value{
 (list) one key per patient class. Value is matrix of network

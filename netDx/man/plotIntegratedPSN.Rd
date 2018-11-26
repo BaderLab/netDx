@@ -5,8 +5,8 @@
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
-  topX = 0.2, aggFun = "MEAN", outDir = ".", calcShortestPath = TRUE,
-  savePaths = FALSE, verbose = FALSE, ...)
+  topX = 0.2, aggFun = "MEAN", outDir = ".",
+  calcShortestPath = TRUE, savePaths = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.

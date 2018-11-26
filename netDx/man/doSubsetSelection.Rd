@@ -4,8 +4,8 @@
 \alias{doSubsetSelection}
 \title{Feature subset selection driver function}
 \usage{
-doSubsetSelection(methodName = "greedy.forward", incNets, queryPool, GM_db,
-  pheno_DF, predictClass, outDir, num2return, numCores = 1L,
+doSubsetSelection(methodName = "greedy.forward", incNets, queryPool,
+  GM_db, pheno_DF, predictClass, outDir, num2return, numCores = 1L,
   scoreFile = NULL)
 }
 \arguments{

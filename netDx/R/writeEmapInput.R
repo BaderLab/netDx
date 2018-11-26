@@ -61,7 +61,8 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	for (tr in trimFromName) netNames <- sub(tr,"",netNames)
 
 	df1 <- data.frame(netName=netNames, maxScore=maxNetS)
-	#colnames(netInfo) <- c("netType","netName")
+	# TODO this colname setting can cause problems when using some pathway lists
+	colnames(netInfo) <- c("netType","netName")
 	df2 <- merge(x=df1,y=netInfo,by="netName")
 
 	# write node attributes

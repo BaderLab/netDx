@@ -4,8 +4,8 @@
 \alias{splitTestTrain_partition}
 \title{Assign train/test labels over several resamplings of the data.}
 \usage{
-splitTestTrain_partition(pheno_DF, nFold = 3L, setSeed = 42L, predClass,
-  verbose = FALSE)
+splitTestTrain_partition(pheno_DF, nFold = 3L, setSeed = 42L,
+  predClass, verbose = FALSE)
 }
 \arguments{
 \item{pheno_DF}{(data.frame) table with patient ID and status.

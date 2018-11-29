@@ -72,7 +72,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
   
   	# run GeneMANIA n-fold
   	x <- foreach(m=1:length(qSamps),
-  	             .packages = c("netDxmashup")) %dopar% {
+  	             .packages = c("netDx")) %dopar% {
   		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
   
   		# its also possible to pass multiple / all query files at once to GeneMania 

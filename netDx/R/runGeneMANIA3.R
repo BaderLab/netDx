@@ -5,7 +5,8 @@
 #' @param resDir (char) path to output directory
 #' @param parseReport (logical) if TRUE, parses out PRANK and NRANK portions
 #' @param verbose (logical) print messages
-#' @param GMmemory (integer) Memory for GeneMANIA (in Gb)
+#' @param GMmemory (integer) Memory for GeneMANIA (in Gb) - a total of 
+#' numCores*GMmemory will be used
 #' @param numCores (integer) number of CPU cores for parallel processing
 #' @param MAX_ATTEMPTS (integer) max num attempts to run GeneMANIA before
 #' giving up.
@@ -24,7 +25,7 @@ runGeneMANIA3 <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
 	qBase	<- basename(queryFiles[[1]][1])
 	# qBase	<- basename(queryFile)
 	logFile	<- sprintf("%s/%s.log", resDir, qBase)
-	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",GMmemory,GM_jar)
+	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",GMmemory*numCores,GM_jar)
 	queryStrings <- paste(queryFiles, collapse = ' ')
 	# cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s 2>&1 > %s",
 	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s --netdx-flag true 2>&1 > %s",

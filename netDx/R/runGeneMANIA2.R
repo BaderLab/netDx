@@ -19,11 +19,10 @@
 runGeneMANIA2 <- function(GM_db, queryFile, resDir, parseReport=FALSE,
 	verbose=TRUE,GMmemory=6L,MAX_ATTEMPTS=3L) {
 	# GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar", path.package("netDxmashup"))
-	GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar", path.package("netDxmashup"))
+	GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar", path.package("netDx"))
 	qBase	<- basename(queryFile)
 	logFile	<- sprintf("%s/%s.log", resDir, qBase)
 	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",GMmemory,GM_jar)
-	# cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s 2>&1 > %s",
 	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s --netdx-flag true 2>&1 > %s",
 			GM_db, 1, resDir, queryFile,logFile)
 	cmd		<- paste(c(cmd1,cmd2),collapse=" ")

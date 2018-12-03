@@ -63,6 +63,7 @@ KIRC_makeNets <- function(dataList, groupList, netDir,...) {
 		rownames(dataList$clinical),
 		groupList[["clinical"]],netDir,
 		simMetric="custom",customFunc=netDx::normDiff, # custom function
+		writeProfiles=FALSE,
 		sparsify=TRUE,verbose=TRUE,append=TRUE,...)
 	}
 	netList2 <- unlist(netList2)

@@ -112,8 +112,11 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		# clique filtering
 		if (cliqueFilter) {
 			cat("Running clique-filtering\n")
+			tmpDir <- sprintf("%s/tmp",outDir)
+			if (!file.exists(tmpDir)) dir.create(tmpDir)
 			netInfo <- cliqueFilterNets(trainNetDir,pheno_train,newOut,
-				predClass=predClass,numReps=cliqueReps,numCores=numCores)
+				predClass=predClass,numReps=cliqueReps,numCores=numCores,
+				tmpDir=tmpDir)
 			pvals   <- as.numeric(netInfo[,"pctl"])
 
 			netInfo <- netInfo[which(pvals < cliquePthresh),] 
@@ -171,5 +174,5 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		 cliqueNets, file=outDat)
 # Measure performance based on pathway tally across splits
 	RR_featureTally(netmat, phenoDF, TT_STATUS, predClass,pScore,
-			outDir,cliqueFilter, cliqueNets)
+			outDir,cliqueFilter, cliqueNets,verbose=FALSE)
 }

@@ -209,7 +209,8 @@ for (rngNum in startAt:numSplits) {
 		qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
-		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
+		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir,
+			GMmemory=CVmemory)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
 	}
 	

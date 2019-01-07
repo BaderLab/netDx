@@ -37,8 +37,10 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	mmat <- na.omit(melt(W2,varnames=names(dimnames(W2))))
 	
 	maxEdge <- nrow(mmat)
-	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
-	mmat <- mmat[1:maxEdge,]
+	if (!is.infinite(EDGE_MAX)) {
+		if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
+		mmat <- mmat[1:maxEdge,]
+	}
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule

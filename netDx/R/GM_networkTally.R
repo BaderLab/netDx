@@ -6,8 +6,8 @@
 #' e.g. If filter_WtSum=20, first order networks by decreasing weight; 
 #' then keep those whose cumulative weight <= 20.
 #' @param verbose (logical) print messages
-#' @return (named integer) Vector of scores for networks that occur at 
-#' least once in \code{fList}.
+#' @return (data.frame) Feature name and score; includes features that occur
+#' at least once in \code{fList}.
 #' @examples
 #' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx"))
 #' netFiles <- sprintf("%s/%s", netDir,dir(netDir,pattern="NRANK$"))

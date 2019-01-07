@@ -43,6 +43,9 @@
 #' @param useSparsify2 (logical). Cleaner sparsification
 #' sparsification routine. If FALSE, uses new matrix-based sparsify3
 #' @param sparsify_edgeMax (numeric). 
+#' @param minMembers (integer) min number of measures in a network for 
+#' the network to be included. Useful when similarity measures require a minimum
+#' number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)
 #' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
@@ -52,13 +55,12 @@
 #' # exists; ignore it
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
 #' 	".",writeProfiles=TRUE)
-
 #' @export
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson",verbose=TRUE,
 	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=1000,
-	sparsify_maxInt=50,
+	sparsify_maxInt=50,minMembers=1L,
 	append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
@@ -80,14 +82,13 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
 	registerDoParallel(cl)
 
+	if (simMetric=="pearson") minMembers <- 5;
+
 	# process pathways in parallel
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {
 		if (verbose) cat(sprintf("%s: ", curSet))
 		idx <- which(nm %in% namedSets[[curSet]])
 		if (verbose) cat(sprintf("%i members\n", length(idx)))
-
-		minMembers <- 1 
-		if (simMetric=="pearson") minMembers <- 5;
 
 		oFile <- NULL
  		# has sufficient connections to make network

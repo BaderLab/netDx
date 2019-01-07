@@ -15,7 +15,7 @@
 sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	includeAllNodes=TRUE,verbose=TRUE)  {
 	
-	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%1.2f;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
@@ -36,9 +36,11 @@ cat("got past b\n")
 	mmat <- na.omit(melt(W))
 	mmat <- mmat[order(mmat[,3],decreasing=TRUE),]
 	
+	if (!is.infinite(EDGE_MAX)) {
 	maxEdge <- nrow(mmat)
 	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
 	mmat <- mmat[1:maxEdge,]
+	}
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule

@@ -138,7 +138,7 @@ Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both
 $ cd netDx-master/examples/
 $ R
 > require(knitr)
-> knit2pdf("Medulloblastoma.Rnw")
+> knit2pdf("Medulloblastoma-knitr.Rnw")
 ```
 This should generate `Medulloblastoma.pdf` in the `examples/` directory.
 
@@ -151,7 +151,7 @@ This vignette is presented in the netDx manuscript. Here we start with 348 prima
 $ cd netDx/examples/
 $ R
 > require(knitr)
-> knit2pdf("BreastCancer.Rnw")
+> knit2pdf("BreastCancer-knitr.Rnw")
 ```
 **NOTE:** The vignette will generate a pdf file. All intermediate files will be stored in the `TCGA_BRCA/` subdirectory of the examples directory.
 

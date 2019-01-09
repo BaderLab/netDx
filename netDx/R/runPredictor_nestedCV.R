@@ -185,7 +185,9 @@ for (rngNum in startAt:numSplits) {
 		pTally <- read.delim(
 			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
 			sep="\t",h=T,as.is=T)
-		pTally <- pTally[which(pTally[,2]>=CVcutoff),1]
+		idx <- which(pTally[,2]>=CVcutoff)
+
+		pTally <- pTally[idx,1]
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
 		cat(sprintf("%s: %i networks\n",g,length(pTally)))
@@ -199,6 +201,7 @@ for (rngNum in startAt:numSplits) {
 			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),] 
 	}		
 
+		if (length(pTally)>=1) {
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
 			customFunc=makeNetFunc,numCores=numCores,
@@ -212,16 +215,23 @@ for (rngNum in startAt:numSplits) {
 		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir,
 			GMmemory=CVmemory)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
+		} else {
+			predRes[[g]] <- NA
+		}
 	}
 	
-	predClass <- GM_OneVAll_getClass(predRes)
-	out <- merge(x=pheno_all,y=predClass,by="ID")
-	outFile <- sprintf("%s/predictionResults.txt",outDir)
-	write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
-	
-	acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
-	cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
-		nrow(out), acc*100))
+	if (sum(is.na(predRes))>0) {
+		cat(sprintf("RNG %i : One or more classes have no selected features. Not classifying\n", rngNum))
+	} else {
+		predClass <- GM_OneVAll_getClass(predRes)
+		out <- merge(x=pheno_all,y=predClass,by="ID")
+		outFile <- sprintf("%s/predictionResults.txt",outDir)
+		write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+		
+		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
+		cat(sprintf("Accuracy on %i blind test subjects = %2.1f%%\n",
+			nrow(out), acc*100))
+	}
         
 	if (!keepAllData) {
     system(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       

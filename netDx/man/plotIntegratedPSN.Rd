@@ -6,7 +6,7 @@
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
   topX = 0.2, aggFun = "MEAN", outDir = ".", calcShortestPath = TRUE,
-  savePaths = FALSE, verbose = FALSE, ...)
+  savePaths = FALSE, verbose = FALSE, runCytoscape = TRUE, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.

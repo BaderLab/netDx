@@ -40,8 +40,8 @@
 #' create interaction networks. If TRUE, this function writes subsets 
 #' of the original data corresponding to networks to file (profiles). 
 #' If FALSE, uses  getSimilarity() and writes interaction networks.
-#' @param useSparsify2 (logical). Cleaner sparsification
-#' sparsification routine. If FALSE, uses new matrix-based sparsify3
+#' @param useSparsify2 (logical). Cleaner sparsification routine. 
+#' If FALSE, uses new matrix-based sparsify3
 #' @param sparsify_edgeMax (numeric). 
 #' @param minMembers (integer) min number of measures in a network for 
 #' the network to be included. Useful when similarity measures require a minimum

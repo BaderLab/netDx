@@ -15,7 +15,7 @@
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	includeAllNodes=TRUE,verbose=TRUE,numCores=4L)  {
 	
-	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
@@ -27,6 +27,7 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
    	W[upper.tri(W,diag=TRUE)] <- NA 
 	W[W < cutoff] <- NA
 	maxind <- min(ncol(W),maxInt)
+browser()
 
 	# effectively empty out the slots that are not the top interactions
 	# create a "switch off" matrix with NA in non-top edges

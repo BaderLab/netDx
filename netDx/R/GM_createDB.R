@@ -101,7 +101,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="pearson",
 	dir.create("profiles")
 	procNet <- paste(path.package("netDx"),
 					 "python/process_networks.py",sep="/")
-	cmd <- sprintf("python %s batch.txt",procNet)
+	cmd <- sprintf("python2 %s batch.txt",procNet)
 	system(cmd,wait=TRUE)
 	
 	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",

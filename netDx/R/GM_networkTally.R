@@ -36,7 +36,10 @@ for (fName in fList) {
 
 	if (!inherits(dat,"try-error")) { # file not empty
 		# remove first group related line
-		dat <- dat[-1,]
+	  if (!useNewGM){
+	    # we don't have this header line when using newGM
+	    dat <- dat[-1,] 
+	  }
 		cat("Net weight distribution:\n")
 		print(summary(dat$Weight))
 		

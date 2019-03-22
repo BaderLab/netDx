@@ -19,8 +19,7 @@ The main website for netDx is **http://netdx.org**.
   * [Known issues with compiling pdfs](#pdfissue)
 * [All other examples](#other-examples)
 
-**Other useful information:**
-* [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2017). netDx: Interpretable patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418
+* **Reference:** Pai et al. netDx: [Interpretable patient classification using integrated patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) *Molecular Systems Biology* (2019) **15**, e8497 
 * Once you have run the included netDx examples, [read the user manual](http://netdx-manual.readthedocs.io/en/latest/) to learn how to design features or predictors. 
 
 ## Install netDx

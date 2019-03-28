@@ -134,7 +134,7 @@ Run the medulloblastoma vignette to make sure the netDx pipeline works from end 
 Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed. You will also need to install the R package `knitr` to compile the Sweave file.  If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. Alternately, you may run the vignette through an interactive R session:
 
 ```
-$ cd netDx-master/examples/
+$ cd netDx/examples/
 $ R
 > require(knitr)
 > knit2pdf("Medulloblastoma-knitr.Rnw")

@@ -102,7 +102,7 @@ sudo apt-get install libcurl4-openssl-dev
 
 Now we install the necessary R packages:
 ```
-$ cd netDx-master/
+$ cd netDx/
 $ R
 > install.packages(c('devtools','curl'))
 > install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline"))

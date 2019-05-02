@@ -38,7 +38,7 @@ tryCatch(expr = { library(RJSONIO)},
 
 #r2cytoscape
 tryCatch(expr = { library(r2cytoscape)}, 
-          error = function(e) { devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')}, finally = library(r2cytoscape))
+          error = function(e) { devtools::install_github('cytoscape/r2cytoscape')}, finally = library(r2cytoscape))
 
 # EasycyRest
 tryCatch(expr = { library(EasycyRest); detach(package:EascyRest,unload=TRUE)}, 

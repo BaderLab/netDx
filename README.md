@@ -107,7 +107,7 @@ $ R
 > install.packages(c('devtools','curl'))
 > install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline"))
 > devtools::install_github("igraph/rigraph")  # install from CRAN has a bug and can fail (31 Aug 2017).
-> devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
+> devtools::install_github('cytoscape/r2cytoscape')
 > devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)

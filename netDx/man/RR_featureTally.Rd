@@ -6,7 +6,7 @@
 feature selected networks (binary networks only)}
 \usage{
 RR_featureTally(netmat, phenoDF, TT_STATUS, predClass, pScore, outDir,
-  cliqueFilter = TRUE, cliqueNets, maxScore = 30L)
+  cliqueFilter = TRUE, cliqueNets, maxScore = 30L, verbose = FALSE)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet. Should contain
@@ -31,6 +31,8 @@ for each resampling of the data. The data.frame has two columns:
 
 \item{maxScore}{(integer) max achievable score for pathways
 corresponding to N-way resampling}
+
+\item{verbose}{(logical) print messages}
 }
 \value{
 No value. Side effect of writing the following files: 

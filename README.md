@@ -1,14 +1,14 @@
 # netDx
 netDx is an algorithm for building patient classifiers by using patient similarity networks as features.
 
+**Visit the "[wiki](https://github.com/BaderLab/netDx/wiki)" section for examples and related documentation**
+
 This repo contains two R packages, each of which need to be separately installed:
 
 1. `netDx/`: Software implementing the netDx method
 2. `netDx.examples/`: Data for use cases
 
 The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
-
-The main website for netDx is **http://netdx.org**.
 
 * [Install netDx](#install-netdx)
   * [Prerequisites](#prerequisites)
@@ -19,8 +19,7 @@ The main website for netDx is **http://netdx.org**.
   * [Known issues with compiling pdfs](#pdfissue)
 * [All other examples](#other-examples)
 
-**Other useful information:**
-* [Read the netDx preprint at bioRXiv](https://doi.org/10.1101/084418): Pai et al. (2017). netDx: Interpretable patient classification using integrated patient similarity networks. https://doi.org/10.1101/084418
+* **Reference:** Pai S, Hui S, Isserlin R, Shah MA, Kaka H, and GD Bader. [netDx: Interpretable patient classification using integrated patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) *Molecular Systems Biology* (2019) **15**, e8497 
 * Once you have run the included netDx examples, [read the user manual](http://netdx-manual.readthedocs.io/en/latest/) to learn how to design features or predictors. 
 
 ## Install netDx
@@ -103,12 +102,12 @@ sudo apt-get install libcurl4-openssl-dev
 
 Now we install the necessary R packages:
 ```
-$ cd netDx-master/
+$ cd netDx/
 $ R
 > install.packages(c('devtools','curl'))
-> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2"))
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline"))
 > devtools::install_github("igraph/rigraph")  # install from CRAN has a bug and can fail (31 Aug 2017).
-> devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
+> devtools::install_github('cytoscape/r2cytoscape')
 > devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)
@@ -135,10 +134,10 @@ Run the medulloblastoma vignette to make sure the netDx pipeline works from end 
 Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed. You will also need to install the R package `knitr` to compile the Sweave file.  If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. Alternately, you may run the vignette through an interactive R session:
 
 ```
-$ cd netDx-master/examples/
+$ cd netDx/examples/
 $ R
 > require(knitr)
-> knit2pdf("Medulloblastoma.Rnw")
+> knit2pdf("Medulloblastoma-knitr.Rnw")
 ```
 This should generate `Medulloblastoma.pdf` in the `examples/` directory.
 
@@ -151,7 +150,7 @@ This vignette is presented in the netDx manuscript. Here we start with 348 prima
 $ cd netDx/examples/
 $ R
 > require(knitr)
-> knit2pdf("BreastCancer.Rnw")
+> knit2pdf("BreastCancer-knitr.Rnw")
 ```
 **NOTE:** The vignette will generate a pdf file. All intermediate files will be stored in the `TCGA_BRCA/` subdirectory of the examples directory.
 
@@ -185,4 +184,4 @@ The `examples/` directory contains R notebooks (`.Rmd`) that teach basic functio
 
 The R notebooks must be run from within Rstudio. Install [Rstudio](https://www.rstudio.com/products/rstudio/download/) if necessary. 
 
-We have also posted the results of running all the examples [here](http://netdx.org/index.php/examples/). 
+We have also posted the results of running all the examples [here](https://github.com/BaderLab/netDx/wiki/Examples). 

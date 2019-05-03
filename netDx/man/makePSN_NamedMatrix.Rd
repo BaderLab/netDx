@@ -7,7 +7,7 @@
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
   verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE,
   useSparsify2 = FALSE, cutoff = 0.3, sparsify_edgeMax = 1000,
-  sparsify_maxInt = 50, append = FALSE, ...)
+  sparsify_maxInt = 50, minMembers = 1L, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -37,13 +37,17 @@ create interaction networks. If TRUE, this function writes subsets
 of the original data corresponding to networks to file (profiles). 
 If FALSE, uses  getSimilarity() and writes interaction networks.}
 
-\item{useSparsify2}{(logical). Cleaner sparsification
-sparsification routine. If FALSE, uses new matrix-based sparsify3}
+\item{useSparsify2}{(logical). Cleaner sparsification routine. 
+If FALSE, uses new matrix-based sparsify3}
 
 \item{cutoff}{(numeric) patients with similarity smaller than this value
 are not included in the corresponding interaction network}
 
 \item{sparsify_edgeMax}{(numeric).}
+
+\item{minMembers}{(integer) min number of measures in a network for 
+the network to be included. Useful when similarity measures require a minimum
+number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)}
 
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 

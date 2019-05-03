@@ -133,6 +133,7 @@ for (g in names(groupSig)){
     netList <- makePSN_NamedMatrix(MB.xpr[idx,], MB.xpr_names[idx], 
                                    sigNets,netDir,
                                    simMetric="custom",customFunc=geneSim,
+								   writeProfiles=FALSE,sparsify=TRUE,
                                    verbose=TRUE)
     
     # create a GeneMANIA database out of these networks

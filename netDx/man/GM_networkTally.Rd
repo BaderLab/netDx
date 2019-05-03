@@ -17,8 +17,8 @@ then keep those whose cumulative weight <= 20.}
 \item{verbose}{(logical) print messages}
 }
 \value{
-(named integer) Vector of scores for networks that occur at 
-least once in \code{fList}.
+(data.frame) Feature name and score; includes features that occur
+at least once in \code{fList}.
 }
 \description{
 Tally the score of networks through cross-validation

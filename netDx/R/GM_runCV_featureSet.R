@@ -52,7 +52,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 						  qFile,orgName)
 	}
 
-	cl	<- makeCluster(numCores)
+	cl	<- makeCluster(numCores,outfile=sprintf("%s/runGM_log.txt",outDir))
 	registerDoParallel(cl)
 
 	# run GeneMANIA 10-fold

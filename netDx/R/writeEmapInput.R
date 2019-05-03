@@ -44,13 +44,17 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 	verbose=FALSE) {
 
 	netNames <- featScores[,1];
-	featScores <- featScores[,-1]
+	featScores <- as.matrix(featScores[,-1])
 
 	# compute the max score per net for pctPass % of trials
 	maxNetS <- matrix(NA, nrow=length(netNames),ncol=1)
 	for (sc in minScore:maxScore) {
-			tmp <- rowSums(featScores >= sc)
-			idx <- which(tmp >= floor(pctPass * ncol(featScores)))
+			if (ncol(featScores)>=2) {
+				tmp <- rowSums(featScores >= sc)
+				idx <- which(tmp >= floor(pctPass * ncol(featScores)))
+			} else {
+				idx  <- which(featScores >= sc)
+			}
 			if (verbose) cat(sprintf("\t%i : %i pass\n", sc, length(idx)))
 			maxNetS[idx,1] <- sc
 	}

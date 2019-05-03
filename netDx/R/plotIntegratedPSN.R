@@ -63,7 +63,7 @@
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
 	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
-	verbose=FALSE,...) {
+	verbose=FALSE,runCytoscape=TRUE,...) {
 
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")
@@ -84,43 +84,9 @@ for (cur in predClasses) {
 	netDir[[cur]]	<- sprintf("%s/%s/tmp/INTERACTIONS", baseDir,cur)
 }
 
-# ------------------------
-# Set up Cytoscape
-styleName <- "PSNstyle"
-portNum <- 1234
-base.url <- sprintf("http://localhost:%i/v1",portNum)
-res <- NULL
-tryCatch({
-	res	<- httr::GET(sprintf("%s/styles",base.url))
-}, error=function(ex) {
-	 # if Cytoscape isn't launched we may want to launch it.
-	launchCytoscape()
-}, finally={
-	res	<- httr::GET(sprintf("%s/styles",base.url))
-})
-curStyles <- gsub("\\\"","",rawToChar(res$content))
-curStyles <- unlist(strsplit(curStyles,","))
-
-# throws warning if n < 3, ignore
-pal <- suppressWarnings(brewer.pal(name="Dark2",n=length(predClasses)))
-
-# create Cytoscape style for PSN
-if (any(grep("PSNstyle",curStyles))) {
-	cat("* Style exists, not creating\n")
-} else {
-	cat("* Creating style\n")
-	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
-	defaults <- list("NODE_SHAPE"="ellipse",
-			"NODE_SIZE"=30,
-			"EDGE_TRANSPARENCY"=120,
-			"EDGE_STROKE_UNSELECTED_PAINT"="#999999",
-			"NODE_TRANSPARENCY"=120)
-	sty <- createStyle(styleName,
-		defaults=defaults,
-		mappings=list(nodeFills))
-}
 
 # check: patient IDs should be the same for both classes
+print(ptFile)
 if (length(ptFile)>=2) {
 for (k in 2:length(ptFile)) {
 	tmp <- system(sprintf("diff %s %s", ptFile[[1]],ptFile[[k]]),intern=TRUE)
@@ -255,6 +221,44 @@ outFile <- sprintf("%s/%s_prunedNet_top%1.2f.txt",outDir,setName,topX)
 write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
 	quote=FALSE)
 
+
+if (runCytoscape) {
+# ------------------------
+# Set up Cytoscape
+styleName <- "PSNstyle"
+portNum <- 1234
+base.url <- sprintf("http://localhost:%i/v1",portNum)
+res <- NULL
+tryCatch({
+	res	<- httr::GET(sprintf("%s/styles",base.url))
+}, error=function(ex) {
+	 # if Cytoscape isn't launched we may want to launch it.
+	launchCytoscape()
+}, finally={
+	res	<- httr::GET(sprintf("%s/styles",base.url))
+})
+curStyles <- gsub("\\\"","",rawToChar(res$content))
+curStyles <- unlist(strsplit(curStyles,","))
+
+# throws warning if n < 3, ignore
+pal <- suppressWarnings(brewer.pal(name="Dark2",n=length(predClasses)))
+
+# create Cytoscape style for PSN
+if (any(grep("PSNstyle",curStyles))) {
+	cat("* Style exists, not creating\n")
+} else {
+	cat("* Creating style\n")
+	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
+	defaults <- list("NODE_SHAPE"="ellipse",
+			"NODE_SIZE"=30,
+			"EDGE_TRANSPARENCY"=120,
+			"EDGE_STROKE_UNSELECTED_PAINT"="#999999",
+			"NODE_TRANSPARENCY"=120)
+	sty <- createStyle(styleName,
+		defaults=defaults,
+		mappings=list(nodeFills))
+}
+
 cat("* Creating network in Cytoscape\n")
 # layout network in Cytoscape
 network.suid <- EasycyRest::createNetwork(
@@ -283,7 +287,7 @@ response	<- httr::GET(fitCommand)
 cat("* Exporting to PNG\n")
 pngFile 		<- sprintf("%s/outputPDN.png",outDir)
 if (file.exists(pngFile)) unlink(pngFile) # avoid the "overwrite file?"
-																						# dialog
+										# dialog
 	exportURL <- sprintf("%s/commands/view/export?OutputFile=%s",
 			base.url,pngFile)
 #print(exportURL)
@@ -293,6 +297,10 @@ if (file.exists(pngFile)) unlink(pngFile) # avoid the "overwrite file?"
 out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
 		incNets=alreadyAdded,network_suid=network.suid,
 		netView=pngFile)
+} else {
+	out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
+		incNets=alreadyAdded)
+}
 
 return(out)
 }

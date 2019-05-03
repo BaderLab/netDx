@@ -25,6 +25,7 @@
 #' @param cliqueNets (list of chars) networks passing clique filtering
 #' @param maxScore (integer) max achievable score for pathways
 #' corresponding to N-way resampling
+#' @param verbose (logical) print messages
 #' @return No value. Side effect of writing the following files: 
 #' 1) pathway tally file: \code{<outDir>/pathway_cumTally.txt} : 
 #' pathway name, cumulative score over N-way data resampling.
@@ -55,7 +56,8 @@
 #' 7) relEnr: 6) divided by 3).
 #' @export 
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
-	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L) {
+	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L,
+	verbose=FALSE) {
 
 # tally pathway score across resamplings
 testMode <- FALSE # when true doesn't write files.
@@ -113,7 +115,7 @@ resampPerf <- list(allNets=list(),cliqueNets=list())
 for (setScore in scoreColl){
 	selPath <- pathDF[which(pathDF[,2]>=setScore),1]
 	## uncomment to test with original pathways
-	cat(sprintf("Thresh = %i ; %i pathways\n",setScore,length(selPath)))
+	if (verbose) cat(sprintf("Thresh = %i ; %i pathways\n",setScore,length(selPath)))
 
 	currmat				<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
 	currmat_clique 		<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
@@ -128,7 +130,7 @@ for (setScore in scoreColl){
 	otherCurr_cl <- ""
 
 	for (k in 1:length(TT_STATUS)) {
-		cat(sprintf("\t(k = %i)",k))
+		if (verbose) cat(sprintf("\t(k = %i)",k))
 		# --------------------------------------------------------------
 		# first run for denominator = all nets
 		# set pheno and p to contain only test samples
@@ -148,7 +150,6 @@ for (setScore in scoreColl){
 		x <- tmp$stats
 		currmat[k,] <- c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],
 						tmp$relEnr)
-
 
 		rm(x,tmp,pheno_test,p_test)
 
@@ -211,8 +212,9 @@ for (setScore in scoreColl){
 
 	predCurr 	<- unique(predCurr)
 	otherCurr	<- unique(otherCurr) 
-	cat(sprintf("\t# contrib: %i pred ; %i other\n",
+	if (verbose) {cat(sprintf("\t# contrib: %i pred ; %i other\n",
 				length(predCurr),length(otherCurr)))
+	}
 
 	predContr[ctr]	<- paste(predCurr,collapse=",")
 	otherContr[ctr] <- paste(otherCurr,collapse=",")
@@ -220,14 +222,16 @@ for (setScore in scoreColl){
 	if (cliqueFilter) {
 		predCurr_cl 	<- unique(predCurr_cl)
 		otherCurr_cl	<- unique(otherCurr_cl) 
-		cat(sprintf("\tCLIQUE: # contributing: %i pred ; %i other\n",
+		if (verbose) {
+			cat(sprintf("\tCLIQUE: # contributing: %i pred ; %i other\n",
 			length(predCurr_cl),length(otherCurr_cl)))
+		}
 	
 		predContr_cl[ctr]	<- paste(predCurr_cl,collapse=",")
 		otherContr_cl[ctr]	<- paste(otherCurr_cl,collapse=",")
 	}
 	
-cat("\n")
+	if (verbose) cat("\n")
 	outdf[ctr,] <- c(setScore,length(selPath),colMeans(currmat),
 		min(currmat[,3]),max(currmat[,3]),min(currmat[,6]),max(currmat[,6]))
 
@@ -249,7 +253,7 @@ cat("\n")
 
 
 	ctr <- ctr+1
-	cat("\n")
+	if (verbose) cat("\n")
 } # end loop over score cutoffs
 
 numresamp <- nrow(resampPerf[[1]][[1]])

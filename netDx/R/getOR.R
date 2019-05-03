@@ -66,6 +66,8 @@ relEnr		<- pctPred/pctOther
 outmat <- matrix(nrow=2,ncol=3)
 colnames(outmat) <- c("total","num OL","pct OL")
 rownames(outmat) <- c(predClass, "(other)")
+# cases - total, overlapping selPath, fraction
+# ctrl - total, overlapping selPath, fraction
 outmat[1,] <- c(length(predSamps), OLpred,round(pctPred*100,digits=1))
 outmat[2,] <- c(length(otherSamps),OLother,round(pctOther*100,digits=1))
 

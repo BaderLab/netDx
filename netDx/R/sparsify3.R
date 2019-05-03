@@ -15,7 +15,7 @@
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	includeAllNodes=TRUE,verbose=TRUE,numCores=4L)  {
 	
-	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
@@ -27,18 +27,21 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
    	W[upper.tri(W,diag=TRUE)] <- NA 
 	W[W < cutoff] <- NA
 	maxind <- min(ncol(W),maxInt)
+browser()
 
 	# effectively empty out the slots that are not the top interactions
 	# create a "switch off" matrix with NA in non-top edges
 	W_order <- t(apply(W,1,order,decreasing=TRUE,na.last=TRUE))
-	W_order[which(W_order > 50)] <- NA
-	W_order[which(W_order <= 50)] <- .Machine$double.eps
+	W_order[which(W_order > maxInt)] <- NA
+	W_order[which(W_order <= maxInt)] <- .Machine$double.eps
 	W2 <- W + W_order # NA for non-top edges, unchanged for top edges
 	mmat <- na.omit(melt(W2,varnames=names(dimnames(W2))))
 	
 	maxEdge <- nrow(mmat)
-	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
-	mmat <- mmat[1:maxEdge,]
+	if (!is.infinite(EDGE_MAX)) {
+		if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
+		mmat <- mmat[1:maxEdge,]
+	}
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule

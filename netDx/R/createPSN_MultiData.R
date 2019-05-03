@@ -38,16 +38,17 @@ if (missing(customFunc)) stop("customFunc must be suppled.\n")
 # Filter for nets (potentially feature-selected ones)
 if (!is.null(filterSet)) {
 	cat("Filter set provided; only making nets for those provided here\n")
-	for (k in 1:length(groupList)) {
-			idx <- which(names(groupList[[k]]) %in% filterSet)
-			cat(sprintf("\t%s: %i of %i nets left\n",names(groupList)[k],
-				length(idx),length(groupList[[k]])))
+	groupList2 <- list()
+	for (nm in names(groupList)) {
+			idx <- which(names(groupList[[nm]]) %in% filterSet)
+			cat(sprintf("\t%s: %i of %i nets left\n",nm,
+				length(idx),length(groupList[[nm]])))
 			if (length(idx)>0) {
-					groupList[[k]] <- groupList[[k]][idx]
-			}
-			else groupList[[k]] <- NULL
+					groupList2[[nm]] <- groupList[[nm]][idx]
+			} 
 	}	
-}
+groupList <- groupList2; rm(groupList2)
+} 
 
 # call user-defined function for making PSN
 netList <- customFunc(dataList=dataList,groupList=groupList,netDir=netDir,...)

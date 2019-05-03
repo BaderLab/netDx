@@ -1,14 +1,14 @@
 # netDx
 netDx is an algorithm for building patient classifiers by using patient similarity networks as features.
 
+**Visit the "[wiki](https://github.com/BaderLab/netDx/wiki)" section for examples and related documentation**
+
 This repo contains two R packages, each of which need to be separately installed:
 
 1. `netDx/`: Software implementing the netDx method
 2. `netDx.examples/`: Data for use cases
 
 The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
-
-The main website for netDx is **http://netdx.org**.
 
 * [Install netDx](#install-netdx)
   * [Prerequisites](#prerequisites)
@@ -19,7 +19,7 @@ The main website for netDx is **http://netdx.org**.
   * [Known issues with compiling pdfs](#pdfissue)
 * [All other examples](#other-examples)
 
-* **Reference:** Pai et al. netDx: [Interpretable patient classification using integrated patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) *Molecular Systems Biology* (2019) **15**, e8497 
+* **Reference:** Pai S, Hui S, Isserlin R, Shah MA, Kaka H, and GD Bader. [netDx: Interpretable patient classification using integrated patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) *Molecular Systems Biology* (2019) **15**, e8497 
 * Once you have run the included netDx examples, [read the user manual](http://netdx-manual.readthedocs.io/en/latest/) to learn how to design features or predictors. 
 
 ## Install netDx
@@ -184,4 +184,4 @@ The `examples/` directory contains R notebooks (`.Rmd`) that teach basic functio
 
 The R notebooks must be run from within Rstudio. Install [Rstudio](https://www.rstudio.com/products/rstudio/download/) if necessary. 
 
-We have also posted the results of running all the examples [here](http://netdx.org/index.php/examples/). 
+We have also posted the results of running all the examples [here](https://github.com/BaderLab/netDx/wiki/Examples). 

@@ -60,6 +60,7 @@
 #' @import httr
 #' @import ggplot2
 #' @import RColorBrewer
+#' @import RCy3
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
 	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
@@ -223,22 +224,22 @@ write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
 
 
 if (runCytoscape) {
-# ------------------------
-# Set up Cytoscape
-styleName <- "PSNstyle"
-portNum <- 1234
-base.url <- sprintf("http://localhost:%i/v1",portNum)
-res <- NULL
-tryCatch({
-	res	<- httr::GET(sprintf("%s/styles",base.url))
-}, error=function(ex) {
-	 # if Cytoscape isn't launched we may want to launch it.
-	launchCytoscape()
-}, finally={
-	res	<- httr::GET(sprintf("%s/styles",base.url))
-})
-curStyles <- gsub("\\\"","",rawToChar(res$content))
-curStyles <- unlist(strsplit(curStyles,","))
+#### ------------------------
+#### Set up Cytoscape
+###styleName <- "PSNstyle"
+###portNum <- 1234
+###base.url <- sprintf("http://localhost:%i/v1",portNum)
+###res <- NULL
+###tryCatch({
+###	res	<- httr::GET(sprintf("%s/styles",base.url))
+###}, error=function(ex) {
+###	 # if Cytoscape isn't launched we may want to launch it.
+###	launchCytoscape()
+###}, finally={
+###	res	<- httr::GET(sprintf("%s/styles",base.url))
+###})
+###curStyles <- gsub("\\\"","",rawToChar(res$content))
+###curStyles <- unlist(strsplit(curStyles,","))
 
 # throws warning if n < 3, ignore
 pal <- suppressWarnings(brewer.pal(name="Dark2",n=length(predClasses)))
@@ -261,6 +262,8 @@ if (any(grep("PSNstyle",curStyles))) {
 
 cat("* Creating network in Cytoscape\n")
 # layout network in Cytoscape
+createNetworkFromDataFrames(nodes,edges, title="my first network", collection="DataFrame Example")
+
 network.suid <- EasycyRest::createNetwork(
 	nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
 	netName=sprintf("%s_%s_top%1.2f",setName,aggFun,topX),

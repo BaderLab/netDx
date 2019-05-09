@@ -47,12 +47,14 @@
 #' current option is not recommended for pathway-level features as most genes
 #' will be eliminated by lasso. Future variations may allow other prefiltering
 #' options that are more lenient.
+#' @param impute (logical) if TRUE applies imputation by median within CV
 #' @examples see examples/NestedCV_MultiData.Rmd for example use.
 #' @import glmnet
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores,CVmemory=4L,CVcutoff=9L,
-	keepAllData=FALSE,startAt=1L, preFilter=FALSE) { 
+	keepAllData=FALSE,startAt=1L, preFilter=FALSE,impute=FALSE) { 
+
 
 ### tests# pheno$ID and $status must exist
 if (missing(dataList)) stop("dataList must be supplied.\n")
@@ -100,6 +102,7 @@ for (nm in names(groupList)) {
 	}
 }
 
+
 cat("\n\nCustom function to generate input nets:\n")
 print(makeNetFunc)
 cat(sprintf("-------------------------------\n\n"))
@@ -117,18 +120,40 @@ for (rngNum in startAt:numSplits) {
 	dats_train <- lapply(dataList,function(x) { 
 						 x[,which(colnames(x) %in% pheno$ID)]})
 
+	if (impute) {
+	cat("**** IMPUTING ****\n")
+	dats_train <- lapply(dats_train, function(x) {
+		missidx <- which(rowSums(is.na(x))>0) 
+		for (i in missidx) {
+			na_idx <- which(is.na(x[i,]))
+			x[i,na_idx] <- median(x[i,],na.rm=TRUE) 
+		}
+		x
+	})
+	}
+
 	# prefilter with lasso
 	if (preFilter) {
 	set.seed(123)
 	cat("Prefiltering enabled\n")
 	for (nm in names(dats_train)) {
+		cat(sprintf("%s: %i variables\n",nm,nrow(dats_train[[nm]])))
 		if (nrow(dats_train[[nm]])<2)  # only has one var, take it.
 			vars <- rownames(dats_train[[nm]])
 		else { 
-			fit <- cv.glmnet(x=t(na.omit(dats_train[[nm]])),
-					y=factor(pheno$STATUS), family="binomial", alpha=1) # lasso
+			newx <- na.omit(dats_train[[nm]])
+			tmp <- pheno[which(pheno$ID %in% colnames(newx)),]
+			tryCatch( {
+			fit <- cv.glmnet(x=t(newx),
+					y=factor(tmp$STATUS), family="binomial", alpha=1) # lasso
+			}, error=function(ex) {
+				print(ex)
+				cat("*** You may need to set impute=TRUE for prefiltering ***\n")
+			},finally={
+			})
 			wt <- abs(coef(fit,s="lambda.min")[,1])
-			vars <- setdiff(names(wt)[which(wt>.Machine$double.eps)],"(Intercept)")
+			vars <- setdiff(names(wt)[which(wt>.Machine$double.eps)],
+				"(Intercept)")
 			}
 		if (length(vars)>0) {
 			tmp <- dats_train[[nm]]
@@ -143,7 +168,8 @@ for (rngNum in startAt:numSplits) {
 	
 	cat("# datapoints to make training nets\n")
 	for (nm in names(dats_train)) {
-		cat(sprintf("rngNum %i: %s: %i measures\n", rngNum,nm,nrow(dats_train[[nm]])))
+		cat(sprintf("rngNum %i: %s: %i measures\n", 
+			rngNum,nm,nrow(dats_train[[nm]])))
 	}
 
 	netDir <- sprintf("%s/networks",outDir)
@@ -199,7 +225,32 @@ for (rngNum in startAt:numSplits) {
 			tmp <- dataList[[nm]]
 			# only variables passing prefiltering should be used to make PSN
 			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),] 
-	}		
+		}		
+
+		# ------
+		# Impute test samples if flag set
+		# impute
+		if (impute) {
+		train_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TRAIN")]
+		test_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TEST")]
+		dats_tmp <- lapply(dats_tmp, function(x) {
+			missidx <- which(rowSums(is.na(x))>0) 
+			train_idx <- which(colnames(x) %in% train_samp)
+			test_idx <- which(colnames(x) %in% test_samp)
+			for (i in missidx) {
+				# impute train and test separately
+				na_idx <- intersect(which(is.na(x[i,])),train_idx)
+				na_idx1 <- na_idx
+				x[i,na_idx] <- median(x[i,train_idx],na.rm=TRUE) 
+	
+				na_idx <- intersect(which(is.na(x[i,])),test_idx)
+				na_idx2 <- na_idx
+				x[i,na_idx] <- median(x[i,test_idx],na.rm=TRUE) 
+			}
+			x
+		})
+		#alldat_tmp <- do.call("rbind",dats_tmp)
+		}
 
 		if (length(pTally)>=1) {
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,

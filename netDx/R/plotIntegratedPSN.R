@@ -261,12 +261,19 @@ pal <- suppressWarnings(brewer.pal(name=nodePalette,n=length(predClasses)))
 		  "EDGE_WIDTH"=edgeWidth,
 			"EDGE_STROKE_UNSELECTED_PAINT"=edgeStroke,
 			"NODE_TRANSPARENCY"=nodeTransparency)
-#deleteVisualStyle("PSNstyle")
+tryCatch({
+	deleteVisualStyle("PSNstyle")
+}, error=function(ex) {
+	print(ex)
+}, finally={
+})
 	createVisualStyle("PSNstyle",defaults,list(nodeLabels,nodeFills))
 setVisualStyle("PSNstyle")
 layoutNetwork("kamada-kawai column=weight")
 
 imgFile <- sprintf("%s/outputPDN",outDir)
+
+
 if (file.exists(imgFile)) unlink(imgFile)
 exportImage(filename=imgFile,type=imageFormat)
 

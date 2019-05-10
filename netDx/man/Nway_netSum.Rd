@@ -4,11 +4,12 @@
 \alias{Nway_netSum}
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
-Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir, splitN = 3L,
-  seed_resampling = 103L, nFoldCV = 10L, filter_WtSum = 100L,
-  cliqueFilter = TRUE, cliquePthresh = 0.07, cliqueReps = 2500L,
-  minEnr = -1, numCores = 1L, GM_numCores = NULL, useAttributes = NULL,
-  seed_CVqueries = 42L, ...)
+Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir,
+  splitN = 3L, seed_resampling = 103L, nFoldCV = 10L,
+  filter_WtSum = 100L, cliqueFilter = TRUE, cliquePthresh = 0.07,
+  cliqueReps = 2500L, minEnr = -1, numCores = 1L,
+  GM_numCores = NULL, useAttributes = NULL, seed_CVqueries = 42L,
+  ...)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet()}

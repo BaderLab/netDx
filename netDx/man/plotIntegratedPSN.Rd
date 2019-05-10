@@ -5,8 +5,11 @@
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
-  topX = 0.2, aggFun = "MEAN", outDir = ".", calcShortestPath = TRUE,
-  savePaths = FALSE, verbose = FALSE, runCytoscape = TRUE, ...)
+  topX = 0.2, aggFun = "MEAN", outDir = ".",
+  calcShortestPath = TRUE, savePaths = FALSE, nodeSize = 100,
+  nodeTransparency = 200, edgeTransparency = 120,
+  edgeStroke = "#999999", edgeWidth = 1, imageFormat = "PNG",
+  nodePalette = "Dark2", verbose = FALSE, runCytoscape = TRUE, ...)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.
@@ -36,6 +39,22 @@ e.g. topX=0.2 will keep 20\% top edges}
 Unless you plan to analyse these separately from looking at the shortest path
 violin plots or integrated PSN in Cytoscape, probably good to set to FALSE.
 for all pairwise classes}
+
+\item{nodeSize}{(integer) Node size in Cytoscape-rendered PSN}
+
+\item{nodeTransparency}{(integer) Node transparency in Cytoscape-rendered
+PSN.}
+
+\item{edgeTransparency}{(integer) Edge transparency in Cytoscape-rendered}
+
+\item{edgeStroke}{(character) hex colour for edge stroke.}
+
+\item{edgeWidth}{(integer) Edge line width in Cytoscape-rendered PSN.}
+
+\item{imageFormat}{(character) file format to export PSN to image. One of
+JPEG, PDF, PNG, or SVG (see RCy3::exportImage()).}
+
+\item{nodePalette}{(character) RColorBrewer palette for node colours.}
 
 \item{verbose}{(logical) print detailed messages}
 }

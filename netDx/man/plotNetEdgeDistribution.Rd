@@ -4,9 +4,10 @@
 \alias{plotNetEdgeDistribution}
 \title{plot distribution of PSN edge weights}
 \usage{
-plotNetEdgeDistribution(netDir, setName = "netDir", randomSample = NULL,
-  grepFiles = "cont.txt", stripFromFileName = "_cont.txt",
-  numPatients = NULL, verbose = TRUE)
+plotNetEdgeDistribution(netDir, setName = "netDir",
+  randomSample = NULL, grepFiles = "cont.txt",
+  stripFromFileName = "_cont.txt", numPatients = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{netDir}{(char) path to directory of networks. Networks must be

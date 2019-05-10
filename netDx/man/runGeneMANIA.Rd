@@ -4,8 +4,8 @@
 \alias{runGeneMANIA}
 \title{Run a GeneMANIA query}
 \usage{
-runGeneMANIA(GM_db, queryFile, resDir, parseReport = TRUE, verbose = TRUE,
-  GMmemory = 6L, MAX_ATTEMPTS = 3L)
+runGeneMANIA(GM_db, queryFile, resDir, parseReport = TRUE,
+  verbose = TRUE, GMmemory = 6L, MAX_ATTEMPTS = 3L)
 }
 \arguments{
 \item{GM_db}{(char) path to directory with GeneMANIA generic database}

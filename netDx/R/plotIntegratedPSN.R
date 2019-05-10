@@ -33,6 +33,15 @@
 #' Unless you plan to analyse these separately from looking at the shortest path
 #' violin plots or integrated PSN in Cytoscape, probably good to set to FALSE.
 #' for all pairwise classes
+#' @param nodeSize (integer) Node size in Cytoscape-rendered PSN 
+#' @param edgeTransparency (integer) Edge transparency in Cytoscape-rendered
+#' @param edgeWidth (integer) Edge line width in Cytoscape-rendered PSN.
+#' @param nodeTransparency (integer) Node transparency in Cytoscape-rendered
+#' PSN.
+#' @param edgeStroke (character) hex colour for edge stroke.
+#' @param nodePalette (character) RColorBrewer palette for node colours.
+#' @param imageFormat (character) file format to export PSN to image. One of
+#' JPEG, PDF, PNG, or SVG (see RCy3::exportImage()).
 #' @param verbose (logical) print detailed messages
 #' @return (list) information about the integrated network
 #  1) aggPSN_Full: (char) path to aggregated patient similarity network. This
@@ -64,7 +73,9 @@
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
 	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
-	verbose=FALSE,runCytoscape=TRUE,...) {
+	nodeSize=100,nodeTransparency=200,
+	edgeTransparency=120,edgeStroke="#999999",edgeWidth=1,imageFormat="PNG",
+	nodePalette="Dark2",verbose=FALSE,runCytoscape=TRUE,...) {
 
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")
@@ -224,82 +235,44 @@ write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
 
 
 if (runCytoscape) {
-#### ------------------------
-#### Set up Cytoscape
-###styleName <- "PSNstyle"
-###portNum <- 1234
-###base.url <- sprintf("http://localhost:%i/v1",portNum)
-###res <- NULL
-###tryCatch({
-###	res	<- httr::GET(sprintf("%s/styles",base.url))
-###}, error=function(ex) {
-###	 # if Cytoscape isn't launched we may want to launch it.
-###	launchCytoscape()
-###}, finally={
-###	res	<- httr::GET(sprintf("%s/styles",base.url))
-###})
-###curStyles <- gsub("\\\"","",rawToChar(res$content))
-###curStyles <- unlist(strsplit(curStyles,","))
-
-# throws warning if n < 3, ignore
-pal <- suppressWarnings(brewer.pal(name="Dark2",n=length(predClasses)))
-
-# create Cytoscape style for PSN
-if (any(grep("PSNstyle",curStyles))) {
-	cat("* Style exists, not creating\n")
-} else {
-	cat("* Creating style\n")
-	nodeFills <- EasycyRest::map_NodeFillDiscrete("GROUP",predClasses,pal)
-	defaults <- list("NODE_SHAPE"="ellipse",
-			"NODE_SIZE"=30,
-			"EDGE_TRANSPARENCY"=120,
-			"EDGE_STROKE_UNSELECTED_PAINT"="#999999",
-			"NODE_TRANSPARENCY"=120)
-	sty <- createStyle(styleName,
-		defaults=defaults,
-		mappings=list(nodeFills))
+st <- cytoscapePing()
+if (class(st) == "numeric") { # error
+	stop("Please launch Cytoscape and try again.")
 }
 
 cat("* Creating network in Cytoscape\n")
 # layout network in Cytoscape
-createNetworkFromDataFrames(nodes,edges, title="my first network", collection="DataFrame Example")
+netName <- sprintf("%s_%s_top%1.2f",setName,aggFun,topX)
+colnames(pheno)[1] <- "id"
+colnames(pheno)[which(colnames(pheno)=="GROUP")] <- "group"
+colnames(aggNet_pruned)[1:2] <- c("source","target")
+createNetworkFromDataFrames(nodes=pheno,
+		edges=aggNet_pruned, title=netName, 
+		collection=setName)
 
-network.suid <- EasycyRest::createNetwork(
-	nodes=pheno, nodeID_column="ID",edges=aggNet_pruned,
-	netName=sprintf("%s_%s_top%1.2f",setName,aggFun,topX),
-	collName=setName
-)
-cat("* Applying layout\n")
-# spring-embedded layout on edge 'weight' column
-minwt <- min(aggNet_pruned$weight)
-maxwt <- max(aggNet_pruned$weight)
-layout.url <- sprintf("%s/apply/layouts/kamada-kawai/%s?column=weight",
-	base.url,network.suid, sep="/")
-response <- httr::GET(url=layout.url)
-# apply style
-cat("* Applying style\n")
-apply.style.url <- sprintf("%s/apply/styles/%s/%i",
-	base.url,styleName,network.suid)
-response <- httr::GET(apply.style.url)
+# apply style to network
+pal <- suppressWarnings(brewer.pal(name=nodePalette,n=length(predClasses)))
+	cat("* Creating style\n")
+	nodeLabels <- mapVisualProperty('node label','id','p')
+	nodeFills <- mapVisualProperty('node fill color','group', 'd',predClasses,pal)
+	defaults <- list("NODE_SHAPE"="ellipse",
+			"NODE_SIZE"=nodeSize,
+			"EDGE_TRANSPARENCY"=edgeTransparency,
+		  "EDGE_WIDTH"=edgeWidth,
+			"EDGE_STROKE_UNSELECTED_PAINT"=edgeStroke,
+			"NODE_TRANSPARENCY"=nodeTransparency)
+#deleteVisualStyle("PSNstyle")
+	createVisualStyle("PSNstyle",defaults,list(nodeLabels,nodeFills))
+setVisualStyle("PSNstyle")
+layoutNetwork("kamada-kawai column=weight")
 
-# fit content
-fitCommand <- sprintf("%s/commands/view/fit content",base.url)
-response	<- httr::GET(fitCommand)
-
-# export to png
-cat("* Exporting to PNG\n")
-pngFile 		<- sprintf("%s/outputPDN.png",outDir)
-if (file.exists(pngFile)) unlink(pngFile) # avoid the "overwrite file?"
-										# dialog
-	exportURL <- sprintf("%s/commands/view/export?OutputFile=%s",
-			base.url,pngFile)
-#print(exportURL)
-	response	<- httr::GET(exportURL)
-#exportImage(pngFile,"PNG")
+imgFile <- sprintf("%s/outputPDN",outDir)
+if (file.exists(imgFile)) unlink(imgFile)
+exportImage(filename=imgFile,type=imageFormat)
 
 out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
-		incNets=alreadyAdded,network_suid=network.suid,
-		netView=pngFile)
+		network.suid=getNetworkSuid(),
+		incNets=alreadyAdded,netView=imgFile)
 } else {
 	out <- list(aggPSN_FULL=aggNetFile,aggPDN_pruned=outFile,
 		incNets=alreadyAdded)

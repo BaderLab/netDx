@@ -4,8 +4,8 @@
 \alias{makePSN_RangeSets}
 \title{Create patient similarity interaction networks based on range sets}
 \usage{
-makePSN_RangeSets(gr, rangeSet, netDir, simMetric = "coincide", quorum = 2L,
-  verbose = TRUE, numCores = 1L)
+makePSN_RangeSets(gr, rangeSet, netDir, simMetric = "coincide",
+  quorum = 2L, verbose = TRUE, numCores = 1L)
 }
 \arguments{
 \item{gr}{(GRanges) patient ranges. Metadata should contain:

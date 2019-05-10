@@ -52,29 +52,31 @@ At command line, run `python --version`. You should see output like this:
 Python 2.7.9 :: Anaconda 2.1.0 (x86_64)
 ```
 
-#### R (3.3.1+ recommended)
+#### R (3.6.0+ recommended)
 At command line, run `R --version`. You should see output like this:
 ```
-RR version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin13.4.0 (64-bit)
+R version 3.6.0 (2019-04-26) -- "Planting of a Tree"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under the terms of the
 GNU General Public License versions 2 or 3.
 For more information about these matters see
-http://www.gnu.org/licenses/.
+https://www.gnu.org/licenses/.
 ```
 
 If not, [install R](https://www.r-project.org/).
 
-#### BioConductor (Biobase 2.34.0+ recommended)
+#### BioConductor (BioCManager 1.30.4+ recommended)
 [BioConductor](http://bioconductor.org/) is a system of R objects and software specifically for biological applications.
-Once you have R installed, install the `biobase` and `GenomicRanges` packages via the BioConductor installer:
+Once you have R installed, install the `GenomicRanges` packages via the BioConductor installer:
 ```
 $ R
-> source("http://bioconductor.org/biocLite.R")
-> biocLite(c("Biobase","GenomicRanges"))
+> if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+> BiocManager::install()
+> BiocManager::install(c("GenomicRanges"))
 ```
 Say `yes` to all dependencies that need to be installed.
 
@@ -106,14 +108,14 @@ Now we install the necessary R packages:
 $ cd netDx-master/
 $ R
 > install.packages(c('devtools','curl'))
-> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline"))
-> devtools::install_github("igraph/rigraph")  # install from CRAN has a bug and can fail (31 Aug 2017).
-> devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
-> devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline","glmnet"))
+> BiocManager::install(c("RCy3"))
+> install.packages("igraph")
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)
 > install.packages("knitr") # needed to run examples
 ```
+
 On Unix systems you may need to install the libraries below at command-line:
 ```
 $ sudo apt-get install libssl-dev # for openssl & httr

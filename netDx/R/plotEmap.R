@@ -13,9 +13,11 @@
 #' sets a discrete map ranging from yellow to red for increasing scores. 
 #' "netDx_ms" is the colour scheme used in the netDx methods paper.
 #' This map is (<=6: white; 7-9: orange; 10: red)
-#' @param cytoscapeBaseURL (char) URL for CyREST connection to the active
-#' Cytoscape session. Only change this if you know what you're doing.
+#' @param imageFormat(char) one of PNG, PDF, SVG, or JPEG
 #' @param verbose (logical) print messages
+#' @param createStyle (logical) if generating more than one EMap, set to 
+#' TRUE for first one and to FALSE for subsequent. Due to limitation in 
+#' current version of RCy3
 #' @examples
 #' #refer to writeEMapInput_many.R for working writeEMapInput_many() example
 #' EMap_input <- writeEMapInput_many(featScores,pathwayList,
@@ -30,7 +32,7 @@
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 	outDir,minScore=1,maxScore=10,colorScheme="cont_heatmap",
-	verbose=FALSE){
+	imageFormat="png",verbose=FALSE,createStyle=TRUE){
 
 	validColSchemes <- c("cont_heatmap","netDx_ms")
 	if (!colorScheme %in% validColSchemes) {
@@ -41,6 +43,9 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
   #######################################
   #create EM using given parameters
   #######################################
+	if (netName %in% getNetworkList()) {
+		deleteNetwork(netName)
+	}
 	em_command <- paste('enrichmentmap build analysisType="generic"',
 			'gmtFile=', gmtFile,
 			'pvalue=', 1,
@@ -65,66 +70,48 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 		nodeAttrFile,netName)
   response <- commandsGET(table_command)
 
-###	#apply style
-###	cat("* Creating or applying style\n")
-###  all_unique_scores_int <- sort(unique(read.delim(nodeAttrFile)[,2]))
-###  all_unique_scores <- unlist(lapply(all_unique_scores_int, toString))
-###  styleName <- "EMapStyle"
-###  res	<- httr::GET(sprintf("%s/styles",base.url))
-###  curStyles <- gsub("\\\"","",rawToChar(res$content))
-###  curStyles <- unlist(strsplit(curStyles,","))
-###
-###  if (any(grep("EMapStyle",curStyles))) {
-###  	if (verbose) cat("style exists not creating\n")
-###  } else {
-###  	if (verbose) cat("Creating style\n")
-###
-###		# define colourmap
-###		scoreVals <- minScore:maxScore
-###		style_cols <- ""
-###		if (colorScheme=="cont_heatmap") {
-###			colfunc <- colorRampPalette(c("yellow", "red"))
-###			gradient_cols <- colfunc(length(scoreVals))
-###			style_cols <- colfunc(length(scoreVals)) #gradient_cols[scoreVals[1:length(scoreVals)]]
-###		} else if (colorScheme=="netDx_ms") {
-###			if (minScore < 1 | maxScore > 10) 
-###				stop("The 'netDx_ms' colorScheme requires minScore and maxScore to be between 1 and 10.")
-###			style_cols <- rep("white", length(scoreVals))
-###			style_cols[which(scoreVals>=7)] <- "orange"
-###			style_cols[which(scoreVals==10)] <- "red"
-###	} 
-###
-###  	style_mapping <- mapVisualProperty(
-###			visual.prop='node fill color',
-###			table.column='maxScore',
-###			mapping.type='d',
-###			as.character(scoreVals),style_cols,
-###			network=netName)
-### 		defaults <- list("NODE_SHAPE"="ellipse",
-###  			"NODE_SIZE"=30,
-###  			"EDGE_TRANSPARENCY"=200,
-###  			"NODE_TRANSPARENCY"=255,
-###				"EDGE_STROKE_UNSELECTED_PAINT"="#999999")
-### 		sty <- r2cytoscape::createStyle(styleName,
-###  		defaults=defaults,
-###  		mappings=list(style_mapping))
-### }
-###
-###  # apply style
-###  apply.style.url <- sprintf("%s/apply/styles/%s/%s",
-###  	base.url,styleName,network.suid)
-###  response <- httr::GET(apply.style.url)
-###
-###	# final layout and redraw
-###	cat("* Final cleanup\n")
+	#apply style
+	cat("* Creating or applying style\n")
+  all_unique_scores_int <- sort(unique(read.delim(nodeAttrFile)[,2]))
+  all_unique_scores <- unlist(lapply(all_unique_scores_int, toString))
+  styleName <- "EMapStyle"
+
+		# define colourmap
+		scoreVals <- minScore:maxScore
+		style_cols <- ""
+		if (colorScheme=="cont_heatmap") {
+			colfunc <- colorRampPalette(c("yellow", "red"))
+			gradient_cols <- colfunc(length(scoreVals))
+			style_cols <- colfunc(length(scoreVals)) 
+		} else if (colorScheme=="netDx_ms") {
+			if (minScore < 1 | maxScore > 10) 
+				stop("The 'netDx_ms' colorScheme requires minScore and maxScore to be between 1 and 10.")
+			style_cols <- rep("white", length(scoreVals))
+			style_cols[which(scoreVals>=7)] <- "orange"
+			style_cols[which(scoreVals==10)] <- "red"
+	} 
+	nodeLabels <- mapVisualProperty('node label','name','p')
+	nodeFills <- mapVisualProperty('node fill color','maxScore','d',
+			scoreVals,style_cols)
+ 		defaults <- list("NODE_SHAPE"="ellipse",
+  			"NODE_SIZE"=30,
+  			"EDGE_TRANSPARENCY"=200,
+  			"NODE_TRANSPARENCY"=255,
+				"EDGE_STROKE_UNSELECTED_PAINT"="#999999")
+	if (createStyle) {
+		cat("Making style\n")
+		createVisualStyle(styleName,defaults, list(nodeLabels,nodeFills))
+	}
+	setVisualStyle(styleName)
 	layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
+  redraw_command <- sprintf("autoannotate redraw network=%s",getNetworkSuid())
+  response <- commandsGET(redraw_command)
+	fitContent()
   redraw_command <- sprintf("autoannotate redraw network=%s",getNetworkSuid())
   response <- commandsGET(redraw_command)
 	fitContent()
 
 	outFile <- sprintf("EMap_%s",netName)
-		exportImage(outFile,type="PNG")
-	#response	<- httr::GET(exportURL)
-
+		exportImage(outFile,type=imageFormat)
 	return(outFile)
 }

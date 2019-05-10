@@ -6,8 +6,8 @@
 \usage{
 GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
-  verbose = FALSE, numCores = 2L, GMmemory = 6L, seed_CVqueries = 42L,
-  ...)
+  verbose = FALSE, numCores = 2L, GMmemory = 6L,
+  seed_CVqueries = 42L, ...)
 }
 \arguments{
 \item{trainID_pred}{(char) vector with universe of predictor class

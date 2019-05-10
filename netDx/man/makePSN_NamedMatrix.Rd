@@ -5,9 +5,10 @@
 \title{Create patient networks from full matrix of named measurements}
 \usage{
 makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
-  verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE,
-  useSparsify2 = FALSE, cutoff = 0.3, sparsify_edgeMax = 1000,
-  sparsify_maxInt = 50, minMembers = 1L, append = FALSE, ...)
+  verbose = TRUE, numCores = 1L, writeProfiles = TRUE,
+  sparsify = FALSE, useSparsify2 = FALSE, cutoff = 0.3,
+  sparsify_edgeMax = 1000, sparsify_maxInt = 50, minMembers = 1L,
+  append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns

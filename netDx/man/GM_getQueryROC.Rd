@@ -4,7 +4,8 @@
 \alias{GM_getQueryROC}
 \title{Process GM PRANK files to get the ROC curve for the query}
 \usage{
-GM_getQueryROC(pFile, pheno_DF, predClass, plotIt = FALSE, verbose = FALSE)
+GM_getQueryROC(pFile, pheno_DF, predClass, plotIt = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{pFile}{(char) path to PRANK file}

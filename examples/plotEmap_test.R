@@ -32,8 +32,13 @@ EMap_input <- writeEMapInput_many(featScores,pathwayList,
       netInfo,outDir=outDir)
 
 pngFiles <- list()
+ctr <- 1
 for (curGroup in names(EMap_input)[1:2]) {
 	pngFiles[[curGroup]] <- plotEmap(gmtFile=EMap_input[[curGroup]][1], 
 		                        nodeAttrFile=EMap_input[[curGroup]][2],
-		                        netName=curGroup,outDir=outDir)
+		                        netName=curGroup,outDir=outDir,
+													  createStyle=(ctr==1))
+	RCy3::setVisualStyle("EMapStyle",RCy3::getNetworkSuid())
+browser()
+	ctr <- ctr+1
 }

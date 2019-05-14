@@ -1,12 +1,12 @@
 #' assign patient class when ranked by multiple GM predictors
 #'
-#' @param resSet (list) output of GM_getQueryROC, each key for a different
+#' @param resSet (list) output of getPatientRankings, each key for a different
 #' predictor. names(resSet) contain predictor label
 #' @return data.frame: ID, GM_score, PRED_CLASS
 #' @examples 
-#' data(predRes); predClass <- GM_OneVAll_getClass(predRes)
+#' data(predRes); predClass <- predictPatientLabels(predRes)
 #' @export
-GM_OneVAll_getClass <- function(resSet) {
+predictPatientLabels <- function(resSet) {
 	type_rank <- NULL
 	for (k in 1:length(resSet)){
     x   <- resSet[[k]]$fullmat

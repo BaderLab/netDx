@@ -11,13 +11,13 @@
 #' @param queryPool (char) See GM_run_featureSet, trainID param
 #' @param GM_db (char) path to GeneMANIA generic database with 
 #'	training population. This is the same as the \code{dbDir} value for
-#' the output of GM_createDB.R
+#' the output of compileFeatures.R
 #' @param pheno_DF (data.frame) pheno matrix; ID and STATUS
 #' @param predictClass (char) class label for predictor
 #' @param outDir (char) directory to store query file and GM results
 #' @param num2return (integer) number of training samples in total
 #' @param numCores (integer) num cores for parallel processing. Used by
-#' \code{GM_runCV_featureSet()} during the cross-validation for each 
+#' \code{runFeatureSelection()} during the cross-validation for each 
 #' feature subset
 #' @param scoreFile (char) path to file where error is printed over 
 #' iterations. useful for debugging. If NULL doesn't print.
@@ -48,7 +48,7 @@ doSubsetSelection <- function(methodName="greedy.forward",incNets,queryPool,
 		#			row=F,col=F,quote=F)
 	
 		resDir <- sprintf("%s/subsetWork", outDir)
-		GM_runCV_featureSet(queryPool, resDir, GM_db, 
+		runFeatureSelection(queryPool, resDir, GM_db, 
 				num2return,
 				verbose=FALSE,numCores=numCores,
 				incNets=netSubset)
@@ -57,10 +57,10 @@ doSubsetSelection <- function(methodName="greedy.forward",incNets,queryPool,
 		fList <- paste(resDir,dir(path=resDir,pattern="PRANK$"),sep="/")
 
 		# TODO speed up by implementing precall compute
-		# in here, instead of calling GM_getQueryROC.
+		# in here, instead of calling getPatientRankings.
 		# can also parallelize
 		for (f in fList)  {
-			tmp <- GM_getQueryROC(f,pheno_DF,predictClass)
+			tmp <- getPatientRankings(f,pheno_DF,predictClass)
 			tmp	<- tmp$precall
 			df  <- data.frame(x=tmp@x.values[[1]],y=tmp@y.values[[1]])
 			df	<- na.omit(df)

@@ -11,10 +11,10 @@
 #' @examples
 #' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx"))
 #' netFiles <- sprintf("%s/%s", netDir,dir(netDir,pattern="NRANK$"))
-#' pTally <- GM_networkTally(netFiles)
+#' pTally <- compileFeatureScores(netFiles)
 #' print(head(pTally))
 #' @export
-GM_networkTally <- function(fList,filter_WtSum=100,verbose=FALSE) {
+compileFeatureScores <- function(fList,filter_WtSum=100,verbose=FALSE) {
 
 if (filter_WtSum < 5) {
 	cat("filter_WtSum cannot be < 5 ; setting to 5\n")

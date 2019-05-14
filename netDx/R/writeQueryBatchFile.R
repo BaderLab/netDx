@@ -21,8 +21,8 @@
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
 #' netList <- dir(netDir,pattern="txt$")
-#' GM_writeBatchFile(netDir,netList, "~/tmp", npheno$ID)
-GM_writeBatchFile <- function(netDir,netList,outDir,idFile,
+#' writeQueryBatchFile(netDir,netList, "~/tmp", npheno$ID)
+writeQueryBatchFile <- function(netDir,netList,outDir,idFile,
 	orgName="predictor",orgDesc="my_predictor",orgAlias="my_predictor",
 	taxID=1339) {
 	

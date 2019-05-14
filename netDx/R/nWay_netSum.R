@@ -54,7 +54,7 @@
 #' as NULL.
 #' @param seed_CVqueries (integer) RNG seed for inner cross-validation
 #' loop
-#' @param ... params for GM_runCV_featureSet()
+#' @param ... params for runFeatureSelection()
 #' @importFrom reshape2 melt
 #' @export
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
@@ -67,7 +67,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 	
 	# split into testing and training - resampling mode
 	cat("* Resampling train/test samples\n")
-	TT_STATUS 	<- splitTestTrain_partition(phenoDF, nFold=splitN,
+	TT_STATUS 	<- splitTestTrain_resampling(phenoDF, nFold=splitN,
 		predClass=predClass, setSeed=seed_resampling, verbose=TRUE)
 	p_full 		<- netmat
 	pheno_full	<- phenoDF
@@ -141,7 +141,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 				cat("not yet implemented")
 				browser()
 		}
-		x <- GM_createDB(trainNetDir, rownames(p_train), newOut)
+		x <- compileFeatures(trainNetDir, rownames(p_train), newOut)
 					
 		
 		# we query for training samples of the predictor class
@@ -150,7 +150,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		resDir    <- sprintf("%s/GM_results",newOut)
 		GM_db     <- sprintf("%s/dataset",newOut)
 		t0 <- Sys.time()
-		GM_runCV_featureSet(trainPred, resDir, GM_db, 
+		runFeatureSelection(trainPred, resDir, GM_db, 
 				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
 				nFold=nFoldCV,seed_CVqueries=seed_CVqueries,...)
 		t1 <- Sys.time()
@@ -160,7 +160,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
 			sep="/")
-		pathwayRank	<- GM_networkTally(nrankFiles,
+		pathwayRank	<- compileFeatureScores(nrankFiles,
 			filter_WtSum=filter_WtSum,verbose=TRUE)
 		write.table(pathwayRank,file=sprintf("%s/pathwayScore.txt",resDir),
 			col=T,row=F,quote=F)

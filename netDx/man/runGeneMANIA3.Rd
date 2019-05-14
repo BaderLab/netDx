@@ -18,10 +18,8 @@ runGeneMANIA3(GM_db, queryFiles, resDir, parseReport = FALSE,
 
 \item{verbose}{(logical) print messages}
 
-\item{GMmemory}{(integer) Memory for GeneMANIA (in Gb)}
-
-\item{MAX_ATTEMPTS}{(integer) max num attempts to run GeneMANIA before
-giving up.}
+\item{GMmemory}{(integer) Memory for GeneMANIA (in Gb) - a total of 
+numCores*GMmemory will be used and distributed for all GM threads}
 
 \item{numCores}{(integer) number of CPU cores for parallel processing}
 }

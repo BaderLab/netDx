@@ -14,8 +14,6 @@ runGeneMANIA3(GM_db, queryFiles, resDir, parseReport = FALSE,
 
 \item{resDir}{(char) path to output directory}
 
-\item{parseReport}{(logical) if TRUE, parses out PRANK and NRANK portions}
-
 \item{verbose}{(logical) print messages}
 
 \item{GMmemory}{(integer) Memory for GeneMANIA (in Gb) - a total of 

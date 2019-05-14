@@ -6,9 +6,8 @@
 \usage{
 runPredictor_nestedCV(pheno, dataList, groupList, outDir, makeNetFunc,
   nFoldCV = 10L, trainProp = 0.8, numSplits = 10L, numCores = 2L,
-  useNewGM = FALSE, useGMThreads = FALSE, CVmemory = 4L,
-  CVcutoff = 9L, keepAllData = FALSE, startAt = 1L,
-  preFilter = FALSE)
+  useNewGM = FALSE, CVmemory = 4L, CVcutoff = 9L,
+  keepAllData = FALSE, startAt = 1L, preFilter = FALSE)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -42,8 +41,6 @@ of outer loop)}
 \item{numCores}{(integer) number of CPU cores for parallel processing}
 
 \item{useNewGM}{(logical) use new GeneMania Version for processing}
-
-\item{useGMThreads}{(logical) use Threading option from GeneMania instead of R for predictor building / change in runGeneMania3 and GM_runCV_featureSet}
 
 \item{CVmemory}{(integer) memory in (Gb) used for each fold of CV}
 

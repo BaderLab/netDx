@@ -16,7 +16,6 @@
 #' @param verbose (logical) print messages
 #' @param numCores (logical) num parallel threads for cross-validation
 #' @param useNewGM (logical) use new GeneMania Version for processing
-#' @param useGMThreads (logical) use Threading option from GeneMania instead of R for predictor building / change in runGeneMania3 and GM_runCV_featureSet
 #' @param GMmemory (integer) memory for GeneMANIA run, in GB.
 #' @param seed_CVqueries (integer) RNG seed for inner cross validation loop.
 #' Makes deterministic samples held-out for each GeneMANIA query (see
@@ -31,7 +30,7 @@
 GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
 	numCores=2L,
-	useNewGM=FALSE,useGMThreads=FALSE,
+	useNewGM=FALSE,
 	GMmemory=6L,seed_CVqueries=42L,...) {
 
 	#TODO if results already exist, what do we do? Delete with a warning?
@@ -55,7 +54,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 		GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
-  if (useGMThreads && useNewGM ){
+  if (useNewGM ){
     qFiles <- list()
     for (m in 1:length(qSamps)) {
       qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
@@ -77,11 +76,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
   
   		# its also possible to pass multiple / all query files at once to GeneMania 
   		# and increase the number of used threads in GeneMania --> useGMThreads
-  		if (useNewGM){
-  		  runGeneMANIA2(GM_db, qFile, outDir,GMmemory=GMmemory,
-  		               verbose=verbose,parseReport=FALSE)
-  		}	else {
-  		  runGeneMANIA(GM_db, qFile, outDir,GMmemory=GMmemory,
+		  runGeneMANIA(GM_db, qFile, outDir,GMmemory=GMmemory,
   		               verbose=verbose)
   		  
   		  # keep only PRANK and NRANK and remove main results file.
@@ -96,7 +91,6 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
   		# for GM to complete) and will try to work with result files that
   		# haven't been written yet
   		#Sys.sleep(15)
-  	}
   
   	stopCluster(cl)
   }

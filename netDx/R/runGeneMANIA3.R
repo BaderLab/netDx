@@ -6,10 +6,8 @@
 #' @param parseReport (logical) if TRUE, parses out PRANK and NRANK portions
 #' @param verbose (logical) print messages
 #' @param GMmemory (integer) Memory for GeneMANIA (in Gb) - a total of 
-#' numCores*GMmemory will be used
+#' numCores*GMmemory will be used and distributed for all GM threads
 #' @param numCores (integer) number of CPU cores for parallel processing
-#' @param MAX_ATTEMPTS (integer) max num attempts to run GeneMANIA before
-#' giving up.
 #' @return path to GeneMANIA query result file
 #' of results file
 #' @examples
@@ -40,13 +38,6 @@ runGeneMANIA3 <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
 	# This while-loop exists to ensure that all GM queries run.
 	t0	<- Sys.time()
 	system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
-	# 
-	# while ((!file.exists(resFile)) & (attempt <= MAX_ATTEMPTS)) {
-	# 		cat(sprintf("* Attempt %i : %s\n", attempt,
-	# 					basename(queryFiles[[1]][1])))
-	# 	system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
-	# 	attempt <- attempt + 1
-	# }
 	cat(sprintf("QueryRunner time taken: %1.1f s\n", Sys.time()-t0))
 	
 	Sys.sleep(3)

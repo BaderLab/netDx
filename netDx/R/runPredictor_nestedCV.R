@@ -35,7 +35,6 @@
 #' of outer loop)
 #' @param numCores (integer) number of CPU cores for parallel processing
 #' @param useNewGM (logical) use new GeneMania Version for processing
-#' @param useGMThreads (logical) use Threading option from GeneMania instead of R for predictor building / change in runGeneMania3 and GM_runCV_featureSet
 #' @param CVmemory (integer) memory in (Gb) used for each fold of CV
 #' @param CVcutoff (integer) cutoff for inner-fold CV to call feature-selected
 #' in a given split
@@ -54,7 +53,7 @@
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores=2L,
-	useNewGM=FALSE, useGMThreads=FALSE,CVmemory=4L,CVcutoff=9L,
+	useNewGM=FALSE, CVmemory=4L,CVcutoff=9L,
 	keepAllData=FALSE,startAt=1L, preFilter=FALSE) { 
 
   ### tests# pheno$ID and $status must exist

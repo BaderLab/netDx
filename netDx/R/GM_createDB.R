@@ -103,8 +103,8 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="pearson",
 					 "python/process_networks.py",sep="/")
 	cmd <- sprintf("python2 %s batch.txt",procNet)
 	system(cmd,wait=TRUE)
-	
-	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",
+	# using new jar file
+	GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar",
 						 path.package("netDx"))
 	#### Step 3. (optional). convert profiles to interaction networks.
 	### TODO. This step is currently inefficient. We are writing all the

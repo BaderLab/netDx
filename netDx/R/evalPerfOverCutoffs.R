@@ -24,7 +24,7 @@
 #' @param numCores (integer) num cores for parallel processing
 #' @param ... params for makePSN_NamedMatrix
 #' @export
-GM_predClass_cutoffs <- function(pheno,pdat,p_GR,unitSet_GR,
+evalPerfOverCutoffs <- function(pheno,pdat,p_GR,unitSet_GR,
 	predClass,netScores,unitSets,
 	maxScore,outDir,numCores=1L,...) {
 
@@ -60,7 +60,7 @@ for (g in subtypes) {
 			cat("Not making any range-related nets\n")
 		}
 	}
-	dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
+	dbDir <- compileFeatures(profDir,pheno$ID,pDir,numCores=numCores)
 
 	# query of all training samples for this class
 	qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
@@ -77,8 +77,8 @@ for (g in subtypes) {
 			curr_p[idx] <- paste(curr_p[idx],".profile",sep="")
 		}
 		if (length(curr_p)>0){
-			GM_writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
-			resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
+			writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
+			resFile <- netDx::runQuery(dbDir$dbDir,qFile,resDir=pDir)
 			system(sprintf("unlink %s", resFile))
 		}
 	}
@@ -88,7 +88,7 @@ for (g in subtypes) {
 	for (cutoff in 1:maxScore) {
 		resFile <- sprintf("%s/%s_cutoff%i-results.report.txt.PRANK",
 			pDir,g,cutoff)
-		predRes[[cutoff]][[g]] <- GM_getQueryROC(resFile,pheno,g)
+		predRes[[cutoff]][[g]] <- getPatientRankings(resFile,pheno,g)
 	}
 }
 
@@ -100,7 +100,7 @@ colnames(outmat) <- c("score","tp","tn","fp","fn","tpr","fpr",
 
 for (cutoff in 1:maxScore) {
 	
-	outClass[[cutoff]] <- GM_OneVAll_getClass(predRes[[cutoff]])
+	outClass[[cutoff]] <- predictPatientLabels(predRes[[cutoff]])
 	both <- merge(x=pheno,y=outClass[[cutoff]],by="ID")
 	print(table(both[,c("STATUS","PRED_CLASS")]))
 	pos <- (both$STATUS %in% predClass)

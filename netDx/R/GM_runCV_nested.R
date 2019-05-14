@@ -1,7 +1,7 @@
 #' Nested cross validation for GM feature selection
 #'
 #' @details Runs two-tier cross validation by calling
-#' \code{GM_runCV_featureSet()} for the inner loop. Computes patient
+#' \code{runFeatureSelection()} for the inner loop. Computes patient
 #' ranking and network tally
 #' @param nOuterLoop (integer) number of outer loops for cross validation
 #' @param setOloopSeed (integer) seed for random number generator that
@@ -11,7 +11,7 @@
 #' @param outDir (char) directory to store results of GeneMANIA queries
 #' @param pheno_DF (data.frame) patient ID and STATUS
 #' @param predictClass (char) class (of pheno_DF$STATUS) being predicted
-#' @param ... parameters for GM_runCV_featureSet()
+#' @param ... parameters for runFeatureSelection()
 #' @return (char) vector of paths to directories where result for each
 #' outer loop is stored.
 #' @examples
@@ -37,7 +37,7 @@ GM_runCV_nested <- function(nOuterLoop=10L, setOloopSeed=42L,outDir,
 		newOut <- sprintf("%s/%s",outDir,fileSfx)
 		if (!file.exists(newOut)) dir.create(newOut)
 
-		GM_runCV_featureSet(setSeed=seedLevel,fileSfx=fileSfx,
+		runFeatureSelection(setSeed=seedLevel,fileSfx=fileSfx,
 							outDir=newOut,...)	
 
 		# compute cross-validation error
@@ -48,7 +48,7 @@ GM_runCV_nested <- function(nOuterLoop=10L, setOloopSeed=42L,outDir,
 		# tally score for pathways
 		nrankFiles <- paste(newOut,dir(path=newOut,pattern="NRANK$"),
 							sep="/")
-		pathwayRank	<- GM_networkTally(nrankFiles)
+		pathwayRank	<- compileFeatureScores(nrankFiles)
 		write.table(pathwayRank,
 					file=sprintf("%s/pathwayScore.txt",newOut),
 					col=T,row=F,quote=F)

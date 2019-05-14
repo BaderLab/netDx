@@ -55,7 +55,7 @@ for (curF in fList) {
 	
 	dat <- read.table(curF, sep="\t",header=T,as.is=T)
 	dat	<- dat[which(!is.na(dat[,2])),]
-	res <- GM_getQueryROC(curF, pheno_DF, predClass,verbose=verbose)
+	res <- getPatientRankings(curF, pheno_DF, predClass,verbose=verbose)
 	
 	# ROCR prediction object requires the label assignments to range
 	# from 0 to 1. GeneMANIA gene scores appear to be positive but 

@@ -4,7 +4,7 @@
 #' predictor configurations
 #' @param scorelist (list) key is dataset name, value is a data.frame 
 #' containing PATHWAY_NAME and SCORE. This is the output of
-#'  GM_networkTally()
+#'  compileFeatureScores()
 #' @return (data.frame) Rownames are union of all nets in the input list.
 #' Columns show net scores for each key of the input list. Where a 
 #' net is not found in a given list, it is assigned the value of NA

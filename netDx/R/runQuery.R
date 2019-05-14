@@ -14,9 +14,9 @@
 #' GM_db <- sprintf("%s/extdata/GM_db", path.package("netDx"))
 #' GM_query <- sprintf("%s/extdata/GM_query.txt",
 #'		path.package("netDx"))
-#' runGeneMANIA(GM_db, GM_query,"/tmp")
+#' runQuery(GM_db, GM_query,"/tmp")
 #' @export
-runGeneMANIA <- function(GM_db, queryFile, resDir, parseReport=TRUE,
+runQuery <- function(GM_db, queryFile, resDir, parseReport=TRUE,
 	verbose=TRUE,GMmemory=6L,MAX_ATTEMPTS=3L) {
 	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",
 						 path.package("netDx"))

@@ -23,11 +23,12 @@
 #' data(TCGA_mini)
 #' prankFile <- sprintf("%s/extdata/GM_PRANK.txt", 
 #' 	 path.package("netDx"))
-#' x <- GM_getQueryROC(prankFile, pheno, "LumA")
-GM_getQueryROC <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
+#' x <- getPatientRankings(prankFile, pheno, "LumA")
+getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
    verbose=FALSE) {
 	dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T)
 
+	pheno_DF$ID <- as.character(pheno_DF$ID)
 	# 1 is what we predict, 0 is the other class
 	pheno_DF$STATUS <- as.integer(pheno_DF$STATUS==predClass)
 

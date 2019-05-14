@@ -23,10 +23,10 @@
 #' @examples
 #' data(MB_pheno)
 #' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
-#' GM_runCV_featureSet(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
+#' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
 #'	"~/tmp",GM_db,103L)
 #' @export
-GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
+runFeatureSelection <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
 	numCores=2L,GMmemory=6L,seed_CVqueries=42L,...) {
 
@@ -48,7 +48,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 			cat("Memory saver option: using 5 training samples for CV")
 		}
 
-		GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
+		writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
 
@@ -59,7 +59,7 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	x <- foreach(m=1:length(qSamps)) %dopar% {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
-		runGeneMANIA(GM_db, qFile, outDir,GMmemory=GMmemory,
+		runQuery(GM_db, qFile, outDir,GMmemory=GMmemory,
 					 verbose=verbose)
 
 		# needed so R will pause while GM finishes running.

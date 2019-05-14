@@ -23,7 +23,7 @@
 #' ProfileToNetworkDriver's threshold option. One of "off|auto". 
 #' @param P2N_maxMissing (integer 5-100)
 #' @param GMmemory (integer) Memory for GeneMANIA (in Gb)
-#' @param ... params for \code{GM_writeBatchFile()}
+#' @param ... params for \code{writeQueryBatchFile()}
 #' @return (list). "dbDir": path to GeneMANIA database 
 #' 	"netDir": path to directory with interaction networks. If profiles
 #' are provided, this points to the INTERACTIONS/ subdirectory within 
@@ -36,9 +36,9 @@
 #' # do not have write access to /tmp, change to a different directory.
 #'	n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
 #'		writeProfiles=TRUE); 
-#'	db <- GM_createDB("/tmp/nets/",pheno$ID,"/tmp")
+#'	db <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
 #' @export
-GM_createDB <- function(netDir,patientID,outDir,simMetric="pearson",
+compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	netSfx="_cont.txt$",verbose=TRUE,numCores=1L, P2N_threshType="off",
 	P2N_maxMissing=100,GMmemory=4L, ...) {
 	# tmpDir/ is where all the prepared files are stored.
@@ -72,7 +72,7 @@ GM_createDB <- function(netDir,patientID,outDir,simMetric="pearson",
 
 	if (verbose) cat(sprintf("Got %i networks\n",length(netList)))
 	idFile	<- sprintf("%s/ids.txt",outDir)
-	GM_writeBatchFile(netDir,netList,netDir,idFile,...)
+	writeQueryBatchFile(netDir,netList,netDir,idFile,...)
 	system(sprintf("cp %s/batch.txt .", netDir))
 	write.table(patientID,file=idFile,sep="\t",
 				row=FALSE,col=FALSE,quote=FALSE)

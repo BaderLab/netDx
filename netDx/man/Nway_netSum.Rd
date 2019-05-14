@@ -5,10 +5,10 @@
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
 Nway_netSum(netmat = NULL, phenoDF, predClass, outDir, netDir,
-  splitN = 3L, seed_resampling = 103L, nFoldCV = 10L,
+  splitN = 3L, seed_resampling = 103L, featScoreMax = 10L,
   filter_WtSum = 100L, cliqueFilter = TRUE, cliquePthresh = 0.07,
   cliqueReps = 2500L, minEnr = -1, numCores = 1L,
-  GM_numCores = NULL, useAttributes = NULL, seed_CVqueries = 42L,
+  FS_numCores = NULL, useAttributes = NULL, seed_queryResample = 42L,
   ...)
 }
 \arguments{
@@ -35,8 +35,7 @@ networks consisting e.g. only of training samples.}
 \item{seed_resampling}{(integer) RNG seed for deciding hold-out sets
 while resampling.}
 
-\item{nFoldCV}{(integer) number of folds in the inner cross-validation
-loop}
+\item{featScoreMax}{(integer) max score for features in feature selection}
 
 \item{filter_WtSum}{(numeric between 5-100) Limit to top-ranked 
 networks such that cumulative weight is less than this parameter. 
@@ -55,7 +54,7 @@ filtering p-value below this threshold  pass clique-filtering}
 
 \item{numCores}{(integer) num cores for parallel processing}
 
-\item{GM_numCores}{(integer) num cores for running GM. If NULL, is set
+\item{FS_numCores}{(integer) num cores for running GM. If NULL, is set
 to max(1,numCores-1). Set to a lower value if the default setting
 gives out-of-memory error. This may happen if networks are denser than
 expected}
@@ -64,7 +63,7 @@ expected}
 executing GM queries. Note: Not currently well-tested, suggest leaving
 as NULL.}
 
-\item{seed_CVqueries}{(integer) RNG seed for inner cross-validation
+\item{seed_queryResample}{(integer) RNG seed for inner cross-validation
 loop}
 
 \item{...}{params for runFeatureSelection()}
@@ -81,9 +80,8 @@ performs the following steps:
 For i = 1..splitN
 		randomly split patients into training and test
 		(optional) filter training networks to exclude random-like networks
-		create GeneMANIA database for cross-validation
-		run 10-fold cross validation
-	score networks based on 10-fold CV
+		compile features into database for cross-validation
+	score networks out of 10
 end
 using test samples from all resamplings, measure predictor performance.
 

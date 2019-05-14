@@ -11,7 +11,7 @@ predictPatientLabels(resSet)
 predictor. names(resSet) contain predictor label}
 }
 \value{
-data.frame: ID, GM_score, PRED_CLASS
+data.frame: ID, similarityScore, PRED_CLASS
 }
 \description{
 assign patient class when ranked by multiple GM predictors

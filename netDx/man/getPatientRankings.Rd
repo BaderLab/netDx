@@ -24,7 +24,7 @@ getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE,
 higher ranked patient. 
 2) realLbl: binary value indicating if patient label matches predictor
 label (real labels)
-3) fullmat: pheno_DF merged with GM scores ("GM_score") and real label
+3) fullmat: pheno_DF merged with similarity scores ("similarityScore") and real label
 ("isPredClass")
 4) roc: output of ROCRs performance(,"tpr","fpr") - ROC curve
 5) auc: output of ROCRs auc() 

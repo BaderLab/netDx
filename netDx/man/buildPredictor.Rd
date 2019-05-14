@@ -5,9 +5,9 @@
 \title{Run nested cross-validation on data}
 \usage{
 buildPredictor(pheno, dataList, groupList, outDir, makeNetFunc,
-  nFoldCV = 10L, trainProp = 0.8, numSplits = 10L, numCores,
-  CVmemory = 4L, CVcutoff = 9L, keepAllData = FALSE, startAt = 1L,
-  preFilter = FALSE, impute = FALSE)
+  featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
+  JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
+  startAt = 1L, preFilter = FALSE, impute = FALSE)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -31,7 +31,7 @@ directory exists, its contents will be overwritten}
 \item{makeNetFunc}{(function) user-defined function for creating the set
 of input PSN provided to netDx. See createPSN_MultiData()::customFunc.}
 
-\item{nFoldCV}{(integer) number of CV folds in inner loop}
+\item{featScoreMax}{(integer) number of CV folds in inner loop}
 
 \item{trainProp}{(numeric 0 to 1) Percent samples to use for training}
 
@@ -40,9 +40,9 @@ of outer loop)}
 
 \item{numCores}{(integer) number of CPU cores for parallel processing}
 
-\item{CVmemory}{(integer) memory in (Gb) used for each fold of CV}
+\item{JavaMemory}{(integer) memory in (Gb) used for each fold of CV}
 
-\item{CVcutoff}{(integer) cutoff for inner-fold CV to call feature-selected
+\item{featSelCutoff}{(integer) cutoff for inner-fold CV to call feature-selected
 in a given split}
 
 \item{keepAllData}{(logical) if TRUE keeps all intermediate files, even
@@ -76,8 +76,4 @@ For example, designs it handles includes
 (Pearson corr) and single gene networks (normalized difference)
 3) Multiple datatypes, multiple metrics: Expression -> Pathways; 
 Clinical -> single or grouped nets
-See examples/NestedCV_MultiData.Rmd for a full working example.
-}
-\examples{
-see examples/NestedCV_MultiData.Rmd for example use.
 }

@@ -7,7 +7,7 @@
 runFeatureSelection(trainID_pred, outDir, dbPath, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
   verbose = FALSE, numCores = 2L, JavaMemory = 6L,
-  seed_CVqueries = 42L, ...)
+  seed_queryResample = 42L, ...)
 }
 \arguments{
 \item{trainID_pred}{(char) vector with universe of predictor class
@@ -35,11 +35,11 @@ The default value will likely never need to be changed.}
 
 \item{JavaMemory}{(integer) memory for GeneMANIA run, in Gb.}
 
-\item{seed_CVqueries}{(integer) RNG seed for inner cross validation loop.
+\item{seed_queryResample}{(integer) RNG seed for inner cross validation loop.
 Makes deterministic samples held-out for each GeneMANIA query (see
-makeCVqueries())}
+makeQueries())}
 
-\item{...}{args for \code{makeCVqueries()}}
+\item{...}{args for \code{makeQueries()}}
 }
 \description{
 Run GeneMANIA cross-validation with a provided subset of networks

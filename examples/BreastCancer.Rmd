@@ -1,31 +1,193 @@
 ---
-title: "BreastCancer"
-output: html_document
+title: "Tumour classification from gene expression and CNV: Building a predictor from scratch"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 4
+  html_notebook:
+    toc: yes
+    toc_depth: 4
+  pdf_document: default
+  word_document: default
 ---
 
-# netDx use case \linebreak Integrate gene expression and CNV for \linebreak binary classification of breast 
+This tutorial shows the steps to build a netDx (Ref 1) breast tumour classifier by integrating gene expression and DNA copy number variants (CNV), using a ***custom predictor design***. 
+
+**IMPORTANT!!** If your predictor has a straightforward cross-validation design, you can also create a predictor with a single function call to `buildPredictor()`.  See the netDx tutorial, "Binary survival prediction from clinical and gene expression: One function call".
+
+# TL;DR
+All the code in one chunk. This block is not evaluated in the R notebook. 
+Want the process broken down? See the following sections.
+
+```{r,eval=FALSE}
+# ******
+# NOTE: All of the work detailed in this block is automatically done in the function buildPredictor(). 
+# New users are strongly encouraged to use that function, and not go through this process.
+# ******
+
+# Change this to a local directory where you have write permission
+outDir <- sprintf("%s/TCGA_BRCA",getwd())
+
+numCores        <- 2L   # num cores available for parallel processing
+GMmemory        <- 4L   # java memory in Gb
+cutoff          <- 1L   # score cutoff for feature-selected networks
+nFold           <- 2L   # two-fold CV, so the code will run fast. 
+TRAIN_PROP <- 0.67      # fraction of samples to use for training
+
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+dir.create(outDir)
+
+# load packages
+require(netDx)
+require(netDx.examples)
+data(TCGA_BRCA)
+
+subtypes<- c("LumA","other")
+pheno$STATUS[which(!pheno$STATUS %in% "LumA")] <- "other"
+
+# split samples into train and test
+pheno$TT_STATUS <- splitTestTrain(pheno,
+    pctT = TRAIN_PROP,setSeed = 42)
+
+# --------------------------------------------------------------------------
+# PHASE 1: Feature selection - uses only training samples
+# --------------------------------------------------------------------------
+# subset phenotype table and data to training samples
+pheno_FULL      <- pheno
+xpr_FULL        <- xpr
+cnv_FULL        <- cnv_GR
+pheno           <- subset(pheno,TT_STATUS %in% "TRAIN")
+xpr                     <- xpr[,which(colnames(xpr)%in% pheno$ID)]
+cnv_GR          <- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
+
+# define pathways (here we pull from .gmt) for grouping 
+pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+    path.package("netDx.examples"))
+pathwayList <- readPathways(pathFile)
+
+# create directory for networks and for profiles (pathway-level gene expression files)
+profDir <- sprintf("%s/profiles",outDir)
+netDir <- sprintf("%s/networks",outDir)
+
+# make PSN from gene expression, group by pathways
+netList <- makePSN_NamedMatrix(xpr, rownames(xpr),
+        pathwayList,profDir,verbose=FALSE,
+        numCores=numCores,writeProfiles=TRUE)
+netList <- unlist(netList)
+
+# make PSN from CNV, group by pathways (binary similarity)
+gene_GR     <- GRanges(genes$chrom,
+   IRanges(genes$txStart,genes$txEnd),
+   name=genes$name2)
+path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
+## warning: this step can take 2-5 minutes depending on the
+## number of processes running in parallel
+netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
+
+# Now that all PSN (features) have been created, compile into one database for feature selection
+dbDir   <- compilePSN(profDir, pheno$ID, outDir,numCores=numCores)
+
+## score networks from 0 to "nFold"; repeat once per class
+for (g in subtypes) {
+    pDir <- sprintf("%s/%s",outDir,g)
+        dir.create(pDir)
+        pheno_subtype <- pheno
+
+        ## label patients not in the current class as a residual - note that "nonpred" is used
+        ## because neither of the classes uses that label. 
+        pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
+
+        resDir    <- sprintf("%s/GM_results",pDir)
+        ## query for feature selection comprises of training
+        ## samples from the class of interest
+        trainPred <- pheno$ID[which(pheno$STATUS %in% g)]
+        
+        # Function that does the scoring - this takes a while
+        runFeatureSelection(trainPred, resDir, dbDir$dbDir,
+                nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
+                GMmemory=GMmemory)
+
+        # Compute network tally (from 0 to nFold)
+        # file with network weights for each scoring call
+        nrank <- dir(path=resDir,pattern="NRANK$")
+        pTally          <- compileFeatureScores(paste(resDir,nrank,sep="/"))
+        tallyFile       <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
+        write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+}
+
+# --------------------------------------------------------------------------
+# PHASE 2: Classify test samples
+# --------------------------------------------------------------------------
+pheno <- pheno_FULL
+predRes <- list
+
+# Compute similarity of test samples to each class in turn.
+for (g in subtypes) {
+        pDir <- sprintf("%s/%s",outDir,g)
+        # get feature selected net names
+        pTally <- read.delim(
+                sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
+                sep="\t",h=T,as.is=T)
+        pTally <- pTally[which(pTally[,2]>=cutoff),1]
+        pTally <- sub(".profile","",pTally)
+        pTally <- sub("_cont","",pTally)
+
+        cat(sprintf("%s: %i pathways\n",g,length(pTally)))
+        profDir <- sprintf("%s/profiles",pDir)
+
+        # Make PSN using train & test samples, first for gene xpr, then for CNV
+        tmp <- makePSN_NamedMatrix(xpr_FULL,rownames(xpr),
+                pathwayList[which(names(pathwayList)%in% pTally)],
+                profDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
+        tmp <- makePSN_RangeSets(cnv_FULL,
+                path_GRList[which(names(path_GRList)%in% pTally)],
+                profDir,verbose=FALSE)
+        # create db
+        dbDir <- compilePSN(profDir,pheno$ID,pDir,numCores=numCores)
+
+        # query of all training samples for this class
+        qSamps<-pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
+        qFile<-sprintf("%s/%s_query",pDir,g)
+        writeQueryFile(qSamps,"all",nrow(pheno),qFile)
+
+        resFile<-runQuery(dbDir$dbDir,qFile,resDir=pDir)
+
+        predRes[[g]]<-getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
+}
+
+# Finally, classify each sample based on which class it is more similar to
+predClass <- predictPatientLabels(predRes)
+
+# Compute performance metrics
+both <- merge(x=pheno,y=predClass,by="ID")
+print(table(both[,c("STATUS","PRED_CLASS")]))
+pos <- (both$STATUS %in% "LumA")
+tp <- sum(both$PRED_CLASS[pos]=="LumA")
+fp <- sum(both$PRED_CLASS[!pos]=="LumA")
+tn <- sum(both$PRED_CLASS[!pos]=="other")
+fn <- sum(both$PRED_CLASS[pos]=="other")
+cat(sprintf("Accuracy = %i of %i (%i %%)\n",tp+tn,nrow(both),
+                        round(((tp+tn)/nrow(both))*100)))
+cat(sprintf("PPV = %i %%\n", round((tp/(tp+fp))*100)))
+cat(sprintf("Recall = %i %%\n", round((tp/(tp+fn))*100)))
+
+```
 
 # Introduction
-This tutorial shows the steps to build a breast tumour classifier using netDx (Ref 1) by integrating gene expression and DNA copy number variants (CNV). Based on the expression of 50 genes, breast tumours are traditionally classified into one of four broad categories: Luminal A, Luminal B, HER2-enriched, and basal-like (Ref 2). Each category of tumour has different  prognostic value and response to chemotherapy and/or hormone therapy.
-To keep things simple, in this tutorial we build a binary classifier that discriminates between the Luminal A and other subtypes. The Luminal A subtype is a low-grade tumour with good prognosis; as it expresses the estrogen receptor, this type of tumour is a good candidate for hormone therapy (Ref 3).
+Based on the expression of 50 genes, breast tumours are traditionally classified into one of four broad categories: Luminal A, Luminal B, HER2-enriched, and basal-like (Ref 2). Each category of tumour has different  prognostic value and response to chemotherapy and/or hormone therapy.
 
+Here we build a binary classifier that discriminates between Luminal A and other subtypes (i.e. non-Luminal A). As input data, we have a matrix of processed gene expression and CNV calls. Through this exercise, we will use the following capabilities of netDx:
 
-Through this exercise, we will use the following capabilities of netDx:
-* Perform feature selection on the training set
-* Assess performance on the test set
-* Generate patient similarity networks from more than one type of data
+* Create pathway-level features (patient similarity networks) from gene expression data
+* Create pathway-level features from sparse CNV data
+* Perform feature selection on the training set, so features have scores
+* Assess performance on the hold-out (test) samples
 
-The workflow is shown in Figure 1. The algorithm proceeds in two steps:
-1. ***Feature selection:*** Two-thirds of the samples from each class are designated as training samples. Feature selection is carried out twice, once for LumA samples and once for non-LumA samples. For details, see Ref 1.
-2.***Predicting classes of test samples:*** The other one-third of samples in each class are designed as test samples. For each class, a single integrated GeneMANIA network (or database) is constructed, comprising of  those networks feature-selected in the previous step. This network should contain all patients in the database (train and test). A GeneMANIA query is then run against each database, using training samples from the respective class as query. This step obtains a class-similarity ranking for each test sample. These ranks are then normalized and the patient is assigned to the class for which it has a higher rank.
+# Step 0. Set up environment
+A multi-core compute node will considerably speed the process and is highly recommended. Change the `numCores` parameter to the number of cores on your machine.
 
-![netDx workflow for a binary tumour classifier from gene expression and CNV data. \newline A. Two sets of patient similarity networks are generated: the first based on correlation of gene expression in cellular pathways (magenta), and the second based on shared overlap of CNVs in cellular pathways (teal). Each datatype generates ~1,000-2,000 networks, and these are integrated into a single database by GeneMANIA. \newline B. Feature selection is separately carried out for the `LumA' class for the `other' class. A GeneMANIA query is run on the integrated database is queried 10 times; each time a different 9/10th of the training ``+'' samples is used as query. A network's score is the frequency with which GeneMANIA marks it as being informative. Networks scoring 9 or 10 out of 10 are feature selected. Before patient classification, two enriched databases are constructed (orange and grey cylinders); each contain feature selected nets and train as well as test samples. \newline C. Patient similarity to a class is ranked by running a query against the class database; this is done once per class.  Test patients are assigned to the class for which they have the highest-ranking similarity.](images/tcga_brca.png)
-
-# Set up environment
-
-A multi-core compute node is highly recommended.
-
-``` {r} 
+``` {r, eval=FALSE} 
 # Change this to a local directory where you have write permission
 outDir <- sprintf("%s/TCGA_BRCA",getwd())
 cat(sprintf("All intermediate files are stored in:\n%s\n",outDir))
@@ -38,34 +200,35 @@ TRAIN_PROP <- 0.67      # fraction of samples to use for training
 
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
-
 ```
 
 Load the netDx software and data packages. Finally, load the breast cancer dataset.
-``` {r}
+
+``` {r, eval=FALSE}
 require(netDx)
 require(netDx.examples)
 data(TCGA_BRCA)
 ```
 
-# Split data into training and test sets
+# Step 1. Split data into training and test sets
 
-```{r}
+```{r, eval=FALSE}
 
 subtypes<- c("LumA")
 pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
-subtypes <- c(subtypes,"other") # add residual
+subtypes <- c(subtypes,"other") 
 
 pheno$TT_STATUS <- splitTestTrain(pheno,
     pctT = TRAIN_PROP,setSeed = 42)
 ```
 
-# Create patient similarity networks
-Figure 1A shows the workflow for this step. The goal is to create input networks for all possible predictors, before proceeding to feature selection (next section). Note that as our goal is feature selection, only the training samples are used to generate input networks here.
 
-We limit CNV and gene expression data to the samples for which we have labels and keep only the data for training samples.
+# Step 2. Feature selection (training samples only)
 
-``` {r}
+## 2a. Limit samples/data to training samples
+
+Subset phenotype table and individual data layers to keep only training samples
+``` {r, eval=FALSE}
 pheno_FULL      <- pheno
 xpr_FULL        <- xpr
 cnv_FULL        <- cnv_GR
@@ -74,22 +237,30 @@ xpr                     <- xpr[,which(colnames(xpr)%in% pheno$ID)]
 cnv_GR          <- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
 ```
 
-## Lists of pathways
-First we create a list of pathways using a `.gmt` file with pathway definitions from curated databases (Reactome, HumanCyc, Panther,etc.,)
+## 2b. Define groupings (pathways or gene-sets)
+Here we load  pathway definitions precompiled into a [.gmt file](https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29) from curated databases such as Panther, Reactome, NCI, IOB and KEGG. 
 
-``` {r}
+**Updated genesets are available for public download from [the Baderlab Geneset page](http://download.baderlab.org/EM_Genesets/).**
+
+For example, human genome pathway definitions for April 2019 are available under `April_01_209/Human/symbol`, **[as in here](http://download.baderlab.org/EM_Genesets/April_01_2019/Human/symbol/)**.
+
+``` {r, eval=FALSE}
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
     path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 head(pathwayList)
 ```
 
-## Gene expression data
+## 2c. Create features (Patient Similarity Networks or PSN)
+
+netDx converts input data into patient similarity networks. For each type of input data (e.g. clinical, gene expression, CNV), use built-in commands to generate PSN. Finally compile them all into a single "database". The database will be used to score features (feature selection). This section shows you how to create PSN from dense gene expression data or sparse CNV data (i.e. genomic events). 
+
+####  Make PSN from gene expression data
 From gene expression data, we create one network per cellular pathway. Similarity between two patients is defined as the Pearson correlation of the expression vector; each network is limited to genes for the corresponding pathway.
 \par
-The function that generates the networks from submatrices of the gene expression data is `makePSN_NamedMatrix()`. In this case, we are generating "profiles", or simply writing submatrices corresponding to the pathways (note the `writeProfiles=TRUE` argument). As these profiles will create completely connected networks with N-choose-2 edges, weaker edges will first be pruned for computational feasibility. We use GeneMANIA to "sparsify" the networks in the `GM_createDB()` subroutine. Note that `netList` contains the names of networks, rather than the contents; the profiles are written to `profDir`. Profile file names end with `.profile`.
+The function that generates the networks from submatrices of the gene expression data is `makePSN_NamedMatrix()`. In this case, we are generating "profiles", or simply writing submatrices corresponding to the pathways (note the `writeProfiles=TRUE` argument). As these profiles will create completely connected networks with N-choose-2 edges, weaker edges will first be pruned for computational feasibility. Note that `netList` contains the names of networks, rather than the contents; the profiles are written to `profDir`. Profile file names end with `.profile`.
 
-``` {r}
+``` {r, eval=FALSE}
 profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 
@@ -100,13 +271,12 @@ netList <- unlist(netList)
 head(netList)
 ```
 
-## Copy number variants
-
+#### Make PSN from copy number variants (sparse)
 Similarly, we construct networks based on shared overlap of CNVs. For each cellular pathway, we create a network consisting of patients with CNVs in the member genes of that pathway (or gene-set). The edge weight here is binary; all patients in the network have an edge weight of one. Those not in the network implicitly have a weight of zero.
 
-Genomic events need to first be mapped to unit variables before being grouped into sets or pathways; here, ranges of CNV ``events'' need to be labelled by the gene which these overlap. This mapping is achieved by `mapNamedRangesToSets()`. The function used to construct networks from genomic events is `makePSN_RangeSets()`. As with the gene-expression nets, CNV nets are written to `profDir`. All input networks must be in the same directory. Interaction network names end with `_cont.txt`.
+Genomic events (here, CNVs) need to first be mapped to genes, before being grouped into pathways. This mapping is achieved by `mapNamedRangesToSets()`. The function used to construct networks from genomic events is `makePSN_RangeSets()`. As with the gene-expression nets, CNV nets are written to `profDir`. All input networks must be in the same directory. Interaction network names end with `_cont.txt`.
 
-``` {r}
+``` {r, eval=FALSE}
 data(genes)
 gene_GR     <- GRanges(genes$chrom,
    IRanges(genes$txStart,genes$txEnd),
@@ -120,25 +290,26 @@ cat(sprintf("CNV: Got %i networks\n",length(netList2)))
 ```
 
 Let's take a look at CNV-based networks:
-``` {r}
+``` {r, eval=FALSE}
 head(unlist(netList2))
 ```
 
-## Integrate input nets into GeneMANIA database
-Once all our patient networks are constructed, these are integrated into a single GeneMANIA database for feature selection.
+## 2d. Compile all features into a single database
+Once all our patient networks are constructed, these are integrated into a single database for feature selection.
 
-``` {r}
-dbDir   <- GM_createDB(profDir, pheno$ID, outDir,numCores=numCores)
+``` {r, eval=FALSE}
+dbDir   <- compilePSN(profDir, pheno$ID, outDir,numCores=numCores)
 ```
 
-# Feature selection
+## 2e. Score networks (or feature selection)
 Figure 1B shows the schematic for feature selection. The goal of this step is to extract the networks that are most predictive of a given class. For each subtype, here "LumA" and "other", feature selection is performed once (the large outer `for` loop).
 
 The key functions are:
-* `GM_runCV_featureSet()`, which runs the cross-validation with successive GeneMANIA queries
-* `GM_networkTally()`, which loops over all network rank files (or NRANK files) and computes the network score
 
-``` {r}
+* `runFeatureSelection()`, which scores the networks
+* `compileFeatureScores()`, which loops over all network rank files (or NRANK files) and computes the network score
+
+``` {r, eval=FALSE}
 ## repeat process for each class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
@@ -159,7 +330,7 @@ for (g in subtypes) {
         trainPred <- pheno$ID[which(pheno$STATUS %in% g)]
 
         # Cross validation
-        GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
+        runFeatureSelection(trainPred, resDir, dbDir$dbDir,
                 nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
                 GMmemory=GMmemory)
 
@@ -170,7 +341,7 @@ for (g in subtypes) {
         cat(sprintf("Got %i prank files\n",length(prank)))
 
     # Compute network score
-        pTally          <- GM_networkTally(paste(resDir,nrank,sep="/"))
+        pTally          <- compileFeatureScores(paste(resDir,nrank,sep="/"))
         head(pTally)
         # write to file
         tallyFile       <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
@@ -178,19 +349,24 @@ for (g in subtypes) {
 }
 ```
 
-# Rank test patients using trained model
-Following feature selection (previous section), we have identified the networks that are predictive of our two classes of interest: LumA and other. For each of these classes, we now create a single GeneMANIA database comprising ***only of the feature selected nets*** ; this is equivalent to our trained model for each class. We rank the similarity of a test patient to each class via a GeneMANIA query; the query consists of training samples from the corresponding class. For example:
-* Rank_LumA: GeneMANIA rank for similarity to ***training `LumA' samples***
-* Rank_other: GeneMANIA rank for similarity to ***training `other' samples***
+# 3. Classify test samples from selected features
+Following feature selection (previous section), we have identified the networks that are predictive of our two classes of interest: LumA and other. For each of these classes, we now create a single database comprising ***only of the feature selected nets*** ; this is equivalent to our trained model for each class. 
+
+We rank the similarity of a test patient to each class. 
+For example:
+
+* Rank_LumA: Similarity rank to  training  `LumA` samples
+* Rank_other: Similarity to training `other` samples
 * Final rank = `max(Rank_LumA,Rank_other)`
 
 The following code block does all these steps:
-* `makePSN_NamedMatrix`, `makePSN_RangeSets`: Create patient nets for the feature-selected networks using both training and test samples
-* `GM_createDB`: Create the new database from the resulting nets
-* `runGeneMANIA`: Run the query with the training samples
-* `GM_getQueryROC`: Get patient rankings
 
-```{r}
+* `makePSN_NamedMatrix`, `makePSN_RangeSets`: Create patient nets for the feature-selected networks using both training and test samples
+* `compilePSN`: Create the new database from the resulting nets
+* `runQuery`: Query to get patient similarity, run once per class
+* `getPatientRankings`: Get patient rankings
+
+```{r, eval=FALSE}
 pheno <- pheno_FULL
 predRes <- list()
 for (g in subtypes) {
@@ -214,30 +390,29 @@ for (g in subtypes) {
                 path_GRList[which(names(path_GRList)%in% pTally)],
                 profDir,verbose=FALSE)
         # create db
-        dbDir <- GM_createDB(profDir,pheno$ID,pDir,numCores=numCores)
+        dbDir <- compilePSN(profDir,pheno$ID,pDir,numCores=numCores)
 
         # query of all training samples for this class
         qSamps<-pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
         qFile<-sprintf("%s/%s_query",pDir,g)
-        GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
+        writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 
-        resFile<-runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
+        resFile<-runQuery(dbDir$dbDir,qFile,resDir=pDir)
 
-        predRes[[g]]<-GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
+        predRes[[g]]<-getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
 }
 ```
 
-# Assign labels to test patients
-In the last section, we obtained two similarity ranks for each test patient. Here we use `GM_OneVAll_getClass()` to label patients by max rank.
+In the last section, we obtained two similarity ranks for each test patient. Here we use `predictPatientLabels()` to label patients by max rank.
 
-``` {r}
-predClass <- GM_OneVAll_getClass(predRes)
+``` {r, eval=FALSE}
+predClass <- predictPatientLabels(predRes)
 cat("Predicted classes\n")
 ```
 
-Finally, we evaluate the performance of the classifier.
+# Step 4. Evaluate performance
 
-``` {r}
+``` {r, eval=FALSE}
 both <- merge(x=pheno,y=predClass,by="ID")
 print(table(both[,c("STATUS","PRED_CLASS")]))
 pos <- (both$STATUS %in% "LumA")
@@ -258,6 +433,5 @@ sessionInfo()
 ```
 
 # References
-1. Pai et al. (2019). [netDx: A patient classifier based on integration of patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) ***Mol Sys Biol*** **15**, e8497. 
-2. Parker JS et al. (2009) J Clin Oncol. **27** (8):1160-7.
-3. The Cancer Genome Atlas (2012). Comprehensive molecular portraits of human breast tumours ***Nature*** **490**:61-70.
+1. Pai et al. (2019). [netDx: A patient classifier based on integration of patient similarity networks.](http://msb.embopress.org/content/15/3/e8497) *Mol Sys Biol* **15**, e8497. 
+2. Parker JS et al. (2009) *J Clin Oncol.* **27** (8):1160-7.

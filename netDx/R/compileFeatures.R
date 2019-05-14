@@ -22,7 +22,7 @@
 #' @param P2N_threshType (char) Most users shouldn't have to change this.
 #' ProfileToNetworkDriver's threshold option. One of "off|auto". 
 #' @param P2N_maxMissing (integer 5-100)
-#' @param GMmemory (integer) Memory for GeneMANIA (in Gb)
+#' @param JavaMemory (integer) Memory for GeneMANIA (in Gb)
 #' @param ... params for \code{writeQueryBatchFile()}
 #' @return (list). "dbDir": path to GeneMANIA database 
 #' 	"netDir": path to directory with interaction networks. If profiles
@@ -40,7 +40,7 @@
 #' @export
 compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	netSfx="_cont.txt$",verbose=TRUE,numCores=1L, P2N_threshType="off",
-	P2N_maxMissing=100,GMmemory=4L, ...) {
+	P2N_maxMissing=100,JavaMemory=4L, ...) {
 	# tmpDir/ is where all the prepared files are stored.
 	# GeneMANIA uses tmpDir as input to create the generic database. 
 	# The database itself will be in outDir/
@@ -125,7 +125,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 			corType <- "MUTUAL_INFORMATION"
 		}
 
-		cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", GMmemory,GM_jar)
+		cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", JavaMemory,GM_jar)
 		cmd3 <- sprintf("-proftype continuous -cor %s",corType)
 		cmd5 <- sprintf("-threshold %s -maxmissing %1.1f", P2N_threshType,
 			P2N_maxMissing)

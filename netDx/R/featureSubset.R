@@ -9,7 +9,7 @@
 #' @param incNets (char) vector of networks that are the basis of subset
 #' selection
 #' @param queryPool (char) See GM_run_featureSet, trainID param
-#' @param GM_db (char) path to GeneMANIA generic database with 
+#' @param dbPath (char) path to GeneMANIA generic database with 
 #'	training population. This is the same as the \code{dbDir} value for
 #' the output of compileFeatures.R
 #' @param pheno_DF (data.frame) pheno matrix; ID and STATUS
@@ -24,14 +24,14 @@
 #' @export
 #' @return (char) vector of selected subset of networks
 #' @examples
-#' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
+#' dbPath <- sprintf("%s/extdata/dbPath",path.package("netDx"))
 #' data(MB_pheno)
 #' nets <- c("DKK2_cont","EMX2_cont","TNC_cont","WIF1_cont")
 #' doSubsetSelection(methodName="greedy.backward",incNets=nets, 
 #'	queryPool=MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
-#'	GM_db=GM_db,pheno_DF=MB.pheno, outDir=".",num2return=103L)
+#'	dbPath=dbPath,pheno_DF=MB.pheno, outDir=".",num2return=103L)
 doSubsetSelection <- function(methodName="greedy.forward",incNets,queryPool,
-	GM_db,pheno_DF,predictClass,outDir,num2return,numCores=1L,
+	dbPath,pheno_DF,predictClass,outDir,num2return,numCores=1L,
 	scoreFile=NULL) {
 
 	if (!is.null(scoreFile)) {
@@ -48,7 +48,7 @@ doSubsetSelection <- function(methodName="greedy.forward",incNets,queryPool,
 		#			row=F,col=F,quote=F)
 	
 		resDir <- sprintf("%s/subsetWork", outDir)
-		runFeatureSelection(queryPool, resDir, GM_db, 
+		runFeatureSelection(queryPool, resDir, dbPath, 
 				num2return,
 				verbose=FALSE,numCores=numCores,
 				incNets=netSubset)

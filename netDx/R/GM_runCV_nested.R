@@ -16,10 +16,10 @@
 #' outer loop is stored.
 #' @examples
 #' data(MB_pheno)
-#' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
+#' dbPath <- sprintf("%s/extdata/dbPath",path.package("netDx"))
 #' GM_runCV_nested(outDir=".",pheno_DF=MB.pheno, predictClass="WNT",
 #' 	trainID_pred=MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
-#' 	numTrainSamps=103L,GM_db=GM_db)
+#' 	numTrainSamps=103L,dbPath=dbPath)
 #' @export
 GM_runCV_nested <- function(nOuterLoop=10L, setOloopSeed=42L,outDir,
 	pheno_DF, predictClass,...) {

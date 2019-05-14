@@ -3,7 +3,6 @@
 #' @param GM_db (char) path to directory with GeneMANIA generic database
 #' @param queryFiles (list(char)) paths to query files
 #' @param resDir (char) path to output directory
-#' @param parseReport (logical) if TRUE, parses out PRANK and NRANK portions
 #' @param verbose (logical) print messages
 #' @param GMmemory (integer) Memory for GeneMANIA (in Gb) - a total of 
 #' numCores*GMmemory will be used and distributed for all GM threads
@@ -36,6 +35,7 @@ runGeneMANIA3 <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
 	# when GM is executed in parallel. However, the problem did not seem
 	# to occur in Feb 2016 on the VM but does occur in April 2016. 
 	# This while-loop exists to ensure that all GM queries run.
+	# removed in version 1.1
 	t0	<- Sys.time()
 	system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
 	cat(sprintf("QueryRunner time taken: %1.1f s\n", Sys.time()-t0))

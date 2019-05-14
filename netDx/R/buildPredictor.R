@@ -12,7 +12,6 @@
 #'	(Pearson corr) and single gene networks (normalized difference)
 #' 3) Multiple datatypes, multiple metrics: Expression -> Pathways; 
 #'	Clinical -> single or grouped nets
-#' See examples/NestedCV_MultiData.Rmd for a full working example.
 #' @param pheno (data.frame) sample metadata, must have ID and STATUS columns
 #' @param dataList (list) keys are datatypes; values contain patient data
 #' for the corresponding datatype. e.g. dataList[["rna"]] contains expression
@@ -30,12 +29,12 @@
 #' @param outDir (char) directory where results will be stored. If this 
 #' directory exists, its contents will be overwritten
 #' @param trainProp (numeric 0 to 1) Percent samples to use for training
-#' @param nFoldCV (integer) number of CV folds in inner loop
+#' @param featScoreMax (integer) number of CV folds in inner loop
 #' @param numSplits (integer) number of train/blind test splits (i.e. iterations
 #' of outer loop)
 #' @param numCores (integer) number of CPU cores for parallel processing
-#' @param CVmemory (integer) memory in (Gb) used for each fold of CV
-#' @param CVcutoff (integer) cutoff for inner-fold CV to call feature-selected
+#' @param JavaMemory (integer) memory in (Gb) used for each fold of CV
+#' @param featSelCutoff (integer) cutoff for inner-fold CV to call feature-selected
 #' in a given split
 #' @param keepAllData (logical) if TRUE keeps all intermediate files, even
 #' those not needed for assessing the predictor. Use very cautiously as for
@@ -48,11 +47,10 @@
 #' will be eliminated by lasso. Future variations may allow other prefiltering
 #' options that are more lenient.
 #' @param impute (logical) if TRUE applies imputation by median within CV
-#' @examples see examples/NestedCV_MultiData.Rmd for example use.
 #' @import glmnet
 #' @export
 buildPredictor <- function(pheno,dataList,groupList,outDir,makeNetFunc,
-	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores,CVmemory=4L,CVcutoff=9L,
+	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,featSelCutoff=9L,
 	keepAllData=FALSE,startAt=1L, preFilter=FALSE,impute=FALSE) { 
 
 
@@ -85,7 +83,7 @@ cat(sprintf("# classes = %i { %s }\n", length(subtypes),
 	paste(subtypes,collapse=",")))
 cat("Sample breakdown by class\n")
 print(table(pheno$STATUS))
-cat(sprintf("Nested CV design = %i CV x %i splits\n", nFoldCV, numSplits))
+cat(sprintf("Nested CV design = %i CV x %i splits\n", featScoreMax, numSplits))
 cat(sprintf("Datapoints:\n"))
 for (nm in names(dataList)) {
 	cat(sprintf("\t%s: %i units\n", nm, nrow(dataList[[nm]])))
@@ -194,7 +192,7 @@ for (rngNum in startAt:numSplits) {
 			runFeatureSelection(trainPred, 
 				outDir=resDir, dbPath=dbDir$dbDir, 
 				nrow(pheno_subtype),verbose=T, numCores=numCores,
-				nFold=nFoldCV,JavaMemory=CVmemory)
+				featScoreMax=featScoreMax,JavaMemory=JavaMemory)
 	
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
@@ -211,7 +209,7 @@ for (rngNum in startAt:numSplits) {
 		pTally <- read.delim(
 			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
 			sep="\t",h=T,as.is=T)
-		idx <- which(pTally[,2]>=CVcutoff)
+		idx <- which(pTally[,2]>=featSelCutoff)
 
 		pTally <- pTally[idx,1]
 		pTally <- sub(".profile","",pTally)
@@ -264,7 +262,7 @@ for (rngNum in startAt:numSplits) {
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
-			JavaMemory=CVmemory)
+			JavaMemory=JavaMemory)
 		predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
 		} else {
 			predRes[[g]] <- NA

@@ -8,9 +8,8 @@
 #' For i = 1..splitN
 #' 		randomly split patients into training and test
 #' 		(optional) filter training networks to exclude random-like networks
-#' 		create GeneMANIA database for cross-validation
-#' 		run 10-fold cross validation
-#'		score networks based on 10-fold CV
+#' 		compile features into database for cross-validation
+#'		score networks out of 10
 #' end
 #' using test samples from all resamplings, measure predictor performance.
 #' 
@@ -32,8 +31,7 @@
 #' @param splitN (integer) number of data resamplings to use
 #' @param seed_resampling (integer) RNG seed for deciding hold-out sets
 #' while resampling.
-#' @param nFoldCV (integer) number of folds in the inner cross-validation
-#' loop
+#' @param featScoreMax (integer) max score for features in feature selection
 #' @param filter_WtSum (numeric between 5-100) Limit to top-ranked 
 #' networks such that cumulative weight is less than this parameter. 
 #' e.g. If filter_WtSum=20, first order networks by decreasing weight; 
@@ -45,25 +43,25 @@
 #' @param cliqueReps (integer) number of permutations for clique filtering
 #' @param minEnr (integer -1 to 1) minEnr param in cliqueFilterNets()
 #' @param numCores (integer) num cores for parallel processing
-#' @param GM_numCores (integer) num cores for running GM. If NULL, is set
+#' @param FS_numCores (integer) num cores for running GM. If NULL, is set
 #' to max(1,numCores-1). Set to a lower value if the default setting
 #' gives out-of-memory error. This may happen if networks are denser than
 #' expected
 #' @param useAttributes (char) vector of attribute names to be used in 
 #' executing GM queries. Note: Not currently well-tested, suggest leaving
 #' as NULL.
-#' @param seed_CVqueries (integer) RNG seed for inner cross-validation
+#' @param seed_queryResample (integer) RNG seed for inner cross-validation
 #' loop
 #' @param ... params for runFeatureSelection()
 #' @importFrom reshape2 melt
 #' @export
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
-	splitN=3L,seed_resampling=103L, nFoldCV=10L,filter_WtSum=100L,
+	splitN=3L,seed_resampling=103L, featScoreMax=10L,filter_WtSum=100L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,minEnr=-1,
-	numCores=1L,GM_numCores=NULL,useAttributes=NULL,
-	seed_CVqueries=42L,...) {
+	numCores=1L,FS_numCores=NULL,useAttributes=NULL,
+	seed_queryResample=42L,...) {
 
-	if (is.null(GM_numCores)) GM_numCores <- max(1,numCores-1)
+	if (is.null(FS_numCores)) FS_numCores <- max(1,numCores-1)
 	
 	# split into testing and training - resampling mode
 	cat("* Resampling train/test samples\n")
@@ -151,10 +149,10 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		dbPath     <- sprintf("%s/dataset",newOut)
 		t0 <- Sys.time()
 		runFeatureSelection(trainPred, resDir, dbPath, 
-				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
-				nFold=nFoldCV,seed_CVqueries=seed_CVqueries,...)
+				nrow(p_train),verbose=TRUE,numCores=FS_numCores,
+				featScoreMax=featScoreMax,seed_queryResample=seed_queryResample,...)
 		t1 <- Sys.time()
-		cat("Time to run inner CV loop:\n")
+		cat("Score features for this train/test split\n")
 		print(t1-t0)
 		
 		# collect results

@@ -67,7 +67,7 @@ as NULL.}
 \item{seed_CVqueries}{(integer) RNG seed for inner cross-validation
 loop}
 
-\item{...}{params for GM_runCV_featureSet()}
+\item{...}{params for runFeatureSelection()}
 }
 \description{
 Performs feature selection using multiple resamplings of the data

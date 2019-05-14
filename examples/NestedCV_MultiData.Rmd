@@ -1,5 +1,5 @@
 ---
-title: "Nested Cross-Validation with Multiple Datatypes"
+title: "Binary survival prediction from clinical and gene expression: One function call"
 output:
   html_document: 
    toc: true
@@ -11,7 +11,7 @@ output:
 
 # Introduction
 
-In this example, we will use netDx to run **nested cross-validation design** using multiple datatypes and custom similarity metrics. 
+In this example, we will use netDx to run **cross-validation design** using multiple datatypes and custom similarity metrics. 
 
 In the nested design, cross-validation is performed repeatedly over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits. 
 
@@ -184,7 +184,7 @@ The call below runs nested two-fold cross-validation over 2 splits. Within each 
  
  
 ```{r,eval=TRUE}
-runPredictor_nestedCV(pheno,
+buildPredictor(pheno,
    dataList=dats,groupList=groupList,
    makeNetFunc=KIRC_makeNets, ### custom network creation function
    outDir=sprintf("%s/nestedCV_output",getwd()), ## absolute path

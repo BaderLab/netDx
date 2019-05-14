@@ -101,10 +101,10 @@ geneSim <- function(x) {
 For each subtype, the loop combines the following steps:
 
 1. `makePSN_NamedMatrix()`: Function that creates the patient networks from the expression vector. Here we supply the custom similarity-computing function via the `customFunc` argument. The interaction networks are written in the directory `netDir`.
-2. `GM_createDB()`: All the input networks in `netDir` are integrated into a single GeneMANIA database.
-3. `GM_writeQueryFile()`: Write a GeneMANIA query file; the GeneMANIA query will obtain a similarity ranking for test patients
-4. `runGeneMANIA()`: Runs a GeneMANIA query
-5. `GM_getQueryROC()`: Process the patient ranking output file (the `.prank` file)
+2. `compilePSN()`: All the input networks in `netDir` are integrated into a single GeneMANIA database.
+3. `writeQueryFile()`: Write a GeneMANIA query file; the GeneMANIA query will obtain a similarity ranking for test patients
+4. `runQuery()`: Runs a GeneMANIA query
+5. `getPatientRankings()`: Process the patient ranking output file (the `.prank` file)
 
 ```{r}
 # directories with group-specific predictors
@@ -133,18 +133,18 @@ for (g in names(groupSig)){
                                    verbose=TRUE)
 
     # create a GeneMANIA database out of these networks
-    dbDir <- GM_createDB(netDir, MB.pheno$ID, pDir)
+    dbDir <- compilePSN(netDir, MB.pheno$ID, pDir)
 
     # run a query using training samples for this subtype.
     # get ranking for all patients in the database by running GeneMANIA
     trainSamps <- MB.pheno$ID[which(MB.pheno$TT_STATUS %in% "TRAIN"
                 & MB.pheno$STATUS %in% g)]
     qFile      <- sprintf("%s/query.txt", pDir)
-    GM_writeQueryFile(trainSamps, "all", nrow(MB.pheno),qFile)
-    resFile <- runGeneMANIA(dbDir$dbDir, qFile, pDir)
+    writeQueryFile(trainSamps, "all", nrow(MB.pheno),qFile)
+    resFile <- runQuery(dbDir$dbDir, qFile, pDir)
 
     # compute ROC curve for each predictor
-    predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
+    predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),
             MB.pheno, g)
 }
 ```
@@ -170,7 +170,7 @@ save(predRes,file=sprintf("%s/predictions.Rdata",outDir))
 Finally, predict the class of each test sample:
 
 ```{r}
-predClass       <- GM_OneVAll_getClass(predRes)
+predClass       <- predictPatientLabels(predRes)
 testSamps       <- merge(x=MB.pheno,y=predClass,by="ID")
 testSamps       <- testSamps[-which(!testSamps$STATUS %in% c("WNT","SHH",
                                 "Group3","Group4")),]

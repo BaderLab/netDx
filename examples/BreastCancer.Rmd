@@ -29,7 +29,7 @@ Want the process broken down? See the following sections.
 outDir <- sprintf("%s/TCGA_BRCA",getwd())
 
 numCores        <- 2L   # num cores available for parallel processing
-GMmemory        <- 4L   # java memory in Gb
+JavaMemory        <- 4L   # java memory in Gb
 cutoff          <- 1L   # score cutoff for feature-selected networks
 nFold           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
@@ -86,7 +86,7 @@ names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
 
 # Now that all PSN (features) have been created, compile into one database for feature selection
-dbDir   <- compilePSN(profDir, pheno$ID, outDir,numCores=numCores)
+dbDir   <- compileFeatures(profDir, pheno$ID, outDir,numCores=numCores)
 
 ## score networks from 0 to "nFold"; repeat once per class
 for (g in subtypes) {
@@ -106,7 +106,7 @@ for (g in subtypes) {
         # Function that does the scoring - this takes a while
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
                 nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
-                GMmemory=GMmemory)
+                JavaMemory=JavaMemory)
 
         # Compute network tally (from 0 to nFold)
         # file with network weights for each scoring call
@@ -144,7 +144,7 @@ for (g in subtypes) {
                 path_GRList[which(names(path_GRList)%in% pTally)],
                 profDir,verbose=FALSE)
         # create db
-        dbDir <- compilePSN(profDir,pheno$ID,pDir,numCores=numCores)
+        dbDir <- compileFeatures(profDir,pheno$ID,pDir,numCores=numCores)
 
         # query of all training samples for this class
         qSamps<-pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
@@ -187,13 +187,13 @@ Here we build a binary classifier that discriminates between Luminal A and other
 # Step 0. Set up environment
 A multi-core compute node will considerably speed the process and is highly recommended. Change the `numCores` parameter to the number of cores on your machine.
 
-``` {r, eval=FALSE} 
+``` {r, eval=TRUE} 
 # Change this to a local directory where you have write permission
 outDir <- sprintf("%s/TCGA_BRCA",getwd())
 cat(sprintf("All intermediate files are stored in:\n%s\n",outDir))
 
 numCores        <- 2L   # num cores available for parallel processing
-GMmemory        <- 4L   # java memory in Gb
+JavaMemory        <- 4L   # java memory in Gb
 cutoff          <- 1L   # score cutoff for feature-selected networks
 nFold           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
@@ -204,7 +204,7 @@ dir.create(outDir)
 
 Load the netDx software and data packages. Finally, load the breast cancer dataset.
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 require(netDx)
 require(netDx.examples)
 data(TCGA_BRCA)
@@ -212,7 +212,7 @@ data(TCGA_BRCA)
 
 # Step 1. Split data into training and test sets
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 
 subtypes<- c("LumA")
 pheno$STATUS[which(!pheno$STATUS %in% subtypes)] <- "other"
@@ -228,7 +228,7 @@ pheno$TT_STATUS <- splitTestTrain(pheno,
 ## 2a. Limit samples/data to training samples
 
 Subset phenotype table and individual data layers to keep only training samples
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 pheno_FULL      <- pheno
 xpr_FULL        <- xpr
 cnv_FULL        <- cnv_GR
@@ -244,7 +244,7 @@ Here we load  pathway definitions precompiled into a [.gmt file](https://softwar
 
 For example, human genome pathway definitions for April 2019 are available under `April_01_209/Human/symbol`, **[as in here](http://download.baderlab.org/EM_Genesets/April_01_2019/Human/symbol/)**.
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
     path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
@@ -260,7 +260,7 @@ From gene expression data, we create one network per cellular pathway. Similarit
 \par
 The function that generates the networks from submatrices of the gene expression data is `makePSN_NamedMatrix()`. In this case, we are generating "profiles", or simply writing submatrices corresponding to the pathways (note the `writeProfiles=TRUE` argument). As these profiles will create completely connected networks with N-choose-2 edges, weaker edges will first be pruned for computational feasibility. Note that `netList` contains the names of networks, rather than the contents; the profiles are written to `profDir`. Profile file names end with `.profile`.
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 
@@ -276,7 +276,7 @@ Similarly, we construct networks based on shared overlap of CNVs. For each cellu
 
 Genomic events (here, CNVs) need to first be mapped to genes, before being grouped into pathways. This mapping is achieved by `mapNamedRangesToSets()`. The function used to construct networks from genomic events is `makePSN_RangeSets()`. As with the gene-expression nets, CNV nets are written to `profDir`. All input networks must be in the same directory. Interaction network names end with `_cont.txt`.
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 data(genes)
 gene_GR     <- GRanges(genes$chrom,
    IRanges(genes$txStart,genes$txEnd),
@@ -290,15 +290,15 @@ cat(sprintf("CNV: Got %i networks\n",length(netList2)))
 ```
 
 Let's take a look at CNV-based networks:
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 head(unlist(netList2))
 ```
 
 ## 2d. Compile all features into a single database
 Once all our patient networks are constructed, these are integrated into a single database for feature selection.
 
-``` {r, eval=FALSE}
-dbDir   <- compilePSN(profDir, pheno$ID, outDir,numCores=numCores)
+``` {r, eval=TRUE}
+dbDir   <- compileFeatures(profDir, pheno$ID, outDir,numCores=numCores)
 ```
 
 ## 2e. Score networks (or feature selection)
@@ -309,7 +309,7 @@ The key functions are:
 * `runFeatureSelection()`, which scores the networks
 * `compileFeatureScores()`, which loops over all network rank files (or NRANK files) and computes the network score
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 ## repeat process for each class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
@@ -332,7 +332,7 @@ for (g in subtypes) {
         # Cross validation
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
                 nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
-                GMmemory=GMmemory)
+                JavaMemory=JavaMemory)
 
         # patient similarity ranks
         prank <- dir(path=resDir,pattern="PRANK$")
@@ -362,11 +362,11 @@ For example:
 The following code block does all these steps:
 
 * `makePSN_NamedMatrix`, `makePSN_RangeSets`: Create patient nets for the feature-selected networks using both training and test samples
-* `compilePSN`: Create the new database from the resulting nets
+* `compileFeatures`: Create the new database from the resulting nets
 * `runQuery`: Query to get patient similarity, run once per class
 * `getPatientRankings`: Get patient rankings
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 pheno <- pheno_FULL
 predRes <- list()
 for (g in subtypes) {
@@ -390,7 +390,7 @@ for (g in subtypes) {
                 path_GRList[which(names(path_GRList)%in% pTally)],
                 profDir,verbose=FALSE)
         # create db
-        dbDir <- compilePSN(profDir,pheno$ID,pDir,numCores=numCores)
+        dbDir <- compileFeatures(profDir,pheno$ID,pDir,numCores=numCores)
 
         # query of all training samples for this class
         qSamps<-pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
@@ -405,14 +405,14 @@ for (g in subtypes) {
 
 In the last section, we obtained two similarity ranks for each test patient. Here we use `predictPatientLabels()` to label patients by max rank.
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 predClass <- predictPatientLabels(predRes)
 cat("Predicted classes\n")
 ```
 
 # Step 4. Evaluate performance
 
-``` {r, eval=FALSE}
+``` {r, eval=TRUE}
 both <- merge(x=pheno,y=predClass,by="ID")
 print(table(both[,c("STATUS","PRED_CLASS")]))
 pos <- (both$STATUS %in% "LumA")

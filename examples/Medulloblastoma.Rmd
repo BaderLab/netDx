@@ -101,7 +101,7 @@ geneSim <- function(x) {
 For each subtype, the loop combines the following steps:
 
 1. `makePSN_NamedMatrix()`: Function that creates the patient networks from the expression vector. Here we supply the custom similarity-computing function via the `customFunc` argument. The interaction networks are written in the directory `netDir`.
-2. `compilePSN()`: All the input networks in `netDir` are integrated into a single GeneMANIA database.
+2. `compileFeatures()`: All the input networks in `netDir` are integrated into a single GeneMANIA database.
 3. `writeQueryFile()`: Write a GeneMANIA query file; the GeneMANIA query will obtain a similarity ranking for test patients
 4. `runQuery()`: Runs a GeneMANIA query
 5. `getPatientRankings()`: Process the patient ranking output file (the `.prank` file)
@@ -133,7 +133,7 @@ for (g in names(groupSig)){
                                    verbose=TRUE)
 
     # create a GeneMANIA database out of these networks
-    dbDir <- compilePSN(netDir, MB.pheno$ID, pDir)
+    dbDir <- compileFeatures(netDir, MB.pheno$ID, pDir)
 
     # run a query using training samples for this subtype.
     # get ranking for all patients in the database by running GeneMANIA

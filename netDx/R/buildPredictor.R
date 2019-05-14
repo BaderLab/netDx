@@ -192,9 +192,9 @@ for (rngNum in startAt:numSplits) {
 			# Cross validation
 			resDir <- sprintf("%s/GM_results",pDir)
 			runFeatureSelection(trainPred, 
-				outDir=resDir, GM_db=dbDir$dbDir, 
+				outDir=resDir, dbPath=dbDir$dbDir, 
 				nrow(pheno_subtype),verbose=T, numCores=numCores,
-				nFold=nFoldCV,GMmemory=CVmemory)
+				nFold=nFoldCV,JavaMemory=CVmemory)
 	
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
@@ -264,7 +264,7 @@ for (rngNum in startAt:numSplits) {
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
-			GMmemory=CVmemory)
+			JavaMemory=CVmemory)
 		predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
 		} else {
 			predRes[[g]] <- NA

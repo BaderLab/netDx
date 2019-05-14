@@ -4,7 +4,7 @@
 #' @param trainID_pred (char) vector with universe of predictor class
 #' patients (ie all that can possibly be included in the query file
 #' @param outDir (char) directory to store query file and GM results
-#' @param GM_db (char) path to GeneMANIA generic database with
+#' @param dbPath (char) path to GeneMANIA generic database with
 #'	training population
 #' @param numTrainSamps (integer) number of training samples in total
 #' leave blank to use 5 training samples in order to save memory
@@ -15,20 +15,20 @@
 #' @param fileSfx (char) file suffix
 #' @param verbose (logical) print messages
 #' @param numCores (logical) num parallel threads for cross-validation
-#' @param GMmemory (integer) memory for GeneMANIA run, in Gb.
+#' @param JavaMemory (integer) memory for GeneMANIA run, in Gb.
 #' @param seed_CVqueries (integer) RNG seed for inner cross validation loop.
 #' Makes deterministic samples held-out for each GeneMANIA query (see
 #' makeCVqueries())
 #' @param ... args for \code{makeCVqueries()}
 #' @examples
 #' data(MB_pheno)
-#' GM_db <- sprintf("%s/extdata/GM_db",path.package("netDx"))
+#' dbPath <- sprintf("%s/extdata/dbPath",path.package("netDx"))
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
-#'	"~/tmp",GM_db,103L)
+#'	"~/tmp",dbPath,103L)
 #' @export
-runFeatureSelection <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
+runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
-	numCores=2L,GMmemory=6L,seed_CVqueries=42L,...) {
+	numCores=2L,JavaMemory=6L,seed_CVqueries=42L,...) {
 
 	#TODO if results already exist, what do we do? Delete with a warning?
 	if (!file.exists(outDir)) dir.create(outDir)
@@ -59,7 +59,7 @@ runFeatureSelection <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	x <- foreach(m=1:length(qSamps)) %dopar% {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
-		runQuery(GM_db, qFile, outDir,GMmemory=GMmemory,
+		runQuery(dbPath, qFile, outDir,JavaMemory=JavaMemory,
 					 verbose=verbose)
 
 		# needed so R will pause while GM finishes running.

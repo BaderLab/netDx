@@ -6,9 +6,9 @@
 #' respectively
 #' @export
 #' @examples
-#' GM_db <- sprintf("%s/extdata/GM_db", path.package("netDx"))
+#' dbPath <- sprintf("%s/extdata/dbPath", path.package("netDx"))
 #' GM_query <- sprintf("%s/extdata/GM_query.txt",path.package("netDx"))
-#' x <- runQuery(GM_db,GM_query,"/tmp")
+#' x <- runQuery(dbPath,GM_query,"/tmp")
 #' GM_parseReport(x)
 #' 
 GM_parseReport <- function(resFile) {

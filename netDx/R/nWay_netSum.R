@@ -148,9 +148,9 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 		trainPred <- pheno_train$ID[
 			which(pheno_train$STATUS %in% predClass)]
 		resDir    <- sprintf("%s/GM_results",newOut)
-		GM_db     <- sprintf("%s/dataset",newOut)
+		dbPath     <- sprintf("%s/dataset",newOut)
 		t0 <- Sys.time()
-		runFeatureSelection(trainPred, resDir, GM_db, 
+		runFeatureSelection(trainPred, resDir, dbPath, 
 				nrow(p_train),verbose=TRUE,numCores=GM_numCores,
 				nFold=nFoldCV,seed_CVqueries=seed_CVqueries,...)
 		t1 <- Sys.time()

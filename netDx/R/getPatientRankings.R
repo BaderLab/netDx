@@ -11,7 +11,7 @@
 #' higher ranked patient. 
 #' 2) realLbl: binary value indicating if patient label matches predictor
 #' label (real labels)
-#' 3) fullmat: pheno_DF merged with GM scores ("GM_score") and real label
+#' 3) fullmat: pheno_DF merged with similarity scores ("similarityScore") and real label
 #' ("isPredClass")
 #' 4) roc: output of ROCRs performance(,"tpr","fpr") - ROC curve
 #' 5) auc: output of ROCRs auc() 
@@ -49,7 +49,7 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	# unbounded.
 	# We therefore rescale GM score to range from 0 to 1.
 	curlbl <- cbind(curlbl, 
-					GM_score=order(dat[,2])/nrow(dat), 
+					similarityScore=order(dat[,2])/nrow(dat), 
 					IsPredClass=curlbl$STATUS)
 	curlbl <- curlbl[,-which(colnames(curlbl) %in% c("STATUS","TT_STATUS"))]
 
@@ -58,7 +58,7 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	# second condition is because ROCRs functions fail if there aren't
 	# exactly two unique values in the real class label
 	if (nrow(curlbl)>= 2 && length(unique(curlbl$IsPredClass))==2) {
-		pred <- prediction(curlbl$GM_score, curlbl$IsPredClass)
+		pred <- prediction(curlbl$similarityScore, curlbl$IsPredClass)
 		perf <- performance(pred,"tpr","fpr")
 		auc  <- performance(pred,"auc")@y.values[[1]]
 		precall <- performance(pred,"prec","rec")
@@ -73,7 +73,7 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	out <- merge(x=curlbl,y=pheno_DF,by="ID",all.y=TRUE)
 
 	# return data incase caller would use it.
-	return(list(predLbl=curlbl$GM_score,realLbl=curlbl$IsPredClass,
+	return(list(predLbl=curlbl$similarityScore,realLbl=curlbl$IsPredClass,
 				fullmat=out,pred=pred,
 				roc=perf,auc=auc,
 				precall=precall,f=f))

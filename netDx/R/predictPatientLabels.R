@@ -2,7 +2,7 @@
 #'
 #' @param resSet (list) output of getPatientRankings, each key for a different
 #' predictor. names(resSet) contain predictor label
-#' @return data.frame: ID, GM_score, PRED_CLASS
+#' @return data.frame: ID, similarityScore, PRED_CLASS
 #' @examples 
 #' data(predRes); predClass <- predictPatientLabels(predRes)
 #' @export
@@ -11,12 +11,12 @@ predictPatientLabels <- function(resSet) {
 	for (k in 1:length(resSet)){
     x   <- resSet[[k]]$fullmat
     if (is.null(type_rank)) 
-        type_rank <- x[,c("ID","GM_score")]
+        type_rank <- x[,c("ID","similarityScore")]
     else {
         if (all.equal(x$ID, type_rank$ID)!=TRUE){ 
             cat("ids don't match"); browser()
         }
-        type_rank <- cbind(type_rank, x[,"GM_score"])
+        type_rank <- cbind(type_rank, x[,"similarityScore"])
     }
         rnkCol <- paste(names(resSet)[k],"SCORE",sep="_") 
         colnames(type_rank)[ncol(type_rank)] <- rnkCol

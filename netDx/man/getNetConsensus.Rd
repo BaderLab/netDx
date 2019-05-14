@@ -9,7 +9,7 @@ getNetConsensus(scorelist)
 \arguments{
 \item{scorelist}{(list) key is dataset name, value is a data.frame 
 containing PATHWAY_NAME and SCORE. This is the output of
- GM_networkTally()}
+ compileFeatureScores()}
 }
 \value{
 (data.frame) Rownames are union of all nets in the input list.

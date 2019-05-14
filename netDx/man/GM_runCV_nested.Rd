@@ -21,7 +21,7 @@ a vector 1:1000. Note: regardless, this value overrides the
 
 \item{predictClass}{(char) class (of pheno_DF$STATUS) being predicted}
 
-\item{...}{parameters for GM_runCV_featureSet()}
+\item{...}{parameters for runFeatureSelection()}
 }
 \value{
 (char) vector of paths to directories where result for each
@@ -32,13 +32,13 @@ Nested cross validation for GM feature selection
 }
 \details{
 Runs two-tier cross validation by calling
-\code{GM_runCV_featureSet()} for the inner loop. Computes patient
+\code{runFeatureSelection()} for the inner loop. Computes patient
 ranking and network tally
 }
 \examples{
 data(MB_pheno)
-GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
+dbPath <- sprintf("\%s/extdata/dbPath",path.package("netDx"))
 GM_runCV_nested(outDir=".",pheno_DF=MB.pheno, predictClass="WNT",
 	trainID_pred=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
-	numTrainSamps=103L,GM_db=GM_db)
+	numTrainSamps=103L,dbPath=dbPath)
 }

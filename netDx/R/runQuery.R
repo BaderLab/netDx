@@ -1,13 +1,12 @@
 #' Run a GeneMANIA query
 #'
 #' @param dbPath (char) path to directory with GeneMANIA generic database
-#' @param queryFile (char) path to query file
+#' @param queryFiles (list(char)) paths to query files
 #' @param resDir (char) path to output directory
-#' @param parseReport (logical) if TRUE, parses out PRANK and NRANK portions
 #' @param verbose (logical) print messages
-#' @param JavaMemory (integer) Memory for GeneMANIA (in Gb)
-#' @param MAX_ATTEMPTS (integer) max num attempts to run GeneMANIA before
-#' giving up.
+#' @param JavaMemory (integer) Memory for GeneMANIA (in Gb) - a total of 
+#' numCores*GMmemory will be used and distributed for all GM threads
+#' @param numCores (integer) number of CPU cores for parallel processing
 #' @return path to GeneMANIA query result file
 #' of results file
 #' @examples
@@ -16,19 +15,20 @@
 #'		path.package("netDx"))
 #' runQuery(dbPath, GM_query,"/tmp")
 #' @export
-runQuery <- function(dbPath, queryFile, resDir, parseReport=TRUE,
-	verbose=TRUE,JavaMemory=6L,MAX_ATTEMPTS=3L) {
-	GM_jar	<- sprintf("%s/java/GeneMANIA-3.2B7.jar",
-						 path.package("netDx"))
-	qBase	<- basename(queryFile)
+runQuery <- function(dbPath, queryFiles, resDir, verbose=TRUE,
+	JavaMemory=6L, numCores=1) {
+	GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar", path.package("netDx"))
+	qBase	<- basename(queryFiles[[1]][1])
 	logFile	<- sprintf("%s/%s.log", resDir, qBase)
-	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",JavaMemory,GM_jar)
-	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s 2>&1 > %s",
-			dbPath, 1, resDir, queryFile,logFile)
+	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",JavaMemory*numCores,GM_jar)
+	queryStrings <- paste(queryFiles, collapse = ' ')
+	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s --netdx-flag true 2>&1 > %s",
+			dbPath, numCores, resDir, queryStrings, logFile)
 
 	cmd		<- paste(c(cmd1,cmd2),collapse=" ")
 	print(cmd)
-	
+
+	  # file is not actually created - is already split in PRANK and NRANK segments on GeneMANIA side
 	resFile <- sprintf("%s/%s-results.report.txt", resDir,qBase)
 	attempt <- 1
 	# sometimes GM stochastically fails because of a failure-to-acquire-lock
@@ -36,17 +36,11 @@ runQuery <- function(dbPath, queryFile, resDir, parseReport=TRUE,
 	# when GM is executed in parallel. However, the problem did not seem
 	# to occur in Feb 2016 on the VM but does occur in April 2016. 
 	# This while-loop exists to ensure that all GM queries run.
+	# removed in version 1.1
 	t0	<- Sys.time()
-	while ((!file.exists(resFile)) & (attempt <= MAX_ATTEMPTS)) {
-			cat(sprintf("* Attempt %i : %s\n", attempt,
-						basename(queryFile)))
-		system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
-		attempt <- attempt + 1
-	}
+	system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
 	cat(sprintf("QueryRunner time taken: %1.1f s\n", Sys.time()-t0))
-	
-	Sys.sleep(3)
-	if (parseReport) GM_parseReport(resFile)
-	
+
+	Sys.sleep(1)
 	return(resFile)
 }

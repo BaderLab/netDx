@@ -66,24 +66,21 @@ for (g in subtypes) {
 	qSamps <- pheno$ID[which(pheno$STATUS %in% g & 
 			 pheno$TT_STATUS%in%"TRAIN")]
 
-	cl <- makeCluster(numCores)
-	registerDoParallel(cl)
-	foreach(cutoff=1:maxScore, .packages="netDx") %dopar% {
-		cat(sprintf("\tCutoff = %i\n",cutoff))
-		qFile <- sprintf("%s/%s_cutoff%i",pDir,g,cutoff)
-		curr_p <- pTally[which(pTally[,2]>=cutoff),1]
-		idx <- grep("_cont$", curr_p,invert=TRUE)
-		if (length(idx)>0) {
-			curr_p[idx] <- paste(curr_p[idx],".profile",sep="")
-		}
-		if (length(curr_p)>0){
-			writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
-			resFile <- netDx::runQuery(dbDir$dbDir,qFile,resDir=pDir)
-			system(sprintf("unlink %s", resFile))
-		}
+	# using new Genemania implementation
+	for (cutoff in 1:maxScore){
+	  cat(sprintf("\tCutoff = %i\n",cutoff))
+	  qFile <- sprintf("%s/%s_cutoff%i",pDir,g,cutoff)
+	  curr_p <- pTally[which(pTally[,2]>=cutoff),1]
+	  idx <- grep("_cont$", curr_p,invert=TRUE)
+	  if (length(idx)>0) {
+	    curr_p[idx] <- paste(curr_p[idx],".profile",sep="")
+	  }
+	  if (length(curr_p)>0){
+	    writeQueryFile(qSamps,curr_p,nrow(pheno),qFile)
+	    resFile <- netDx::runQuery(dbDir$dbDir,qFile,resDir=pDir, numCores=numCores)
+	    # system(sprintf("unlink %s", resFile)) # file does not exist
+	  }
 	}
-	stopCluster(cl)
-
 	# collect rankings
 	for (cutoff in 1:maxScore) {
 		resFile <- sprintf("%s/%s_cutoff%i-results.report.txt.PRANK",

@@ -29,7 +29,6 @@ runGeneMANIA3 <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
   cat(cmd)
   
 	resFile <- sprintf("%s/%s-results.report.txt", resDir,qBase)
-	attempt <- 1
 	# sometimes GM stochastically fails because of a failure-to-acquire-lock
 	# in the /dataset/user directory. SP attributes to a race condition
 	# when GM is executed in parallel. However, the problem did not seem
@@ -40,7 +39,7 @@ runGeneMANIA3 <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
 	system(cmd,wait=TRUE,ignore.stdout=!verbose, ignore.stderr=!verbose)
 	cat(sprintf("QueryRunner time taken: %1.1f s\n", Sys.time()-t0))
 	
-	Sys.sleep(3)
+	Sys.sleep(1)
 	
 	return(resFile)
 }

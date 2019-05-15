@@ -15,7 +15,6 @@
 #' @param fileSfx (char) file suffix
 #' @param verbose (logical) print messages
 #' @param numCores (logical) num parallel threads for cross-validation
-#' @param useNewGM (logical) use new GeneMania Version for processing
 #' @param GMmemory (integer) memory for GeneMANIA run, in GB.
 #' @param seed_CVqueries (integer) RNG seed for inner cross validation loop.
 #' Makes deterministic samples held-out for each GeneMANIA query (see
@@ -30,7 +29,6 @@
 GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
 	numCores=2L,
-	useNewGM=FALSE,
 	GMmemory=6L,seed_CVqueries=42L,...) {
 
 	#TODO if results already exist, what do we do? Delete with a warning?
@@ -54,44 +52,14 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
 		GM_writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
-  if (useNewGM ){
-    qFiles <- list()
-    for (m in 1:length(qSamps)) {
-      qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
-      qFiles <- append(qFiles, qFile)
-    }
-    
-    runGeneMANIA3(GM_db, qFiles, outDir,GMmemory=GMmemory,
-                  verbose=verbose,parseReport=FALSE, numCores=numCores)
-    
-  } else{ 
-	
-  	cl	<- makeCluster(numCores)
-  	registerDoParallel(cl)
-  
-  	# run GeneMANIA n-fold
-  	x <- foreach(m=1:length(qSamps),
-  	             .packages = c("netDx")) %dopar% {
-  		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
-  
-  		# its also possible to pass multiple / all query files at once to GeneMania 
-  		# and increase the number of used threads in GeneMania --> useGMThreads
-		  runGeneMANIA(GM_db, qFile, outDir,GMmemory=GMmemory,
-  		               verbose=verbose)
-  		  
-  		  # keep only PRANK and NRANK and remove main results file.
-  		  resFile <- sprintf("%s/%s_%i.query-results.report.txt",
-  		                     outDir,fileSfx,m)
-  		  
-  		  system(sprintf("rm %s",resFile))
-  		}
-  		
-  		# needed so R will pause while GM finishes running.
-  		# otherwise the script proceeds asynchronously (without waiting
-  		# for GM to complete) and will try to work with result files that
-  		# haven't been written yet
-  		#Sys.sleep(15)
-  
-  	stopCluster(cl)
+  qFiles <- list()
+  for (m in 1:length(qSamps)) {
+    qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
+    qFiles <- append(qFiles, qFile)
   }
+  
+  runGeneMANIA(GM_db, qFiles, outDir,GMmemory=GMmemory,
+                verbose=verbose,parseReport=FALSE, numCores=numCores)
+  
+
 }

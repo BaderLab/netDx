@@ -4,8 +4,7 @@
 \alias{GM_networkTally}
 \title{Tally the score of networks through cross-validation}
 \usage{
-GM_networkTally(fList, filter_WtSum = 100, verbose = FALSE,
-  useNewGM = FALSE)
+GM_networkTally(fList, filter_WtSum = 100, verbose = FALSE)
 }
 \arguments{
 \item{fList}{(char) Vector of paths to GeneMANIA NRANK files}
@@ -16,9 +15,6 @@ e.g. If filter_WtSum=20, first order networks by decreasing weight;
 then keep those whose cumulative weight <= 20.}
 
 \item{verbose}{(logical) print messages}
-
-\item{useNewGM}{(logical) use new GeneMania Version for processing - 
-slightly different output format}
 }
 \value{
 (named integer) Vector of scores for networks that occur at 

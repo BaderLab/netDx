@@ -70,7 +70,7 @@ for (g in subtypes) {
 	}
 	GM_writeQueryFile(qSamps,pTally,nrow(pheno),qFile)
 
-	resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
+	resFile <- netDx::runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir, numCores=numCores)
 	system(sprintf("unlink %s", resFile))
 	outRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
 }

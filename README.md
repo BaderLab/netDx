@@ -76,7 +76,6 @@ $ R
 > if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 > BiocManager::install()
-> BiocManager::install(c("GenomicRanges"))
 ```
 Say `yes` to all dependencies that need to be installed.
 
@@ -108,12 +107,10 @@ Now we install the necessary R packages:
 $ cd netDx-master/
 $ R
 > install.packages(c('devtools','curl'))
-> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline","glmnet"))
-> BiocManager::install(c("RCy3"))
-> install.packages("igraph")
+> install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline","glmnet","igraph","knitr"))
+> BiocManager::install(c("GenomicRanges","RCy3"))
 > install.packages("netDx",type="source",repos=NULL)
 > install.packages("netDx.examples",type="source",repos=NULL)
-> install.packages("knitr") # needed to run examples
 ```
 
 On Unix systems you may need to install the libraries below at command-line:
@@ -122,27 +119,17 @@ $ sudo apt-get install libssl-dev # for openssl & httr
 $ sudo apt-get install libxml2-dev xml2 # for XML & r2cytoscape
 ```
 
-```
->install.packages(c("openssl","httr","RJSONIO"))
->devtools::install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
->devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')
-```
-
-Note: On Unix systems, installing `httr` requires a prior install of the `openssl` package. If the `openssl` install fails with a message like: `ERROR: configuration failed for package 'openssl'`, you will need to install openssl for your system. e.g. for Debian and Ubuntu, install `libssl-dev`
-
-
 <a name="mblastoma"></a>
 ## Test functionality
 Run the medulloblastoma vignette to make sure the netDx pipeline works from end to end.
-Each vignette is in Sweave format (`.Rnw`) . To run these, you need to have both `netDx` and `netDx.examples` installed. You will also need to install the R package `knitr` to compile the Sweave file.  If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rnw` file and click `Compile PDF`. Alternately, you may run the vignette through an interactive R session:
+Each vignette is in Rmarkdown format (`.Rmd`) . To run these, you need to have both `netDx` and `netDx.examples` installed. If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rmd` file and knit to PDF. Alternately, you may run the vignette through an interactive R session (requires [Pandoc](https://github.com/jgm/pandoc/)) :
 
 ```
 $ cd netDx-master/examples/
 $ R
-> require(knitr)
-> knit2pdf("Medulloblastoma-knitr.Rnw")
+> rmarkdown::render("Medulloblastoma-knitr.Rmd")
 ```
-This should generate `Medulloblastoma.pdf` in the `examples/` directory.
+This should generate `Medulloblastoma.html` in the `examples/` directory and open the preview in your web browser.
 
 ## Run BreastCancer LumA example
 This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature.* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. 

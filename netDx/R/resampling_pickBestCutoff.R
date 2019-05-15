@@ -1,6 +1,6 @@
 #' Pick best cutoff following resampling of training data
 #'
-#' @param perf_resamp (list) the output of GM_predClass_cutoffs(), 
+#' @param perf_resamp (list) the output of evalPerfOverCutoffs(), 
 #' with one entry for each round of resampling
 #' @return (list) with performance at each cutoff:
 #' 1) perfmat (matrix): tpr, fpr, accuracy,ppv for each resampling. One 

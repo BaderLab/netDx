@@ -82,7 +82,10 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
 	registerDoParallel(cl)
 
-	if (simMetric=="pearson") minMembers <- 5;
+	if (simMetric=="pearson") {
+		cat("simMetric set to pearson; forcing minMembers to be 5.\n")
+		minMembers <- 5;
+	}
 
 	# process pathways in parallel
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {

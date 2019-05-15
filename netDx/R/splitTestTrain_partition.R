@@ -15,7 +15,7 @@
 #'	all other values are considered non-predictor class
 #' Expects rows with unique IDs
 #' Rows with duplicate IDs will be excluded.
-#' @param nFold (integer) number of partitions. Each sample will be a test
+#' @param nFold (integer) number of resamplings. Each sample will be a test
 #' sample exactly once.
 #' @param setSeed (integer) if not NULL, RNG seed will be set to this value.
 #' @param predClass (char) name of predictor class
@@ -24,9 +24,9 @@
 #' nrow(pheno_DF). Values of "TRAIN" or "TEST"
 #' @examples
 #' data(TCGA_mini) 
-#' x <- splitTestTrain_partition(pheno,predClass="LumA")
+#' x <- splitTestTrain_resample(pheno,predClass="LumA")
 #' @export
-splitTestTrain_partition <- function(pheno_DF, nFold=3L, setSeed=42L,
+splitTestTrain_resampling <- function(pheno_DF, nFold=3L, setSeed=42L,
  	predClass,verbose=FALSE){
 if (!is.null(setSeed)) {
 	cat(sprintf("Resampling split: set seed: %i\n",setSeed))
@@ -36,7 +36,7 @@ if (!is.null(setSeed)) {
 plus_idx	<- which(pheno_DF$STATUS %in% predClass)
 other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)
 
-# num +/- that should be test per partition
+# num +/- that should be test per resampling 
 plus_csize 	<- floor((1/nFold)*length(plus_idx))
 other_csize <- floor((1/nFold)*length(other_idx))
 

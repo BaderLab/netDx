@@ -4,8 +4,8 @@
 \alias{doSubsetSelection}
 \title{Feature subset selection driver function}
 \usage{
-doSubsetSelection(methodName = "greedy.forward", incNets, queryPool, GM_db,
-  pheno_DF, predictClass, outDir, num2return, numCores = 1L,
+doSubsetSelection(methodName = "greedy.forward", incNets, queryPool,
+  dbPath, pheno_DF, predictClass, outDir, num2return, numCores = 1L,
   scoreFile = NULL)
 }
 \arguments{
@@ -19,9 +19,9 @@ selection}
 
 \item{queryPool}{(char) See GM_run_featureSet, trainID param}
 
-\item{GM_db}{(char) path to GeneMANIA generic database with 
+\item{dbPath}{(char) path to GeneMANIA generic database with 
 training population. This is the same as the \code{dbDir} value for
-the output of GM_createDB.R}
+the output of compileFeatures.R}
 
 \item{pheno_DF}{(data.frame) pheno matrix; ID and STATUS}
 
@@ -32,7 +32,7 @@ the output of GM_createDB.R}
 \item{num2return}{(integer) number of training samples in total}
 
 \item{numCores}{(integer) num cores for parallel processing. Used by
-\code{GM_runCV_featureSet()} during the cross-validation for each 
+\code{runFeatureSelection()} during the cross-validation for each 
 feature subset}
 
 \item{scoreFile}{(char) path to file where error is printed over 
@@ -49,10 +49,10 @@ Wrapper to run feature subselection methods from the FSelector
 package
 }
 \examples{
-GM_db <- sprintf("\%s/extdata/GM_db",path.package("netDx"))
+dbPath <- sprintf("\%s/extdata/dbPath",path.package("netDx"))
 data(MB_pheno)
 nets <- c("DKK2_cont","EMX2_cont","TNC_cont","WIF1_cont")
 doSubsetSelection(methodName="greedy.backward",incNets=nets, 
 queryPool=MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
-GM_db=GM_db,pheno_DF=MB.pheno, outDir=".",num2return=103L)
+dbPath=dbPath,pheno_DF=MB.pheno, outDir=".",num2return=103L)
 }

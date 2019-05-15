@@ -11,9 +11,13 @@ outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 
 predClasses <- c("SURVIVEYES","SURVIVENO")
+inDir <- sprintf("%s/extdata/KIRC_output",
+	path.package("netDx.examples"))
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 
-tmp <- lapply(featSelNet,print)
+featSelNet <- lapply(featScores, function(x) {
+	callFeatSel(x, fsCutoff=10, fsPctPass=0.7)
+})
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
            path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
@@ -39,6 +43,5 @@ for (curGroup in names(EMap_input)[1:2]) {
 		                        netName=curGroup,outDir=outDir,
 													  createStyle=(ctr==1))
 	RCy3::setVisualStyle("EMapStyle",RCy3::getNetworkSuid())
-browser()
 	ctr <- ctr+1
 }

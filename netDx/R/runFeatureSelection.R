@@ -51,29 +51,13 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 		writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
-
-	cl	<- makeCluster(numCores,outfile=sprintf("%s/runGM_log.txt",outDir))
-	registerDoParallel(cl)
-
-	# run GeneMANIA 10-fold
-	x <- foreach(m=1:length(qSamps)) %dopar% {
-		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
-
-		runQuery(dbPath, qFile, outDir,JavaMemory=JavaMemory,
-					 verbose=verbose)
-
-		# needed so R will pause while GM finishes running.
-		# otherwise the script proceeds asynchronously (without waiting
-		# for GM to complete) and will try to work with result files that
-		# haven't been written yet
-		#Sys.sleep(15)
-
-		# keep only PRANK and NRANK and remove main results file.
-		resFile <- sprintf("%s/%s_%i.query-results.report.txt",
-			outDir,fileSfx,m)
-
-		system(sprintf("rm %s",resFile))
+	qFiles <- list()
+	for (m in 1:length(qSamps)) {
+		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
+		qFiles <- append(qFiles, qFile)
 	}
 
-	stopCluster(cl)
+	runQuery(dbPath, qFiles, outDir, JavaMemory=JavaMemory, verbose=verbose, 
+	       numCores=numCores)
+
 }

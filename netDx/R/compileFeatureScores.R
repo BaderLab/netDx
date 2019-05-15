@@ -26,15 +26,15 @@ ctr <- 1
 for (fName in fList) {
 	tmp	<- basename(fName)
 
-	dat <- try(read.delim(fName,sep="\t",h=T,as.is=T),silent=TRUE)
+	dat <- try(read.delim(fName,sep="\t",h=T,as.is=T,skip=1),silent=TRUE)
 	ctr <- ctr+1
 
-	if (!inherits(dat,"try-error")) { # file not empty
-		# remove first group related line
-		dat <- dat[-1,]
+	if (!inherits(dat,"try-error")) { # file not empty - continue
 		cat("Net weight distribution:\n")
 		print(summary(dat$Weight))
-	
+		
+		# actually - it should already be sorted in decreasig order if we don't 
+		# reverse it above - but let's sort anyway
 		dat <- dat[order(dat$Weight,decreasing=TRUE),]
 	
 		cs			<- cumsum(dat$Weight)
@@ -44,10 +44,13 @@ for (fName in fList) {
 		cat(sprintf("filter_WtSum = %1.1f; %i of %i networks left\n",
 				filter_WtSum, nrow(dat),length(cs)))
 		
-		for (k in dat[,2]) {
-			if (!k %in% names(pathwayTally)) pathwayTally[[k]] <- 0;
-			pathwayTally[[k]]<- pathwayTally[[k]]+1;
+		# put all Network names in pathwaytally. The ones that are above threshold 
+		# (Top pathways) get +1
+	for (k in dat$Network) {
+		if (!k %in% names(pathwayTally)) pathwayTally[[k]] <- 0;
+		pathwayTally[[k]]<- pathwayTally[[k]]+1;
 		}
+		
 	}
 }
 

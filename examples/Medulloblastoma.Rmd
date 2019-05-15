@@ -141,7 +141,7 @@ for (g in names(groupSig)){
                 & MB.pheno$STATUS %in% g)]
     qFile      <- sprintf("%s/query.txt", pDir)
     writeQueryFile(trainSamps, "all", nrow(MB.pheno),qFile)
-    resFile <- runQuery(dbDir$dbDir, qFile, pDir)
+    resFile <- runQuery(dbDir$dbDir, qFile, pDir, numCores=numCores)
 
     # compute ROC curve for each predictor
     predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),

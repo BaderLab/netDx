@@ -173,7 +173,7 @@ for (rngNum in startAt:numSplits) {
 	netDir <- sprintf("%s/networks",outDir)
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores)
-	dbDir	<- compileFeatures(netDir, pheno$ID, outDir,numCores=numCores)
+	dbDir	<- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores)
 	
 
   # run cross-validation for each subtype
@@ -262,7 +262,7 @@ for (rngNum in startAt:numSplits) {
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
-			JavaMemory=JavaMemory)
+			JavaMemory=JavaMemory, numCores=numCores)
 		predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
 		} else {
 			predRes[[g]] <- NA
@@ -289,7 +289,8 @@ for (rngNum in startAt:numSplits) {
     system(sprintf("rm -r %s/%s/dataset %s/%s/networks",
         outDir,g,outDir,g))
 	}
-	}}
+	}# endif !keepAllData
+	}
 }, error=function(ex){
 	print(ex)
 }, finally={

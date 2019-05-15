@@ -1,4 +1,4 @@
-#' parses GeneMANIA query report into the PRANK and NRANK tables
+#' parses GeneMANIA query report into the PRANK and NRANK tables - no longer required
 #'
 #' @param resFile (char) path to GeneMANIA query results
 #' @return No value. Side effect of writing PRANK and NRANK files to the 

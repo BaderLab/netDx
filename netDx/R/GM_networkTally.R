@@ -6,8 +6,6 @@
 #' e.g. If filter_WtSum=20, first order networks by decreasing weight; 
 #' then keep those whose cumulative weight <= 20.
 #' @param verbose (logical) print messages
-#' @param useNewGM (logical) use new GeneMania Version for processing - 
-#' slightly different output format
 #' @return (named integer) Vector of scores for networks that occur at 
 #' least once in \code{fList}.
 #' @examples
@@ -16,7 +14,7 @@
 #' pTally <- GM_networkTally(netFiles)
 #' print(head(pTally))
 #' @export
-GM_networkTally <- function(fList,filter_WtSum=100,verbose=FALSE,useNewGM=FALSE) {
+GM_networkTally <- function(fList,filter_WtSum=100,verbose=FALSE) {
 if (filter_WtSum < 5) {
 	cat("filter_WtSum cannot be < 5 ; setting to 5\n")
 	filter_WtSum <- 5;
@@ -27,19 +25,11 @@ ctr <- 1
 for (fName in fList) {
 	tmp	<- basename(fName)
   
-	if (useNewGM){
-	  dat <- try(read.delim(fName,sep="\t",h=T,as.is=T,skip=1),silent=TRUE)
-	} else {
-	  dat <- try(read.delim(fName,sep="\t",h=T,as.is=T),silent=TRUE)
-	}
+  dat <- try(read.delim(fName,sep="\t",h=T,as.is=T,skip=1),silent=TRUE)
 	ctr <- ctr+1
 
 	if (!inherits(dat,"try-error")) { # file not empty
 		# remove first group related line
-	  if (!useNewGM){
-	    # we don't have this header line when using newGM
-	    dat <- dat[-1,] 
-	  }
 		cat("Net weight distribution:\n")
 		print(summary(dat$Weight))
 		
@@ -56,17 +46,11 @@ for (fName in fList) {
 		
 		# put all Network names in pathwaytally. The ones that are above threshold 
 		# (Top pathways) get +1
-		if (useNewGM){
-		  for (k in dat$Network) {
-		    if (!k %in% names(pathwayTally)) pathwayTally[[k]] <- 0;
+	  for (k in dat$Network) {
+      if (!k %in% names(pathwayTally)) pathwayTally[[k]] <- 0;
 		    pathwayTally[[k]]<- pathwayTally[[k]]+1;
 		  }
-		} else {
-		  for (k in dat[,2]) {
-		    if (!k %in% names(pathwayTally)) pathwayTally[[k]] <- 0;
-		    pathwayTally[[k]]<- pathwayTally[[k]]+1;
-		  }
-		}
+		
 	}
 }
 

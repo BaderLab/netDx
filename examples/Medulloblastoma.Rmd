@@ -141,7 +141,7 @@ for (g in names(groupSig)){
                 & MB.pheno$STATUS %in% g)]
     qFile      <- sprintf("%s/query.txt", pDir)
     GM_writeQueryFile(trainSamps, "all", nrow(MB.pheno),qFile)
-    resFile <- runGeneMANIA(dbDir$dbDir, qFile, pDir)
+    resFile <- runGeneMANIA(dbDir$dbDir, qFile, pDir, numCores=numCores)
 
     # compute ROC curve for each predictor
     predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),

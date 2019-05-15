@@ -34,7 +34,6 @@
 #' @param numSplits (integer) number of train/blind test splits (i.e. iterations
 #' of outer loop)
 #' @param numCores (integer) number of CPU cores for parallel processing
-#' @param useNewGM (logical) use new GeneMania Version for processing
 #' @param CVmemory (integer) memory in (Gb) used for each fold of CV
 #' @param CVcutoff (integer) cutoff for inner-fold CV to call feature-selected
 #' in a given split
@@ -52,8 +51,7 @@
 #' @import glmnet
 #' @export
 runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
-	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores=2L,
-	useNewGM=FALSE, CVmemory=4L,CVcutoff=9L,
+	nFoldCV=10L,trainProp=0.8,numSplits=10L,numCores=2L, CVmemory=4L,CVcutoff=9L,
 	keepAllData=FALSE,startAt=1L, preFilter=FALSE) { 
 
   ### tests# pheno$ID and $status must exist
@@ -168,15 +166,14 @@ runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
         
           # Cross validation
 	  resDir <- sprintf("%s/GM_results",pDir)
-	  GM_runCV_featureSet(trainPred, 
-		outDir=resDir, GM_db=dbDir$dbDir, 
-		nrow(pheno_subtype),verbose=T, numCores=numCores,
-		nFold=nFoldCV, GMmemory=CVmemory,
-                useNewGM=useNewGM, useGMThreads=useGMThreads)
+	  GM_runCV_featureSet(
+	      trainPred, outDir=resDir, GM_db=dbDir$dbDir, 
+		    nrow(pheno_subtype),verbose=T, numCores=numCores,
+		    nFold=nFoldCV, GMmemory=CVmemory)
 	
 	  # Compute network score
 	  nrank <- dir(path=resDir,pattern="NRANK$")
-	  pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"), useNewGM=useNewGM)
+	  pTally		<- GM_networkTally(paste(resDir,nrank,sep="/"))
 	  tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 	  write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
 	}
@@ -214,14 +211,7 @@ runPredictor_nestedCV <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		GM_writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		
-		if ((useNewGM) && (useGMThreads)){
-		    evalQFiles <- list(qFile, "")
-		    resFile <- runGeneMANIA3(dbDir$dbDir,qFile,resDir=pDir, numCores=numCores)
-		  } else if (useNewGM) {
-		    resFile <- runGeneMANIA2(dbDir$dbDir,qFile,resDir=pDir)
-		  } else {
-		    resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir)
-		  }
+		resFile <- runGeneMANIA(dbDir$dbDir,qFile,resDir=pDir, numCores=numCores)
 		predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),pheno,g)
 	}
 	

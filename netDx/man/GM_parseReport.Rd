@@ -2,7 +2,7 @@
 % Please edit documentation in R/GM_parseReport.R
 \name{GM_parseReport}
 \alias{GM_parseReport}
-\title{parses GeneMANIA query report into the PRANK and NRANK tables}
+\title{parses GeneMANIA query report into the PRANK and NRANK tables - no longer required}
 \usage{
 GM_parseReport(resFile)
 }
@@ -15,7 +15,7 @@ same directory as resFile. Suffixes filename with PRANK and NRANK
 respectively
 }
 \description{
-parses GeneMANIA query report into the PRANK and NRANK tables
+parses GeneMANIA query report into the PRANK and NRANK tables - no longer required
 }
 \examples{
 GM_db <- sprintf("\%s/extdata/GM_db", path.package("netDx"))

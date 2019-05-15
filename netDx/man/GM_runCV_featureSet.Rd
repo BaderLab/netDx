@@ -6,7 +6,7 @@
 \usage{
 GM_runCV_featureSet(trainID_pred, outDir, GM_db, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
-  verbose = FALSE, numCores = 2L, useNewGM = FALSE, GMmemory = 6L,
+  verbose = FALSE, numCores = 2L, GMmemory = 6L,
   seed_CVqueries = 42L, ...)
 }
 \arguments{
@@ -32,8 +32,6 @@ The default value will likely never need to be changed.}
 \item{verbose}{(logical) print messages}
 
 \item{numCores}{(logical) num parallel threads for cross-validation}
-
-\item{useNewGM}{(logical) use new GeneMania Version for processing}
 
 \item{GMmemory}{(integer) memory for GeneMANIA run, in GB.}
 

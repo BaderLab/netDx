@@ -12,7 +12,7 @@ The main website for netDx is **http://netdx.org**.
 
 * [Installation](#installation)
   * [Prerequisites](#prerequisites)
-  * [Install `netDx` and `netDx.examples`](#install-netdx-and_netdx.examples)
+  * [Install `netDx` and `netDx.examples`](#install-netdx-and-netdxexamples)
    * [Automated install](#automated-install)
    * [Manual install](#manual-install)     
 * [Quick functionality check - Medulloblastoma example](#test-functionality)

@@ -143,7 +143,6 @@ for (g in names(groupSig)){
     GM_writeQueryFile(trainSamps, "all", nrow(MB.pheno),qFile)
     resFile <- runGeneMANIA3(dbDir$dbDir, qFile, pDir)
 
-    # TODO - does it work here?
     # compute ROC curve for each predictor
     predRes[[g]] <- GM_getQueryROC(sprintf("%s.PRANK",resFile),
             MB.pheno, g)

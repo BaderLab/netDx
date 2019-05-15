@@ -31,7 +31,7 @@ outDir <- sprintf("%s/TCGA_BRCA",getwd())
 numCores        <- 2L   # num cores available for parallel processing
 JavaMemory        <- 4L   # java memory in Gb
 cutoff          <- 1L   # score cutoff for feature-selected networks
-nFold           <- 2L   # two-fold CV, so the code will run fast. 
+featScoreMax           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
 
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
@@ -88,7 +88,7 @@ netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
 # Now that all PSN (features) have been created, compile into one database for feature selection
 dbDir   <- compileFeatures(profDir, pheno$ID, outDir,numCores=numCores)
 
-## score networks from 0 to "nFold"; repeat once per class
+## score networks from 0 to "featScoreMax"; repeat once per class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
         dir.create(pDir)
@@ -105,10 +105,10 @@ for (g in subtypes) {
         
         # Function that does the scoring - this takes a while
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
-                nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
+                nrow(pheno_subtype),verbose=T, numCores=numCores, featScoreMax=featScoreMax,
                 JavaMemory=JavaMemory)
 
-        # Compute network tally (from 0 to nFold)
+        # Compute network tally (from 0 to featScoreMax)
         # file with network weights for each scoring call
         nrank <- dir(path=resDir,pattern="NRANK$")
         pTally          <- compileFeatureScores(paste(resDir,nrank,sep="/"))
@@ -195,7 +195,7 @@ cat(sprintf("All intermediate files are stored in:\n%s\n",outDir))
 numCores        <- 2L   # num cores available for parallel processing
 JavaMemory        <- 4L   # java memory in Gb
 cutoff          <- 1L   # score cutoff for feature-selected networks
-nFold           <- 2L   # two-fold CV, so the code will run fast. 
+featScoreMax           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
 
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
@@ -331,7 +331,7 @@ for (g in subtypes) {
 
         # Cross validation
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
-                nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
+                nrow(pheno_subtype),verbose=T, numCores=numCores, featScoreMax=featScoreMax,
                 JavaMemory=JavaMemory)
 
         # patient similarity ranks

@@ -13,9 +13,9 @@ The main website for netDx is **http://netdx.org**.
 * [Installation](#installation)
   * [Prerequisites](#prerequisites)
   * [Install `netDx` and `netDx.examples`](#install-netdx-and-netdxexamples)
-   * [Automated install](#automated-install)
-   * [Manual install](#manual-install)     
-* [Quick functionality check - Medulloblastoma example](#test-functionality)
+     * [Automated install](#automated-install) ***-- recommended***
+     * [Manual install](#manual-install)     
+* [Quick functionality check - Medulloblastoma tumour classifier](#test-functionality)
 * [Build predictor](#build-predictor)
   * [See full list of examples](#other-examples)
 * [All other examples](#other-examples)
@@ -31,7 +31,7 @@ The main website for netDx is **http://netdx.org**.
 * Within R, you must have [BioConductor](https://bioconductor.org/install/) installed. 
 * For visualization of result networks, (EnrichmentMap and integrated patient network), you must have [Cytoscape](https://cytoscape.org/) installed with the EnrichmentMap and AutoAnnotate apps.
 
-See sections below to test if you have or need to install these dependencies. If you do have these, skip to the next section.
+See sections below to test if you have or need to install these dependencies. **If you do have these, [skip to the next section](#install-netdx-and-netdxexamples).**
 
 **netDx has been tested on Mac OS/X and on Linux systems. For now we recommend you run netDx on these operating systems.** Future versions of netDx will have Windows support.
 
@@ -88,10 +88,10 @@ With Cytoscape open, install the following Apps:
 * Enrichment Map v3.0.0 (http://apps.cytoscape.org/apps/enrichmentmap) *Earlier versions may not work.*
 
 ## Install `netDx` and `netDx.examples`
-This section assumes you have Java, Python, R and Bioconductor installed. From command-line, download the git repo for these packages and install them. In the code below, output from intermediate steps is omitted for clarity.
+This section assumes you have Java, Python, R and Bioconductor installed.
 
 ### Automated install
-Install scripts assume the dependencies above (R,Python,Java, Cytoscape) have been successfully installed. Scripts are in the main directory.
+Scripts are in the root directory of the downloaded release/repo.
 
 On Unix systems (requires sudo privilege to install associated libraries), run:
 ```
@@ -103,7 +103,7 @@ On Mac OS/X systems, run:
 $ ./INSTALL_OSX.sh
 ```
 
-If the scripts above don't work, install packages manually (next section).
+If the scripts above don't work, install packages manually (next section). Your feedback is appreciated; email [Shraddha Pai](mailto:shraddha.pai@utoronto.ca) in case of problems with installation.
 
 ### Manual install
 On Unix systems you may need one or more of these packages as these are dependencies for R packages:

@@ -12,8 +12,8 @@ The main website for netDx is **http://netdx.org**.
 
 * [Install netDx](#install-netdx)
   * [Prerequisites](#prerequisites)
-* [Quickly test it's working - Medulloblastoma example](#test-functionality)
-* [Build predictor][#buildPred]
+* [Quick functionality check - Medulloblastoma example](#test-functionality)
+* [Build predictor](#build-predictor)
   * [See full list of examples](#other-examples)
 * [All other examples](#other-examples)
 
@@ -129,11 +129,9 @@ $ R
 This should generate `Medulloblastoma.html` in the `examples/` directory and open the preview in your web browser.
 
 ## Build predictor
-The `buildPredictor()` function builds a predictor by scoring features over several train/test splits, and identifying which features consistently have high predictive value. It automates all the predictor steps and is a recommended starting point for predictor design, for most data types. On a 2017 MacBook Air laptop, this vignette takes ~3 min to run to completion. Parameters have been set to small values for speed, and must be modified in practice. 
+The `buildPredictor()` function builds a predictor by performing feature selection over a specified number of train/test splits. It identifies which features consistently have high predictive value, and computes performance of the model over the splits. Because this function automates all the predictor steps, ***`buildPredictor()` is a recommended starting point for predictor design, for most data types.*** 
 
-The goal is to predict poor or good survival for renal clear cell carcinoma, when provided with gene expression and CNV data. The example also illustrates pathway-level features. 
-
-**We do not recommend running it on a Mac with less than 8Gb RAM. A Unix machine manages memory differently and may require as much as 32Gb RAM. If such a machine is not available, set `numCores=2L` in the `.Rmd` file before running.**
+The goal in this vignette is to predict poor or good survival for renal clear cell carcinoma, when provided with gene expression and CNV data. The example also illustrates pathway-level features. On a 2017 MacBook Air laptop, this vignette takes ~3 min to run to completion. Parameters have been set to small values for speed, and must be modified in practice. 
 
 ```
 $ R

@@ -15,8 +15,7 @@
 #'		path.package("netDx"))
 #' runGeneMANIA(GM_db, GM_query,"/tmp")
 #' @export
-runGeneMANIA <- function(GM_db, queryFiles, resDir, parseReport=FALSE,
-                          verbose=TRUE,GMmemory=6L,MAX_ATTEMPTS=3L,numCores=1) {
+runGeneMANIA <- function(GM_db, queryFiles, resDir, verbose=TRUE,GMmemory=6L,numCores=1) {
   GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar", path.package("netDx"))
   qBase	<- basename(queryFiles[[1]][1])
   # qBase	<- basename(queryFile)

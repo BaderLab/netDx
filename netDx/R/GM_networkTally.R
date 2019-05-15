@@ -28,7 +28,7 @@ for (fName in fList) {
   dat <- try(read.delim(fName,sep="\t",h=T,as.is=T,skip=1),silent=TRUE)
 	ctr <- ctr+1
 
-	if (!inherits(dat,"try-error")) { # file not empty
+	if (!inherits(dat,"try-error")) { # file not empty - continue
 		# remove first group related line
 		cat("Net weight distribution:\n")
 		print(summary(dat$Weight))

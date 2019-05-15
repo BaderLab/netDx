@@ -12,11 +12,9 @@ The main website for netDx is **http://netdx.org**.
 
 * [Install netDx](#install-netdx)
   * [Prerequisites](#prerequisites)
-* [Test functionality](#test-functionality)
-  * [Run Medulloblastoma example](#mblastoma)
-  * [Run breastcancer LumA example](#brca)
+* [Quickly test it's working - Medulloblastoma example](#test-functionality)
+* [Build predictor][#buildPred]
   * [See full list of examples](#other-examples)
-  * [Known issues with compiling pdfs](#pdfissue)
 * [All other examples](#other-examples)
 
 **Other useful information:**
@@ -119,54 +117,30 @@ $ sudo apt-get install libssl-dev # for openssl & httr
 $ sudo apt-get install libxml2-dev xml2 # for XML & r2cytoscape
 ```
 
-<a name="mblastoma"></a>
 ## Test functionality
 Run the medulloblastoma vignette to make sure the netDx pipeline works from end to end.
-Each vignette is in Rmarkdown format (`.Rmd`) . To run these, you need to have both `netDx` and `netDx.examples` installed. If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rmd` file and knit to PDF. Alternately, you may run the vignette through an interactive R session (requires [Pandoc](https://github.com/jgm/pandoc/)) :
+Each vignette is in Rmarkdown format (`.Rmd`) . To run these, you need to have both `netDx` and `netDx.examples` installed. If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rmd` file and knit to html. Alternately, you may run the vignette through an interactive R session (requires [Pandoc](https://github.com/jgm/pandoc/)) :
 
 ```
 $ cd netDx-master/examples/
 $ R
-> rmarkdown::render("Medulloblastoma-knitr.Rmd")
+> rmarkdown::render("Medulloblastoma.Rmd")
 ```
 This should generate `Medulloblastoma.html` in the `examples/` directory and open the preview in your web browser.
 
-## Run BreastCancer LumA example
-This vignette is presented in the netDx manuscript. Here we start with 348 primary tumours from the Cancer Genome Atlas, and build a predictor for Luminal A subtype classification (The Cancer Genome Atlas (2012). *Nature.* **490**:61-70).  This example illustrates  feature selection using a simple design in which networks are scored out of 10 based on a single round of 10-fold cross validation. On a MacBook Air laptop (late 2014), this vignette takes ~1.5 hours to run to completion. You may speed it up by running it on a machine with more processors and changing the `numCores` variable in the vignette. 
+## Build predictor
+The `buildPredictor()` function builds a predictor by scoring features over several train/test splits, and identifying which features consistently have high predictive value. It automates all the predictor steps and is a recommended starting point for predictor design, for most data types. On a 2017 MacBook Air laptop, this vignette takes ~3 min to run to completion. Parameters have been set to small values for speed, and must be modified in practice. 
 
-**We do not recommend running it on a Mac with less than 8Gb RAM. A Unix machine manages memory differently and may require as much as 32Gb RAM. If such a machine is not available, set `numCores=2L` in the `.Rnw` file before running.**
+The goal is to predict poor or good survival for renal clear cell carcinoma, when provided with gene expression and CNV data. The example also illustrates pathway-level features. 
+
+**We do not recommend running it on a Mac with less than 8Gb RAM. A Unix machine manages memory differently and may require as much as 32Gb RAM. If such a machine is not available, set `numCores=2L` in the `.Rmd` file before running.**
 
 ```
-$ cd netDx/examples/
 $ R
-> require(knitr)
-> knit2pdf("BreastCancer-knitr.Rnw")
+> rmarkdown::render("BuildPredictor.Rmd")
 ```
-**NOTE:** The vignette will generate a pdf file. All intermediate files will be stored in the `TCGA_BRCA/` subdirectory of the examples directory.
+**NOTE:** The vignette will generate an html file which can be opened in a web browser. All intermediate files will be stored in the `pred_output/` subdirectory of the examples directory.
 
-<a name="pdfissue"></a>
-## Known issues with compiling pdfs
-
-#### (Linux)
-If you are getting an error saying that R cannot find `/usr/bin/texti2dvi`, install the `texinfo` and 'texlive' packages in linux. You can use the commands:
-apt-get install texinfo
-apt-get install texlive
-
-#### (OS/X): "`pdfLaTex` not found" error
-When compiling the pdf, you may get a message saying that `pdfLaTex` is not installed. We have had one such report on OS/X and it is known to occur after an upgrade to OS X Mavericks. The following steps resolved the issue (paraphrased from [this post](http://stackoverflow.com/questions/22081991/rmarkdown-pandoc-pdflatex-not-found)):
-Step 1. Check that `/usr/texbin` exists. In terminal, type:
-```
-cd /usr/texbin
-```
-Step 2. If you get a "No such file or directory" message, create a symbolic link to your installation's `texbin` file. It may be in `/Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin`.
-In terminal type:
-```
-ln -s /Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin /usr/texbin
-```
-Step 3. Now, in the terminal check the value of `echo $PATH`. Make sure that `/usr/texbin` is present. If it isn't present, then you need to add `/usr/texbin` to your PATH variable. This can be done by updating the `PATH` variable in `~/.bashrc`.
-However, if you find yourself having to mess with the PATH variable, try reinstalling the [MacTex](http://tug.org/mactex/) package.
-
-<a name="brca"></a>
 
 <a name="other-examples"></a>
 ## Other examples

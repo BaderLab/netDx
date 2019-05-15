@@ -96,7 +96,7 @@ Sys.setlocale("LC_ALL","C")
 				length(idx),length(out)))
 
 	# clean pathway names
-	nm	<- cleanPathwayName(names(out))
+	nm	<- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))
 	if (getOrigNames) {
 		pnames <- cbind(names(out), nm)
     	names(out) <- nm

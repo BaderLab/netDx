@@ -7,7 +7,7 @@
 resampling_pickBestCutoff(perf_resamp)
 }
 \arguments{
-\item{perf_resamp}{(list) the output of GM_predClass_cutoffs(), 
+\item{perf_resamp}{(list) the output of evalPerfOverCutoffs(), 
 with one entry for each round of resampling}
 }
 \value{

@@ -4,8 +4,9 @@
 \alias{readPathways}
 \title{Parse GMT file and return pathways as list}
 \usage{
-readPathways(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, EXCLUDE_KEGG = TRUE,
-  IDasName = FALSE, verbose = TRUE, getOrigNames = FALSE)
+readPathways(fname, MIN_SIZE = 10L, MAX_SIZE = 200L,
+  EXCLUDE_KEGG = TRUE, IDasName = FALSE, verbose = TRUE,
+  getOrigNames = FALSE)
 }
 \arguments{
 \item{fname}{(char) path to pathway file in gmt format

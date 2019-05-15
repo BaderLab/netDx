@@ -5,7 +5,8 @@
 \title{Generates random binary interaction networks}
 \usage{
 makeRandomNetworks(id, numNets = 100L, minNodes = 2L, maxNodes = 20L,
-  sizeProb = "exp", netName = "RANDOM", outDir = ".", setSeed = 42L)
+  sizeProb = "exp", netName = "RANDOM", outDir = ".",
+  setSeed = 42L)
 }
 \arguments{
 \item{id}{(char) vector of patient IDs}

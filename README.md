@@ -1,6 +1,8 @@
 # netDx
 netDx is an algorithm for building patient classifiers by using patient similarity networks as features.
 
+**Visit the "[wiki](https://github.com/BaderLab/netDx/wiki)" section for examples and related documentation**
+
 This repo contains two R packages, each of which need to be separately installed:
 
 1. `netDx/`: Software implementing the netDx method
@@ -19,6 +21,7 @@ The main website for netDx is **http://netdx.org**.
 * [Build predictor](#build-predictor)
   * [See full list of examples](#other-examples)
 * [All other examples](#other-examples)
+
 
 **Other useful information:**
 * [netDx methods paper](http://msb.embopress.org/content/15/3/e8497): Pai et al. (2019). netDx: Interpretable patient classification using integrated patient similarity networks. *Mol Sys Biol* **15**, e8497.
@@ -118,7 +121,7 @@ sudo apt-get install libcurl4-openssl-dev
 
 Now we install the necessary R packages:
 ```
-$ cd netDx-master/
+$ cd netDx/
 $ R
 > install.packages(c('devtools','curl'))
 > install.packages(c("bigmemory","foreach","combinat","doParallel","ROCR","pracma","RColorBrewer","reshape2","ggplot2","tinytex","rmarkdown","caroline","glmnet","igraph","knitr"))
@@ -138,7 +141,7 @@ Run the medulloblastoma vignette to make sure the netDx pipeline works from end 
 Each vignette is in Rmarkdown format (`.Rmd`) . To run these, you need to have both `netDx` and `netDx.examples` installed. If you have [Rstudio](https://www.rstudio.com/home/) installed (highly recommended), you should be able to open the `Rmd` file and knit to html. Alternately, you may run the vignette through an interactive R session (requires [Pandoc](https://github.com/jgm/pandoc/)) :
 
 ```
-$ cd netDx-master/examples/
+$ cd netDx/examples/
 $ R
 > rmarkdown::render("Medulloblastoma.Rmd")
 ```
@@ -162,4 +165,4 @@ The `examples/` directory contains R notebooks (`.Rmd`) that teach basic functio
 
 The R notebooks must be run from within Rstudio. Install [Rstudio](https://www.rstudio.com/products/rstudio/download/) if necessary. 
 
-We have also posted the results of running all the examples [here](http://netdx.org/index.php/examples/). 
+We have also posted the results of running all the examples [here](https://github.com/BaderLab/netDx/wiki/Examples). 

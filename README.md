@@ -10,8 +10,11 @@ The `examples/` folder contains R code that should just run once both `netDx/` a
 
 The main website for netDx is **http://netdx.org**.
 
-* [Install netDx](#install-netdx)
+* [Installation](#installation)
   * [Prerequisites](#prerequisites)
+  * [Install `netDx` and `netDx.examples`](#install-netdx-and_netdx.examples)
+   * [Automated install](#automated-install)
+   * [Manual install](#manual-install)     
 * [Quick functionality check - Medulloblastoma example](#test-functionality)
 * [Build predictor](#build-predictor)
   * [See full list of examples](#other-examples)
@@ -21,7 +24,7 @@ The main website for netDx is **http://netdx.org**.
 * [netDx methods paper](http://msb.embopress.org/content/15/3/e8497): Pai et al. (2019). netDx: Interpretable patient classification using integrated patient similarity networks. *Mol Sys Biol* **15**, e8497.
 * Once you have run the included netDx examples, [read the user manual](http://netdx-manual.readthedocs.io/en/latest/) to learn how to design features or predictors. 
 
-## Install netDx
+## Installation
 
 ### Prerequisites
 * You must have [Java](https://java.com/en/), [Python](https://www.python.org/downloads/) and [R](https://www.r-project.org/) installed.

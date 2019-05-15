@@ -160,20 +160,20 @@ for (g in subtypes) {
         ## query for feature selection comprises of training
         ## samples from the class of interest
         trainPred <- pheno$ID[which(pheno$STATUS %in% g)]
-
+        print("Debugging - reaching runCV_featureSet")
         # Cross validation
         GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
                 nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,
                 GMmemory=GMmemory)
-
+        
         # patient similarity ranks
         prank <- dir(path=resDir,pattern="PRANK$")
         # network ranks
         nrank <- dir(path=resDir,pattern="NRANK$")
         cat(sprintf("Got %i prank files\n",length(prank)))
-
-    # Compute network score
-        pTally          <- GM_networkTally(paste(resDir,nrank,sep="/"))
+        
+        # Compute network score
+        pTally          <- GM_networkTally(paste(resDir,nrank,sep="/"))# TODO 
         head(pTally)
         # write to file
         tallyFile       <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)

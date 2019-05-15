@@ -58,8 +58,9 @@ GM_runCV_featureSet <- function(trainID_pred,outDir,GM_db,numTrainSamps = NULL,
     qFiles <- append(qFiles, qFile)
   }
   
-  runGeneMANIA(GM_db, qFiles, outDir,GMmemory=GMmemory,
-                verbose=verbose,parseReport=FALSE, numCores=numCores)
+  print("Debugging - reaching runGeneMANIA")
+  runGeneMANIA(GM_db, qFiles, outDir,GMmemory=GMmemory, verbose=verbose, 
+               numCores=numCores)
   
 
 }

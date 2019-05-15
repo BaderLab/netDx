@@ -160,7 +160,6 @@ for (g in subtypes) {
         ## query for feature selection comprises of training
         ## samples from the class of interest
         trainPred <- pheno$ID[which(pheno$STATUS %in% g)]
-        print("Debugging - reaching runCV_featureSet")
         # Cross validation
         GM_runCV_featureSet(trainPred, resDir, dbDir$dbDir,
                 nrow(pheno_subtype),verbose=T, numCores=numCores, nFold=nFold,

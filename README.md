@@ -41,7 +41,7 @@ See sections below to test if you have or need to install these dependencies. **
 #### Java (1.8+ recommended, but will probably work on 1.6+)
 The engine netDx uses to integrate patient networks and recommend patients by similarity is implemented in Java, making this interpreter a requirement for netDx.
 
-At command line, run `java --version`. You should see output like this:
+At command line, run `java -version`. You should see output like this:
 ```
 java version "1.8.0_31"
 Java(TM) SE Runtime Environment (build 1.8.0_31-b13)

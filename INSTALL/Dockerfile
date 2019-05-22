@@ -28,7 +28,6 @@ RUN Rscript -e "install.packages(c('devtools','curl','bigmemory','foreach','comb
 RUN Rscript -e "source('http://bioconductor.org/biocLite.R');biocLite(c('Biobase','GenomicRanges', 'RCy3'))";
 RUN Rscript -e "install.packages(c('pheatmap','RColorBrewer','gProfileR','RJSONIO','httr','ggplot2','glmnet','igraph'))"
 RUN Rscript -e "devtools::install_github('cytoscape/r2cytoscape')"
-RUN Rscript -e "devtools::install_github('BaderLab/Easycyrest/EasycyRest@0.1')"
 
 # python required for using genemania, pandoc for compiling the html vignettes
 RUN apt-get install -y python2.7 python-pip vim git pandoc

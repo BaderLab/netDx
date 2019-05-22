@@ -62,6 +62,29 @@ for p in ${PKGS[@]};do
 	Rscript -e "if(!requireNamespace(\"$p\",quietly=TRUE)){ BiocManager::install(\"$p\")}"
 done
 
+echo "* Checking if pandoc installed (needed to run tutorials) ..."
+if pandoc -v | grep -q "^pandoc " ;  
+    then
+			 ver=`pandoc -v | grep "^pandoc " | cut -f 2 -d " "`
+			echo -e "\tversion found: $ver"
+	 	   ver1=`echo $ver | cut -f1 -d"."`
+		   ver2=`echo $ver | cut -f2 -d"."`
+			if [ $ver1 -ge 2 ] ; then
+        echo -e "\tdone"
+		  else {
+				echo ""
+				echo -e "\t*** Version 1.12.3+ of pandoc not found! Installing..."
+				curl -L https://github.com/jgm/pandoc/releases/download/2.7.2/pandoc-2.7.2-macOS.pkg -o pandoc.pkg
+				sudo installer -pkg pandoc.pkg -target /
+		}
+			fi
+   else {
+				echo -e "\t*** Version 1.12.3+ of pandoc not found! Installing..."
+				curl -L https://github.com/jgm/pandoc/releases/download/2.7.2/pandoc-2.7.2-macOS.pkg -o pandoc.pkg
+				sudo installer -pkg pandoc.pkg -target /
+	}
+fi
+
 cd ..
 echo "* Installing netDx"
 R CMD INSTALL netDx

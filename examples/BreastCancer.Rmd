@@ -340,7 +340,7 @@ for (g in subtypes) {
         nrank <- dir(path=resDir,pattern="NRANK$")
         cat(sprintf("Got %i prank files\n",length(prank)))
 
-    # Compute network score
+    	# Compute network score
         pTally          <- compileFeatureScores(paste(resDir,nrank,sep="/"))
         head(pTally)
         # write to file

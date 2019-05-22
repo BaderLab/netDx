@@ -4,24 +4,22 @@
 \alias{runQuery}
 \title{Run a GeneMANIA query}
 \usage{
-runQuery(dbPath, queryFile, resDir, parseReport = TRUE, verbose = TRUE,
-  JavaMemory = 6L, MAX_ATTEMPTS = 3L)
+runQuery(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L,
+  numCores = 1)
 }
 \arguments{
 \item{dbPath}{(char) path to directory with GeneMANIA generic database}
 
-\item{queryFile}{(char) path to query file}
+\item{queryFiles}{(list(char)) paths to query files}
 
 \item{resDir}{(char) path to output directory}
 
-\item{parseReport}{(logical) if TRUE, parses out PRANK and NRANK portions}
-
 \item{verbose}{(logical) print messages}
 
-\item{JavaMemory}{(integer) Memory for GeneMANIA (in Gb)}
+\item{JavaMemory}{(integer) Memory for GeneMANIA (in Gb) - a total of 
+numCores*GMmemory will be used and distributed for all GM threads}
 
-\item{MAX_ATTEMPTS}{(integer) max num attempts to run GeneMANIA before
-giving up.}
+\item{numCores}{(integer) number of CPU cores for parallel processing}
 }
 \value{
 path to GeneMANIA query result file

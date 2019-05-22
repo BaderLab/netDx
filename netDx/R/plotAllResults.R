@@ -15,8 +15,8 @@
 #' contain only the genes measured in the input data, and not all genes.
 #' @param eMap_colorScheme (char) color scheme for node fills in the Enrichment
 #' map. See plotEmap::colorScheme()
-#' @param eMap_min, eMap_max (int) min/max feature score to include in 
-#' enrichment map
+#' @param eMap_min (int) min feature score to include in enrichment map
+#' @param eMap_max (int) max feature score to include in enrichment map
 #' @param setName (char) name of analysis. Used in plot titles
 #' @return (list) output from all individual result scripts called.
 #' 1) predPerf: output of plotPerf()

@@ -54,6 +54,7 @@
 #' loop
 #' @param ... params for runFeatureSelection()
 #' @importFrom reshape2 melt
+#' @importFrom utils write.table
 #' @export
 Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
 	splitN=3L,seed_resampling=103L, featScoreMax=10L,filter_WtSum=100L,

@@ -13,6 +13,8 @@
 #' @param plotDist (logical) if TRUE, creates a violin plot showing the 
 #' shortest path distributions for each group.
 #' @param verbose (logical) print messages
+#' @import ggplot2
+#' @importFrom combinat combn
 #' @examples data(silh); 
 #' colnames(silh$net)[3] <- "weight"
 #' compareShortestPath(silh$net, silh$groups)
@@ -102,6 +104,7 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	dset[["overall"]] <- .getAvgD(d_overall)
 	dall[["overall"]] <- .getAllD(d_overall)
 
+	out <- list(avg=dset,all=dall)
 	if (plotDist) {	
 		par(las=1,bty='n')
 		dl <- data.frame(intType=rep(names(dall),lapply(dall,length)),
@@ -112,7 +115,8 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 		p <- p + xlab("Pair groups")
 		p2 <- p+geom_violin(scale="width")+geom_boxplot(width=0.02) 
 		print(p2)
+		out[["plot"]] <- p2
 		}
+	return(out)
 
-	return(list(avg=dset,all=dall,plot=p2))
 }

@@ -43,7 +43,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 		netColl <- list()
 
 		for (scoreFile in fList) {
-			tmp	 <- read.delim(scoreFile,sep="\t",h=T,as.is=T)
+			tmp	 <- read.delim(scoreFile,sep="\t",header=T,as.is=T)
 			colnames(tmp)[1] <- "PATHWAY_NAME"
 				netColl[[scoreFile]] <- tmp
 		}

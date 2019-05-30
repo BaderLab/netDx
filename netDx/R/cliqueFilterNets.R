@@ -43,6 +43,7 @@
 #' 	numReps=500)
 #' print(x)
 #' 
+#' @import doParallel
 #' @export
 cliqueFilterNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 	minEnr=-1,outPref="cliqueFilterNets",verbose=TRUE,setSeed=42L,

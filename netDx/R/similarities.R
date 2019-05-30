@@ -1,7 +1,17 @@
 #' various similarity functions
 
-#' @param (data.frame) measures by patients
-#' @param K, W (doc tba)
+#' Similarity function: Pearson correlation followed by exponential scaling
+#' 
+#' @description Computes Euclidean distance between patients. A scaled 
+#' exponential similarity kernel is used to determine edge weight. The 
+#' exponential scaling considers the K nearest neighbours, so that 
+#' similarities between non-neighbours is set to zero. Alpha is a hyperparameter
+#' that determines decay rate of the exponential. For details
+#' see Wang et al. (2014). Nature Methods 11:333. 
+#' @param dat (data.frame) Patient data; rows are measures, columns are patients.
+#' @param K (integer) Number of nearest neighbours to consider (K of KNN)
+#' @param alpha (numeric) Scaling factor for exponential similarity kernel. 
+#' Recommended range between 0.3 and 0.8.
 #' @export
 sim.pearscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {
@@ -53,10 +63,18 @@ normalize <- function(X) {
     return(W)
 }
 
-# SNF similarity method. Euclidean distance followed by exponential
-# scaling where sigma is tuned based on local data structure.
-#' @param K (integer) doc tba.
-#' @param alpha (numeric) doc tba.
+#' Similarity method. Euclidean distance followed by exponential scaling
+#'
+#' @description Computes Euclidean distance between patients. A scaled 
+#' exponential similarity kernel is used to determine edge weight. The 
+#' exponential scaling considers the K nearest neighbours, so that 
+#' similarities between non-neighbours is set to zero. Alpha is a hyperparameter
+#' that determines decay rate of the exponential. For details,
+#' see Wang et al. (2014). Nature Methods 11:333. 
+#' @param dat (data.frame) Patient data; rows are measures, columns are patients.
+#' @param K (integer) Number of nearest neighbours to consider (K of KNN)
+#' @param alpha (numeric) Scaling factor for exponential similarity kernel. 
+#' Recommended range between 0.3 and 0.8.
 #' @export
 sim.eucscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {
@@ -104,3 +122,27 @@ normalize <- function(X) {
     }
     return(W)
 }
+
+#' Similarity metric of normalized difference 
+#'
+#' @details Similarity metric used when data for a network consists of
+#' exactly 1 continuous variable  (e.g. a network based only on "age"). 
+#' When number of variables is 2-5, use avgNormDiff() which 
+#' takes the average of normalized difference for individual variables
+#' @param x (numeric) vector of values, one per patient (e.g. ages)
+#' @export
+normDiff <- function(x) {
+    #if (nrow(x)>=1) x <- x[1,]
+    nm <- colnames(x)
+    x <- as.numeric(x)
+    n <- length(x)
+    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+    
+    out <- matrix(NA,nrow=n,ncol=n);
+    # weight between i and j is
+    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
+    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+    rownames(out) <- nm; colnames(out)<- nm
+    out
+}
+

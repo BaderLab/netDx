@@ -13,6 +13,13 @@
 #' 1-similarity, and Dijkstra distances are computed on this resulting network.
 #' For visualization, only edges representing the top fraction of distances
 #' (strongest edge weights) are included.
+#' @param setName (char) network name, used for output files and network name
+#' in Cytoscape.
+#' @param runCytoscape (logical) if TRUE will visualize PSN in Cytoscape
+#' (Cytoscape must be launched for this to happen). If FALSE, will compute
+#' and write integrated PSN to file but will not visualize the network. 
+#' Set to FALSE if you do not have or want to run Cytoscape (e.g. running on
+#' terminal or Docker container, where Cytoscape may be unavailable).
 #' @param pheno (data.frame) sample metadata, requires ID and STATUS column.
 #' The status column will be used to retrieve patient class names
 #' @param baseDir (char) path to the results directory one level above class-
@@ -75,7 +82,7 @@ plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
 	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
 	nodeSize=100,nodeTransparency=200,
 	edgeTransparency=120,edgeStroke="#999999",edgeWidth=1,imageFormat="PNG",
-	nodePalette="Dark2",verbose=FALSE,runCytoscape=TRUE,...) {
+	nodePalette="Dark2",verbose=FALSE,runCytoscape=TRUE) { 
 
 if (missing(pheno)) stop("pheno is missing.")
 if (missing(baseDir)) stop("baseDir is missing.")

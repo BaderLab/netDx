@@ -9,11 +9,12 @@
 #' @param maxInt (numeric) max num edges per node. 
 #' @param EDGE_MAX (numeric) max num edges in network
 #' @param includeAllNodes (logical) if TRUE, ensures at least one edge is present for each patient. This feature is required when sparsification excludes test patients that are required to be classified. If the sparsification rules exclude all edges for a patient and this flag is set, then the strongest edge for each missing patient is added to the net. Note that this condition results in the total number of edges potentially exceeding EDGE_MAX
+#' @param verbose (logical) print detailed messages, useful for debugging
 #' @return writes SIF content to text file (node1,node2,edge weight)
 #' @import reshape2
 #' @export
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
-	includeAllNodes=TRUE,verbose=TRUE,numCores=4L)  {
+	includeAllNodes=TRUE,verbose=TRUE) { 
 	
 	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
@@ -27,7 +28,6 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
    	W[upper.tri(W,diag=TRUE)] <- NA 
 	W[W < cutoff] <- NA
 	maxind <- min(ncol(W),maxInt)
-browser()
 
 	# effectively empty out the slots that are not the top interactions
 	# create a "switch off" matrix with NA in non-top edges

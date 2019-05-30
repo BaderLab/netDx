@@ -14,7 +14,7 @@
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",
 #'		path.package("netDx"))
-#' # registerDoSEQ() ## run this if you get a 
+#'  registerDoSEQ() ## run this if you get a 
 #' # 'summary.connection(connection) invalid connection' error
 #' countIntType_batch(sprintf("%s/BOTH_EQUAL.txt", netDir),
 #' 		npheno[1:100,1],npheno[101:200,1])

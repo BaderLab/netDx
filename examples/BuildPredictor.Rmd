@@ -234,11 +234,6 @@ These are unrealistically low values set so the example will run fast. In practi
 
 **!!! Note:**Setting `numCores`>1 will not work in Rstudio. To increase `numCores`, edit this file and run from command line like so:
 
-```{r,eval=FALSE}
-> rmarkdown::render("BuildPredictor.Rmd")
-```
-
- 
  
 ```{r,eval=TRUE}
 buildPredictor(pheno,

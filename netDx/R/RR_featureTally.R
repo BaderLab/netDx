@@ -54,6 +54,7 @@
 #' 5) other_OL: num of other_total with CNV in selected net
 #' 6) other_OL_pct: 5) divided by 4) (percent)
 #' 7) relEnr: 6) divided by 3).
+#' @importFrom utils write.table
 #' @export 
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
 	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L,

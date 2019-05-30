@@ -5,6 +5,9 @@
 #' @param plotType (char) one of ROC | PR | custom. Affects x/y labels
 #' @param xlab (char) x-axis label
 #' @param ylab (char) y-axis label
+#' @param xlim (numeric) min/max extent for x-axis
+#' @param ylim (numeric) min/max extent for y-axis
+#' @param plotTitle (numeric) plot title
 #' @param meanCol (char) colour for mean trendline
 #' @return No value. Side effect of plotting ROC and PR curves
 #' @examples

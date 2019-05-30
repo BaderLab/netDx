@@ -43,7 +43,7 @@
 #' @export
 #' @examples
 #' require(reshape2) # for melt()
-#' data(TCGA_mini)
+#' data(xpr,pheno,cnv_GR)
 #' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 #' sparsifyNet(x,outFile="tmp.txt")
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
@@ -52,7 +52,7 @@ if (class(net)=="data.frame") {
 	dat <- net
 } else if (class(net)=="character"){
 	netFile <- net
-	dat <- read.delim(netFile,sep="\t",as.is=T,h=F)
+	dat <- read.delim(netFile,sep="\t",as.is=T,header=F)
 }
 
 	dat <- dat[order(dat[,1]),]

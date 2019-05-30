@@ -1,12 +1,13 @@
 # functions for exploring PSN
 
-
 #' plot distribution of PSN edge weights
 #' 
 #' @details Used for comparing the properties of PSN for different similarity
 #' metrics
 #' @param netDir (char) path to directory of networks. Networks must be
 #' in SIF format; i.e. with three columns: source, target, edge weight.
+#' @param numPatients (integer) number of patients expected in network.
+#' Used to calculate sparsity. If set to NULL, sparsity will not be calculated.
 #' @param setName (char) used for output file name (<setName>_edgeDistr.pdf) 
 #' @param randomSample (integer) if set to NULL. Plots for all networks.
 #' If set to an integer plots the number of networks requested, to the max
@@ -36,7 +37,7 @@ out <- list()
 edge_count <- list()
 for (curr in fList) {
     print(curr)
-    dat <- read.delim(sprintf("%s/%s",netDir,curr),sep="\t",h=F,as.is=T)
+    dat <- read.delim(sprintf("%s/%s",netDir,curr),sep="\t",header=F,as.is=T)
     out[[curr]] <- dat[,3]
 	edge_count[[curr]] <- nrow(dat)
 }

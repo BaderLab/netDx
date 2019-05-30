@@ -20,7 +20,7 @@
 #' If < 2 patients in PRANK file, roc,auc, precall, f are all returned as
 #' NA.
 #' @examples
-#' data(TCGA_mini)
+#' data(xpr,pheno,cnv_GR)
 #' prankFile <- sprintf("%s/extdata/GM_PRANK.txt", 
 #' 	 path.package("netDx"))
 #' x <- getPatientRankings(prankFile, pheno, "LumA")

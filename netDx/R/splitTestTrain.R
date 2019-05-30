@@ -17,13 +17,12 @@
 #' "TRAIN" has been assigned to the training set, and one labelled "TEST"
 #' as been assigned to the test set.
 #' @examples
-#' data(TCGA_mini)
+#' data(xpr,pheno,cnv_GR)
 #' x <- splitTestTrain(pheno)
 #' @export
 splitTestTrain <- function(pheno_DF,pctT=0.7,setSeed=42,verbose=FALSE) { 
-
 if (!is.null(setSeed)) {
-	cat(sprintf("Setting seed for reproducibility: %i\n",setSeed))
+	if (verbose) cat(sprintf("Train/test split RNG seed=%i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 
@@ -42,7 +41,7 @@ for (lv in lvls) {
 IS_TRAIN <- factor(IS_TRAIN,levels=c("TRAIN","TEST"))
 
 pheno_DF	<- cbind(pheno_DF,IS_TRAIN=IS_TRAIN)
-print(table(pheno_DF[,c("STATUS","IS_TRAIN")]))
+if (verbose) print(table(pheno_DF[,c("STATUS","IS_TRAIN")]))
 
 
 return(IS_TRAIN)

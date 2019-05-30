@@ -14,6 +14,8 @@
 #' @param unitSet_GR (list) sets of GRanges to group CNVs (e.g.
 #' could have one GRanges per pathway, corresponding to regions in that 
 #' pathway
+#' @param predClass (char) label for which evaluation is being performed. 
+#' e.g. "poor_survival" or "case". 
 #' @param netScores (list) scores of individual networks for each patient
 #' label. Key is patient label; value is data.frame with two columns, 
 #' PATHWAY_NAME and SCORE. PATHWAY_NAME should match names in unitSets

@@ -9,7 +9,7 @@
 #' @return No value. Side effect of writing the query file to
 #' \code{outFile}
 #' @examples
-#' data(TCGA_mini)
+#' data(xpr,pheno,cnv_GR)
 #' writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
 #' @export
 writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile,

@@ -31,12 +31,13 @@
 #' If the DB creation process results in an erorr, these values return 
 #' NA
 #' @examples
-#' data(TCGA_mini,pathwayList);
+#' data(xpr,pheno,cnv_GR,pathwayList);
 #' # note: the paths in the calls below need to be absolute. If you 
 #' # do not have write access to /tmp, change to a different directory.
 #'	n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
 #'		writeProfiles=TRUE); 
-#'	db <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
+#'	dob <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
+#' @import doParallel
 #' @export
 compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	netSfx="_cont.txt$",verbose=TRUE,numCores=1L, P2N_threshType="off",
@@ -114,7 +115,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	### Necessary because process_networks.py is prereq for ProfileToNetwork
 	### Driver and that doesn't get called until the step above.
 	if (length(netList1)>0) {
-		cat("\t* Converting profiles to interaction networks\n")
+		if (verbose) cat("\t* Converting profiles to interaction networks\n")
 
 		cl	<- makeCluster(numCores,outfile=sprintf("%s/P2N_log.txt",tmpDir))
 		registerDoParallel(cl)
@@ -139,7 +140,8 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 			cmd4 <- sprintf("-syn %s/1.synonyms -keepAllTies -limitTies",
 							tmpDir)
 			cmd <- sprintf("%s %s %s %s %s", cmd1,cmd2,cmd3,cmd4,cmd5)
-			print(cmd)
+			if (!verbose) cmd <- sprintf("%s 2> /dev/null", cmd)
+			if (verbose) print(cmd)
 			system(cmd)
 		}
 		))
@@ -147,7 +149,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 		netSfx=".txt"
 		netList2 <- dir(path=netOutDir,pattern=netSfx)
 
-		cat(sprintf("Got %i networks from %i profiles\n", length(netList2),
+		if (verbose) cat(sprintf("Got %i networks from %i profiles\n", length(netList2),
 			length(netList)))
 
 		netDir <- netOutDir
@@ -160,7 +162,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	cmd1 <- sprintf("java -Xmx10G -cp %s org.genemania.mediator.lucene.exporter.Generic2LuceneExporter",GM_jar)
 	cmd2 <- sprintf("%s/db.cfg %s %s/colours.txt",tmpDir,tmpDir,tmpDir)
 	cmd	<- sprintf("%s %s", cmd1,cmd2)
-	system(cmd)
+	system(cmd,wait=TRUE)
 
 	cmd <- sprintf("mv %s/lucene_index/* %s/.",dataDir,dataDir)
 	system(cmd)
@@ -169,9 +171,9 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	if (verbose) cat("\t* Build GeneMANIA cache\n")
 	cmd1<- sprintf("java -Xmx10G -cp %s", GM_jar)
 	cmd2<- "org.genemania.engine.apps.CacheBuilder"
-	cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS"
-				   , tmpDir)
-	cmd <- sprintf("%s %s %s",cmd1,cmd2,cmd3)
+	cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS -log %s/test.log"
+				   , tmpDir,tmpDir)
+	cmd <- sprintf("%s %s %s 2>&1 > /dev/null",cmd1,cmd2,cmd3)
 	system(cmd)
 
 	#### Step 6. Cleanup.

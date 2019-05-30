@@ -23,7 +23,7 @@
 #' @return (list) of length nFold, each with char vector of length 
 #' nrow(pheno_DF). Values of "TRAIN" or "TEST"
 #' @examples
-#' data(TCGA_mini) 
+#' data(xpr,pheno,cnv_GR) 
 #' x <- splitTestTrain_resample(pheno,predClass="LumA")
 #' @export
 splitTestTrain_resampling <- function(pheno_DF, nFold=3L, setSeed=42L,

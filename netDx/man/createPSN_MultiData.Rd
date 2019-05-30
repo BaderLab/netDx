@@ -5,7 +5,7 @@
 \title{Wrapper to create custom input features (patient similarity networks)}
 \usage{
 createPSN_MultiData(dataList, groupList, netDir, filterSet = NULL,
-  customFunc, ...)
+  verbose = TRUE, customFunc, ...)
 }
 \arguments{
 \item{dataList}{(list) key is datatype (e.g. clinical, rna, etc.,), value is
@@ -22,6 +22,8 @@ Each entry will be converted into a PSN.}
 
 \item{filterSet}{(char) vector of networks to include}
 
+\item{verbose}{(logical) print messages}
+
 \item{customFunc}{(function) custom user-function to create PSN. 
 Must take dataList,groupList,netDir as parameters. Must
 check if a given groupList is empty (no networks to create) before 
@@ -37,5 +39,7 @@ that did not pass feature selection}
 Wrapper to create custom input features (patient similarity networks)
 }
 \examples{
-see examples/NestedCV_MultiData.Rmd for example use.
+createPSN_MultiData(dataList=dats_train,groupList=groupList,
+netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
+verbose=verbose_default)
 }

@@ -9,9 +9,12 @@ plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
   calcShortestPath = TRUE, savePaths = FALSE, nodeSize = 100,
   nodeTransparency = 200, edgeTransparency = 120,
   edgeStroke = "#999999", edgeWidth = 1, imageFormat = "PNG",
-  nodePalette = "Dark2", verbose = FALSE, runCytoscape = TRUE, ...)
+  nodePalette = "Dark2", verbose = FALSE, runCytoscape = TRUE)
 }
 \arguments{
+\item{setName}{(char) network name, used for output files and network name
+in Cytoscape.}
+
 \item{pheno}{(data.frame) sample metadata, requires ID and STATUS column.
 The status column will be used to retrieve patient class names}
 
@@ -57,6 +60,12 @@ JPEG, PDF, PNG, or SVG (see RCy3::exportImage()).}
 \item{nodePalette}{(character) RColorBrewer palette for node colours.}
 
 \item{verbose}{(logical) print detailed messages}
+
+\item{runCytoscape}{(logical) if TRUE will visualize PSN in Cytoscape
+(Cytoscape must be launched for this to happen). If FALSE, will compute
+and write integrated PSN to file but will not visualize the network. 
+Set to FALSE if you do not have or want to run Cytoscape (e.g. running on
+terminal or Docker container, where Cytoscape may be unavailable).}
 }
 \value{
 (list) information about the integrated network

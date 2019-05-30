@@ -33,6 +33,6 @@ as been assigned to the test set.
 Split samples into training and testing set
 }
 \examples{
-data(TCGA_mini)
+data(xpr,pheno,cnv_GR)
 x <- splitTestTrain(pheno)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotEmap.R
 \name{plotEmap}
 \alias{plotEmap}
-\title{Using GMT files, generate enrichment maps and apply Auto annotate app to them}
+\title{Create EnrichmentMap in Cytoscape to visualize predictive pathways}
 \usage{
 plotEmap(gmtFile, nodeAttrFile, netName = "generic", outDir,
   minScore = 1, maxScore = 10, colorScheme = "cont_heatmap",
@@ -29,16 +29,19 @@ sets a discrete map ranging from yellow to red for increasing scores.
 "netDx_ms" is the colour scheme used in the netDx methods paper.
 This map is (<=6: white; 7-9: orange; 10: red)}
 
+\item{imageFormat}{(char) one of PNG, PDF, SVG, or JPEG}
+
 \item{verbose}{(logical) print messages}
 
 \item{createStyle}{(logical) if generating more than one EMap, set to 
 TRUE for first one and to FALSE for subsequent. Due to limitation in 
 current version of RCy3}
-
-\item{imageFormat(char)}{one of PNG, PDF, SVG, or JPEG}
 }
 \description{
-Using GMT files, generate enrichment maps and apply Auto annotate app to them
+Create a network where nodes are predictive pathways passing
+certain cutoff and edges indicate similarity in gene-sets. Pathways are then
+clustered to identify themes of predictive pathways. Generates one such
+network for each patient label.
 }
 \examples{
 #refer to writeEMapInput_many.R for working writeEMapInput_many() example

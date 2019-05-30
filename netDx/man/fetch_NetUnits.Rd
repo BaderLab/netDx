@@ -8,26 +8,26 @@ fetch_NetUnits(pat_GR, netList, whichNets, trackMapping_detail = FALSE,
   verbose = FALSE)
 }
 \arguments{
-\item{verbose}{(logical) print messages}
-
-\item{pat_GR:}{(GRanges) ranges that patients map to. The metadata 
+\item{pat_GR}{(GRanges) ranges that patients map to. The metadata 
 columns are required to have:
 1. ID (char): patient IDs
 2. LOCUS_NAMES (char): comma-separated vector of units that patients
 contributed}
 
-\item{netList:}{(list) keys are networks, values are vectors of 
+\item{netList}{(list) keys are networks, values are vectors of 
 unit features within those networks (e.g. pathways and genes)}
 
-\item{whichNets:}{(char) which networks to fetch data for ; e.g. 
+\item{whichNets}{(char) which networks to fetch data for ; e.g. 
 could be set of feature-selected networks}
 
-\item{trackMapping_detail:}{(logical) if TRUE, returns the mapping
+\item{trackMapping_detail}{(logical) if TRUE, returns the mapping
 from individual patient events to units to features.
 If FALSE, simply groups all units that contribute to 'whichNets',
 without tracking individual mappings. 
 The former is useful for understanding the contribution of individual
 events to the overall feature selection.}
+
+\item{verbose}{(logical) print messages}
 }
 \value{
 Depends on trackMapping_detail value.
@@ -53,7 +53,7 @@ overlaps with single features - here, genes - result in membership in a
 set - here, pathways.
 }
 \examples{
-data(TCGA_mini,pathway_GR,pathwayList)
+data(xpr,pheno,cnv_GR,pathway_GR,pathwayList)
 x <- getRegionOL(cnv_GR,pathway_GR)
 y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 y <- fetch_NetUnits(x,pathwayList, names(pathwayList),

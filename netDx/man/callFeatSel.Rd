@@ -27,9 +27,3 @@ feature-selected (FS) nets, returns subset of nets that pass criteria.
 Net must score <fsCutoff> for at least <fsPctPass> % of splits, to be
 considered feature-selected.
 }
-\examples{
-inDir <- sprintf("\%s/extdata/KIRC_output",
-	path.package("netDx.examples"))
-netScores <- getFeatureScores(inDir, c("SURVIVEYES","SURVIVENO"))
-fs_nets <- callFeatSel(netScores[[1]], 7, 0.5)
-}

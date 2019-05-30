@@ -11,6 +11,8 @@ plotPerf_multi(inList, plotTitle = "performance", plotType = "ROC",
 \arguments{
 \item{inList}{(list) ROCR::performance objects, one per iteration}
 
+\item{plotTitle}{(numeric) plot title}
+
 \item{plotType}{(char) one of ROC | PR | custom. Affects x/y labels}
 
 \item{xlab}{(char) x-axis label}
@@ -18,6 +20,10 @@ plotPerf_multi(inList, plotTitle = "performance", plotType = "ROC",
 \item{ylab}{(char) y-axis label}
 
 \item{meanCol}{(char) colour for mean trendline}
+
+\item{xlim}{(numeric) min/max extent for x-axis}
+
+\item{ylim}{(numeric) min/max extent for y-axis}
 }
 \value{
 No value. Side effect of plotting ROC and PR curves

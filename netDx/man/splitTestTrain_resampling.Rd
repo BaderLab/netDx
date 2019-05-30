@@ -43,6 +43,6 @@ avoids the situation where one resampling has too many positives and
 another has too few).
 }
 \examples{
-data(TCGA_mini) 
+data(xpr,pheno,cnv_GR) 
 x <- splitTestTrain_resample(pheno,predClass="LumA")
 }

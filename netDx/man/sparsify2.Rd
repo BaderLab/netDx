@@ -19,6 +19,8 @@ sparsify2(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50,
 \item{EDGE_MAX}{(numeric) max num edges in network}
 
 \item{includeAllNodes}{(logical) if TRUE, ensures at least one edge is present for each patient. This feature is required when sparsification excludes test patients that are required to be classified. If the sparsification rules exclude all edges for a patient and this flag is set, then the strongest edge for each missing patient is added to the net. Note that this condition results in the total number of edges potentially exceeding EDGE_MAX}
+
+\item{verbose}{(logical) print detailed messages, useful for debugging}
 }
 \value{
 writes SIF content to text file (node1,node2,edge weight)

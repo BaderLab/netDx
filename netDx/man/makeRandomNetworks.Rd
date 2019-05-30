@@ -26,6 +26,8 @@ networks)}
 \item{netName}{(char) prefix for network name.}
 
 \item{outDir}{(char) output directory}
+
+\item{setSeed}{(integer) Random number generator seed for reproducible state}
 }
 \value{
 char vector of network names
@@ -38,7 +40,7 @@ Used as a control to assess the robustness of GeneMANIA to
 random cliques.
 }
 \examples{
-data(TCGA_mini); 
+data(xpr,pheno,cnv_GR); 
 x <- makeRandomNetworks(pheno$ID, numNets=10L,
 outDir="/tmp")
 }

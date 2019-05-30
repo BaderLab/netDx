@@ -65,7 +65,7 @@ done
 }
 \examples{
 require(reshape2) # for melt()
-data(TCGA_mini)
+data(xpr,pheno,cnv_GR)
 x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
 sparsifyNet(x,outFile="tmp.txt")
 }

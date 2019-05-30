@@ -5,7 +5,7 @@
 \title{Run a GeneMANIA query}
 \usage{
 runQuery(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L,
-  numCores = 1)
+  numCores = 1L)
 }
 \arguments{
 \item{dbPath}{(char) path to directory with GeneMANIA generic database}

@@ -22,9 +22,12 @@ genes). Should only contain units profiled in this dataset}
       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
       rna                              RETINOL_BIOSYNTHESIS}
 
-\item{pctPass}{(numeric between 0 and 1) fraction of iterations that
-a net's score must pass consCutoff for, to be included in the consensus
-map}
+\item{outPfx}{(char) prefix for output files. Should include directory
+name and prefix of file name.}
+
+\item{pctPass}{(numeric between 0 and 1) fraction of splits for which
+the highest score for the network is required, for that to be the network's
+maxScore}
 
 \item{minScore}{(integer) features with score below this cutoff are
 excluded from downstream analyses}
@@ -35,9 +38,6 @@ validation. e.g. for 10-fold cross-validation, maxScore=10.}
 \item{trimFromName}{(char) strings to trim from name with sub()}
 
 \item{verbose}{(logical) print messages}
-
-\item{consCutoff}{(integer) nets must pass this cutoff in at least
-pctPass of the iterations to be written to file}
 }
 \value{
 1) <outPfx>.gmt file - for enrichment map

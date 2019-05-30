@@ -63,7 +63,7 @@ plotPerf <- function(inDir, predClasses) {
         curRoc	<- list()
         curPr	<- list()
 
-        dat <- read.delim(fName,sep="\t",h=T,as.is=T)
+        dat <- read.delim(fName,sep="\t",header=T,as.is=T)
 
         pred_col1 <- sprintf("%s_SCORE",predClasses[1])
         pred_col2 <- sprintf("%s_SCORE",predClasses[2])

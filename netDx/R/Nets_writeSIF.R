@@ -24,7 +24,7 @@ writeNetsSIF <- function(netPath,outFile,netSfx="_cont.txt"){
 		netName <- sub(netSfx,"",basename(n))
 		cat(sprintf("%s\n", netName))
 
-		dat <- read.delim(n,sep="\t",h=F,as.is=T)
+		dat <- read.delim(n,sep="\t",header=F,as.is=T)
 		dat2 <- cbind(dat[,1],netName,dat[,2])
 
 		write.table(dat2,file=outFile,append=TRUE,sep="\t",col=F,row=F,

@@ -47,6 +47,8 @@ if R --version | grep -q "R version" ;
 		  else {
 				echo ""
 				echo -e "\t*** ERROR: Version 3.6+ of R required. Install from https://cran.r-project.org/, or add to path"
+				echo -e "\t*** If upgrading, install r-base and r-base-dev"
+				echo -e "\t*** Visit https://cran.r-project.org/bin/linux/ubuntu/README.html for details"
 			  exit 0
 		}
 			fi

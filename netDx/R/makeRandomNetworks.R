@@ -2,7 +2,6 @@
 #' 
 #' @details Used as a control to assess the robustness of GeneMANIA to 
 #' random cliques.
-#'
 #' @param id (char) vector of patient IDs
 #' @param numNets (integer) number of networks to generate
 #' @param minNodes (integer) min number of patients in networks
@@ -14,11 +13,13 @@
 #' networks)
 #' @param netName (char) prefix for network name. 
 #' @param outDir (char) output directory
+#' @param setSeed (integer) Random number generator seed for reproducible state
 #' @return char vector of network names
 #' @examples 
-#' data(TCGA_mini); 
+#' data(xpr,pheno,cnv_GR); 
 #' x <- makeRandomNetworks(pheno$ID, numNets=10L,
 #'	outDir="/tmp")
+#' @importFrom combinat combn
 #' @export
 makeRandomNetworks <- function(id, numNets=100L, minNodes=2L, 
 	maxNodes=20L,sizeProb="exp",netName="RANDOM",outDir=".",setSeed=42L) {

@@ -29,13 +29,15 @@
 #' network to be constructed
 #' @return Vector of network filenames
 #' @examples
-#' data(pathway_GR,TCGA_mini)
+#' data(pathway_GR,xpr,pheno,cnv_GR)
 #' netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 #' @export
 #' @import GenomicRanges
 #' @import bigmemory
 #' @import foreach
 #' @import parallel
+#' @import doParallel
+#' @importFrom combinat combn
 makePSN_RangeSets <- function(gr, rangeSet, netDir, simMetric="coincide",
   quorum=2L,verbose=TRUE,numCores=1L) {
 if (!file.exists(netDir)) dir.create(netDir)

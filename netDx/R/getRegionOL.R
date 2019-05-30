@@ -15,7 +15,7 @@
 #' Where a range overlaps with multiple loci, the names are reported as a 
 #' comma-separated vector
 #' @examples
-#' data(TCGA_mini,pathway_GR)
+#' data(xpr,pheno,cnv_GR,pathway_GR)
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' @export
 getRegionOL <- function(gr, rngList) {

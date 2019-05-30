@@ -1,6 +1,13 @@
 Package: netDx
 Title: Learns Patient Binary Classification based on Similarity Networks
-Version: 1.1
+Version: 1.11
+Author: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
+	person("Philipp","Weber",role="aut"),
+	person("Ahmad","Shah", role="aut"),
+	person("Shirley","Hui",role="aut"),
+	person("Ruth","Isserlin",role="aut"),
+	person("Hussam","Kaka", role="aut"),
+	person("Gary D","Bader",role="aut"))
 Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
 	person("Philipp","Weber",role="aut"),
 	person("Ahmad","Shah", role="aut"),
@@ -10,11 +17,12 @@ Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role 
 	person("Gary D","Bader",role="aut"))
 Maintainer: Shraddha Pai <shraddha.pai@utoronto.ca>
 Description: Builds a patient classifier by multimodal data integration
-Imports: bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer
 Depends:
-    R (>= 3.1.1),bigmemory,foreach,doParallel,combinat,GenomicRanges,ROCR,pracma,RColorBrewer,igraph,RCy3
-Suggests: netDx.examples, reshape2, gplots
-License: GPL>=2.0
+    R (>= 3.6),bigmemory,foreach,doParallel,combinat,GenomicRanges
+Imports: ROCR,pracma,RColorBrewer,ggplot2,RCy3,caroline,glmnet,httr,igraph,reshape2
+Suggests: netDx.examples
+Encoding: UTF-8
+License: GPL-2
 LazyData: false
 URL: http://netdx.org
 RoxygenNote: 6.1.1

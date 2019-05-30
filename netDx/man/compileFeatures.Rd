@@ -58,10 +58,10 @@ Interaction networks have pairwise similarity measures:
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
-data(TCGA_mini,pathwayList);
+data(xpr,pheno,cnv_GR,pathwayList);
 # note: the paths in the calls below need to be absolute. If you 
 # do not have write access to /tmp, change to a different directory.
 n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
 	writeProfiles=TRUE); 
-db <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
+dob <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
 }

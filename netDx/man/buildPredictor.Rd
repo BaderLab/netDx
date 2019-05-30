@@ -7,7 +7,8 @@
 buildPredictor(pheno, dataList, groupList, outDir, makeNetFunc,
   featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
   JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
-  startAt = 1L, preFilter = FALSE, impute = FALSE)
+  startAt = 1L, preFilter = FALSE, impute = FALSE,
+  logging = "default")
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -59,6 +60,8 @@ will be eliminated by lasso. Future variations may allow other prefiltering
 options that are more lenient.}
 
 \item{impute}{(logical) if TRUE applies imputation by median within CV}
+
+\item{logging}{(char) level of detail with which messages are printed. Options are: 1) none: turn off all messages; 2) all: greatest level of detail (recommended for advanced users, or for debugging); 3) default: print key details (useful setting for most users)}
 }
 \description{
 Run nested cross-validation on data

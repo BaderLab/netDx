@@ -23,6 +23,9 @@ number of networks available}
 
 \item{stripFromFileName}{(char) vector of char patterns to remove from file name}
 
+\item{numPatients}{(integer) number of patients expected in network.
+Used to calculate sparsity. If set to NULL, sparsity will not be calculated.}
+
 \item{verbose}{(logical) print messages}
 }
 \description{

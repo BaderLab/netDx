@@ -8,7 +8,7 @@ makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
   verbose = TRUE, numCores = 1L, writeProfiles = TRUE,
   sparsify = FALSE, useSparsify2 = FALSE, cutoff = 0.3,
   sparsify_edgeMax = 1000, sparsify_maxInt = 50, minMembers = 1L,
-  append = FALSE, ...)
+  runSerially = FALSE, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -38,24 +38,30 @@ create interaction networks. If TRUE, this function writes subsets
 of the original data corresponding to networks to file (profiles). 
 If FALSE, uses  getSimilarity() and writes interaction networks.}
 
+\item{sparsify}{(logical). If TRUE, sparsifies patient similarity network.
+See useSparsify2, sparsify_edgeMax and sparsify_maxInt}
+
 \item{useSparsify2}{(logical). Cleaner sparsification routine. 
 If FALSE, uses new matrix-based sparsify3}
 
 \item{cutoff}{(numeric) patients with similarity smaller than this value
 are not included in the corresponding interaction network}
 
-\item{sparsify_edgeMax}{(numeric).}
+\item{sparsify_edgeMax}{(numeric) Max number of edges to include in the
+final network}
+
+\item{sparsify_maxInt}{(numeric) Max num edges per node in sparsified network.}
 
 \item{minMembers}{(integer) min number of measures in a network for 
 the network to be included. Useful when similarity measures require a minimum
 number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)}
 
+\item{runSerially}{(logical) set to TRUE to create nets serially, rather 
+than in parallel}
+
 \item{append}{(logical) if TRUE does not overwrite netDir.}
 
 \item{...}{passed to \code{getSimilarity()}}
-
-\item{useExtLib}{(logical) if TRUE, uses NetPreProc::Sparsify.matrix()
-with user-supplied k; else uses the implementation in this file}
 }
 \value{
 (char) Basename of files to which networks are written.  
@@ -84,7 +90,7 @@ networks. Networks can be sparsified by excluding weak connections
 (cutoff).
 }
 \examples{
-data(TCGA_mini,pathwayList); 
+data(xpr,pheno,cnv_GR,pathwayList); 
 # you may get a warning message that the output directory already
 # exists; ignore it
 out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 

@@ -26,6 +26,6 @@ query file for each fold
 Randomly select patients for queries for feature selection
 }
 \examples{
-data(TCGA_mini)
+data(xpr,pheno,cnv_GR)
 x <- makeQueries(pheno$ID)
 }

@@ -4,11 +4,13 @@
 \alias{predictPatientLabels}
 \title{assign patient class when ranked by multiple GM predictors}
 \usage{
-predictPatientLabels(resSet)
+predictPatientLabels(resSet, verbose = TRUE)
 }
 \arguments{
 \item{resSet}{(list) output of getPatientRankings, each key for a different
 predictor. names(resSet) contain predictor label}
+
+\item{verbose}{(logical) print detailed messages}
 }
 \value{
 data.frame: ID, similarityScore, PRED_CLASS

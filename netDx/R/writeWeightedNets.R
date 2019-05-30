@@ -46,6 +46,7 @@
 #' 2) target patient (TARGET)
 #' 3) network name (NET_NAME)
 #' 4) weight similarity for the network (WT_SIM)
+#' @importFrom reshape2 melt
 #' @export
 writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	filterEdgeWt=0,writeAggNet="MAX",limitToTop=50L,limitToBottom=Inf,
@@ -102,7 +103,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		cat(sprintf("Got %i binary nets\n", length(binNets)))
 		for (i in binNets) {
 			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
-			ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+			ints <- read.delim(nf,sep="\t",header=F,as.is=T)
 			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
 												 		# harmless
 			if (nrow(ints)>=1) {
@@ -214,7 +215,6 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			}
 		}
 
-		require(reshape2)
 		if (is.infinite(limitToTop)) {
 			tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
 		}

@@ -34,23 +34,28 @@
 #' are not included in the corresponding interaction network
 #' @param verbose (logical) print detailed messages
 #' @param numCores (integer) number of cores for parallel network generation
-#' @param useExtLib (logical) if TRUE, uses NetPreProc::Sparsify.matrix()
-#' with user-supplied k; else uses the implementation in this file
 #' @param writeProfiles (logical) use GeneMANIA's ProfileToNetworkDriver to
 #' create interaction networks. If TRUE, this function writes subsets 
 #' of the original data corresponding to networks to file (profiles). 
 #' If FALSE, uses  getSimilarity() and writes interaction networks.
+#' @param sparsify (logical). If TRUE, sparsifies patient similarity network.
+#' See useSparsify2, sparsify_edgeMax and sparsify_maxInt
 #' @param useSparsify2 (logical). Cleaner sparsification routine. 
 #' If FALSE, uses new matrix-based sparsify3
-#' @param sparsify_edgeMax (numeric). 
+#' @param sparsify_maxInt (numeric) Max num edges per node in sparsified network. 
+#' @param sparsify_edgeMax (numeric) Max number of edges to include in the
+#' final network
 #' @param minMembers (integer) min number of measures in a network for 
 #' the network to be included. Useful when similarity measures require a minimum
 #' number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)
+#' @param runSerially (logical) set to TRUE to create nets serially, rather 
+#' than in parallel
 #' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
 #' Side effect of writing interaction networks in \code{outDir}
-#' @examples data(TCGA_mini,pathwayList); 
+#' @import doParallel
+#' @examples data(xpr,pheno,cnv_GR,pathwayList); 
 #' # you may get a warning message that the output directory already
 #' # exists; ignore it
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
@@ -60,7 +65,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	simMetric="pearson",verbose=TRUE,
 	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=1000,
-	sparsify_maxInt=50,minMembers=1L,
+	sparsify_maxInt=50,minMembers=1L,runSerially=FALSE,
 	append=FALSE,...){
 	if (!append) {
 		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
@@ -80,7 +85,11 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	#if (!sparsify & useSparsify2) { stop("if useSparsify=TRUE then sparsify must also be set to TRUE\n")}
 
 	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
+	if (!runSerially) {
 	registerDoParallel(cl)
+	} else {
+		cat("running serially\n")
+	}
 
 	if (simMetric=="pearson") {
 		cat("simMetric set to pearson; forcing minMembers to be 5.\n")

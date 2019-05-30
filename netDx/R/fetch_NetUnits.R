@@ -4,16 +4,16 @@
 #' contributes to units of a set. For example, CNV networks where patient
 #' overlaps with single features - here, genes - result in membership in a
 #' set - here, pathways. 
-#' @param pat_GR: (GRanges) ranges that patients map to. The metadata 
+#' @param pat_GR (GRanges) ranges that patients map to. The metadata 
 #' columns are required to have:
 #' 1. ID (char): patient IDs
 #' 2. LOCUS_NAMES (char): comma-separated vector of units that patients
 #' contributed 
-#' @param netList: (list) keys are networks, values are vectors of 
+#' @param netList (list) keys are networks, values are vectors of 
 #' unit features within those networks (e.g. pathways and genes)
-#' @param whichNets: (char) which networks to fetch data for ; e.g. 
+#' @param whichNets (char) which networks to fetch data for ; e.g. 
 #' could be set of feature-selected networks
-#' @param trackMapping_detail: (logical) if TRUE, returns the mapping
+#' @param trackMapping_detail (logical) if TRUE, returns the mapping
 #' from individual patient events to units to features.
 #' If FALSE, simply groups all units that contribute to 'whichNets',
 #' without tracking individual mappings. 
@@ -34,7 +34,7 @@
 #' "NA".
 #' @export
 #' @examples
-#' data(TCGA_mini,pathway_GR,pathwayList)
+#' data(xpr,pheno,cnv_GR,pathway_GR,pathwayList)
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList),

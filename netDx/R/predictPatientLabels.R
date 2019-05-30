@@ -2,11 +2,12 @@
 #'
 #' @param resSet (list) output of getPatientRankings, each key for a different
 #' predictor. names(resSet) contain predictor label
+#' @param verbose (logical) print detailed messages
 #' @return data.frame: ID, similarityScore, PRED_CLASS
 #' @examples 
 #' data(predRes); predClass <- predictPatientLabels(predRes)
 #' @export
-predictPatientLabels <- function(resSet) {
+predictPatientLabels <- function(resSet,verbose=TRUE) {
 	type_rank <- NULL
 	for (k in 1:length(resSet)){
     x   <- resSet[[k]]$fullmat
@@ -23,9 +24,11 @@ predictPatientLabels <- function(resSet) {
  }
 
 na_sum <- rowSums(is.na(type_rank[,-1]))
+if (verbose){
 if (any(na_sum>0)) 
 	cat(sprintf("*** %i rows have an NA prediction (probably query samples that were not not ranked\n",
 			sum(na_sum>0)))
+}
 type_rank <- na.omit(type_rank)
 
 # finally, select the class with the highest rank as the subject label.

@@ -26,12 +26,14 @@ ctr <- 1
 for (fName in fList) {
 	tmp	<- basename(fName)
 
-	dat <- try(read.delim(fName,sep="\t",h=T,as.is=T,skip=1),silent=TRUE)
+	dat <- try(read.delim(fName,sep="\t",header=T,as.is=T,skip=1),silent=TRUE)
 	ctr <- ctr+1
 
 	if (!inherits(dat,"try-error")) { # file not empty - continue
+		if (verbose) {
 		cat("Net weight distribution:\n")
 		print(summary(dat$Weight))
+		}
 		
 		# actually - it should already be sorted in decreasig order if we don't 
 		# reverse it above - but let's sort anyway
@@ -41,7 +43,7 @@ for (fName in fList) {
 		keep_max	<- which.min(abs(cs-filter_WtSum))
 		
 		dat			<- dat[1:keep_max,]
-		cat(sprintf("filter_WtSum = %1.1f; %i of %i networks left\n",
+		if (verbose) cat(sprintf("filter_WtSum = %1.1f; %i of %i networks left\n",
 				filter_WtSum, nrow(dat),length(cs)))
 		
 		# put all Network names in pathwaytally. The ones that are above threshold 

@@ -10,16 +10,16 @@
 #'  clinical                                          clinical
 #'       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
 #'       rna                              RETINOL_BIOSYNTHESIS
-#' @param pctPass (numeric between 0 and 1) fraction of iterations that
-#' a net's score must pass consCutoff for, to be included in the consensus
-#' map
-#' @param consCutoff (integer) nets must pass this cutoff in at least
-#' pctPass of the iterations to be written to file
+#' @param pctPass (numeric between 0 and 1) fraction of splits for which
+#' the highest score for the network is required, for that to be the network's
+#' maxScore
 #' @param minScore (integer) features with score below this cutoff are
 #' excluded from downstream analyses
 #' @param maxScore (integer) maximum possible score in one round of cross-
 #' validation. e.g. for 10-fold cross-validation, maxScore=10.
 #' @param trimFromName (char) strings to trim from name with sub()
+#' @param outPfx (char) prefix for output files. Should include directory
+#' name and prefix of file name.
 #' @param verbose (logical) print messages
 #' @return
 #' 1) <outPfx>.gmt file - for enrichment map

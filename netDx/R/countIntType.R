@@ -5,6 +5,7 @@
 #' @param minusID (char) vector of - nodes
 #' @return (numeric of length 2) Number of (+,+) interactions, and non-(+,+) interactions
 #' (i.e. (+,-) and (-,-) interactions)
+#' @export
 #' @examples
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",

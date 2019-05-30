@@ -15,12 +15,29 @@
 #' check if a given groupList is empty (no networks to create) before 
 #' the makePSN call for it. This is to avoid trying to make nets for datatypes
 #' that did not pass feature selection
+#' @param verbose (logical) print messages
 #' @param ... other parameters to makePSN_NamedMatrix() or makePSN_RangedSets()
 #' @return (char) vector of network names. Side effect of creating the nets
-#' @examples see examples/NestedCV_MultiData.Rmd for example use.
+#' @examples
+#'
+#' makeNetFunc <- function(dataList, groupList, netDir,...) {
+#'  netList <- c()
+#'  # make RNA nets: group by pathway, use default similarity 
+#'  # metric (pearson corr)
+#'  if (!is.null(groupList[["rna"]])) {
+#'  netList <- makePSN_NamedMatrix(dataList$rna,
+#'                  rownames(dataList$rna),
+#'              groupList[["rna"]],netDir,verbose=FALSE,
+#'              writeProfiles=TRUE,...)  # writeProfiles=TRUE when simMetric 
+#'										 # is Pearson correlation
+#'  netList <- unlist(netList)
+#'  } 
+#' data(KIRC_dat, KIRC_group, KIRC_pheno,makeNetFunc)
+#' createPSN_MultiData(dataList=KIRC_dat,groupList=KIRC_group,
+#'	netDir=tempdir(),customFunc=makeNetFunc,numCores=1)
 #' @export
 createPSN_MultiData <- function(dataList,groupList,netDir,filterSet=NULL,
-			customFunc,...) {
+			verbose=TRUE,customFunc,...) {
 
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
@@ -37,12 +54,14 @@ if (missing(customFunc)) stop("customFunc must be suppled.\n")
 
 # Filter for nets (potentially feature-selected ones)
 if (!is.null(filterSet)) {
-	cat("Filter set provided; only making nets for those provided here\n")
+	if (verbose) cat("\tFilter set provided\n")
 	groupList2 <- list()
 	for (nm in names(groupList)) {
 			idx <- which(names(groupList[[nm]]) %in% filterSet)
-			cat(sprintf("\t%s: %i of %i nets left\n",nm,
+			if (verbose) {
+				cat(sprintf("\t\t%s: %i of %i nets pass\n",nm,
 				length(idx),length(groupList[[nm]])))
+			}
 			if (length(idx)>0) {
 					groupList2[[nm]] <- groupList[[nm]][idx]
 			} 

@@ -19,6 +19,7 @@
 #' @param seed_queryResample (integer) RNG seed for inner cross validation loop.
 #' Makes deterministic samples held-out for each GeneMANIA query (see
 #' makeQueries())
+#' @param verbose_runQuery (logical) print messages for runQuery()
 #' @param ... args for \code{makeQueries()}
 #' @examples
 #' data(MB_pheno)
@@ -28,19 +29,19 @@
 #' @export
 runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
-	numCores=2L,JavaMemory=6L,seed_queryResample=42L,...) {
+	numCores=2L,JavaMemory=6L,seed_queryResample=42L,
+	verbose_runQuery=FALSE,...) {
 
 	#TODO if results already exist, what do we do? Delete with a warning?
 	if (!file.exists(outDir)) dir.create(outDir)
 
 	# get query names
-	if (verbose) cat("\tWriting GM queries: ")
+	if (verbose) cat("\tWriting queries:\n")
 	qSamps <- makeQueries(trainID_pred,verbose=verbose,
 		setSeed=seed_queryResample,...)
 
 	# write query files
 	for (m in 1:length(qSamps)) {
-		if (verbose) cat(sprintf("%i ",m))
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
 		if(is.null(numTrainSamps)){
@@ -57,7 +58,8 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 		qFiles <- append(qFiles, qFile)
 	}
 
-	runQuery(dbPath, qFiles, outDir, JavaMemory=JavaMemory, verbose=verbose, 
+	runQuery(dbPath, qFiles, outDir, JavaMemory=JavaMemory, 
+			verbose=verbose_runQuery,
 	       numCores=numCores)
 
 }

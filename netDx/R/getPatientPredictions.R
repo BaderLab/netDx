@@ -55,7 +55,7 @@ getPatientPredictions <- function(predFiles,pheno) {
 	rownames(uq_mat) <- pheno$ID
 	for (ctr in 1:length(predFiles)){
 		curFile <- predFiles[ctr]
-    dat 		<- read.delim(curFile,sep="\t",h=T,as.is=T)
+    dat 		<- read.delim(curFile,sep="\t",header=T,as.is=T)
 		for (k in 1:nrow(dat)) {
 			uq_mat[which(rownames(uq_mat)==dat$ID[k]),ctr] <- dat$PRED_CLASS[k]
 		}

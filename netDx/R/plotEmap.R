@@ -24,14 +24,26 @@
 #' current version of RCy3
 #' @examples
 #' #refer to writeEMapInput_many.R for working writeEMapInput_many() example
+#' data(featScores)
+#' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
+#'           path.package("netDx"))
+#' pathwayList <- readPathways(pathFile)
+#' pathwayList <- pathwayList[c(1:5)]
+#' netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
+#'      path.package("netDx"))
+#' netTypes <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
+#' outDir <- paste(tempdir(),"plots",sep="/")
+#' if (!file.exists(outDir)) dir.create(outDir)
 #' EMap_input <- writeEMapInput_many(featScores,pathwayList,
-#'      netInfo,outDir=outDir)
+#'      netTypes,outDir=outDir)
 #' outDir <- paste(getwd(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' gmtFile <- EMap_input[[1]][1]
 #' nodeAttrFile <- EMap_input[[1]][2]
-#' plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk",
-#'	outDir=outDir)
+#' 
+#' # not run because requires Cytoscape to be installed and open
+#' # plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk",
+#'	# outDir=outDir)
 #' @import RCy3
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",

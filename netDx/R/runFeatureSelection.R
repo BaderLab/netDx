@@ -22,7 +22,7 @@
 #' @param verbose_runQuery (logical) print messages for runQuery()
 #' @param ... args for \code{makeQueries()}
 #' @examples
-#' data(MB_pheno)
+#' data(MB.pheno)
 #' dbPath <- sprintf("%s/extdata/dbPath",path.package("netDx"))
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% "WNT")],
 #'	"~/tmp",dbPath,103L)

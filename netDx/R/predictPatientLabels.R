@@ -11,6 +11,8 @@ predictPatientLabels <- function(resSet,verbose=TRUE) {
 	type_rank <- NULL
 	for (k in 1:length(resSet)){
     x   <- resSet[[k]]$fullmat
+	idx <- which(colnames(x) == "GM_score")
+	if (any(idx)) colnames(x)[idx] <- "similarityScore"
     if (is.null(type_rank)) 
         type_rank <- x[,c("ID","similarityScore")]
     else {

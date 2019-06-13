@@ -4,7 +4,7 @@
 \alias{getPatientPredictions}
 \title{Calculates patient-level classification accuracy across train/test splits}
 \usage{
-getPatientPredictions(predFiles, pheno)
+getPatientPredictions(predFiles, pheno, plotAccuracy = FALSE)
 }
 \arguments{
 \item{predFiles}{(char) vector of paths to all test predictions
@@ -16,6 +16,9 @@ Format is "rootDir/rngX/predictionResults.txt"}
 \item{pheno}{(data.frame) ID=patient ID, STATUS=ground truth (known class
 label). This table is required to get the master list of all patients, as
 not every patient is classified in every split.}
+
+\item{plotAccuracy}{(logical) if TRUE, shows fraction of times
+patient is misclassified, using a dot plot}
 }
 \value{
 (list) of length 2.
@@ -40,11 +43,10 @@ train/test splits.
 }
 \examples{
 inDir <- sprintf("\%s/extdata/KIRC_output",
-   path.package("netDx.examples"))
-phenoFile <- sprintf("\%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
-load(phenoFile)
+   path.package("netDx"))
+data(KIRC_pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {
     paste(x, "predictionResults.txt", sep = "/")}))
-pred_mat <- getPatientPredictions(all_pred_files, pheno)
+pred_mat <- getPatientPredictions(all_pred_files, KIRC_pheno)
 }

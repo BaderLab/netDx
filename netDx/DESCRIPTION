@@ -18,9 +18,10 @@ Authors@R: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role 
 Maintainer: Shraddha Pai <shraddha.pai@utoronto.ca>
 Description: Builds a patient classifier by multimodal data integration
 Depends:
-    R (>= 3.6),bigmemory,foreach,doParallel,combinat,GenomicRanges
+    R (>= 3.6),bigmemory,foreach,doParallel,combinat,BiocManager,GenomicRanges,knitr,htmltools
 Imports: ROCR,pracma,RColorBrewer,ggplot2,RCy3,caroline,glmnet,httr,igraph,reshape2
 Suggests: netDx.examples
+VignetteBuilder: knitr 
 Encoding: UTF-8
 License: GPL-2
 LazyData: false

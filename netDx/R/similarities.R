@@ -146,3 +146,35 @@ normDiff <- function(x) {
     out
 }
 
+#' takes average of normdiff of each row in x
+#' 
+#' @param x (numeric) matrix of values, one column per patient (e.g. ages)
+#' @export
+avgNormDiff <- function(x) {
+# normalized difference
+# x is vector of values, one per patient (e.g. ages)
+normDiff <- function(x) {
+    #if (nrow(x)>=1) x <- x[1,]
+    nm <- colnames(x)
+    x <- as.numeric(x)
+    n <- length(x)
+    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+
+    out <- matrix(NA,nrow=n,ncol=n);
+    # weight between i and j is
+    # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
+    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+    rownames(out) <- nm; colnames(out)<- nm
+    out
+}
+
+sim <- matrix(0,nrow=ncol(x),ncol=ncol(x))
+for (k in 1:nrow(x)) {
+        tmp <- normDiff(x[k,,drop=FALSE])
+        sim <- sim + tmp
+        rownames(sim) <- rownames(tmp)
+        colnames(sim) <- colnames(tmp)
+}
+sim <- sim/nrow(x)
+sim
+}

@@ -13,6 +13,8 @@
 #' @param pheno (data.frame) ID=patient ID, STATUS=ground truth (known class
 #' label). This table is required to get the master list of all patients, as
 #' not every patient is classified in every split.
+#' @param plotAccuracy (logical) if TRUE, shows fraction of times
+#' patient is misclassified, using a dot plot
 #' @return (list) of length 2.
 #' 1) (data.frame) rows are patients, (length(predFiles)+2) columns.
 #' Columns 1:length(predFiles): Predicted labels for a given split (NA if
@@ -24,16 +26,15 @@
 #' the value is "% splits for which patient was classified correctly".
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
-#'    path.package("netDx.examples"))
-#' phenoFile <- sprintf("%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
-#' load(phenoFile)
+#'    path.package("netDx"))
+#' data(KIRC_pheno)
 #' all_rngs <- list.dirs(inDir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {
 #'     paste(x, "predictionResults.txt", sep = "/")}))
-#' pred_mat <- getPatientPredictions(all_pred_files, pheno)
+#' pred_mat <- getPatientPredictions(all_pred_files, KIRC_pheno)
 #' @import ggplot2
 #' @export
-getPatientPredictions <- function(predFiles,pheno) {
+getPatientPredictions <- function(predFiles,pheno,plotAccuracy=FALSE) {
   if(length(predFiles) == 1){
 		cat("predFiles is of length 1. Assuming directory\n")
     all_rngs <- list.dirs(predFiles, recursive = FALSE)
@@ -82,12 +83,16 @@ out <- uq_mat;
 rownames(out) <- pheno$ID
 colnames(out) <- c(fNames,"STATUS","pctCorrect")
 
+if (plotAccuracy) {
 p <- ggplot(out,aes(x=pctCorrect))+ geom_dotplot()
 p <- p + ggtitle(sprintf("Patient-level classification accuracy (N=%i)",
 		length(predFiles)))
 p <- p + theme(axis.text=element_text(size=13),
 		axis.title=element_text(size=13))
 print(p)
-
 return(list(predictions=output_mat,plot=p))
+} else 
+
+return(list(predictions=output_mat))
+
 }

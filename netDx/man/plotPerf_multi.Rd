@@ -35,10 +35,10 @@ Plots a set of ROC/PR curves with average.
 Plots average curves with individual curves imposed.
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx.examples"))
+inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx"))
 all_rng <- list.files(path = inDir, pattern = "rng.")
 fList <- sprintf("\%s/\%s/predictionResults.txt", inDir,all_rng)
-dat <- read.delim(fList[1],sep="\\t",h=T,as.is=T)
+dat <- read.delim(fList[1],sep="\\t",h=TRUE,as.is=TRUE)
 predClasses <- c('SURVIVEYES', 'SURVIVENO')
 pred_col1 <- sprintf("\%s_SCORE",predClasses[1])
 pred_col2 <- sprintf("\%s_SCORE",predClasses[2])

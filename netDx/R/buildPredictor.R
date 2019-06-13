@@ -46,7 +46,16 @@
 #' current option is not recommended for pathway-level features as most genes
 #' will be eliminated by lasso. Future variations may allow other prefiltering
 #' options that are more lenient.
+#' @param preFilterGroups (char) vector with subset of names(dataList)
+#' to which prefiltering needs to be limited. Allows users to indicate
+#' which data layers should be prefiltered using regression and which
+#' are to be omitted from this process. Prefiltering uses regression, which
+#' omits records with missing values. Structured missingness can result in
+#' empty dataframes if missing values are removed from these, which in turn
+#' can crash the predictor. To impute missing data, see the 'impute' and 
+#' 'imputeGroups' parameters. 
 #' @param impute (logical) if TRUE applies imputation by median within CV
+#' @param imputeGroups (char) If impute set to TRUE, indicate which groups you want imputed. 
 #' @param logging (char) level of detail with which messages are printed. Options are: 1) none: turn off all messages; 2) all: greatest level of detail (recommended for advanced users, or for debugging); 3) default: print key details (useful setting for most users)
 #' @import glmnet
 #' @importFrom stats median na.omit coef
@@ -56,6 +65,7 @@ buildPredictor <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,
 	JavaMemory=4L,featSelCutoff=9L,
 	keepAllData=FALSE,startAt=1L, preFilter=FALSE,impute=FALSE,
+	preFilterGroups=NULL, imputeGroups=NULL,
 	logging="default") { 
 
 verbose_default <- TRUE
@@ -64,11 +74,13 @@ verbose_compileNets <- FALSE  # message when compiling PSN into database
 verbose_runFS <- TRUE		  # runFeatureSelection() 
 verbose_predict <- FALSE
 verbose_compileFS <- FALSE
+verbose_makeFeatures <- FALSE
 
 if (logging == "all") {
 	verbose_runQuery <- TRUE
 	verbose_compileNets <- TRUE 
 	verbose_compileFS <- TRUE
+	verbose_makeFeatures <- TRUE
 } else if (logging=="none") {
 	verbose_runFS<-FALSE
 	verbose_default <- FALSE
@@ -80,7 +92,8 @@ if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
-if (class(groupList)!="list" || not_list || sort(names(groupList))!=sort(names(dataList)) ) stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
+names_nomatch <- !identical(sort(names(groupList)),sort(names(dataList)))
+if (class(groupList)!="list" || not_list || names_nomatch ) stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
 if (class(dataList)!="list") stop("dataList must be a list of data.frames or matrices, with names corresponding to groupList")
 patnames <- unlist(lapply(dataList,colnames))
 if (any(!(patnames %in% pheno$ID))) stop("one or more patient IDs in dataList do not match those listed in pheno$ID. Check.")
@@ -155,21 +168,31 @@ for (rngNum in startAt:numSplits) {
 
 	if (impute) {
 	if (verbose_default) cat("**** IMPUTING ****\n")
-	dats_train <- lapply(dats_train, function(x) {
-		missidx <- which(rowSums(is.na(x))>0) 
-		for (i in missidx) {
-			na_idx <- which(is.na(x[i,]))
-			x[i,na_idx] <- median(x[i,],na.rm=TRUE) 
-		}
+	if (is.null(imputeGroups)) imputeGroups <- names(dats_train)
+	if (!any(imputeGroups %in% names(dats_train))) stop("imputeGroups must match names in dataList")
+
+	
+	dats_train <- sapply(names(dats_train), function(nm) {
+		x <- dats_train[[nm]]
+		if (nm %in% imputeGroups) {
+			missidx <- which(rowSums(is.na(x))>0) 
+			for (i in missidx) {
+				na_idx <- which(is.na(x[i,]))
+				x[i,na_idx] <- median(x[i,],na.rm=TRUE) 
+			}
+		} 
 		x
 	})
 	}
 
 	# prefilter with lasso
 	if (preFilter) {
+	if (is.null(preFilterGroups)) preFilter <- names(dats_train)
+	if (!any(preFilterGroups %in% names(dats_train))) stop("preFilterGroups must match names in dataList")
+	
 	set.seed(123)
 	cat("Prefiltering enabled\n")
-	for (nm in names(dats_train)) {
+	for (nm in preFilterGroups) {
 		cat(sprintf("%s: %i variables\n",nm,nrow(dats_train[[nm]])))
 		if (nrow(dats_train[[nm]])<2)  # only has one var, take it.
 			vars <- rownames(dats_train[[nm]])
@@ -211,7 +234,7 @@ for (rngNum in startAt:numSplits) {
 	if (verbose_default) cat("** Creating features\n")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
-			verbose=verbose_default)
+			verbose=verbose_makeFeatures)
 	if (verbose_default) cat("** Compiling features\n")
 	dbDir	<- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores, 
 				verbose=verbose_compileNets)
@@ -282,19 +305,22 @@ for (rngNum in startAt:numSplits) {
 		if (impute) {
 		train_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TRAIN")]
 		test_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TEST")]
-		dats_tmp <- lapply(dats_tmp, function(x) {
-			missidx <- which(rowSums(is.na(x))>0) 
-			train_idx <- which(colnames(x) %in% train_samp)
-			test_idx <- which(colnames(x) %in% test_samp)
-			for (i in missidx) {
-				# impute train and test separately
-				na_idx <- intersect(which(is.na(x[i,])),train_idx)
-				na_idx1 <- na_idx
-				x[i,na_idx] <- median(x[i,train_idx],na.rm=TRUE) 
-	
-				na_idx <- intersect(which(is.na(x[i,])),test_idx)
-				na_idx2 <- na_idx
-				x[i,na_idx] <- median(x[i,test_idx],na.rm=TRUE) 
+		dats_tmp <- sapply(names(dats_tmp), function(nm) {
+			x <- dats_tmp[[nm]]
+			if (nm %in% imputeGroups) {
+				missidx <- which(rowSums(is.na(x))>0) 
+				train_idx <- which(colnames(x) %in% train_samp)
+				test_idx <- which(colnames(x) %in% test_samp)
+				for (i in missidx) {
+					# impute train and test separately
+					na_idx <- intersect(which(is.na(x[i,])),train_idx)
+					na_idx1 <- na_idx
+					x[i,na_idx] <- median(x[i,train_idx],na.rm=TRUE) 
+		
+					na_idx <- intersect(which(is.na(x[i,])),test_idx)
+					na_idx2 <- na_idx
+					x[i,na_idx] <- median(x[i,test_idx],na.rm=TRUE) 
+				}
 			}
 			x
 		})

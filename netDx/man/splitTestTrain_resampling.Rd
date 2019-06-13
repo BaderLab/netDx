@@ -44,5 +44,5 @@ another has too few).
 }
 \examples{
 data(xpr,pheno,cnv_GR) 
-x <- splitTestTrain_resample(pheno,predClass="LumA")
+x <- splitTestTrain_resampling(pheno,predClass="LumA")
 }

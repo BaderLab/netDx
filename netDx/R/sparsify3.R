@@ -13,14 +13,18 @@
 #' @return writes SIF content to text file (node1,node2,edge weight)
 #' @import reshape2
 #' @export
-sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
+sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=Inf,
 	includeAllNodes=TRUE,verbose=TRUE) { 
 	
-	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+if (is.infinite(EDGE_MAX)) {
+} else {
+#	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+}
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
 	if (class(W)!="matrix") W <- as.matrix(W)
+	W[which(is.na(W))] <- .Machine$double.eps  # don't allow missing values
 	diag(W) <- NA
 	mytop <- cbind(colnames(W),colnames(W)[apply(W,1,which.max)],
 		apply(W,1,max,na.rm=TRUE))
@@ -45,6 +49,7 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule
+cat("past this\n")
 	if (includeAllNodes) {
 		mmat[,1] <- as.character(mmat[,1])
 		mmat[,2] <- as.character(mmat[,2])
@@ -65,6 +70,8 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 			}
 		}	
 	}
+cat("past include all\n")
+
 	head(mmat)
 	mmat <- na.omit(mmat) # boundary case where cutoff exceeds net max
 	mmat[,3] <- as.numeric(mmat[,3])

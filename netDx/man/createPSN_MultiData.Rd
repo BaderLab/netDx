@@ -39,7 +39,23 @@ that did not pass feature selection}
 Wrapper to create custom input features (patient similarity networks)
 }
 \examples{
-createPSN_MultiData(dataList=dats_train,groupList=groupList,
-netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
-verbose=verbose_default)
+
+makeNetFunc <- function(dataList, groupList, netDir,...) {
+ netList <- c()
+ # make RNA nets: group by pathway, use default similarity 
+ # metric (pearson corr)
+ if (!is.null(groupList[["rna"]])) {
+ netList <- makePSN_NamedMatrix(dataList$rna,
+                 rownames(dataList$rna),
+             groupList[["rna"]],netDir,verbose=FALSE,
+             writeProfiles=TRUE,...)  # writeProfiles=TRUE when simMetric 
+									 # is Pearson correlation
+ netList <- unlist(netList)
+ } 
+}
+data(KIRC_dat)
+data(KIRC_group)
+data(KIRC_pheno)
+createPSN_MultiData(dataList=KIRC_dat,groupList=KIRC_group,
+netDir=tempdir(),customFunc=makeNetFunc,numCores=1)
 }

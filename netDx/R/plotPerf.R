@@ -25,7 +25,7 @@
 #' 4) PR curve for all runs plus average
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
-#' path.package("netDx.examples"))
+#' path.package("netDx"))
 #' plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
 #' @import ROCR
 #' @import pracma

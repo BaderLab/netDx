@@ -34,9 +34,13 @@
 #' data(xpr,pheno,cnv_GR,pathwayList);
 #' # note: the paths in the calls below need to be absolute. If you 
 #' # do not have write access to /tmp, change to a different directory.
-#'	n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,"/tmp/nets/",
+#' tmpDir <- tempdir()
+#' netDir <- sprintf("%s/nets",tmpDir)
+#'	n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,netDir,
 #'		writeProfiles=TRUE); 
-#'	dob <- compileFeatures("/tmp/nets/",pheno$ID,"/tmp")
+#' outDir <- sprintf("%s/dbdir",tmpDir)
+#' dir.create(outDir)
+#'	dob <- compileFeatures(netDir,pheno$ID,outDir)
 #' @import doParallel
 #' @export
 compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",

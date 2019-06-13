@@ -8,7 +8,7 @@ buildPredictor(pheno, dataList, groupList, outDir, makeNetFunc,
   featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
   JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
   startAt = 1L, preFilter = FALSE, impute = FALSE,
-  logging = "default")
+  preFilterGroups = NULL, imputeGroups = NULL, logging = "default")
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -60,6 +60,17 @@ will be eliminated by lasso. Future variations may allow other prefiltering
 options that are more lenient.}
 
 \item{impute}{(logical) if TRUE applies imputation by median within CV}
+
+\item{preFilterGroups}{(char) vector with subset of names(dataList)
+to which prefiltering needs to be limited. Allows users to indicate
+which data layers should be prefiltered using regression and which
+are to be omitted from this process. Prefiltering uses regression, which
+omits records with missing values. Structured missingness can result in
+empty dataframes if missing values are removed from these, which in turn
+can crash the predictor. To impute missing data, see the 'impute' and 
+'imputeGroups' parameters.}
+
+\item{imputeGroups}{(char) If impute set to TRUE, indicate which groups you want imputed.}
 
 \item{logging}{(char) level of detail with which messages are printed. Options are: 1) none: turn off all messages; 2) all: greatest level of detail (recommended for advanced users, or for debugging); 3) default: print key details (useful setting for most users)}
 }

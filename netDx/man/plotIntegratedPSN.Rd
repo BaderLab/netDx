@@ -98,15 +98,14 @@ For visualization, only edges representing the top fraction of distances
 (strongest edge weights) are included.
 }
 \examples{
-phenoFile <- sprintf("\%s/extdata/KIRC_pheno.rda",path.package("netDx.examples"))
-load(phenoFile)
-inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx.examples"))
+data(KIRC_pheno)
+inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx"))
 outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 featSelNet <- lapply(featScores, function(x) {
 callFeatSel(x, fsCutoff=10, fsPctPass=0.7)
 })
-plotIntegratedPSN(pheno=pheno,baseDir=sprintf("\%s/rng1",inDir),
-netNames=featSelNet,outDir=outDir)
+plotIntegratedPSN(pheno=KIRC_pheno,baseDir=sprintf("\%s/rng1",inDir),
+netNames=featSelNet,outDir=outDir,runCytoscape=FALSE)
 }

@@ -27,6 +27,14 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 					  type="double",backingfile="tmp.bk",
 					  backingpath=tmpDir,
 					  descriptorfile="tmp.desc")
+	dop <- getDoParWorkers()
+	locReg <- FALSE
+	if (dop < 2) {
+		locReg <- TRUE
+		cat("Registering parallel backend\n")
+		cl <- makeCluster(2)
+		registerDoParallel(cl)
+	}
 	foreach (k=1:length(inFiles)) %dopar% {
 		m <- bigmemory::attach.big.matrix(
 				sprintf("%s/tmp.desc",tmpDir))
@@ -35,6 +43,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 		else if (enrType == "corr")
 			m[k,]	<- getCorrType(inFiles[k],plusID,minusID)
 	}
+
+	if (locReg) stopCluster(cl)
 	
 	out	<- as.matrix(out)
 	unlink(sprintf("%s/tmp.bk",tmpDir))

@@ -39,17 +39,15 @@ score and net type
 Wrapper to generate multiple EnrichmentMaps (perhaps one per class)
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx.examples"))
-outDir <- paste(getwd(),"plots",sep="/")
-featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
+data(featScores)
 pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
-          path.package("netDx.examples"))
+          path.package("netDx"))
 pathwayList <- readPathways(pathFile)
 pathwayList <- pathwayList[c(1:5)]
 netInfoFile <- sprintf("\%s/extdata/KIRC_output/inputNets.txt",
-     path.package("netDx.examples"))
+     path.package("netDx"))
 netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
-outDir <- paste(getwd(),"plots",sep="/")
+outDir <- paste(tempdir(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 EMap_input <- writeEMapInput_many(featScores,pathwayList,
      netTypes,outDir=outDir)

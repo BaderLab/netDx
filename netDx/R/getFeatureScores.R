@@ -17,7 +17,7 @@
 #' the inner fold of CV.
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
-#' 		path.package("netDx.examples"))
+#' 		path.package("netDx"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 #' @export
 getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {

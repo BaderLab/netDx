@@ -11,7 +11,7 @@
 #' @examples
 #' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx"))
 #' netFiles <- sprintf("%s/%s", netDir,dir(netDir,pattern="NRANK$"))
-#' pTally <- compileFeatureScores(netFiles)
+#' pTally <- compileFeatureScores(netFiles,verbose=TRUE)
 #' print(head(pTally))
 #' @export
 compileFeatureScores <- function(fList,filter_WtSum=100,verbose=FALSE) {
@@ -23,11 +23,13 @@ if (filter_WtSum < 5) {
 	
 pathwayTally <- list()
 ctr <- 1
+print(fList)
 for (fName in fList) {
 	tmp	<- basename(fName)
 
 	dat <- try(read.delim(fName,sep="\t",header=T,as.is=T,skip=1),silent=TRUE)
 	ctr <- ctr+1
+	print(head(dat))
 
 	if (!inherits(dat,"try-error")) { # file not empty - continue
 		if (verbose) {
@@ -35,7 +37,7 @@ for (fName in fList) {
 		print(summary(dat$Weight))
 		}
 		
-		# actually - it should already be sorted in decreasig order if we don't 
+		# actually - it should already be sorted in decreasing order if we don't 
 		# reverse it above - but let's sort anyway
 		dat <- dat[order(dat$Weight,decreasing=TRUE),]
 	
@@ -55,10 +57,11 @@ for (fName in fList) {
 		
 	}
 }
-
 out <- unlist(pathwayTally)
+print(out)
 out <- sort(out,decreasing=TRUE)
 out <- data.frame(name=names(out), score=as.integer(out))
+print(head(out))
 out[,2] <- as.integer(as.character(out[,2]))
 
 out

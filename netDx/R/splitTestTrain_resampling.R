@@ -1,5 +1,5 @@
-#' Split samples into training and testing set
-#'
+#' Split samples into train/test
+#' 
 #' @param pheno_DF (data.frame) patient information
 #' Must contain the following columns:
 #' 1. ID: (char) patient IDs
@@ -19,6 +19,8 @@
 #' @examples
 #' data(xpr,pheno,cnv_GR)
 #' x <- splitTestTrain(pheno)
+#' data(MB.pheno)
+#' x <- splitTestTrain(MB.pheno)
 #' @export
 splitTestTrain <- function(pheno_DF,pctT=0.7,setSeed=42,verbose=FALSE) { 
 if (!is.null(setSeed)) {

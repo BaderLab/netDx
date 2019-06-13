@@ -32,7 +32,10 @@
 #'										 # is Pearson correlation
 #'  netList <- unlist(netList)
 #'  } 
-#' data(KIRC_dat, KIRC_group, KIRC_pheno,makeNetFunc)
+#' }
+#' data(KIRC_dat)
+#' data(KIRC_group)
+#' data(KIRC_pheno)
 #' createPSN_MultiData(dataList=KIRC_dat,groupList=KIRC_group,
 #'	netDir=tempdir(),customFunc=makeNetFunc,numCores=1)
 #' @export
@@ -71,6 +74,8 @@ groupList <- groupList2; rm(groupList2)
 
 # call user-defined function for making PSN
 netList <- customFunc(dataList=dataList,groupList=groupList,netDir=netDir,...)
+
+if (length(netList)<1) stop("\n\nNo features created! Filters may be too stringent.\n")
 
 return(netList)
 }

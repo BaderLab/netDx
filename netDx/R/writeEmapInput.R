@@ -26,15 +26,18 @@
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
+#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx"))
 #' outDir <- paste(getwd(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 #' gp <- names(featScores)[1]
 #' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
-#'           path.package("netDx.examples"))
+#'           path.package("netDx"))
 #' pathwayList <- readPathways(pathFile)
 #' pathwayList <- pathwayList[c(1:5)]
+#' netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
+#'      path.package("netDx"))
+#' netTypes <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
 #'                   outPfx=sprintf("%s/%s",outDir,gp))

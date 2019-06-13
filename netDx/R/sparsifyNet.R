@@ -44,8 +44,8 @@
 #' @examples
 #' require(reshape2) # for melt()
 #' data(xpr,pheno,cnv_GR)
-#' x <- melt(cor(xpr)) # patient 1, patient 2, edge weight
-#' sparsifyNet(x,outFile="tmp.txt")
+#' x <- reshape2::melt(cor(xpr)) # patient 1, patient 2, edge weight
+#' sparsifyNet(x,outFile="tmp.txt",numPatients=40)
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
 		numPatients,keepTies=TRUE,verbose=TRUE,cutoff=0.3){
 if (class(net)=="data.frame") {

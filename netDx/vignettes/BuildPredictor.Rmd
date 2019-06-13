@@ -7,9 +7,9 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{03. Build predictor ~10 min}
+    %\VignetteIndexEntry{01. Build basic predictor.}
     %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteEncoding{UTF-8
+    %\VignetteEncoding{UTF-8}
 ---
 
 # TL;DR

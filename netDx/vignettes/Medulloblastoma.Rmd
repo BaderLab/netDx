@@ -1,8 +1,15 @@
 ---
 title: 'netDx use case: 4-way classification: Medulloblastoma tumour subtype'
-output:
-  html_document:
-    df_print: paged
+author: "Shraddha Pai"
+package: netDx
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{03. Four-way classifier}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
 ---
 
 
@@ -19,7 +26,6 @@ The netDx workflow is shown in Figure 1. We use gene signatures identified by pr
 ## Set up working environment 
 ```{r}
 outDir <-  sprintf("%s/MB",getwd())
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 
 numCores    <- 2L       # number of cores for parallel processing
@@ -133,7 +139,7 @@ for (g in names(groupSig)){
                                    verbose=TRUE)
 
     # create a GeneMANIA database out of these networks
-    dbDir <- compileFeatures(netDir, MB.pheno$ID, pDir)
+    dbDir <- compileFeatures(netDir, MB.pheno$ID, pDir,verbose=FALSE)
 
     # run a query using training samples for this subtype.
     # get ranking for all patients in the database by running GeneMANIA

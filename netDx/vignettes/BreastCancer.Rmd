@@ -7,9 +7,9 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{03. Build predictor ~10 min}
+    %\VignetteIndexEntry{02. Build predictor from scratch.}
     %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteEncoding{UTF-8
+    %\VignetteEncoding{UTF-8}
 ---
 
 This tutorial shows the steps to build a netDx (Ref 1) breast tumour classifier by integrating gene expression and DNA copy number variants (CNV), using a ***custom predictor design***. 
@@ -35,7 +35,6 @@ cutoff          <- 1L   # score cutoff for feature-selected networks
 featScoreMax           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
 
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 
 # load packages
@@ -199,7 +198,6 @@ cutoff          <- 1L   # score cutoff for feature-selected networks
 featScoreMax           <- 2L   # two-fold CV, so the code will run fast. 
 TRAIN_PROP <- 0.67      # fraction of samples to use for training
 
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 ```
 
@@ -314,7 +312,6 @@ The key functions are:
 ## repeat process for each class
 for (g in subtypes) {
     pDir <- sprintf("%s/%s",outDir,g)
-    if (file.exists(pDir)) unlink(pDir,recursive=TRUE)
         dir.create(pDir)
 
         cat(sprintf("\n******\nSubtype %s\n",g))

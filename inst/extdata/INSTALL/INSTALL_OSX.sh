@@ -88,5 +88,3 @@ fi
 cd ..
 echo "* Installing netDx"
 R CMD INSTALL netDx
-echo "* Installing netDx.examples"
-R CMD INSTALL netDx.examples

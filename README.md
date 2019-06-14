@@ -1,20 +1,20 @@
 # netDx
+
+# UPDATE 14 June 2019: netDx is being integrated with the BioConductor package.
+**The install instructions below may not be up to date.**
+**Please contact Shraddha Pai (shraddha.pai@utoronto.ca) in case of errors.**
+
 netDx is an algorithm for building patient classifiers by using patient similarity networks as features.
+If you haven't already done so, first install the companion data package [netDx.examples](https://github.com/BaderLab/netDx.examples).
+It is used to run the vignettes in netDx.
 
 **Visit the "[wiki](https://github.com/BaderLab/netDx/wiki)" section for examples and related documentation**
-
-This repo contains two R packages, each of which need to be separately installed:
-
-1. `netDx/`: Software implementing the netDx method
-2. `netDx.examples/`: Data for use cases
-
-The `examples/` folder contains R code that should just run once both `netDx/` and `netDx.examples/` are installed.
 
 The main website for netDx is **http://netdx.org**.
 
 * [Installation](#installation)
   * [Prerequisites](#prerequisites)
-  * [Install `netDx` and `netDx.examples`](#install-netdx-and-netdxexamples)
+  * [Install `netDx`](#install-netdx)
      * [Automated install](#automated-install) ***-- recommended***
      * [Manual install](#manual-install)     
 * [Quick functionality check - Medulloblastoma tumour classifier](#test-functionality)
@@ -90,7 +90,7 @@ With Cytoscape open, install the following Apps:
 * AutoAnnotate v1.3 (http://apps.cytoscape.org/apps/autoannotate)  *Earlier versions may not work.*
 * Enrichment Map v3.0.0 (http://apps.cytoscape.org/apps/enrichmentmap) *Earlier versions may not work.*
 
-## Install `netDx` and `netDx.examples`
+## Install `netDx`
 This section assumes you have Java, Python, R and Bioconductor installed.
 
 ### Automated install
@@ -98,11 +98,13 @@ Scripts are in the root directory of the downloaded release/repo.
 
 On Unix systems (requires sudo privilege to install associated libraries), run:
 ```
+$ cd inst/extdata/INSTALL
 $ ./INSTALL_Unix.sh
 ```
 
 On Mac OS/X systems, run:
 ```
+$ cd inst/extdata/INSTALL
 $ ./INSTALL_OSX.sh
 ```
 

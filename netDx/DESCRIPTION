@@ -1,6 +1,6 @@
 Package: netDx
 Title: Learns Patient Binary Classification based on Similarity Networks
-Version: 1.11
+Version: 0.99.0
 Author: c(person("Shraddha", "Pai", email = "shraddha.pai@utoronto.ca", role = c("aut", "cre")),
 	person("Philipp","Weber",role="aut"),
 	person("Ahmad","Shah", role="aut"),
@@ -20,7 +20,6 @@ Description: Builds a patient classifier by multimodal data integration
 Depends:
     R (>= 3.6),bigmemory,foreach,doParallel,combinat,BiocManager,GenomicRanges,knitr,htmltools
 Imports: ROCR,pracma,RColorBrewer,ggplot2,RCy3,caroline,glmnet,httr,igraph,reshape2
-Suggests: netDx.examples
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: GPL-2

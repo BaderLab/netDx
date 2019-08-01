@@ -36,6 +36,7 @@
 #' @param plotEdgeDensity (logical) plot density plot of edge weights, one
 #' per input net. Used to troubleshoot problems introduced by specific nets.
 #' Expects a graphic device to be open already (e.g. by pdf() call)
+#' @importFrom stats qexp density
 #' @return If an aggregated network is written (writeAggNet=TRUE),
 #' returns the filename of the net. Else returns an empty value.
 #' Side effect of writing one tab-delimited file per

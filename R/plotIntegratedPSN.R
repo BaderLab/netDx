@@ -50,6 +50,7 @@
 #' @param imageFormat (character) file format to export PSN to image. One of
 #' JPEG, PDF, PNG, or SVG (see RCy3::exportImage()).
 #' @param verbose (logical) print detailed messages
+#' @importFrom stats wilcox.test 
 #' @return (list) information about the integrated network
 #  1) aggPSN_Full: (char) path to aggregated patient similarity network. This
 #' is the unpruned network and not the one displayed in Cytoscape. Edges are

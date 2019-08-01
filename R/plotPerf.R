@@ -29,6 +29,7 @@
 #' plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
 #' @import ROCR
 #' @import pracma
+#' @importFrom stats sd
 #' @export
 plotPerf <- function(inDir, predClasses) {
 

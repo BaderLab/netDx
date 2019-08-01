@@ -15,7 +15,7 @@
 #' x <- getSimilarity(xpr) # similarity by Pearson corr
 #' mySim <- function(x) cor(x,method="kendall")
 #' x <- getSimilarity(xpr,customFunc=mySim) # custom similarity
-
+#' @importFrom stats cor
 #' @export
 getSimilarity <- function(x, type="pearson",customFunc,...) {
 	switch(type, 

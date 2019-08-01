@@ -24,6 +24,7 @@
 #' for subnetworks that contain only the edges where source and target both 
 #' belong to the corresponding cluster. In addition, there is an "overall" 
 #' entry for the mean shortest distance for the entire network.
+#' @importFrom stats sd
 #' @export
 compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	verbose=TRUE){	

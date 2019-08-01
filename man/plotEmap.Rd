@@ -37,6 +37,10 @@ This map is (<=6: white; 7-9: orange; 10: red)}
 TRUE for first one and to FALSE for subsequent. Due to limitation in 
 current version of RCy3}
 }
+\value{
+Filename of image to which EnrichmentMap is exported. Also side
+effect of plotting the EnrichmentMap in an open session of Cytoscape.
+}
 \description{
 Create a network where nodes are predictive pathways passing
 certain cutoff and edges indicate similarity in gene-sets. Pathways are then
@@ -47,11 +51,11 @@ network for each patient label.
 #refer to writeEMapInput_many.R for working writeEMapInput_many() example
 data(featScores)
 pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
-          path.package("netDx"))
+          path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 pathwayList <- pathwayList[c(1:5)]
 netInfoFile <- sprintf("\%s/extdata/KIRC_output/inputNets.txt",
-     path.package("netDx"))
+     path.package("netDx.examples"))
 netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
 outDir <- paste(tempdir(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)

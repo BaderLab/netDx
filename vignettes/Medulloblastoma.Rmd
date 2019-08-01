@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{03. Four-way classifier}
-    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEngine{knitr::knitr}
     %\VignetteEncoding{UTF-8}
 ---
 
@@ -25,7 +25,7 @@ The netDx workflow is shown in Figure 1. We use gene signatures identified by pr
 
 ## Set up working environment 
 ```{r}
-outDir <-  sprintf("%s/MB",getwd())
+outDir <-  sprintf("%s/MB",tempdir())
 dir.create(outDir)
 
 numCores    <- 2L       # number of cores for parallel processing
@@ -135,7 +135,7 @@ for (g in names(groupSig)){
     netList <- makePSN_NamedMatrix(MB.xpr[idx,], MB.xpr_names[idx],
                                    sigNets,netDir,
                                    simMetric="custom",customFunc=geneSim,
-                                                                   writeProfiles=FALSE,sparsify=TRUE,
+                                   writeProfiles=FALSE,sparsify=TRUE,
                                    verbose=TRUE)
 
     # create a GeneMANIA database out of these networks

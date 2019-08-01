@@ -62,8 +62,9 @@
 #' 4) netPng: (char) path to png file with patient dissimilarity network
 #' created by Cytoscape
 #' @examples
+#' require(netDx.examples)
 #' data(KIRC_pheno)
-#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx"))
+#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
 #' outDir <- paste(getwd(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
@@ -128,7 +129,7 @@ for (gps in names(ptFile)) {
 	pTally <- netNames[[gps]]
 	pTally <- sub("_cont|\\.profile","",pTally)
 
-	netIDs <- read.delim(netInfo[[gps]],sep="\t",h=F,as.is=T)
+	netIDs <- read.delim(netInfo[[gps]],sep="\t",h=FALSE,as.is=TRUE)
 	netIDs[,2] <- sub("_cont|\\.profile","",netIDs[,2])
 
 	idx <- which(pTally %in% alreadyAdded)
@@ -149,8 +150,7 @@ for (gps in names(ptFile)) {
 	for (cur in pTally) {
 		idx <- which(netIDs[,2] == cur)
 		if (length(idx)<1) {
-			cat(sprintf("%s: index not found!\n",cur))
-			browser()
+			stop(sprintf("plotIntegratedPSN.R: %s: mapping of network identifier to name not found!\n",cur))
 		}
 		netID <- sprintf("1.%s.txt",netIDs[idx,1])
 		tmp <- sprintf("%s.%s", gps,netID)
@@ -169,7 +169,7 @@ for (gps in names(ptFile)) {
 newNetIDs <- do.call("rbind",newNetIDs)
 netInfo_combinedF <- sprintf("%s/netInfo.txt", poolDir)
 write.table(newNetIDs,file=netInfo_combinedF,sep="\t",
-col=F,row=F,quote=F)
+col=FALSE,row=FALSE,quote=FALSE)
 
 # aggregate
 cat("* Computing aggregate net\n")
@@ -181,7 +181,7 @@ aggNetFile <- netDx::writeWeightedNets(ptFile[[1]],
 	writeAggNet=aggFun,verbose=FALSE)
 
 # read in aggregated similarity net and convert to dissimilarity for net view
-aggNet<- read.delim(aggNetFile,sep="\t",h=T,as.is=T)[,1:3]
+aggNet<- read.delim(aggNetFile,sep="\t",h=TRUE,as.is=TRUE)[,1:3]
 colnames(aggNet) <- c("AliasA","AliasB","weight")
 
 # calculate shortest paths among and between classes
@@ -210,7 +210,7 @@ if (calcShortestPath) {
 		cur <- names(x$all)[k]
 		idx <- which(colnames(curDijk) %in% cur)
 		curDijk[1,idx] <- median(x$all[[k]])
-		cat(sprintf("\t%s: Median = %1.2f ", cur,curDijk[1,idx]))
+		cat(sprintf("\t%s: Median = %1.2f\n", cur,curDijk[1,idx]))
 		if (cur %in% gp) {
 			tmp <- wilcox.test(x$all[[cur]],x$all[[oppName]],
 				alternative="less")$p.value
@@ -219,7 +219,7 @@ if (calcShortestPath) {
 		}
 	}
 	write.table(curDijk,file=sprintf("%s/shortest_paths.txt",outDir),
-		sep="\t",col=T,row=T,quote=F)
+		sep="\t",col=TRUE,row=TRUE,quote=FALSE)
 	#print(t(curDijk))
 
 	if (savePaths) {
@@ -242,7 +242,7 @@ write.table(aggNet_pruned,file=outFile,sep="\t",col=TRUE,row=FALSE,
 
 if (runCytoscape) {
 st <- cytoscapePing()
-if (class(st) == "numeric") { # error
+if (is(st,"numeric")) { # error
 	stop("Please launch Cytoscape and try again.")
 }
 

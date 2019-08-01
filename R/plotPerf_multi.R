@@ -11,7 +11,8 @@
 #' @param meanCol (char) colour for mean trendline
 #' @return No value. Side effect of plotting ROC and PR curves
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx"))
+#' inDir <- sprintf("%s/extdata/KIRC_output", 
+#'	path.package("netDx.examples"))
 #' all_rng <- list.files(path = inDir, pattern = "rng.")
 #' fList <- sprintf("%s/%s/predictionResults.txt", inDir,all_rng)
 #' dat <- read.delim(fList[1],sep="\t",h=TRUE,as.is=TRUE)
@@ -51,7 +52,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	x <- inList[[k]]@x.values[[1]]
 	y <- inList[[k]]@y.values[[1]]
 
-	cur <-aggregate(y,by=list(xvals=x),FUN=mean,na.rm=T)
+	cur <-aggregate(y,by=list(xvals=x),FUN=mean,na.rm=TRUE)
 	colnames(cur)<-c("x","y")
 	out[[k]]<-cur
 
@@ -61,7 +62,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	# plot average trendline
 	x <- inList[[k]]@x.values[[1]]
 	y <- inList[[k]]@y.values[[1]]
-	cur_y <- aggregate(y, by=list(xvals=x),FUN=mean,na.rm=T)
+	cur_y <- aggregate(y, by=list(xvals=x),FUN=mean,na.rm=TRUE)
 	cur <- cbind(cur_y, k)
 	colnames(cur) <- c("x","y","k")
 	out[[k]] <- cur

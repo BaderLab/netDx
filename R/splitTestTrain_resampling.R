@@ -32,7 +32,7 @@ lvls <- unique(pheno_DF$STATUS)
 IS_TRAIN	<- rep("TEST",nrow(pheno_DF))
 for (lv in lvls) {
 	idx <- which(pheno_DF$STATUS %in% lv)
-	IS_TRAIN[sample(idx, floor(pctT*length(idx)), F)] <- "TRAIN"
+	IS_TRAIN[sample(idx, floor(pctT*length(idx)), FALSE)] <- "TRAIN"
 }
 
 ###plus_idx	<- which(pheno_DF$STATUS %in% predClass)

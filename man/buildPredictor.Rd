@@ -7,8 +7,9 @@
 buildPredictor(pheno, dataList, groupList, outDir, makeNetFunc,
   featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
   JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
-  startAt = 1L, preFilter = FALSE, impute = FALSE,
-  preFilterGroups = NULL, imputeGroups = NULL, logging = "default")
+  startAt = 1L, preFilter = FALSE, preFilterSeed = 123,
+  impute = FALSE, preFilterGroups = NULL, imputeGroups = NULL,
+  logging = "default")
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata, must have ID and STATUS columns}
@@ -36,15 +37,15 @@ of input PSN provided to netDx. See createPSN_MultiData()::customFunc.}
 
 \item{trainProp}{(numeric 0 to 1) Percent samples to use for training}
 
-\item{numSplits}{(integer) number of train/blind test splits (i.e. iterations
-of outer loop)}
+\item{numSplits}{(integer) number of train/blind test splits 
+(i.e. iterations of outer loop)}
 
 \item{numCores}{(integer) number of CPU cores for parallel processing}
 
 \item{JavaMemory}{(integer) memory in (Gb) used for each fold of CV}
 
-\item{featSelCutoff}{(integer) cutoff for inner-fold CV to call feature-selected
-in a given split}
+\item{featSelCutoff}{(integer) cutoff for inner-fold CV to call 
+feature-selected in a given split}
 
 \item{keepAllData}{(logical) if TRUE keeps all intermediate files, even
 those not needed for assessing the predictor. Use very cautiously as for
@@ -59,6 +60,8 @@ current option is not recommended for pathway-level features as most genes
 will be eliminated by lasso. Future variations may allow other prefiltering
 options that are more lenient.}
 
+\item{preFilterSeed}{(integer) seed for lasso based pre-selection}
+
 \item{impute}{(logical) if TRUE applies imputation by median within CV}
 
 \item{preFilterGroups}{(char) vector with subset of names(dataList)
@@ -70,9 +73,20 @@ empty dataframes if missing values are removed from these, which in turn
 can crash the predictor. To impute missing data, see the 'impute' and 
 'imputeGroups' parameters.}
 
-\item{imputeGroups}{(char) If impute set to TRUE, indicate which groups you want imputed.}
+\item{imputeGroups}{(char) If impute set to TRUE, indicate which groups you 
+want imputed.}
 
-\item{logging}{(char) level of detail with which messages are printed. Options are: 1) none: turn off all messages; 2) all: greatest level of detail (recommended for advanced users, or for debugging); 3) default: print key details (useful setting for most users)}
+\item{logging}{(char) level of detail with which messages are printed. 
+Options are: 1) none: turn off all messages; 2) all: greatest level of 
+detail (recommended for advanced users, or for debugging); 3) default: 
+print key details (useful setting for most users)}
+}
+\value{
+symmetric matrix of size ncol(dat) (number of patients) containing
+pairwise patient similarities
+
+No value. Side effect of writing log messages to <outDir>/log.txt
+and generating predictor-related data in <outDir>.
 }
 \description{
 Run nested cross-validation on data
@@ -90,4 +104,49 @@ For example, designs it handles includes
 (Pearson corr) and single gene networks (normalized difference)
 3) Multiple datatypes, multiple metrics: Expression -> Pathways; 
 Clinical -> single or grouped nets
+}
+\examples{
+load(sprintf("\%s/extdata/buildPred_input.rda",
+             path.package("netDx.examples")))
+
+# Custom function to tell netDx how to build features (PSN) from input data.
+# Each datatype is in a different entry of the dataList object.
+# The sets into which variables should be grouped (e.g. genes into pathways)i
+# is indicated in groupList.
+# names(dataList) should correspond to names(groupList)
+KIRC_makeNets <- function(dataList, groupList, netDir,...) {
+    netList <- c()
+    # make RNA nets: group by pathway, use default similarity metric (pearson corr)
+    if (!is.null(groupList[["rna"]])) {
+    netList <- makePSN_NamedMatrix(dataList$rna,
+                    rownames(dataList$rna),
+                groupList[["rna"]],netDir,verbose=FALSE,
+                writeProfiles=TRUE,...)  
+    netList <- unlist(netList)
+    }
+
+    # make clinical nets, one net for **each variable**.
+  # use custom similarity metric
+    netList2 <- c()
+    if (!is.null(groupList[["clinical"]])) {
+    netList2 <- makePSN_NamedMatrix(dataList$clinical,
+        rownames(dataList$clinical),
+        groupList[["clinical"]],netDir,
+        simMetric="custom",customFunc=netDx::normDiff, # custom function
+        writeProfiles=FALSE,
+        sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+    }
+    netList2 <- unlist(netList2)
+
+    netList <- c(netList,netList2)  # concatenate net names as output
+    return(netList)
+}
+
+# build predictor
+# uncomment to run
+# buildPredictor(pheno,
+#   dataList=dats,groupList=groupList,
+#   makeNetFunc=KIRC_makeNets, ### custom function defined above
+#   outDir=sprintf("\%s/pred_output",getwd()), ## absolute path
+#   numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 }

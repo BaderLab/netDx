@@ -26,7 +26,8 @@
 #' the value is "% splits for which patient was classified correctly".
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
-#'    path.package("netDx"))
+#'    path.package("netDx.examples"))
+#' require(netDx.examples)
 #' data(KIRC_pheno)
 #' all_rngs <- list.dirs(inDir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {
@@ -56,7 +57,7 @@ getPatientPredictions <- function(predFiles,pheno,plotAccuracy=FALSE) {
 	rownames(uq_mat) <- pheno$ID
 	for (ctr in 1:length(predFiles)){
 		curFile <- predFiles[ctr]
-    dat 		<- read.delim(curFile,sep="\t",header=T,as.is=T)
+    dat 		<- read.delim(curFile,sep="\t",header=TRUE,as.is=TRUE)
 		for (k in 1:nrow(dat)) {
 			uq_mat[which(rownames(uq_mat)==dat$ID[k]),ctr] <- dat$PRED_CLASS[k]
 		}

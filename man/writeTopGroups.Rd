@@ -26,6 +26,10 @@ To include all genes (not recommended unless you know what you are doing)
 
 \item{outFile}{(char) where output should be written.}
 }
+\value{
+No value. Side effect of writing the gene-sets of features passing
+`cutoff` to `outFile`.
+}
 \description{
 writes subset of gmt with feature-selected pathways
 }

@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{01. Build basic predictor.}
-    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEngine{knitr::knitr}
     %\VignetteEncoding{UTF-8}
 ---
 
@@ -57,7 +57,7 @@ KIRC_makeNets <- function(dataList, groupList, netDir,...) {
 buildPredictor(pheno,
    dataList=dats,groupList=groupList,
    makeNetFunc=KIRC_makeNets, ### custom function defined above
-   outDir=sprintf("%s/pred_output",getwd()), ## absolute path
+   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
    numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 
 ```
@@ -95,7 +95,7 @@ suppressWarnings(suppressMessages(require(netDx.examples)))
 
 In this example, we use data from The Cancer Genome Atlas (http://cancergenome.nih.gov/), downloaded from the PanCancer Survival project (https://www.synapse.org/#!Synapse:syn1710282). We integrate gene expression profiles and clinical variables from renal clear cell carcinoma tumours to predict poor and good survival (Refs 1-2). The data are from 150 tumours and the classes are `SURVIVEYES` and `SURVIVENO`.
 
-```{r,eval=T}
+```{r,eval=TRUE}
 load(sprintf("%s/extdata/buildPred_input.rda",
              path.package("netDx.examples")))
 head(pheno)
@@ -242,7 +242,7 @@ These are unrealistically low values set so the example will run fast. In practi
 buildPredictor(pheno,
    dataList=dats,groupList=groupList,
    makeNetFunc=KIRC_makeNets, ### custom network creation function
-   outDir=sprintf("%s/pred_output",getwd()), ## absolute path
+   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
    numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 ```
 
@@ -250,7 +250,7 @@ buildPredictor(pheno,
 The results directory contains the log file (`log.txt`) and results for each split are stored in its own directory (here, `rng1/` and `rng2/`).
 
 ```{r,eval=TRUE}
-outDir <- sprintf("%s/pred_output",getwd())
+outDir <- sprintf("%s/pred_output",tempdir())
 dir(outDir)
 ```
 
@@ -258,7 +258,7 @@ Look into one of the split directories. `predictionResults.txt` contains blind t
 
 ```{r}
 dir(sprintf("%s/rng1",outDir))
-pred <- read.delim(sprintf("%s/rng1/predictionResults.txt",outDir),h=T,as.is=T)
+pred <- read.delim(sprintf("%s/rng1/predictionResults.txt",outDir),h=TRUE,as.is=TRUE)
 head(pred)
 ```
 
@@ -267,7 +267,7 @@ The feature selection results are in the `<className>/GM_results/` directory. Th
 ```{r}
 dir(sprintf("%s/rng1/SURVIVEYES",outDir))
 sc <- read.delim(sprintf("%s/rng1/SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt",outDir),
-   sep="\t",h=T,as.is=T)
+   sep="\t",h=TRUE,as.is=TRUE)
 head(sc)
 ```
 

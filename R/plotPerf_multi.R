@@ -24,6 +24,7 @@
 #' pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
 #' curRoc <- ROCR::performance(pred,"tpr","fpr")
 #' plotPerf_multi(list(curRoc=curRoc),"ROC")
+#' @importFrom stats aggregate
 #' @export
 plotPerf_multi <- function(inList,plotTitle="performance",
 		plotType="ROC", xlab="TPR",ylab="FPR",meanCol="darkblue",

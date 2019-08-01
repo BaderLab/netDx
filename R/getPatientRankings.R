@@ -5,6 +5,7 @@
 #' @param predClass (character) class label for which predictor is built
 #' @param plotIt (logical) if TRUE plots ROC curve
 #' @param verbose (logical) print messages
+#' @importFrom utils read.table
 #' @export
 #' @return (list) 
 #' 1) predLbl: GeneMANIA scores (predicted labels). Higher score for

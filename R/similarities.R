@@ -17,6 +17,7 @@
 #' @examples
 #' data(xpr)
 #' sim <- sim.pearscale(xpr)
+#' @importFrom stats dist cor sd dnorm
 #' @export
 sim.pearscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {
@@ -85,6 +86,7 @@ normalize <- function(X) {
 #' @examples
 #' data(xpr)
 #' sim <- sim.eucscale(xpr)
+#' @importFrom stats dist dnorm sd
 #' @export
 sim.eucscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {

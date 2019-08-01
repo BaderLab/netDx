@@ -57,14 +57,14 @@ pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 					length(filterIDs)))
 		for (f in filterNets) {
 			dat <- read.delim(sprintf("%s/%s",oldDir,f),
-							  sep="\t",h=F,as.is=T)
+							  sep="\t",h=FALSE,as.is=TRUE)
 
 			# both nodes of edge should be eligible
 			idx <- intersect(which(dat[,1]%in% filterIDs),
 							 which(dat[,2]%in% filterIDs))
 
 			write.table(dat[idx,],file=sprintf("%s/%s",newDir,f),
-						sep="\t",col=F,row=F,quote=F)
+						sep="\t",col=FALSE,row=FALSE,quote=FALSE)
 		}
 	}
 }

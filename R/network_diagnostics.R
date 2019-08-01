@@ -15,6 +15,14 @@
 #' @param grepFiles (char) searches for files with the provided string.
 #' @param stripFromFileName (char) vector of char patterns to remove from file name
 #' @param verbose (logical) print messages
+#' @return No value. Side effect of creating plots of network edge-weight 
+#' distribution and printing network statistics to console. Files created
+#' include:
+#' 1) <netDir>/<setName>_edgeDistr.pdf: Violin plots showing edge-weight
+#' distribution for each network
+#' 2) <netDir>/<setName>_edgeCount.pdf: Single violin plot of edge count
+#' distribution across all networks.
+#' The script also prints the mean and SD of edge weight across all networks
 #' @importFrom caroline violins
 #' @export
 plotNetEdgeDistribution <- function(netDir,setName="netDir",randomSample=NULL, 
@@ -29,7 +37,7 @@ if (!is.null(randomSample)) {
 	
 	oldseed <- NULL
 	if (exists(".Random.seed")) oldseed <- .Random.seed
-	fList <- sample(fList,randomSample,F)
+	fList <- sample(fList,randomSample,FALSE)
 	if (!is.null(oldseed)) .Random.seed <- oldseed
 }
 
@@ -37,7 +45,7 @@ out <- list()
 edge_count <- list()
 for (curr in fList) {
     print(curr)
-    dat <- read.delim(sprintf("%s/%s",netDir,curr),sep="\t",header=F,as.is=T)
+    dat <- read.delim(sprintf("%s/%s",netDir,curr),sep="\t",header=FALSE,as.is=TRUE)
     out[[curr]] <- dat[,3]
 	edge_count[[curr]] <- nrow(dat)
 }

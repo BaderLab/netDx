@@ -14,6 +14,8 @@
 #' To include all genes (not recommended unless you know what you are doing)
 #' , set to "*".
 #' @param outFile (char) where output should be written.
+#' @return No value. Side effect of writing the gene-sets of features passing
+#' `cutoff` to `outFile`.
 #' @export
 writeTopGroups <- function(groupList, scores, cutoff,units="*",outFile) {
 	pnames <- scores[which(scores$SCORE>=cutoff),1]

@@ -28,6 +28,16 @@ Used to calculate sparsity. If set to NULL, sparsity will not be calculated.}
 
 \item{verbose}{(logical) print messages}
 }
+\value{
+No value. Side effect of creating plots of network edge-weight 
+distribution and printing network statistics to console. Files created
+include:
+1) <netDir>/<setName>_edgeDistr.pdf: Violin plots showing edge-weight
+distribution for each network
+2) <netDir>/<setName>_edgeCount.pdf: Single violin plot of edge count
+distribution across all networks.
+The script also prints the mean and SD of edge weight across all networks
+}
 \description{
 plot distribution of PSN edge weights
 }

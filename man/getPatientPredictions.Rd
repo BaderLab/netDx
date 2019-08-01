@@ -43,7 +43,8 @@ train/test splits.
 }
 \examples{
 inDir <- sprintf("\%s/extdata/KIRC_output",
-   path.package("netDx"))
+   path.package("netDx.examples"))
+require(netDx.examples)
 data(KIRC_pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {

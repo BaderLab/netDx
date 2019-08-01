@@ -15,11 +15,19 @@ sim.pearscale(dat, K = 20, alpha = 0.5)
 \item{alpha}{(numeric) Scaling factor for exponential similarity kernel. 
 Recommended range between 0.3 and 0.8.}
 }
+\value{
+symmetric matrix of size ncol(dat) (number of patients) containing
+pairwise patient similarities
+}
 \description{
-Computes Euclidean distance between patients. A scaled 
+Computes Pearson correlation between patients. A scaled 
 exponential similarity kernel is used to determine edge weight. The 
 exponential scaling considers the K nearest neighbours, so that 
 similarities between non-neighbours is set to zero. Alpha is a hyperparameter
 that determines decay rate of the exponential. For details
 see Wang et al. (2014). Nature Methods 11:333.
+}
+\examples{
+data(xpr)
+sim <- sim.pearscale(xpr)
 }

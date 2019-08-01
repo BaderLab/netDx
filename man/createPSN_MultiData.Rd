@@ -53,6 +53,7 @@ makeNetFunc <- function(dataList, groupList, netDir,...) {
  netList <- unlist(netList)
  } 
 }
+require(netDx.examples)
 data(KIRC_dat)
 data(KIRC_group)
 data(KIRC_pheno)

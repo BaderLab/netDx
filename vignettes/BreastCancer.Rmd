@@ -7,8 +7,8 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
+    %\VignetteEngine{knitr::knitr}
     %\VignetteIndexEntry{02. Build predictor from scratch.}
-    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 
@@ -27,13 +27,13 @@ Want the process broken down? See the following sections.
 # ******
 
 # Change this to a local directory where you have write permission
-outDir <- sprintf("%s/TCGA_BRCA",getwd())
+outDir <- sprintf("%s/TCGA_BRCA",tempdir())
 
-numCores        <- 2L   # num cores available for parallel processing
-JavaMemory        <- 4L   # java memory in Gb
-cutoff          <- 1L   # score cutoff for feature-selected networks
-featScoreMax           <- 2L   # two-fold CV, so the code will run fast. 
-TRAIN_PROP <- 0.67      # fraction of samples to use for training
+numCores <- 2L   	 # num cores available for parallel processing
+JavaMemory <- 4L  	 # java memory in Gb
+cutoff <- 1L  	 	 # score cutoff for feature-selected networks
+featScoreMax <- 2L   # two-fold CV, so the code will run fast. 
+TRAIN_PROP <- 0.67   # fraction of samples to use for training
 
 dir.create(outDir)
 
@@ -63,7 +63,7 @@ cnv_GR          <- cnv_GR[which(cnv_GR$ID %in% pheno$ID)]
 # define pathways (here we pull from .gmt) for grouping 
 pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
     path.package("netDx.examples"))
-pathwayList <- readPathways(pathFile)
+pathwayList <- readPathways(pathFile)[1:3]
 
 # create directory for networks and for profiles (pathway-level gene expression files)
 profDir <- sprintf("%s/profiles",outDir)
@@ -83,7 +83,7 @@ path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 ## warning: this step can take 2-5 minutes depending on the
 ## number of processes running in parallel
-netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
+netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=FALSE)
 
 # Now that all PSN (features) have been created, compile into one database for feature selection
 dbDir   <- compileFeatures(profDir, pheno$ID, outDir,numCores=numCores)
@@ -94,7 +94,8 @@ for (g in subtypes) {
         dir.create(pDir)
         pheno_subtype <- pheno
 
-        ## label patients not in the current class as a residual - note that "nonpred" is used
+        ## label patients not in the current class as a residual - 
+		## note that "nonpred" is used
         ## because neither of the classes uses that label. 
         pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
 
@@ -105,7 +106,8 @@ for (g in subtypes) {
         
         # Function that does the scoring - this takes a while
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
-                nrow(pheno_subtype),verbose=T, numCores=numCores, featScoreMax=featScoreMax,
+                nrow(pheno_subtype),verbose=TRUE, numCores=numCores, 
+				featScoreMax=featScoreMax,
                 JavaMemory=JavaMemory)
 
         # Compute network tally (from 0 to featScoreMax)
@@ -113,7 +115,7 @@ for (g in subtypes) {
         nrank <- dir(path=resDir,pattern="NRANK$")
         pTally          <- compileFeatureScores(paste(resDir,nrank,sep="/"))
         tallyFile       <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
-        write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+        write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 }
 
 # --------------------------------------------------------------------------
@@ -128,7 +130,7 @@ for (g in subtypes) {
         # get feature selected net names
         pTally <- read.delim(
                 sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
-                sep="\t",h=T,as.is=T)
+                sep="\t",h=TRUE,as.is=TRUE)
         pTally <- pTally[which(pTally[,2]>=cutoff),1]
         pTally <- sub(".profile","",pTally)
         pTally <- sub("_cont","",pTally)
@@ -139,7 +141,7 @@ for (g in subtypes) {
         # Make PSN using train & test samples, first for gene xpr, then for CNV
         tmp <- makePSN_NamedMatrix(xpr_FULL,rownames(xpr),
                 pathwayList[which(names(pathwayList)%in% pTally)],
-                profDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
+                profDir,verbose=FALSE,numCores=numCores,writeProfiles=TRUE)
         tmp <- makePSN_RangeSets(cnv_FULL,
                 path_GRList[which(names(path_GRList)%in% pTally)],
                 profDir,verbose=FALSE)
@@ -189,7 +191,7 @@ A multi-core compute node will considerably speed the process and is highly reco
 
 ``` {r, eval=TRUE} 
 # Change this to a local directory where you have write permission
-outDir <- sprintf("%s/TCGA_BRCA",getwd())
+outDir <- sprintf("%s/TCGA_BRCA",tempdir())
 cat(sprintf("All intermediate files are stored in:\n%s\n",outDir))
 
 numCores        <- 2L   # num cores available for parallel processing
@@ -259,12 +261,14 @@ From gene expression data, we create one network per cellular pathway. Similarit
 \par
 The function that generates the networks from submatrices of the gene expression data is `makePSN_NamedMatrix()`. In this case, we are generating "profiles", or simply writing submatrices corresponding to the pathways (note the `writeProfiles=TRUE` argument). As these profiles will create completely connected networks with N-choose-2 edges, weaker edges will first be pruned for computational feasibility. Note that `netList` contains the names of networks, rather than the contents; the profiles are written to `profDir`. Profile file names end with `.profile`.
 
+NOTE: To speed the package-build process and demo, only 3 networks are created below. Note the subsetting of `pathwayList` in the call to `makePSN_NamedMatrix()` below.
+
 ``` {r, eval=TRUE}
 profDir <- sprintf("%s/profiles",outDir)
 netDir <- sprintf("%s/networks",outDir)
 
 netList <- makePSN_NamedMatrix(xpr, rownames(xpr),
-        pathwayList,profDir,verbose=FALSE,
+        pathwayList[1:3],profDir,verbose=FALSE,
         numCores=numCores,writeProfiles=TRUE)
 netList <- unlist(netList)
 head(netList)
@@ -275,16 +279,18 @@ Similarly, we construct networks based on shared overlap of CNVs. For each cellu
 
 Genomic events (here, CNVs) need to first be mapped to genes, before being grouped into pathways. This mapping is achieved by `mapNamedRangesToSets()`. The function used to construct networks from genomic events is `makePSN_RangeSets()`. As with the gene-expression nets, CNV nets are written to `profDir`. All input networks must be in the same directory. Interaction network names end with `_cont.txt`.
 
+NOTE: As with the expression matrix, networks are only created with a few pathways below.
+
 ``` {r, eval=TRUE}
 data(genes)
 gene_GR     <- GRanges(genes$chrom,
    IRanges(genes$txStart,genes$txEnd),
    name=genes$name2)
-path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList[1:10])
 names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
 ## warning: this step can take 2-5 minutes depending on the
 ## number of processes running in parallel
-netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=F)
+netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=FALSE)
 cat(sprintf("CNV: Got %i networks\n",length(netList2)))
 ```
 
@@ -329,7 +335,8 @@ for (g in subtypes) {
 
         # Cross validation
         runFeatureSelection(trainPred, resDir, dbDir$dbDir,
-                nrow(pheno_subtype),verbose=T, numCores=numCores, featScoreMax=featScoreMax,
+                nrow(pheno_subtype),verbose=TRUE, numCores=numCores, 
+				featScoreMax=featScoreMax,
                 JavaMemory=JavaMemory)
 
         # patient similarity ranks
@@ -343,7 +350,7 @@ for (g in subtypes) {
         head(pTally)
         # write to file
         tallyFile       <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
-        write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+        write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 }
 ```
 
@@ -372,7 +379,7 @@ for (g in subtypes) {
         # get feature selected net names
         pTally <- read.delim(
                 sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
-                sep="\t",h=T,as.is=T)
+                sep="\t",h=TRUE,as.is=TRUE)
         pTally <- pTally[which(pTally[,2]>=cutoff),1]
         pTally <- sub(".profile","",pTally)
         pTally <- sub("_cont","",pTally)
@@ -381,12 +388,16 @@ for (g in subtypes) {
         profDir <- sprintf("%s/profiles",pDir)
 
         # prepare nets for new db
+		if (any(names(pathwayList)[1:3] %in% pTally)) {
         tmp <- makePSN_NamedMatrix(xpr_FULL,rownames(xpr),
                 pathwayList[which(names(pathwayList)%in% pTally)],
-                profDir,verbose=F,numCores=numCores,writeProfiles=TRUE)
-        tmp <- makePSN_RangeSets(cnv_FULL,
-                path_GRList[which(names(path_GRList)%in% pTally)],
-                profDir,verbose=FALSE)
+                profDir,verbose=FALSE,numCores=numCores,writeProfiles=TRUE)
+		}
+		if (any(names(path_GRList) %in% pTally)) {
+	        tmp <- makePSN_RangeSets(cnv_FULL,
+	                path_GRList[which(names(path_GRList)%in% pTally)],
+	                profDir,verbose=FALSE)
+		}
         # create db
         dbDir <- compileFeatures(profDir,pheno$ID,pDir,numCores=numCores,
 			verbose=FALSE)

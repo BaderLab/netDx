@@ -17,7 +17,7 @@ predictPatientLabels <- function(resSet,verbose=TRUE) {
         type_rank <- x[,c("ID","similarityScore")]
     else {
         if (all.equal(x$ID, type_rank$ID)!=TRUE){ 
-            cat("ids don't match"); browser()
+            stop("predictPatientLabels: ids don't match"); 
         }
         type_rank <- cbind(type_rank, x[,"similarityScore"])
     }

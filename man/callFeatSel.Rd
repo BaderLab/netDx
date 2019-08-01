@@ -27,3 +27,10 @@ feature-selected (FS) nets, returns subset of nets that pass criteria.
 Net must score <fsCutoff> for at least <fsPctPass> % of splits, to be
 considered feature-selected.
 }
+\examples{
+data(featScores)
+passed <- lapply(featScores, function(x) {
+   callFeatSel(x,10,0.7) # score 10/10 in >=70\% of trials
+})
+print(passed)
+}

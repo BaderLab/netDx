@@ -9,7 +9,8 @@
 #' @return (data.frame) Feature name and score; includes features that occur
 #' at least once in \code{fList}.
 #' @examples
-#' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx"))
+#' require(netDx.examples)
+#' netDir <- sprintf("%s/extdata/GM_NRANK",path.package("netDx.examples"))
 #' netFiles <- sprintf("%s/%s", netDir,dir(netDir,pattern="NRANK$"))
 #' pTally <- compileFeatureScores(netFiles,verbose=TRUE)
 #' print(head(pTally))
@@ -27,7 +28,8 @@ print(fList)
 for (fName in fList) {
 	tmp	<- basename(fName)
 
-	dat <- try(read.delim(fName,sep="\t",header=T,as.is=T,skip=1),silent=TRUE)
+	dat <- try(read.delim(fName,sep="\t",header=TRUE,as.is=TRUE,skip=1),
+		silent=TRUE)
 	ctr <- ctr+1
 	print(head(dat))
 

@@ -41,6 +41,6 @@ predictionResults.txt contains a (data.frame)
 }
 \examples{
 inDir <- sprintf("\%s/extdata/KIRC_output",
-path.package("netDx"))
+	path.package("netDx.examples"))
 plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
 }

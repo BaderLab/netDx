@@ -43,6 +43,9 @@ makeQueries())}
 
 \item{...}{args for \code{makeQueries()}}
 }
+\value{
+No value. Side effect of generating feature scores.
+}
 \description{
 Run GeneMANIA cross-validation with a provided subset of networks
 }

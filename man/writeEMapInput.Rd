@@ -48,17 +48,18 @@ pctPass
 write enrichment map for consensus nets
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx"))
+inDir <- sprintf("\%s/extdata/KIRC_output", 
+path.package("netDx.examples"))
 outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 gp <- names(featScores)[1]
 pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
-          path.package("netDx"))
+          path.package("netDx.examples"))
 pathwayList <- readPathways(pathFile)
 pathwayList <- pathwayList[c(1:5)]
 netInfoFile <- sprintf("\%s/extdata/KIRC_output/inputNets.txt",
-     path.package("netDx"))
+     path.package("netDx.examples"))
 netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
 netInfo <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
 output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,

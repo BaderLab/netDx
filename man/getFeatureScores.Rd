@@ -34,6 +34,6 @@ into a matrix for downstream analysis. See the section on "Output Files"
 }
 \examples{
 inDir <- sprintf("\%s/extdata/KIRC_output",
-		path.package("netDx"))
+		path.package("netDx.examples"))
 netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 }

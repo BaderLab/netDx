@@ -1,4 +1,6 @@
 #' Run nested cross-validation on data 
+#' @return symmetric matrix of size ncol(dat) (number of patients) containing
+#' pairwise patient similarities
 #' 
 #' @details wrapper function to run netDx with nested cross-validation, 
 #' with an inner loop of X-fold cross-validation and an outer loop of different
@@ -30,12 +32,12 @@
 #' directory exists, its contents will be overwritten
 #' @param trainProp (numeric 0 to 1) Percent samples to use for training
 #' @param featScoreMax (integer) number of CV folds in inner loop
-#' @param numSplits (integer) number of train/blind test splits (i.e. iterations
-#' of outer loop)
+#' @param numSplits (integer) number of train/blind test splits 
+#' (i.e. iterations of outer loop)
 #' @param numCores (integer) number of CPU cores for parallel processing
 #' @param JavaMemory (integer) memory in (Gb) used for each fold of CV
-#' @param featSelCutoff (integer) cutoff for inner-fold CV to call feature-selected
-#' in a given split
+#' @param featSelCutoff (integer) cutoff for inner-fold CV to call 
+#' feature-selected in a given split
 #' @param keepAllData (logical) if TRUE keeps all intermediate files, even
 #' those not needed for assessing the predictor. Use very cautiously as for
 #' some designs, each split can result in using 1Gb of data.
@@ -54,17 +56,69 @@
 #' empty dataframes if missing values are removed from these, which in turn
 #' can crash the predictor. To impute missing data, see the 'impute' and 
 #' 'imputeGroups' parameters. 
+#' @param preFilterSeed (integer) seed for lasso based pre-selection
 #' @param impute (logical) if TRUE applies imputation by median within CV
-#' @param imputeGroups (char) If impute set to TRUE, indicate which groups you want imputed. 
-#' @param logging (char) level of detail with which messages are printed. Options are: 1) none: turn off all messages; 2) all: greatest level of detail (recommended for advanced users, or for debugging); 3) default: print key details (useful setting for most users)
+#' @param imputeGroups (char) If impute set to TRUE, indicate which groups you 
+#' want imputed. 
+#' @param logging (char) level of detail with which messages are printed. 
+#' Options are: 1) none: turn off all messages; 2) all: greatest level of 
+#' detail (recommended for advanced users, or for debugging); 3) default: 
+#' print key details (useful setting for most users)
 #' @import glmnet
 #' @importFrom stats median na.omit coef
 #' @importFrom utils read.delim write.table
+#' @return No value. Side effect of writing log messages to <outDir>/log.txt
+#' and generating predictor-related data in <outDir>.
 #' @export
+#' @examples
+#' load(sprintf("%s/extdata/buildPred_input.rda",
+#'              path.package("netDx.examples")))
+#' 
+#' # Custom function to tell netDx how to build features (PSN) from input data.
+#' # Each datatype is in a different entry of the dataList object.
+#' # The sets into which variables should be grouped (e.g. genes into pathways)i
+#' # is indicated in groupList.
+#' # names(dataList) should correspond to names(groupList)
+#' KIRC_makeNets <- function(dataList, groupList, netDir,...) {
+#'     netList <- c()
+#'     # make RNA nets: group by pathway, use default similarity metric (pearson corr)
+#'     if (!is.null(groupList[["rna"]])) {
+#'     netList <- makePSN_NamedMatrix(dataList$rna,
+#'                     rownames(dataList$rna),
+#'                 groupList[["rna"]],netDir,verbose=FALSE,
+#'                 writeProfiles=TRUE,...)  
+#'     netList <- unlist(netList)
+#'     }
+#' 
+#'     # make clinical nets, one net for **each variable**.
+#'   # use custom similarity metric
+#'     netList2 <- c()
+#'     if (!is.null(groupList[["clinical"]])) {
+#'     netList2 <- makePSN_NamedMatrix(dataList$clinical,
+#'         rownames(dataList$clinical),
+#'         groupList[["clinical"]],netDir,
+#'         simMetric="custom",customFunc=netDx::normDiff, # custom function
+#'         writeProfiles=FALSE,
+#'         sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+#'     }
+#'     netList2 <- unlist(netList2)
+#' 
+#'     netList <- c(netList,netList2)  # concatenate net names as output
+#'     return(netList)
+#' }
+#' 
+#' # build predictor
+#' # uncomment to run
+#' # buildPredictor(pheno,
+#' #   dataList=dats,groupList=groupList,
+#' #   makeNetFunc=KIRC_makeNets, ### custom function defined above
+#' #   outDir=sprintf("%s/pred_output",getwd()), ## absolute path
+#' #   numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(pheno,dataList,groupList,outDir,makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,
 	JavaMemory=4L,featSelCutoff=9L,
-	keepAllData=FALSE,startAt=1L, preFilter=FALSE,impute=FALSE,
+	keepAllData=FALSE,startAt=1L, preFilter=FALSE,preFilterSeed=123,
+	impute=FALSE,
 	preFilterGroups=NULL, imputeGroups=NULL,
 	logging="default") { 
 
@@ -93,10 +147,13 @@ if (missing(groupList)) stop("groupList must be supplied.\n")
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
 names_nomatch <- !identical(sort(names(groupList)),sort(names(dataList)))
-if (class(groupList)!="list" || not_list || names_nomatch ) stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
-if (class(dataList)!="list") stop("dataList must be a list of data.frames or matrices, with names corresponding to groupList")
+if (!is(groupList,"list") || not_list || names_nomatch ) 
+	stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
+if (!is(dataList,"list")) 
+	stop("dataList must be a list of data.frames or matrices, with names corresponding to groupList")
 patnames <- unlist(lapply(dataList,colnames))
-if (any(!(patnames %in% pheno$ID))) stop("one or more patient IDs in dataList do not match those listed in pheno$ID. Check.")
+if (any(!(patnames %in% pheno$ID))) 
+	stop("one or more patient IDs in dataList do not match those listed in pheno$ID. Check.")
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
@@ -190,7 +247,7 @@ for (rngNum in startAt:numSplits) {
 	if (is.null(preFilterGroups)) preFilter <- names(dats_train)
 	if (!any(preFilterGroups %in% names(dats_train))) stop("preFilterGroups must match names in dataList")
 	
-	set.seed(123)
+	set.seed(preFilterSeed)
 	cat("Prefiltering enabled\n")
 	for (nm in preFilterGroups) {
 		cat(sprintf("%s: %i variables\n",nm,nrow(dats_train[[nm]])))
@@ -267,7 +324,8 @@ for (rngNum in startAt:numSplits) {
 			pTally		<- compileFeatureScores(paste(resDir,nrank,sep="/"),
 				verbose=verbose_compileFS)
 			tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
-			write.table(pTally,file=tallyFile,sep="\t",col=T,row=F,quote=F)
+			write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,
+				quote=FALSE)
 		if (verbose_default) cat("\n")
 		if (verbose_default) cat("\n")
 	}
@@ -281,7 +339,7 @@ for (rngNum in startAt:numSplits) {
 		pDir <- sprintf("%s/%s",outDir,g)
 		pTally <- read.delim(
 			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
-			sep="\t",header=T,as.is=T)
+			sep="\t",header=TRUE,as.is=TRUE)
 		idx <- which(pTally[,2]>=featSelCutoff)
 
 		pTally <- pTally[idx,1]
@@ -359,7 +417,7 @@ for (rngNum in startAt:numSplits) {
 			verbose=verbose_predict)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults.txt",outDir)
-		write.table(out,file=outFile,sep="\t",col=T,row=F,quote=F)
+		write.table(out,file=outFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 		
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		if (verbose_default)

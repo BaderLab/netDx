@@ -9,6 +9,14 @@ avgNormDiff(x)
 \arguments{
 \item{x}{(numeric) matrix of values, one column per patient (e.g. ages)}
 }
+\value{
+symmetric matrix of size ncol(dat) (number of patients) containing
+pairwise patient similarities
+}
 \description{
 takes average of normdiff of each row in x
+}
+\examples{
+data(xpr)
+sim <- avgNormDiff(xpr[,1:2])
 }

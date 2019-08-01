@@ -51,6 +51,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	# The database itself will be in outDir/
 	tmpDir <- sprintf("%s/tmp",outDir)
 	dataDir <- sprintf("%s/dataset",outDir)
+	GM_jar	<- getGMjar_path()
 
 	if (P2N_maxMissing < 5) PSN_maxMissing <- 5
 	if (P2N_maxMissing >100) PSN_maxMissing <- 100
@@ -109,8 +110,6 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	cmd <- sprintf("python2 %s batch.txt",procNet)
 	system(cmd,wait=TRUE)
 	# using new jar file
-	GM_jar	<- sprintf("%s/java/genemania-cytoscape-plugin-3.5.0.jar",
-						 path.package("netDx"))
 	#### Step 3. (optional). convert profiles to interaction networks.
 	### TODO. This step is currently inefficient. We are writing all the
 	### profile files (consumes disk space) in makePSN_NamedMatrix.R
@@ -182,7 +181,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 
 	#### Step 6. Cleanup.
 	if (verbose) cat("\t * Cleanup")
-	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx"))
+	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx.examples"))
 	system(sprintf("cp %s %s/.", GM_xml, dataDir))
 
 	}, error=function(ex) {

@@ -2,7 +2,7 @@
 
 #' Similarity function: Pearson correlation followed by exponential scaling
 #' 
-#' @description Computes Euclidean distance between patients. A scaled 
+#' @description Computes Pearson correlation between patients. A scaled 
 #' exponential similarity kernel is used to determine edge weight. The 
 #' exponential scaling considers the K nearest neighbours, so that 
 #' similarities between non-neighbours is set to zero. Alpha is a hyperparameter
@@ -12,16 +12,21 @@
 #' @param K (integer) Number of nearest neighbours to consider (K of KNN)
 #' @param alpha (numeric) Scaling factor for exponential similarity kernel. 
 #' Recommended range between 0.3 and 0.8.
+#' @return symmetric matrix of size ncol(dat) (number of patients) containing
+#' pairwise patient similarities
+#' @examples
+#' data(xpr)
+#' sim <- sim.pearscale(xpr)
 #' @export
 sim.pearscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {
 	m <- as.matrix(m)
-	m2 <- apply(m,1,function(x) { (x-mean(x,na.rm=T))/sd(x,na.rm=T)})
+	m2 <- apply(m,1,function(x) { (x-mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)})
 	m2
 }
 normalize <- function(X) {
 		print(dim(X))
-        row.sum.mdiag <- rowSums(X,na.rm=T) - diag(X)
+        row.sum.mdiag <- rowSums(X,na.rm=TRUE) - diag(X)
         row.sum.mdiag[row.sum.mdiag == 0] <- 1
         X <- X/(2 * (row.sum.mdiag))
         diag(X) <- 0.5
@@ -40,7 +45,7 @@ normalize <- function(X) {
     sortedColumns <- as.matrix(t(apply(euc, 2, sort,na.last=TRUE)))
 	print(dim(sortedColumns))
     finiteMean <- function(x) {
-        return(mean(x[is.finite(x)],na.rm=T))
+        return(mean(x[is.finite(x)],na.rm=TRUE))
     }
     means <- apply(sortedColumns[, 1:K + 1], 1, finiteMean) +
         .Machine$double.eps
@@ -75,23 +80,28 @@ normalize <- function(X) {
 #' @param K (integer) Number of nearest neighbours to consider (K of KNN)
 #' @param alpha (numeric) Scaling factor for exponential similarity kernel. 
 #' Recommended range between 0.3 and 0.8.
+#' @return symmetric matrix of size ncol(dat) (number of patients) containing
+#' pairwise patient similarities
+#' @examples
+#' data(xpr)
+#' sim <- sim.eucscale(xpr)
 #' @export
 sim.eucscale <- function (dat, K = 20, alpha = 0.5) {
 ztrans <- function(m) {
     m <- as.matrix(m)
-    m2 <- apply(m,1,function(x) { (x-mean(x,na.rm=T))/sd(x,na.rm=T)})
+    m2 <- apply(m,1,function(x) { (x-mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)})
     m2
 }
 normalize <- function(X) {
         print(dim(X))
-        row.sum.mdiag <- rowSums(X,na.rm=T) - diag(X)
+        row.sum.mdiag <- rowSums(X,na.rm=TRUE) - diag(X)
         row.sum.mdiag[row.sum.mdiag == 0] <- 1
         X <- X/(2 * (row.sum.mdiag))
         diag(X) <- 0.5
         X <- (X+t(X))/2
         return(X)
 }
-    nnodata <- which(abs(colSums(dat,na.rm=T)) < .Machine$double.eps)
+    nnodata <- which(abs(colSums(dat,na.rm=TRUE)) < .Machine$double.eps)
     #if (length(nodata)>0) dat[nodata] <- median(dat) # impute median
     z1 <- ztrans(dat)
     euc <- as.matrix(dist(z1,method="euclidean"))^(1/2)
@@ -100,7 +110,7 @@ normalize <- function(X) {
     sortedColumns <- as.matrix(t(apply(euc, 2, sort,na.last=TRUE)))
     print(dim(sortedColumns))
     finiteMean <- function(x) {
-        return(mean(x[is.finite(x)],na.rm=T))
+        return(mean(x[is.finite(x)],na.rm=TRUE))
     }
     means <- apply(sortedColumns[, 1:K + 1], 1, finiteMean) +
         .Machine$double.eps
@@ -130,13 +140,17 @@ normalize <- function(X) {
 #' When number of variables is 2-5, use avgNormDiff() which 
 #' takes the average of normalized difference for individual variables
 #' @param x (numeric) vector of values, one per patient (e.g. ages)
+#' @return symmetric matrix of size ncol(dat) (number of patients) containing
+#' pairwise patient similarities
+#' @examples
+#' sim <- normDiff(rnorm(10))
 #' @export
 normDiff <- function(x) {
     #if (nrow(x)>=1) x <- x[1,]
     nm <- colnames(x)
     x <- as.numeric(x)
     n <- length(x)
-    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+    rngX  <- max(x,na.rm=TRUE)-min(x,na.rm=TRUE)
     
     out <- matrix(NA,nrow=n,ncol=n);
     # weight between i and j is
@@ -149,6 +163,11 @@ normDiff <- function(x) {
 #' takes average of normdiff of each row in x
 #' 
 #' @param x (numeric) matrix of values, one column per patient (e.g. ages)
+#' @return symmetric matrix of size ncol(dat) (number of patients) containing
+#' pairwise patient similarities
+#' @examples
+#' data(xpr)
+#' sim <- avgNormDiff(xpr[,1:2])
 #' @export
 avgNormDiff <- function(x) {
 # normalized difference
@@ -158,7 +177,7 @@ normDiff <- function(x) {
     nm <- colnames(x)
     x <- as.numeric(x)
     n <- length(x)
-    rngX  <- max(x,na.rm=T)-min(x,na.rm=T)
+    rngX  <- max(x,na.rm=TRUE)-min(x,na.rm=TRUE)
 
     out <- matrix(NA,nrow=n,ncol=n);
     # weight between i and j is

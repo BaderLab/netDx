@@ -9,6 +9,10 @@ normDiff(x)
 \arguments{
 \item{x}{(numeric) vector of values, one per patient (e.g. ages)}
 }
+\value{
+symmetric matrix of size ncol(dat) (number of patients) containing
+pairwise patient similarities
+}
 \description{
 Similarity metric of normalized difference
 }
@@ -17,4 +21,7 @@ Similarity metric used when data for a network consists of
 exactly 1 continuous variable  (e.g. a network based only on "age"). 
 When number of variables is 2-5, use avgNormDiff() which 
 takes the average of normalized difference for individual variables
+}
+\examples{
+sim <- normDiff(rnorm(10))
 }

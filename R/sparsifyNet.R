@@ -48,11 +48,11 @@
 #' sparsifyNet(x,outFile="tmp.txt",numPatients=40)
 sparsifyNet <- function(net,outFile,k=50L,MAX_INT=600L,MAX_PCT=0.02,
 		numPatients,keepTies=TRUE,verbose=TRUE,cutoff=0.3){
-if (class(net)=="data.frame") {
+if (is(net,"data.frame")){
 	dat <- net
-} else if (class(net)=="character"){
+} else if (is(net,"character")) { 
 	netFile <- net
-	dat <- read.delim(netFile,sep="\t",as.is=T,header=F)
+	dat <- read.delim(netFile,sep="\t",as.is=TRUE,header=FALSE)
 }
 
 	dat <- dat[order(dat[,1]),]
@@ -96,7 +96,7 @@ if (class(net)=="data.frame") {
 			outInter <- totalInter[1:tokeep]
 			df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
 			write.table(df,file=outFile,sep="\t",
-						append=TRUE,col=F,row=F,quote=F)
+						append=TRUE,col=FALSE,row=FALSE,quote=FALSE)
 			newCt <- newCt + nrow(df)
 	
 			curPat <- nextPat;
@@ -124,7 +124,7 @@ if (class(net)=="data.frame") {
 	
 	outInter <- totalInter[1:tokeep]
 df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
-write.table(df,file=outFile,sep="\t",append=TRUE,col=F,row=F,quote=F)
+write.table(df,file=outFile,sep="\t",append=TRUE,col=FALSE,row=FALSE,quote=FALSE)
 oldCt <- nrow(dat)
 
 cat(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 

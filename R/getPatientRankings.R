@@ -22,13 +22,13 @@
 #' @examples
 #' data(xpr,pheno,cnv_GR)
 #' prankFile <- sprintf("%s/extdata/GM_PRANK.txt", 
-#' 	 path.package("netDx"))
+#' 	 path.package("netDx.examples"))
 #' x <- getPatientRankings(prankFile, pheno, "LumA")
 getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
    verbose=FALSE) {
 	# Read in PRANK file
 	# need to skip comment line with new format
-	dat <- read.table(pFile, sep="\t",header=TRUE, as.is=T, skip=1)
+	dat <- read.table(pFile, sep="\t",header=TRUE, as.is=TRUE, skip=1)
 
 	pheno_DF$ID <- as.character(pheno_DF$ID)
 	# 1 is what we predict, 0 is the other class
@@ -42,7 +42,7 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	# match the pheno matrix to the labels
 	midx <- match(dat[,1], pheno_DF$ID)
 	if (all.equal(pheno_DF$ID[midx],dat[,1])!=TRUE) {
-		cat("\t IDs in GM results don't match pheno\n"); browser()
+		stop("\tgetPatientRankings:IDs in GM results don't match pheno\n"); 
 	}
 	curlbl <- pheno_DF[midx,,drop=FALSE]
 

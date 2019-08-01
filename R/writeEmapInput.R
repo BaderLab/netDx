@@ -26,17 +26,18 @@
 #' 2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
 #' pctPass
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx"))
+#' inDir <- sprintf("%s/extdata/KIRC_output", 
+#'	path.package("netDx.examples"))
 #' outDir <- paste(getwd(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 #' gp <- names(featScores)[1]
 #' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
-#'           path.package("netDx"))
+#'           path.package("netDx.examples"))
 #' pathwayList <- readPathways(pathFile)
 #' pathwayList <- pathwayList[c(1:5)]
 #' netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
-#'      path.package("netDx"))
+#'      path.package("netDx.examples"))
 #' netTypes <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
@@ -62,7 +63,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 			maxNetS[idx,1] <- sc
 	}
 	idx <- which(!is.na(maxNetS))
-	maxNetS <- maxNetS[idx,,drop=F]
+	maxNetS <- maxNetS[idx,,drop=FALSE]
 	netNames <- netNames[idx]
 
 	for (tr in trimFromName) netNames <- sub(tr,"",netNames)
@@ -74,7 +75,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 
 	# write node attributes
 	netAttrFile <- sprintf("%s_nodeAttrs.txt",outPfx)
-	write.table(df2,file=netAttrFile,sep="\t",col=T,row=F,quote=F)
+	write.table(df2,file=netAttrFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 
 	# write gmt
 	outFile <- sprintf("%s.gmt",outPfx)

@@ -17,7 +17,7 @@
 #' the inner fold of CV.
 #' @examples
 #' inDir <- sprintf("%s/extdata/KIRC_output",
-#' 		path.package("netDx"))
+#' 		path.package("netDx.examples"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 #' @export
 getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
@@ -29,7 +29,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 	for (gp in predClasses) {
 		cat(sprintf("%s\n",gp))
 
-		if(class(inDir) == "character"){
+		if(is(inDir,"character")) {
 			cat("\tSingle directory provided, retrieving CV score files\n")
 			rngDirs <- dir(path=inDir, pattern="^rng")
 			fList <-sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt",
@@ -43,7 +43,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 		netColl <- list()
 
 		for (scoreFile in fList) {
-			tmp	 <- read.delim(scoreFile,sep="\t",header=T,as.is=T)
+			tmp	 <- read.delim(scoreFile,sep="\t",header=TRUE,as.is=TRUE)
 			colnames(tmp)[1] <- "PATHWAY_NAME"
 				netColl[[scoreFile]] <- tmp
 		}

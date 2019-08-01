@@ -58,7 +58,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		stop("writeAggNet should be one of: MAX|MEAN\n")
 	}
 
-	if (class(keepNets)=="character") {
+	if (is(keepNets,"character")) { 
 		keepNets <- data.frame(NETWORK=keepNets,WEIGHT=1)
 		keepNets[,1] <- as.character(keepNets[,1])
 	}
@@ -103,7 +103,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		cat(sprintf("Got %i binary nets\n", length(binNets)))
 		for (i in binNets) {
 			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
-			ints <- read.delim(nf,sep="\t",header=F,as.is=T)
+			ints <- read.delim(nf,sep="\t",header=FALSE,as.is=TRUE)
 			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
 												 		# harmless
 			if (nrow(ints)>=1) {
@@ -135,7 +135,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	# now process continuous-valued nets
 	for (i in contNets) { 
 		nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
-		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+		ints <- read.delim(nf,sep="\t",h=FALSE,as.is=TRUE)
 		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
 		if (verbose) {
@@ -254,7 +254,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		y <- paste(ints[,2],ints[,1],sep=".")
 		dup <- intersect(x,y)
 			if (length(dup)>0) {
-				cat("still have duplicates\n"); browser()
+				stop("writeWeightedNets.R: despite attempts to remove duplicates, duplicate edges still remain.\n")
 			}
 ###				for (k in dup) {
 ###					vec <- as.integer(unlist(strsplit(k,"\\.")))		
@@ -291,7 +291,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (!is.infinite(limitToTop)) {
 			outF <- sub(".txt",sprintf("top%i.txt",limitToTop),outF)
 		}
-		write.table(ints,file=outF,sep="\t",col=T,row=F,quote=F)
+		write.table(ints,file=outF,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 		
 		return(outF)
 	} else {

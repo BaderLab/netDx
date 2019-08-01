@@ -108,15 +108,14 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 			if (writeProfiles) {
 				outFile <- sprintf("%s/%s.profile",outDir,curSet)
 				write.table(t(xpr[idx,,drop=FALSE]),file=outFile,sep="\t",
-							col=F,row=T,quote=F)
+							col=FALSE,row=TRUE,quote=FALSE)
 			} else {
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
 				cat(sprintf("computing sim for %s\n",curSet))
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
 				if (is.null(sim)) {
-					cat(sprintf("%s: sim is null\n",curSet))
-					browser()
+					stop(sprintf("makePSN_NamedMatrix:%s: similarity matrix is empty (NULL)\nCheck that there isn't a mistake in the input data or similarity method of choice.\n",curSet))
 				}
 ###				if (!useSparsify2) {# prepare for internal sparsifier
 ###					idx <- which(upper.tri(sim,diag=F))
@@ -146,7 +145,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 							EDGE_MAX=sparsify_edgeMax,
 							outFile=outFile,maxInt=sparsify_maxInt)
 					},error=function(ex) {
-						cat("sparse caught error\n"); browser()
+						stop("sparsify2 caught error\n"); 
 					})
 					} else {
 						cat("sparsify3\n")
@@ -157,7 +156,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 							outFile=outFile,maxInt=sparsify_maxInt,verbose=FALSE)
 					 print(Sys.time()-sp_t0)
 					},error=function(ex) {
-						cat("sparse caught error\n"); browser()
+						stop("sparsify3 caught error\n"); 
 					})
 					}
 				} else {

@@ -23,7 +23,7 @@ if (is.infinite(EDGE_MAX)) {
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
-	if (class(W)!="matrix") W <- as.matrix(W)
+	if (!is(W,"matrix")) W <- as.matrix(W)
 	W[which(is.na(W))] <- .Machine$double.eps  # don't allow missing values
 	diag(W) <- NA
 	mytop <- cbind(colnames(W),colnames(W)[apply(W,1,which.max)],
@@ -76,7 +76,7 @@ cat("past include all\n")
 	mmat <- na.omit(mmat) # boundary case where cutoff exceeds net max
 	mmat[,3] <- as.numeric(mmat[,3])
 	mmat[,3] <- round(mmat[,3],digits=4)
-	write.table(mmat,file=outFile,sep="\t",col=F,row=F,quote=F)
+	write.table(mmat,file=outFile,sep="\t",col=FALSE,row=FALSE,quote=FALSE)
 	return(mmat)
 
 ### the code below converts the SIF format back to a matrix,potentially

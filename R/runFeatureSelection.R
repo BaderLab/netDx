@@ -21,6 +21,7 @@
 #' makeQueries())
 #' @param verbose_runQuery (logical) print messages for runQuery()
 #' @param ... args for \code{makeQueries()}
+#' @return No value. Side effect of generating feature scores.
 #' @examples
 #' data(MB.pheno)
 #' dbPath <- sprintf("%s/extdata/dbPath",path.package("netDx"))

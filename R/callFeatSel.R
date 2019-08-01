@@ -10,6 +10,12 @@
 #' @param fsPctPass (numeric 0 to 1) net must pass at least this percent of
 #' splits to be considered feature-selected
 #' @return (char) names of nets that pass feature-selection
+#' @examples
+#' data(featScores)
+#' passed <- lapply(featScores, function(x) {
+#'    callFeatSel(x,10,0.7) # score 10/10 in >=70% of trials
+#' })
+#' print(passed)
 #' @export
 callFeatSel <- function(netScores,fsCutoff, fsPctPass) {
   fs_nets <- c()

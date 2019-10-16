@@ -33,19 +33,19 @@ pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 	netSfx="_cont.txt$",verbose=TRUE) {
 	if (length(filterNets)==1) {
 		if (filterNets=="*") {
-			if (verbose) cat("* Including all networks\n")
+			if (verbose) message("* Including all networks\n")
 			fList <- dir(path=oldDir,pattern=netSfx)
 			filterNets <- fList
 		}
 	} 
-	if (verbose) cat(sprintf("Limiting to %i networks\n", 
+	if (verbose) message(sprintf("Limiting to %i networks\n", 
 			length(filterNets)))
 
 	if (!file.exists(newDir)) dir.create(newDir)
 
 	if (length(filterIDs)==1) {
 		if (filterIDs=="*") {	# keep all patients
-			cat("* Including all patients\n")
+			message("* Including all patients\n")
 			for (f in filterNets) {
 				oldf <- sprintf("%s/%s",oldDir,f)
 				newf <- sprintf("%s/%s", newDir,f)
@@ -53,7 +53,7 @@ pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 			}
 		}
 	} else {
-		if (verbose) cat(sprintf("Limiting to %i patients\n", 
+		if (verbose) message(sprintf("Limiting to %i patients\n", 
 					length(filterIDs)))
 		for (f in filterNets) {
 			dat <- read.delim(sprintf("%s/%s",oldDir,f),

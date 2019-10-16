@@ -14,12 +14,11 @@
 #' @export
 writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile,
   orgName="predictor") {
-	cat(sprintf("%s\n",orgName), file=outFile)			# org name
-	cat(sprintf("%s\n",
-				paste(qSamps,collapse="\t")),			# sample names
-				file=outFile,append=TRUE)
-	cat(sprintf("%s\n",paste(incNets,collapse="\t")),	# networks
-				file=outFile,append=TRUE) 				# num2return
-	cat(sprintf("%i\n",numReturn),file=outFile,append=TRUE)
-	cat("automatic\n",file=outFile,append=TRUE)			# combining
+	fileConn <- file(outFile,"w")
+	writeLines(sprintf("%s",orgName),con=fileConn)# org name
+	writeLines(sprintf("%s",paste(qSamps,collapse="\t")),con=fileConn)
+	writeLines(sprintf("%s",paste(incNets,collapse="\t")),con=fileConn)# networks 	
+	writeLines(sprintf("%i",numReturn),con=fileConn) #num2return
+	writeLines("automatic",con=fileConn)			# combining
+	close(fileConn)
 }

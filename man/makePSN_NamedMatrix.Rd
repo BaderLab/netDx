@@ -4,11 +4,11 @@
 \alias{makePSN_NamedMatrix}
 \title{Create patient networks from full matrix of named measurements}
 \usage{
-makePSN_NamedMatrix(xpr, nm, namedSets, outDir, simMetric = "pearson",
-  verbose = TRUE, numCores = 1L, writeProfiles = TRUE,
-  sparsify = FALSE, useSparsify2 = FALSE, cutoff = 0.3,
-  sparsify_edgeMax = Inf, sparsify_maxInt = 50, minMembers = 1L,
-  runSerially = FALSE, append = FALSE, ...)
+makePSN_NamedMatrix(xpr, nm, namedSets, outDir = tempdir(),
+  simMetric = "pearson", verbose = TRUE, numCores = 1L,
+  writeProfiles = TRUE, sparsify = FALSE, useSparsify2 = FALSE,
+  cutoff = 0.3, sparsify_edgeMax = Inf, sparsify_maxInt = 50,
+  minMembers = 1L, runSerially = FALSE, append = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -23,7 +23,8 @@ set names, and networks will be named as these. values are character
 vectors corresponding to groups of names (matching those in \code{nm})
 that are input to network generation}
 
-\item{outDir}{(char) path to directory where networks are written}
+\item{outDir}{(char) path to directory where networks are written. 
+If missing, is set to tempdir()}
 
 \item{simMetric}{(char) measure of similarity. See \code{getSimilarity()}
 for details. If writeProfiles is set to TRUE, must be one of pearson

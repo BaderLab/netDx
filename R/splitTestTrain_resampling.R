@@ -24,7 +24,7 @@
 #' @export
 splitTestTrain <- function(pheno_DF,pctT=0.7,setSeed=42,verbose=FALSE) { 
 if (!is.null(setSeed)) {
-	if (verbose) cat(sprintf("Train/test split RNG seed=%i\n",setSeed))
+	if (verbose) message(sprintf("Train/test split RNG seed=%i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 

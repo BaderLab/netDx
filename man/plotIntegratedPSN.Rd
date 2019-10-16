@@ -5,7 +5,7 @@
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
 plotIntegratedPSN(setName = "predictor", pheno, baseDir, netNames,
-  topX = 0.2, aggFun = "MEAN", outDir = ".",
+  topX = 0.2, aggFun = "MEAN", outDir = tempdir(),
   calcShortestPath = TRUE, savePaths = FALSE, nodeSize = 100,
   nodeTransparency = 200, edgeTransparency = 120,
   edgeStroke = "#999999", edgeWidth = 1, imageFormat = "PNG",

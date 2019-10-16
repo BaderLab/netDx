@@ -37,14 +37,14 @@
 #' @export
 getPatientPredictions <- function(predFiles,pheno,plotAccuracy=FALSE) {
   if(length(predFiles) == 1){
-		cat("predFiles is of length 1. Assuming directory\n")
+		message("predFiles is of length 1. Assuming directory\n")
     all_rngs <- list.dirs(predFiles, recursive = FALSE)
 		all_rngs <- all_rngs[grep("rng",all_rngs)]
     predFiles <- unlist(lapply(all_rngs, function(x) {
 			paste(x, "predictionResults.txt", sep = "/")
 		}))
   } else {
-		cat("predFiles is of length > 1. Assuming filenames provided\n")
+		message("predFiles is of length > 1. Assuming filenames provided\n")
 	}
 
   output_mat <- matrix(NA, nrow=nrow(pheno), ncol=length(predFiles)+2)

@@ -4,9 +4,10 @@
 \alias{writeEMapInput}
 \title{write enrichment map for consensus nets}
 \usage{
-writeEMapInput(featScores, namedSets, netInfo, outPfx = "curr",
-  pctPass = 0.7, minScore = 1, maxScore = 10,
-  trimFromName = c(".profile", "_cont"), verbose = FALSE)
+writeEMapInput(featScores, namedSets, netInfo,
+  outPfx = sprintf("\%s/curr", tempdir()), pctPass = 0.7,
+  minScore = 1, maxScore = 10, trimFromName = c(".profile", "_cont"),
+  verbose = FALSE)
 }
 \arguments{
 \item{featScores}{(data.frame) network scores across rounds of cross

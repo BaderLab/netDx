@@ -46,7 +46,7 @@ fetch_NetUnits <- function(pat_GR, netList, whichNets,
 		netg <- c(netg,netList[[n]])
 	}
 	netg <- unique(unlist(netg))
-	cat(sprintf("Total %i subfeatures\n",length(netg)))
+	message(sprintf("Total %i subfeatures\n",length(netg)))
 
 	patID 		<- unique(pat_GR$ID)
 	patUnit		<- rep(NA, length(patID))
@@ -54,14 +54,14 @@ fetch_NetUnits <- function(pat_GR, netList, whichNets,
 	ctr	<- 1
 
 	if (trackMapping_detail){
-		cat("tracking detailed mapping. indexing unit membership\n")
+		message("tracking detailed mapping. indexing unit membership\n")
 		unit_mat <- matrix(0,nrow=length(whichNets),ncol=length(netg))
 		colnames(unit_mat)	<- netg
 		rownames(unit_mat)	<- whichNets
 		ctr <- 1
 		for (netName in whichNets) {
 			idx <- which(netg %in% netList[[netName]])
-			if (verbose) cat(sprintf("%s\n",netName))
+			if (verbose) message(sprintf("%s\n",netName))
 			unit_mat[ctr,idx] <- 1
 			ctr <- ctr+1
 		}

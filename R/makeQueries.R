@@ -14,7 +14,7 @@
 #' @export
 makeQueries <- function(incPat, featScoreMax=10L,setSeed=42L,verbose=TRUE) {
 if (!is.null(setSeed)) {
-	if (verbose) cat(sprintf("\t\tSetting RNG seed to %i\n",setSeed))
+	if (verbose) message(sprintf("\t\tSetting RNG seed to %i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 
@@ -27,7 +27,7 @@ num2samp	<- floor(((featScoreMax-1)/featScoreMax)*length(incPat))
 csize	<- round((1/featScoreMax)*length(incPat))
 
 if (verbose) {
-	cat(sprintf("\t\t%i IDs; %i queries (%i sampled, %i test)\n",
+	message(sprintf("\t\t%i IDs; %i queries (%i sampled, %i test)\n",
 		 length(incPat),featScoreMax,num2samp,csize))
 }
 
@@ -36,10 +36,10 @@ for (k in 1:featScoreMax) {
 	sidx	<- ((k-1)*csize)+1;
 	eidx	<- k*csize; 
 	if (k==featScoreMax) eidx <- length(incPat)
-	if (verbose) cat(sprintf("\t\tQ%i: %i test; ",k, eidx-sidx+1))
+	if (verbose) message(sprintf("\t\tQ%i: %i test; ",k, eidx-sidx+1))
 
 	out[[k]] <- setdiff(incPat, incPat[sidx:eidx])
-	if (verbose) cat(sprintf("%i query\n", length(out[[k]])))
+	if (verbose) message(sprintf("%i query\n", length(out[[k]])))
 }
 
 out

@@ -35,9 +35,9 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	# 1 is what we predict, 0 is the other class
 	pheno_DF$STATUS <- as.integer(pheno_DF$STATUS==predClass)
 
-	if (verbose) cat(sprintf("%i total ; ", nrow(dat))) 
+	if (verbose) message(sprintf("%i total ; ", nrow(dat))) 
 	dat	<- dat[which(!is.na(dat[,2])),]
-	if (verbose) cat(sprintf("%i non-query entries in PRANK file\n", 
+	if (verbose) message(sprintf("%i non-query entries in PRANK file\n", 
 							 nrow(dat)))
 
 	# match the pheno matrix to the labels

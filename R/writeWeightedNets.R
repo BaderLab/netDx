@@ -71,7 +71,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	netid	<- read.delim(netInfo,sep="\t",header=FALSE,as.is=TRUE)
 	colnames(netid)[1:2] <- c("NET_ID", "NETWORK")
 	if (ncol(netid)>2) {
-		cat("binary status provided; switching to BinProp mode of similarity!\n")
+		message("binary status provided; switching to BinProp mode of similarity!\n")
 		colnames(netid)[3]<- "isBinary"
 		simMode <- "BinProp"
 	}
@@ -101,7 +101,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	if (simMode=="BinProp") {
 		intColl <- matrix(0,nrow=numPat,ncol=numPat)
 		binNets <- which(nets[,"isBinary"]>0)
-		cat(sprintf("Got %i binary nets\n", length(binNets)))
+		message(sprintf("Got %i binary nets\n", length(binNets)))
 		for (i in binNets) {
 			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
 			ints <- read.delim(nf,sep="\t",header=FALSE,as.is=TRUE)
@@ -130,7 +130,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		}
 
 		contNets <- setdiff(contNets, which(nets[,"isBinary"]>0))
-		cat(sprintf("%i continuous nets left\n",length(contNets)))
+		message(sprintf("%i continuous nets left\n",length(contNets)))
 	} 
 
 	# now process continuous-valued nets
@@ -140,7 +140,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
 		if (verbose) {
-			cat(sprintf("Edge wt filter: %i -> %i interactions\n", 	
+			message(sprintf("Edge wt filter: %i -> %i interactions\n", 	
 				oldcount,nrow(ints)))
 		}
 		if (nrow(ints)>=1) {
@@ -171,20 +171,20 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 
 				numInt[midx] <- numInt[midx] + 1
 				###maxNet[midx] <- nets$NET_ID[i]
-				if (verbose) cat(sprintf("\t%s: %i: %i interactions added\n",
+				if (verbose) message(sprintf("\t%s: %i: %i interactions added\n",
 							basename(nf),i, nrow(midx)))
 				##print(table(maxNet))
 				##print(summary(as.numeric(intColl)))
 			}
 		}
 	}
-	if (verbose) cat(sprintf("Total of %i nets merged\n", nrow(nets)))
+	if (verbose) message(sprintf("Total of %i nets merged\n", nrow(nets)))
 	
 	intColl[which(numInt < 1)] <- NA
 
 	# write average PSN
 	if (writeAggNet!="NONE") {
-		cat("\nWriting aggregate PSN\n")
+		message("\nWriting aggregate PSN\n")
 		if (writeAggNet=="MEAN") tmp <- intColl/numInt # take mean
 		else tmp <- intColl # max value is already in
 
@@ -193,21 +193,21 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		}
 
 		if (!is.infinite(limitToTop)){
-			cat(sprintf("* Limiting to top %i edges per patient",
+			message(sprintf("* Limiting to top %i edges per patient",
 				limitToTop))
 			for (k in 1:ncol(intColl)) {
 				mytop <- order(tmp[k,],decreasing=TRUE)
-				#cat(sprintf("%s: mytop=%i\n", k,length(mytop)))
+				#message(sprintf("%s: mytop=%i\n", k,length(mytop)))
 			  if (limitToTop <= (length(mytop)-1)) {
 					tmp[k,mytop[(limitToTop+1):length(mytop)]] <- NA
 				}
 			}
 		} else if (!is.infinite(limitToBottom)) {
-			cat(sprintf("* Limiting to bottom %i edges per patient",
+			message(sprintf("* Limiting to bottom %i edges per patient",
 				limitToBottom))
 			for (k in 1:ncol(intColl)) {
 				mybot <- order(tmp[k,])
-				cat(sprintf("%s: mybot=%i\n", k,length(mybot)))
+				message(sprintf("%s: mybot=%i\n", k,length(mybot)))
 			  if (limitToBottom <= (length(mybot)-1)) {
 					before <- tmp[k,]
 					tmp[k,mybot[(limitToBottom+1):length(mybot)]] <- NA
@@ -222,7 +222,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		
 
 		ints	<- melt(tmp)
-		cat(sprintf("\n\t%i pairs have no edges (counts directed edges)\n", 
+		message(sprintf("\n\t%i pairs have no edges (counts directed edges)\n", 
 					sum(is.nan(ints$value))+sum(is.na(ints$value))))
 		ints	<- na.omit(ints)
 
@@ -239,7 +239,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 					if (any(dup)) torm <- c(torm,dup)	
 			}
 			
-			cat(sprintf("\tRemoving %i duplicate edges\n",
+			message(sprintf("\tRemoving %i duplicate edges\n",
 					length(torm)))
 			if (length(torm)>0) ints <- ints[-torm,]
 
@@ -248,7 +248,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		z <- which(y %in% x)
 		if (any(z)) {
 				ints <- ints[-z,]
-				cat(sprintf("\tSecond pass-through: removed %i more dups\n", 
+				message(sprintf("\tSecond pass-through: removed %i more dups\n", 
 					length(z)))
 		}	
 		x <- paste(ints[,1],ints[,2],sep=".")
@@ -266,19 +266,19 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		}
 
 		den <- choose(ncol(intColl),2)
-		cat(sprintf("\tSparsity = %i/%i (%i %%)\n",
+		message(sprintf("\tSparsity = %i/%i (%i %%)\n",
 			nrow(ints), den, round((nrow(ints)/den)*100)))
 
 		# resolve to patient name
 		midx <- match(ints[,1],pid$GM_ID)
 		if (all.equal(pid$GM_ID[midx],ints[,1])!=TRUE) {
-			cat("column 1 doesn't match\n")
+			message("column 1 doesn't match\n")
 		}
 		ints$SOURCE <- pid$ID[midx]; rm(midx)
 		
 		midx <- match(ints[,2],pid$GM_ID)
 		if (all.equal(pid$GM_ID[midx],ints[,2])!=TRUE) {
-			cat("column 2 doesn't match\n")
+			message("column 2 doesn't match\n")
 		}
 		ints$TARGET <- pid$ID[midx]
 		ints <- ints[,c(4,5,3,1,2)]

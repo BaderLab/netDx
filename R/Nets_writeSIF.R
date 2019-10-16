@@ -19,10 +19,10 @@
 #' @export
 writeNetsSIF <- function(netPath,outFile,netSfx="_cont.txt"){
 	
-	system(sprintf("cat /dev/null > %s",outFile))
+	system2(sprintf("cat /dev/null > %s",outFile))
 	for (n in netPath) {
 		netName <- sub(netSfx,"",basename(n))
-		cat(sprintf("%s\n", netName))
+		message(sprintf("%s\n", netName))
 
 		dat <- read.delim(n,sep="\t",header=FALSE,as.is=TRUE)
 		dat2 <- cbind(dat[,1],netName,dat[,2])

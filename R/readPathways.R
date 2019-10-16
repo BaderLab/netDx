@@ -47,8 +47,8 @@ oldLocale   <- Sys.getlocale("LC_ALL")
 Sys.setlocale("LC_ALL","C")
     out <- list()
     # read list of master pathways
-	if (verbose) cat("---------------------------------------\n")
-	if (verbose) cat(sprintf("File: %s\n\n", basename(fname)))
+	if (verbose) message("---------------------------------------\n")
+	if (verbose) message(sprintf("File: %s\n\n", basename(fname)))
     f	<- file(fname,"r")
     # TODO: deal with duplicate pathway names
     
@@ -63,7 +63,7 @@ Sys.setlocale("LC_ALL","C")
 		src <- ""
 		src_id	<- ""
         if (pPos[1]==-1) {
-            #cat("\n\n% symbol not found in pathway name")
+            #message("\n\n% symbol not found in pathway name")
 			s[1]	<- s[1]
         } else {
 
@@ -84,16 +84,16 @@ Sys.setlocale("LC_ALL","C")
     }
     close(f)
 	if (verbose) {
-		cat(sprintf("Read %i pathways in total, internal list has %i entries\n",
+		message(sprintf("Read %i pathways in total, internal list has %i entries\n",
 				ctr, length(out)))
-    	cat(sprintf("\tFILTER: sets with num genes in [%i, %i]\n",
+    	message(sprintf("\tFILTER: sets with num genes in [%i, %i]\n",
 				MIN_SIZE,MAX_SIZE))
 	}
     ln <- unlist(lapply(out, length))
     idx	<- which(ln < MIN_SIZE | ln >= MAX_SIZE)
     out[idx] <- NULL
     #pName[idx] <- NULL
-    if (verbose) cat(sprintf("\t  => %i pathways excluded\n\t  => %i left\n", 
+    if (verbose) message(sprintf("\t  => %i pathways excluded\n\t  => %i left\n", 
 				length(idx),length(out)))
 
 	# clean pathway names

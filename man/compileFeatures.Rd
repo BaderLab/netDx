@@ -4,9 +4,10 @@
 \alias{compileFeatures}
 \title{Create GeneMANIA database}
 \usage{
-compileFeatures(netDir, patientID, outDir, simMetric = "pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
-  P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L, ...)
+compileFeatures(netDir, patientID, outDir = tempdir(),
+  simMetric = "pearson", netSfx = "_cont.txt$", verbose = TRUE,
+  numCores = 1L, P2N_threshType = "off", P2N_maxMissing = 100,
+  JavaMemory = 4L, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All

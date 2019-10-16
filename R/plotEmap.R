@@ -10,7 +10,6 @@
 #' writeEMap_file())
 #' @param netName (char) name for network in Cytoscape. Using the patient
 #' class name is a good idea. (e.g. SURVIVE_YES and SURVIVE_NO).
-#' @param outDir (char) path to directory where file should be stored.
 #' @param minScore (int) minimum score of node to show
 #' @param maxScore (int) maximum score of node to show
 #' @param colorScheme (char) colour scheme for nodes. "cont_heatmap" 
@@ -42,14 +41,13 @@
 #' nodeAttrFile <- EMap_input[[1]][2]
 #' 
 #' # not run because requires Cytoscape to be installed and open
-#' # plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk",
-#'	# outDir=outDir)
-#' @return Filename of image to which EnrichmentMap is exported. Also side
-#' effect of plotting the EnrichmentMap in an open session of Cytoscape.
+#' # plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk")
+#' @return No value. Side effect of plotting the EnrichmentMap in an open 
+#' session of Cytoscape.
 #' @import RCy3
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
-	outDir,minScore=1,maxScore=10,colorScheme="cont_heatmap",
+	minScore=1,maxScore=10,colorScheme="cont_heatmap",
 	imageFormat="png",verbose=FALSE,createStyle=TRUE){
 
 	validColSchemes <- c("cont_heatmap","netDx_ms")
@@ -82,14 +80,14 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 	print(aa_command)
 	response <- commandsGET(aa_command)
 
-	cat("* Importing node attributes\n")
+	message("* Importing node attributes\n")
   table_command <- sprintf("table import file file=%s keyColumnIndex=1
     firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s WhereImportTable=To%%20selected%%20networks%%20only",
 		nodeAttrFile,netName)
   response <- commandsGET(table_command)
 
 	#apply style
-	cat("* Creating or applying style\n")
+	message("* Creating or applying style\n")
   all_unique_scores_int <- sort(unique(read.delim(nodeAttrFile)[,2]))
   all_unique_scores <- unlist(lapply(all_unique_scores_int, toString))
   styleName <- "EMapStyle"
@@ -117,7 +115,7 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
   			"NODE_TRANSPARENCY"=255,
 				"EDGE_STROKE_UNSELECTED_PAINT"="#999999")
 	if (createStyle) {
-		cat("Making style\n")
+		message("Making style\n")
 		createVisualStyle(styleName,defaults, list(nodeLabels,nodeFills))
 	}
 	setVisualStyle(styleName)
@@ -129,7 +127,4 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
   response <- commandsGET(redraw_command)
 	fitContent()
 
-	outFile <- sprintf("EMap_%s",netName)
-		exportImage(outFile,type=imageFormat)
-	return(outFile)
 }

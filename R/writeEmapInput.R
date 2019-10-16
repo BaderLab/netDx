@@ -43,10 +43,9 @@
 #' output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
 #'                   outPfx=sprintf("%s/%s",outDir,gp))
 #' @export
-writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
-	pctPass=0.70,minScore=1,maxScore=10,trimFromName=c(".profile","_cont"),
-	verbose=FALSE) {
-
+writeEMapInput <- function(featScores, namedSets,netInfo,
+	outPfx=sprintf("%s/curr",tempdir()),pctPass=0.70,minScore=1,maxScore=10,
+	trimFromName=c(".profile","_cont"),verbose=FALSE) {
 	netNames <- featScores[,1];
 	featScores <- as.matrix(featScores[,-1])
 
@@ -59,7 +58,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 			} else {
 				idx  <- which(featScores >= sc)
 			}
-			if (verbose) cat(sprintf("\t%i : %i pass\n", sc, length(idx)))
+			if (verbose) message(sprintf("\t%i : %i pass\n", sc, length(idx)))
 			maxNetS[idx,1] <- sc
 	}
 	idx <- which(!is.na(maxNetS))
@@ -79,16 +78,17 @@ writeEMapInput <- function(featScores, namedSets,netInfo,outPfx="curr",
 
 	# write gmt
 	outFile <- sprintf("%s.gmt",outPfx)
-	if (file.exists(outFile)) unlink(outFile)
-	system(sprintf("touch %s",outFile))
+	conn <- file(outFile)
 	for (cur in df2$netName) {
 			k2 <- simpleCap(cur)
 			if (is.null(namedSets[[cur]])) namedSets[[cur]] <- k2
 
-			cat(sprintf("%s\t%s\t%s\n", k2,k2,
-				paste(namedSets[[cur]],collapse="\t")),file=outFile,append=TRUE)
+			curr <- sprintf("%s\t%s\t%s\n", k2,k2,
+				paste(namedSets[[cur]],collapse="\t"))
+			writeLines(curr,conn)
 	}
+	close(conn)
+
   return(c(outFile,netAttrFile))
 }
-
 

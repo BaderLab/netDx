@@ -49,11 +49,11 @@ plotPerf <- function(inDir, predClasses) {
   }
 
   if(length(inDir) == 1){
-    cat("Single directory provided, retrieving prediction files\n")
+    message("Single directory provided, retrieving prediction files\n")
     all_rng <- list.files(path = inDir, pattern = "rng.")
 		fList <- sprintf("%s/%s/predictionResults.txt", inDir,all_rng)
 	} else {
-		cat("length(inDir)>1; assuming provided path to individual results\n")
+		message("length(inDir)>1; assuming provided path to individual results\n")
 		fList <- inDir
 	}
 

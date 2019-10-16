@@ -80,7 +80,8 @@
 #' @import RCy3
 #' @export
 plotIntegratedPSN <- function(setName="predictor",pheno,baseDir,netNames,
-	topX=0.2, aggFun="MEAN",outDir=".",calcShortestPath=TRUE,savePaths=FALSE,
+	topX=0.2, aggFun="MEAN",outDir=tempdir(),
+	calcShortestPath=TRUE,savePaths=FALSE,
 	nodeSize=100,nodeTransparency=200,
 	edgeTransparency=120,edgeStroke="#999999",edgeWidth=1,imageFormat="PNG",
 	nodePalette="Dark2",verbose=FALSE,runCytoscape=TRUE) { 
@@ -91,7 +92,7 @@ if (missing(netNames)) stop("netNames is missing.")
 
 predClasses <- unique(pheno$STATUS)
 colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
-cat(sprintf("%i classes: { %s }\n", length(predClasses), paste(predClasses,
+message(sprintf("%i classes: { %s }\n", length(predClasses), paste(predClasses,
 	collapse=",")))
 
 # compile node/network locations for dataset
@@ -109,11 +110,11 @@ for (cur in predClasses) {
 print(ptFile)
 if (length(ptFile)>=2) {
 for (k in 2:length(ptFile)) {
-	tmp <- system(sprintf("diff %s %s", ptFile[[1]],ptFile[[k]]),intern=TRUE)
+	tmp <- system2(sprintf("diff %s %s", ptFile[[1]],ptFile[[k]]),stdout=TRUE)
 	if (!is.null(attr(tmp,"status"))){
-		cat(sprintf("Gene IDs for %s doesn't match that for %s.\n", 
+		message(sprintf("Gene IDs for %s doesn't match that for %s.\n", 
 				predClasses[k],predClasses[1]))
-		cat("These should be identical. Please check.\n")
+		message("These should be identical. Please check.\n")
 	}
 }
 
@@ -126,7 +127,7 @@ dir.create(poolDir)
 # pool feature selected nets from both groups
 alreadyAdded <- c()
 for (gps in names(ptFile)) {
-	cat(sprintf("Group %s\n", gps))
+	message(sprintf("Group %s\n", gps))
 	pTally <- netNames[[gps]]
 	pTally <- sub("_cont|\\.profile","",pTally)
 
@@ -136,7 +137,7 @@ for (gps in names(ptFile)) {
 	idx <- which(pTally %in% alreadyAdded)
 	if (any(idx)) {
 		if (verbose)
-			cat(sprintf("Found a net already added before, removing: {%s}\n",
+			message(sprintf("Found a net already added before, removing: {%s}\n",
 				paste(pTally[idx],collapse=",")))
 		pTally <- pTally[-idx]
 	}
@@ -160,7 +161,7 @@ for (gps in names(ptFile)) {
 
 		curNetIds[ctr,] <- c(sub(".txt","",tmp),
 		paste(gps,netIDs[idx,2],sep="."))
-		##cat(sprintf("\t%s -> %s\n", cur, tmp))
+		##message(sprintf("\t%s -> %s\n", cur, tmp))
 		ctr <- ctr+1
 	}
 	newNetIDs[[gps]] <- curNetIds
@@ -173,7 +174,7 @@ write.table(newNetIDs,file=netInfo_combinedF,sep="\t",
 col=FALSE,row=FALSE,quote=FALSE)
 
 # aggregate
-cat("* Computing aggregate net\n")
+message("* Computing aggregate net\n")
 aggNetFile <- netDx::writeWeightedNets(ptFile[[1]],
 	netInfo=netInfo_combinedF,
 	poolDir,keepNets=newNetIDs[,2],outDir,
@@ -187,14 +188,7 @@ colnames(aggNet) <- c("AliasA","AliasB","weight")
 
 # calculate shortest paths among and between classes
 if (calcShortestPath) {
-	pdf(sprintf("%s/shortest_paths.pdf",outDir),width=11,height=6)
-	tryCatch({
-		x <- compareShortestPath(aggNet, pheno,verbose=FALSE,plotDist=TRUE)
-	},error=function(ex){
-		print(ex)
-	}, finally={
-		dev.off()
-	})
+	x <- compareShortestPath(aggNet, pheno,verbose=FALSE,plotDist=TRUE)
 
 	gp <- unique(pheno$GROUP)
 	oppName <- paste(gp[1],gp[2],sep="-")
@@ -204,19 +198,19 @@ if (calcShortestPath) {
 				sprintf("p%s-Opp",gp[1]),sprintf("p%s-Opp",gp[2]))
 	
 	# mean shortest path		
-	cat("Shortest path averages &\n")
-	cat("p-values (one-sided WMW)\n")
-	cat("------------------------------------\n")
+	message("Shortest path averages &\n")
+	message("p-values (one-sided WMW)\n")
+	message("------------------------------------\n")
 	for (k in 1:length(x$all)) {
 		cur <- names(x$all)[k]
 		idx <- which(colnames(curDijk) %in% cur)
 		curDijk[1,idx] <- median(x$all[[k]])
-		cat(sprintf("\t%s: Median = %1.2f\n", cur,curDijk[1,idx]))
+		message(sprintf("\t%s: Median = %1.2f\n", cur,curDijk[1,idx]))
 		if (cur %in% gp) {
 			tmp <- wilcox.test(x$all[[cur]],x$all[[oppName]],
 				alternative="less")$p.value
 			curDijk[4+k] <- tmp
-			cat(sprintf(" p(<Opp) = %1.2e\n", curDijk[4+k]))
+			message(sprintf(" p(<Opp) = %1.2e\n", curDijk[4+k]))
 		}
 	}
 	write.table(curDijk,file=sprintf("%s/shortest_paths.txt",outDir),
@@ -247,7 +241,7 @@ if (is(st,"numeric")) { # error
 	stop("Please launch Cytoscape and try again.")
 }
 
-cat("* Creating network in Cytoscape\n")
+message("* Creating network in Cytoscape\n")
 # layout network in Cytoscape
 netName <- sprintf("%s_%s_top%1.2f",setName,aggFun,topX)
 colnames(pheno)[1] <- "id"
@@ -259,7 +253,7 @@ createNetworkFromDataFrames(nodes=pheno,
 
 # apply style to network
 pal <- suppressWarnings(brewer.pal(name=nodePalette,n=length(predClasses)))
-	cat("* Creating style\n")
+	message("* Creating style\n")
 	nodeLabels <- mapVisualProperty('node label','id','p')
 	nodeFills <- mapVisualProperty('node fill color','group', 'd',predClasses,pal)
 	defaults <- list("NODE_SHAPE"="ellipse",

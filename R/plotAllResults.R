@@ -53,12 +53,13 @@
 #' out <- plotAllResults(KIRC_pheno, inDir,outDir=sprintf("%s/plots",getwd()),
 #'            fsCutoff=10,fsPctPass=0.7,pathwaySet=pathwayList,
 #'			  plotNetworks_flag=FALSE)
- plotAllResults <- function(pheno, inDir,outDir,fsCutoff=10L,fsPctPass=0.7,
+ plotAllResults <- function(pheno, inDir,outDir=tempdir(),
+	fsCutoff=10L,fsPctPass=0.7,
 	pathwaySet=NULL, eMap_colorScheme="cont_heatmap",
 	eMap_min=1,eMap_max=10,setName="predictor",plotNetworks_flag=FALSE) {
 
 predClasses <- unique(pheno$STATUS)
-cat("* Plotting average and detailed performance\n")
+message("* Plotting average and detailed performance\n")
 
 
 if (file.exists(outDir)) {
@@ -67,14 +68,14 @@ if (file.exists(outDir)) {
 dir.create(outDir)
 
 # performance
-postscript(sprintf("%s/perf.eps", outDir),height=11,width=6)
-tryCatch({
+#postscript(sprintf("%s/perf.eps", outDir),height=11,width=6)
+#tryCatch({
 	predPerf <- plotPerf(inDir, predClasses=predClasses)
-},error=function(ex) {
-	print(ex)
-},finally={
-	dev.off()
-})
+#},error=function(ex) {
+#	print(ex)
+#},finally={
+	#dev.off()
+#})
 
 # compute feature scores
 featScores <- getFeatureScores(inDir,predClasses=predClasses)
@@ -82,26 +83,20 @@ featScores <- getFeatureScores(inDir,predClasses=predClasses)
 dir.create(sprintf("%s/featScores",outDir))
 featSelNet <- sapply(names(featScores), function(nm) {
 	x <- featScores[[nm]]
-	write.table(x,file=sprintf("%s/featScores/%s_featScores.txt",outDir,nm),
-		sep="\t",row=TRUE,col=TRUE,quote=FALSE)
 	y <- callFeatSel(x, fsCutoff=fsCutoff, fsPctPass=fsPctPass)
-	write.table(y,file=sprintf("%s/featScores/%s_FeatSel_cutoff%i_pct%1.2f.txt",	
-		outDir,nm,fsCutoff,fsPctPass),sep="\t",col=FALSE,row=FALSE,quote=FALSE)
 	y
 })
 
-
-cat("* Generating overall patient similarity view\n")
+message("* Generating overall patient similarity view\n")
 dir.create(sprintf("%s/PSN",outDir))
 netInfo <- plotIntegratedPSN(pheno=pheno,baseDir=sprintf("%s/rng1",inDir),
 	netNames=featSelNet,outDir=sprintf("%s/PSN",outDir),setName=setName,
 	runCytoscape=plotNetworks_flag)
 
-
 if (!is.null(pathwaySet)) {
 	dir.create(sprintf("%s/EMap",outDir))
 
-	cat("* pathwaySet provided; generating EnrichmentMaps\n")
+	message("* pathwaySet provided; generating EnrichmentMaps\n")
 	netInfo <- read.delim(sprintf("%s/inputNets.txt",inDir),
 		sep="\t",h=FALSE,as.is=TRUE)
 	EMap_input <- writeEMapInput_many(featScores,pathwaySet,
@@ -116,7 +111,6 @@ if (!is.null(pathwaySet)) {
 									gmtFile=EMap_input[[curGroup]][1], 
 	       							nodeAttrFile=EMap_input[[curGroup]][2],
 	       							netName=curGroup,
-									outDir=sprintf("%s/EMap",outDir),
 									colorScheme=eMap_colorScheme,
 									minScore=eMap_min,maxScore=eMap_max)
 		}	

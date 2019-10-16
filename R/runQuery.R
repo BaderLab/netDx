@@ -21,22 +21,27 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose=TRUE,
 	GM_jar	<- getGMjar_path()
 	qBase	<- basename(queryFiles[[1]][1])
 	logFile	<- sprintf("%s/%s.log", resDir, qBase)
-	cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",JavaMemory*numCores,GM_jar)
 	queryStrings <- paste(queryFiles, collapse = ' ')
-	cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s --netdx-flag true",
-			dbPath, numCores, resDir, queryStrings)
+	#cmd1	<- sprintf("java -d64 -Xmx%iG -cp %s org.genemania.plugin.apps.QueryRunner",JavaMemory*numCores,GM_jar)
+	#cmd2	<- sprintf(" --data %s --in flat --out flat --threads %i --results %s %s --netdx-flag true",
+	#		dbPath, numCores, resDir, queryStrings)
+	#cmd		<- paste(c(cmd1,cmd2),collapse=" ")
+	#if (!verbose) cmd <- sprintf("%s 2>1 /dev/null",cmd)
+	#if (verbose) print(cmd)
+	#blah <- suppressWarnings(system2(cmd,wait=TRUE,stdout=TRUE))
 
-	cmd		<- paste(c(cmd1,cmd2),collapse=" ")
-	if (!verbose) cmd <- sprintf("%s 2>1 /dev/null",cmd)
-	if (verbose) print(cmd)
+	args <- c('-d64',sprintf('-Xmx%iG',JavaMemory*numCores),'-cp',GM_jar)
+	args <- c(args,'org.genemania.plugin.apps.QueryRunner')
+	args <- c(args,'--data', dbPath, '--in','flat','--out','flat')
+	args <- c(args,'--threads',numCores,'--results',resDir,unlist(queryFiles))
+	args <- c(args,'--netdx-flag','true') #,'2>1','/dev/null')
 
 	# file is not actually created - is already split in PRANK and NRANK 
 	# segments on GeneMANIA side
 	resFile <- sprintf("%s/%s-results.report.txt", resDir,qBase)
 	t0	<- Sys.time()
-	blah <- suppressWarnings(system(cmd,wait=TRUE,ignore.stdout=TRUE,
-		ignore.stderr=TRUE,intern=TRUE))
-	if (verbose) cat(sprintf("QueryRunner time taken: %1.1f s\n", 
+	system2('java',args,wait=TRUE)
+	if (verbose) message(sprintf("QueryRunner time taken: %1.1f s\n", 
 		Sys.time()-t0))
 	Sys.sleep(3)
 	return(resFile)

@@ -18,7 +18,7 @@ sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=Inf,
 	
 if (is.infinite(EDGE_MAX)) {
 } else {
-#	if (verbose) cat(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+#	if (verbose) message(sprintf("sparsify3:maxInt=%i;EDGE_MAX=%i;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 }
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
@@ -49,28 +49,28 @@ if (is.infinite(EDGE_MAX)) {
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule
-cat("past this\n")
+message("past this\n")
 	if (includeAllNodes) {
 		mmat[,1] <- as.character(mmat[,1])
 		mmat[,2] <- as.character(mmat[,2])
 		univ <- c(mmat[,1],mmat[,2])
 		missing <- setdiff(rownames(W), univ)
-		#cat(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
+		#message(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
 		if (length(missing)>0) {
-			cat(sprintf("Sparsify2: found %i missing patients; adding strongest edge\n",
+			message(sprintf("Sparsify2: found %i missing patients; adding strongest edge\n",
 				length(missing)))
 			for (k in missing) { # add the strongest edge for the patient
 				tmp <- mytop[which(mytop[,1]%in% k),]
 				x <- as.numeric(tmp[3])
 				if (x < cutoff) {
-					cat("\tMissing edge is below cutoff; setting to cutoff\n")
+					message("\tMissing edge is below cutoff; setting to cutoff\n")
 					x <- cutoff	
 				} 
 				mmat <- rbind(mmat, c(k, tmp[2],x))
 			}
 		}	
 	}
-cat("past include all\n")
+message("past include all\n")
 
 	head(mmat)
 	mmat <- na.omit(mmat) # boundary case where cutoff exceeds net max
@@ -87,7 +87,7 @@ cat("past include all\n")
 ###	W2 <- W2[colnames(W),]
 ###	n <- ncol(W);
 ###	sp <- nrow(mmat)/(n*(n-1))/2
-###	cat(sprintf("%i -> %i edges (%i%% sparsity)\n",
+###	message(sprintf("%i -> %i edges (%i%% sparsity)\n",
 ###		sum(!is.na(W)), nrow(mmat), round(sp*100)))
 ###   return(W2);
 }

@@ -43,7 +43,8 @@
 #'	dob <- compileFeatures(netDir,pheno$ID,outDir)
 #' @import doParallel
 #' @export
-compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
+compileFeatures <- function(netDir,patientID,outDir=tempdir(),
+	simMetric="pearson",
 	netSfx="_cont.txt$",verbose=TRUE,numCores=1L, P2N_threshType="off",
 	P2N_maxMissing=100,JavaMemory=4L, ...) {
 	# tmpDir/ is where all the prepared files are stored.
@@ -64,7 +65,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	curwd <- getwd()
 	tryCatch( {
 	
-	system(sprintf("cp -r %s %s", netDir,tmpDir))
+	system2('cp', args=c('-r',netDir,tmpDir))
 	setwd(tmpDir)
 
 	# write batch.txt and ids.txt, currently required 
@@ -76,20 +77,20 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	netList2	<- dir(path=netDir, pattern=netSfx)
 	netList <- c(netList1,netList2)
 
-	if (verbose) cat(sprintf("Got %i networks\n",length(netList)))
+	if (verbose) message(sprintf("Got %i networks\n",length(netList)))
 	idFile	<- sprintf("%s/ids.txt",outDir)
 	writeQueryBatchFile(netDir,netList,netDir,idFile,...)
-	system(sprintf("cp %s/batch.txt .", netDir))
+	system2('cp',args=c(sprintf("%s/batch.txt",netDir), '.')) 
 	write.table(patientID,file=idFile,sep="\t",
 				row=FALSE,col=FALSE,quote=FALSE)
 
 	#### Step 1. placeholder files
-	if (verbose) cat("\t* Creating placeholder files\n")
+	if (verbose) message("\t* Creating placeholder files\n")
 
 	# move files to tmpDir
 	#file.copy(netDir,tmpDir,recursive=TRUE)
 	file.copy(idFile, sprintf("%s/ids.txt",tmpDir))
-	system("chmod u+w *.*")
+	system2('chmod', args=c('u+w', '*.*'))
 
 	fBasic <- c("ATTRIBUTES.txt", "ATTRIBUTE_GROUPS.txt",
 				"ONTOLOGY_CATEGORIES.txt","ONTOLOGIES.txt", "TAGS.txt", 
@@ -103,12 +104,11 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	# that it should be written in R. Avoid calls to other languages 
 	# unless there is additional value in 
 	# doing so.
-	if (verbose) cat("\t* Populating database files, recoding identifiers\n")
+	if (verbose) message("\t* Populating database files, recoding identifiers\n")
 	dir.create("profiles")
 	procNet <- paste(path.package("netDx"),
 					 "python/process_networks.py",sep="/")
-	cmd <- sprintf("python2 %s batch.txt",procNet)
-	system(cmd,wait=TRUE)
+	system2('python2', args=c(procNet, 'batch.txt'),wait=TRUE)
 	# using new jar file
 	#### Step 3. (optional). convert profiles to interaction networks.
 	### TODO. This step is currently inefficient. We are writing all the
@@ -118,7 +118,7 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 	### Necessary because process_networks.py is prereq for ProfileToNetwork
 	### Driver and that doesn't get called until the step above.
 	if (length(netList1)>0) {
-		if (verbose) cat("\t* Converting profiles to interaction networks\n")
+		if (verbose) message("\t* Converting profiles to interaction networks\n")
 
 		cl	<- makeCluster(numCores,outfile=sprintf("%s/P2N_log.txt",tmpDir))
 		registerDoParallel(cl)
@@ -129,60 +129,80 @@ compileFeatures <- function(netDir,patientID,outDir,simMetric="pearson",
 			corType <- "MUTUAL_INFORMATION"
 		}
 
-		cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", JavaMemory,GM_jar)
-		cmd3 <- sprintf("-proftype continuous -cor %s",corType)
-		cmd5 <- sprintf("-threshold %s -maxmissing %1.1f", P2N_threshType,
-			P2N_maxMissing)
+		args <- c(sprintf("-Xmx%iG",JavaMemory),'-cp', GM_jar)
+		args <- c(args,'org.genemania.engine.core.evaluation.ProfileToNetworkDriver')
+		#cmd1 <- sprintf("java -Xmx%iG -cp %s org.genemania.engine.core.evaluation.ProfileToNetworkDriver", JavaMemory,GM_jar)
+		
+		args <- c(args, c('-proftype', 'continuous','-cor', corType))
+		args <- c(args, c('-threshold', P2N_threshType,'-maxmissing',
+				sprintf("%1.1f",P2N_maxMissing)))
+		#cmd3 <- sprintf("-proftype continuous -cor %s",corType)
+		#cmd5 <- sprintf("-threshold %s -maxmissing %1.1f", P2N_threshType,
+		#	P2N_maxMissing)
 		profDir <- sprintf("%s/profiles",tmpDir)
 		netOutDir <- sprintf("%s/INTERACTIONS",tmpDir)
 		tmpsfx <- sub("\\$","",netSfx)
 		print(system.time(
 		foreach (curProf=dir(path=profDir,pattern="profile$")) %dopar% {
-			cmd2 <- sprintf("-in %s/%s -out %s/%s",
-				profDir, curProf,netOutDir, sub(".profile",".txt",curProf))
-			cmd4 <- sprintf("-syn %s/1.synonyms -keepAllTies -limitTies",
-							tmpDir)
-			cmd <- sprintf("%s %s %s %s %s", cmd1,cmd2,cmd3,cmd4,cmd5)
-			if (!verbose) cmd <- sprintf("%s 2> /dev/null", cmd)
-			if (verbose) print(cmd)
-			system(cmd)
+			#cmd2 <- sprintf("-in %s/%s -out %s/%s",
+			#	profDir, curProf,netOutDir, sub(".profile",".txt",curProf))
+			#cmd4 <- sprintf("-syn %s/1.synonyms -keepAllTies -limitTies",
+		    #					tmpDir)
+			#cmd <- sprintf("%s %s %s %s %s", cmd1,cmd2,cmd3,cmd4,cmd5)
+			# if (!verbose) cmd <- sprintf("%s 2> /dev/null", cmd)
+			args2 <- c('-in', sprintf("%s/%s",profDir,curProf))
+			args2 <- c(args2, '-out', sprintf("%s/%s",netOutDir, 
+				sub(".profile",".txt",curProf)))
+			args2 <- c(args2, '-syn', sprintf("%s/1.synonyms",tmpDir),
+				'-keepAllTies', '-limitTies')
+			#if (verbose) print(cmd)
+			system2('java', args=c(args, args2),wait=TRUE)
 		}
 		))
 		stopCluster(cl)
 		netSfx=".txt"
 		netList2 <- dir(path=netOutDir,pattern=netSfx)
 
-		if (verbose) cat(sprintf("Got %i networks from %i profiles\n", length(netList2),
-			length(netList)))
-
+		if (verbose) message(sprintf("Got %i networks from %i profiles\n", 
+			length(netList2),length(netList)))
 		netDir <- netOutDir
 		netList <- netList2; rm(netOutDir,netList2)
 	}
 
 	#### Step 4. Build GeneMANIA index
-	if (verbose) cat("\t* Build GeneMANIA index\n")
+	if (verbose) message("\t* Build GeneMANIA index\n")
 	setwd(dataDir)
-	cmd1 <- sprintf("java -Xmx10G -cp %s org.genemania.mediator.lucene.exporter.Generic2LuceneExporter",GM_jar)
-	cmd2 <- sprintf("%s/db.cfg %s %s/colours.txt",tmpDir,tmpDir,tmpDir)
-	cmd	<- sprintf("%s %s", cmd1,cmd2)
-	system(cmd,wait=TRUE)
+	#cmd1 <- sprintf("java -Xmx10G -cp %s org.genemania.mediator.lucene.exporter.Generic2LuceneExporter",GM_jar)
+	#cmd2 <- sprintf("%s/db.cfg %s %s/colours.txt",tmpDir,tmpDir,tmpDir)
+	#cmd	<- sprintf("%s %s", cmd1,cmd2)
+	args <- c('-Xmx10G','-cp',GM_jar)
+	args <- c(args,'org.genemania.mediator.lucene.exporter.Generic2LuceneExporter')
+	args <- c(args, sprintf("%s/db.cfg",tmpDir),tmpDir,
+		sprintf("%s/colours.txt",tmpDir))
+	system2('java', args,wait=TRUE)
 
-	cmd <- sprintf("mv %s/lucene_index/* %s/.",dataDir,dataDir)
-	system(cmd)
+	#cmd <- sprintf("mv %s/lucene_index/* %s/.",dataDir,dataDir)
+	system2('mv', args=c(sprintf("%s/lucene_index/*",dataDir), 
+		sprintf("%s/.",dataDir)))
 
 	#### Step 5. Build GeneMANIA cache
-	if (verbose) cat("\t* Build GeneMANIA cache\n")
-	cmd1<- sprintf("java -Xmx10G -cp %s", GM_jar)
-	cmd2<- "org.genemania.engine.apps.CacheBuilder"
-	cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS -log %s/test.log"
-				   , tmpDir,tmpDir)
-	cmd <- sprintf("%s %s %s 2>&1 > /dev/null",cmd1,cmd2,cmd3)
-	system(cmd)
+	if (verbose) message("\t* Build GeneMANIA cache\n")
+	#cmd1<- sprintf("java -Xmx10G -cp %s", GM_jar)
+	#cmd2<- "org.genemania.engine.apps.CacheBuilder"
+	#cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS -log %s/test.log"
+	#			   , tmpDir,tmpDir)
+	#cmd <- sprintf("%s %s %s 2>&1 > /dev/null",cmd1,cmd2,cmd3)
+	args <- c('-Xmx10G','-cp',GM_jar,'org.genemania.engine.apps.CacheBuilder')
+	args <- c(args,'-cachedir','cache','-indexDir','.',
+		'-networkDir',sprintf("%s/INTERACTIONS",tmpDir),
+		'-log',sprintf("%s/test.log",tmpDir))
+	system2('java',args=args)
 
 	#### Step 6. Cleanup.
-	if (verbose) cat("\t * Cleanup")
+	if (verbose) message("\t * Cleanup")
 	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx.examples"))
-	system(sprintf("cp %s %s/.", GM_xml, dataDir))
+cat("about to copy gm.xml")
+	system2('cp', args=c(GM_xml, sprintf("%s/.",dataDir))) 
 
 	}, error=function(ex) {
 		print(ex)

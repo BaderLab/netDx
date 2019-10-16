@@ -85,8 +85,16 @@ print key details (useful setting for most users)}
 symmetric matrix of size ncol(dat) (number of patients) containing
 pairwise patient similarities
 
-No value. Side effect of writing log messages to <outDir>/log.txt
-and generating predictor-related data in <outDir>.
+(list) of length (numSplits-startAt)+1 (i.e. one per train/test split).
+Each entry contains in turn a list of results for that split. Key-value pairs
+are:
+1) predictions: real and predicted labels for test patients
+2) accuracy: percent accuracy of predictions
+3) featureScores: list of length g, where g is number of patient classes.
+scores for all features following feature selection, for corresponding class.
+4) featureSelected: list of length g (num patient classes). List of 
+selected features for corresponding patient class, for that train/test split 
+ Side effect of generating predictor-related data in <outDir>.
 }
 \description{
 Run nested cross-validation on data

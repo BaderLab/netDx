@@ -66,13 +66,13 @@ if (is(net,"data.frame")){
 	
 	newCt <- 0
 	t0 <- Sys.time()
-	system(sprintf("cat /dev/null > %s",outFile))
+	system2(sprintf("cat /dev/null > %s",outFile))
 	while ((ctr < nrow(dat))) {
 		nextPat <- dat[ctr+1,1]
 	
 		if (nextPat != curPat) {
 			eidx <- ctr
-			if (verbose) cat(sprintf("%s: %i-%i:", curPat,sidx,eidx))
+			if (verbose) message(sprintf("%s: %i-%i:", curPat,sidx,eidx))
 			# process cur pat's interactions. write to file
 			totalInter <- dat[sidx:eidx,3]
 			names(totalInter) <- dat[sidx:eidx,2]
@@ -88,9 +88,9 @@ if (is(net,"data.frame")){
 	
 			if (verbose) {
 				n1 <- length(totalInter)
-				cat(sprintf("%i -> %i ",n1, tokeep))
-				if (tokeep < n1) cat("*** trimmed")
-				cat("\n")
+				message(sprintf("%i -> %i ",n1, tokeep))
+				if (tokeep < n1) message("*** trimmed")
+				message("\n")
 			}
 			
 			outInter <- totalInter[1:tokeep]
@@ -120,16 +120,16 @@ if (is(net,"data.frame")){
 	tokeep <- max(k,min(MAX_PCT*numPatients,600));
 	tokeep <- min(k,n);
 	
-	if (verbose) cat(sprintf("%i -> %i\n",n1, tokeep))
+	if (verbose) message(sprintf("%i -> %i\n",n1, tokeep))
 	
 	outInter <- totalInter[1:tokeep]
 df <- data.frame(P1=curPat,P2=names(outInter),x=outInter)
 write.table(df,file=outFile,sep="\t",append=TRUE,col=FALSE,row=FALSE,quote=FALSE)
 oldCt <- nrow(dat)
 
-cat(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 
+message(sprintf("Interactions trimmed from %i to %i  (sparse factor= %1.2f%%)\n", 
 			oldCt, newCt,(newCt/oldCt)*100))
-cat("Time taken:\n")
+message("Time taken:\n")
 print(Sys.time()-t0)
 
 }

@@ -18,8 +18,17 @@ This code block is not evaluated. Need a breakdown? Look at the following sectio
 require(netDx)
 require(netDx.examples)
 
-load(sprintf("%s/extdata/buildPred_input.rda",
-             path.package("netDx.examples")))
+#load(sprintf("%s/extdata/buildPred_input.rda",
+ #            path.package("netDx.examples")))
+data(curatedBreastDataExprSetList)
+dat <- curatedBreastDataExprSetList[[25]]
+pheno <- pData(dat)
+fdat <- fData(dat)
+xpr <- exprs(dat)
+
+pat_id <- pheno$patient_ID
+subtype <- pheno$pam50
+
 
 # Custom function to tell netDx how to build features (PSN) from input data.
 # Each datatype is in a different entry of the dataList object. 

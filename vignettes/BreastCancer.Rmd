@@ -75,16 +75,6 @@ netList <- makePSN_NamedMatrix(xpr, rownames(xpr),
         numCores=numCores,writeProfiles=TRUE)
 netList <- unlist(netList)
 
-# make PSN from CNV, group by pathways (binary similarity)
-gene_GR     <- GRanges(genes$chrom,
-   IRanges(genes$txStart,genes$txEnd),
-   name=genes$name2)
-path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
-names(path_GRList) <- paste("CNV_",names(path_GRList),sep="")
-## warning: this step can take 2-5 minutes depending on the
-## number of processes running in parallel
-netList2 <- makePSN_RangeSets(cnv_GR, path_GRList,profDir,verbose=FALSE)
-
 # Now that all PSN (features) have been created, compile into one database for feature selection
 dbDir   <- compileFeatures(profDir, pheno$ID, outDir,numCores=numCores)
 

@@ -28,7 +28,7 @@ predictPatientLabels <- function(resSet,verbose=TRUE) {
 na_sum <- rowSums(is.na(type_rank[,-1]))
 if (verbose){
 if (any(na_sum>0)) 
-	cat(sprintf("*** %i rows have an NA prediction (probably query samples that were not not ranked\n",
+	message(sprintf("*** %i rows have an NA prediction (probably query samples that were not not ranked\n",
 			sum(na_sum>0)))
 }
 type_rank <- na.omit(type_rank)

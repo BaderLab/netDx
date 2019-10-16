@@ -4,9 +4,10 @@
 \alias{plotAllResults}
 \title{Wrapper to plot all predictor results}
 \usage{
-plotAllResults(pheno, inDir, outDir, fsCutoff = 10L, fsPctPass = 0.7,
-  pathwaySet = NULL, eMap_colorScheme = "cont_heatmap", eMap_min = 1,
-  eMap_max = 10, setName = "predictor", plotNetworks_flag = FALSE)
+plotAllResults(pheno, inDir, outDir = tempdir(), fsCutoff = 10L,
+  fsPctPass = 0.7, pathwaySet = NULL,
+  eMap_colorScheme = "cont_heatmap", eMap_min = 1, eMap_max = 10,
+  setName = "predictor", plotNetworks_flag = FALSE)
 }
 \arguments{
 \item{pheno}{(data.frame) sample metadata. Must have ID and STATUS column}

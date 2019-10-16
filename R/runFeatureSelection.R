@@ -37,7 +37,7 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 	if (!file.exists(outDir)) dir.create(outDir)
 
 	# get query names
-	if (verbose) cat("\tWriting queries:\n")
+	if (verbose) message("\tWriting queries:\n")
 	qSamps <- makeQueries(trainID_pred,verbose=verbose,
 		setSeed=seed_queryResample,...)
 
@@ -47,7 +47,7 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 
 		if(is.null(numTrainSamps)){
 			numTrainSamps = 5
-			cat("Memory saver option: using 5 training samples for CV")
+			message("Memory saver option: using 5 training samples for CV")
 		}
 
 		writeQueryFile(qSamps[[m]], incNets, numTrainSamps,

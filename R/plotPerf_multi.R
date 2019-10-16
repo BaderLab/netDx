@@ -35,7 +35,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	} else if (plotType=="PR") {
 		xlab <- "Precision"; ylab <- "Recall"
 	} else {
-		cat("custom type plot\n")
+		message("custom type plot\n")
 	}
 
 	plot(0,0,type='n',bty='n',las = 1,xlim=xlim,ylim=ylim,

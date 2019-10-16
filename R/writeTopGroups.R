@@ -19,16 +19,16 @@
 #' @export
 writeTopGroups <- function(groupList, scores, cutoff,units="*",outFile) {
 	pnames <- scores[which(scores$SCORE>=cutoff),1]
-	cat(sprintf("%i of %i groups selected\n", length(pnames),length(groupList)))
+	message(sprintf("%i of %i groups selected\n", length(pnames),length(groupList)))
 
-	system(sprintf("cat /dev/null > %s",outFile))
+	system2(sprintf("cat /dev/null > %s",outFile))
 	for (p in pnames) {
 		if (units[1]!="*"){
 			g <- intersect(groupList[[p]],units)
-			cat(sprintf("%s\t%s\t%s\n",p,p,paste(g,collapse="\t")),
+			message(sprintf("%s\t%s\t%s\n",p,p,paste(g,collapse="\t")),
 				file=outFile,append=TRUE)
 		}
 	}
 
-	cat(sprintf("GMT written to %s\n", outFile))
+	message(sprintf("GMT written to %s\n", outFile))
 }

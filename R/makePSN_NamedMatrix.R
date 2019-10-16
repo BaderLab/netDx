@@ -26,7 +26,8 @@
 #' set names, and networks will be named as these. values are character
 #' vectors corresponding to groups of names (matching those in \code{nm})
 #' that are input to network generation
-#' @param outDir (char) path to directory where networks are written
+#' @param outDir (char) path to directory where networks are written. 
+#' If missing, is set to tempdir()
 #' @param simMetric (char) measure of similarity. See \code{getSimilarity()}
 #' for details. If writeProfiles is set to TRUE, must be one of pearson
 #' (Pearson correlation) or MI (correlation by mutual information).
@@ -61,7 +62,7 @@
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
 #' 	".",writeProfiles=TRUE)
 #' @export
-makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
+makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 	simMetric="pearson",verbose=TRUE,
 	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=Inf,
@@ -72,7 +73,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 		dir.create(outDir)
 	} else {
 		if (!file.exists(outDir)) {
-				cat("You asked for append but the directory doesn't exist. Helpfully creating it\n")
+				message("You asked for append but the directory doesn't exist. Helpfully creating it\n")
 				dir.create(outDir)
 		}
 	}
@@ -88,19 +89,19 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 	if (!runSerially) {
 	registerDoParallel(cl)
 	} else {
-		cat("running serially\n")
+		message("running serially\n")
 	}
 
 	if (simMetric=="pearson") {
-		cat("simMetric set to pearson; forcing minMembers to be 5.\n")
+		message("simMetric set to pearson; forcing minMembers to be 5.\n")
 		minMembers <- 5;
 	}
 
 	# process pathways in parallel
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {
-		if (verbose) cat(sprintf("%s: ", curSet))
+		if (verbose) message(sprintf("%s: ", curSet))
 		idx <- which(nm %in% namedSets[[curSet]])
-		if (verbose) cat(sprintf("%i members\n", length(idx)))
+		if (verbose) message(sprintf("%i members\n", length(idx)))
 
 		oFile <- NULL
  		# has sufficient connections to make network
@@ -111,7 +112,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 							col=FALSE,row=TRUE,quote=FALSE)
 			} else {
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
-				cat(sprintf("computing sim for %s\n",curSet))
+				message(sprintf("computing sim for %s\n",curSet))
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
 				if (is.null(sim)) {
@@ -130,7 +131,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 ###										is.na(pat_pairs[,3]))
 ###					if (any(too_weak)) {
 ###						if (verbose) 
-###							cat(sprintf("\t%i weak connections\n", 
+###							message(sprintf("\t%i weak connections\n", 
 ###										length(too_weak)))
 ###						pat_pairs <- pat_pairs[-too_weak,]
 ###					}
@@ -148,7 +149,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 						stop("sparsify2 caught error\n"); 
 					})
 					} else {
-						cat("sparsify3\n")
+						message("sparsify3\n")
 					tryCatch({
 				     sp_t0 <- Sys.time()
 					 spmat <- sparsify3(pat_pairs,cutoff=cutoff,
@@ -163,14 +164,14 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir,
 				write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)
 				print(basename(outFile))
-				cat("done\n")
+				message("done\n")
 				}
 			}
-#cat("got here\n")
+#message("got here\n")
 			oFile <- basename(outFile)
 		}
 		oFile
-#cat("out of loop\n")
+#message("out of loop\n")
 	}
 	stopCluster(cl)
 	outFiles

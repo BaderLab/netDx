@@ -29,7 +29,7 @@
 splitTestTrain_resampling <- function(pheno_DF, nFold=3L, setSeed=42L,
  	predClass,verbose=FALSE){
 if (!is.null(setSeed)) {
-	cat(sprintf("Resampling split: set seed: %i\n",setSeed))
+	message(sprintf("Resampling split: set seed: %i\n",setSeed))
 	set.seed(setSeed); # make reproducible
 }
 
@@ -44,9 +44,9 @@ plus_tsize <- length(plus_idx)-plus_csize
 other_tsize <- length(other_idx)-other_csize
 
 if (verbose) {
-cat(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n",
+message(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n",
 			predClass, length(plus_idx), plus_tsize, plus_csize))
-cat(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n",
+message(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n",
 			predClass, length(other_idx),other_tsize, other_csize))
 }
 
@@ -64,7 +64,7 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(plus_idx)
 
 	if (verbose) 
-		cat(sprintf("\t%i (+): %i test (%i-%i);\n", 
+		message(sprintf("\t%i (+): %i test (%i-%i);\n", 
 			k, eidx-sidx+1, sidx,eidx))
 	status[plus_order[sidx:eidx]] <- "TEST"
 
@@ -74,7 +74,7 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(other_idx)
 
 	if (verbose) 
-			cat(sprintf("\t\t%i (-): %i test\n",k, eidx-sidx+1))
+			message(sprintf("\t\t%i (-): %i test\n",k, eidx-sidx+1))
 	status[other_order[sidx:eidx]] <- "TEST"
 	
 	out[[k]] <- status

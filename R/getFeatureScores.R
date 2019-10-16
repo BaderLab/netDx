@@ -27,19 +27,19 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 
 	out <- list()
 	for (gp in predClasses) {
-		cat(sprintf("%s\n",gp))
+		message(sprintf("%s\n",gp))
 
 		if(is(inDir,"character")) {
-			cat("\tSingle directory provided, retrieving CV score files\n")
+			message("\tSingle directory provided, retrieving CV score files\n")
 			rngDirs <- dir(path=inDir, pattern="^rng")
 			fList <-sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt",
 					 inDir,rngDirs,gp,gp)
 		} else {
-			cat("\tList of filenames provided\n")
+			message("\tList of filenames provided\n")
 			fList <- inDir[[gp]]
 		}
 
-		cat(sprintf("Got %i iterations\n", length(fList)))
+		message(sprintf("Got %i iterations\n", length(fList)))
 		netColl <- list()
 
 		for (scoreFile in fList) {
@@ -59,7 +59,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 			names(netColl) <- fNames
 
 			# filter for nets meeting cutoff criteria
-			cat("* Computing consensus\n")
+			message("* Computing consensus\n")
 
 			cons <- getNetConsensus(netColl); x1 <- nrow(cons)
 			na_sum <- rowSums(is.na(cons))

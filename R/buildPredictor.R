@@ -67,8 +67,16 @@
 #' @import glmnet
 #' @importFrom stats median na.omit coef
 #' @importFrom utils read.delim write.table
-#' @return No value. Side effect of writing log messages to <outDir>/log.txt
-#' and generating predictor-related data in <outDir>.
+#' @return (list) of length (numSplits-startAt)+1 (i.e. one per train/test split).
+#' Each entry contains in turn a list of results for that split. Key-value pairs
+#' are:
+#' 1) predictions: real and predicted labels for test patients
+#' 2) accuracy: percent accuracy of predictions
+#' 3) featureScores: list of length g, where g is number of patient classes.
+#' scores for all features following feature selection, for corresponding class.
+#' 4) featureSelected: list of length g (num patient classes). List of 
+#' selected features for corresponding patient class, for that train/test split 
+#'  Side effect of generating predictor-related data in <outDir>.
 #' @export
 #' @examples
 #' load(sprintf("%s/extdata/buildPred_input.rda",
@@ -114,7 +122,7 @@
 #' #   makeNetFunc=KIRC_makeNets, ### custom function defined above
 #' #   outDir=sprintf("%s/pred_output",getwd()), ## absolute path
 #' #   numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
-buildPredictor <- function(pheno,dataList,groupList,outDir,makeNetFunc,
+buildPredictor <- function(dataList,groupList,outDir,makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,
 	JavaMemory=4L,featSelCutoff=9L,
 	keepAllData=FALSE,startAt=1L, preFilter=FALSE,preFilterSeed=123,
@@ -144,16 +152,14 @@ if (logging == "all") {
 # Check input
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
+if (missing(outDir)) outDir <- tempdir()
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
-names_nomatch <- !identical(sort(names(groupList)),sort(names(dataList)))
+names_nomatch <- any(!setdiff(names(groupList),"clinical") %in% names(dataList))
 if (!is(groupList,"list") || not_list || names_nomatch ) 
 	stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
-if (!is(dataList,"list")) 
-	stop("dataList must be a list of data.frames or matrices, with names corresponding to groupList")
-patnames <- unlist(lapply(dataList,colnames))
-if (any(!(patnames %in% pheno$ID))) 
-	stop("one or more patient IDs in dataList do not match those listed in pheno$ID. Check.")
+if (!is(dataList,"MultiAssayExperiment"))
+	stop("dataList must be a MultiAssayExperiment")
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
@@ -163,56 +169,76 @@ if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
 dir.create(megaDir)
 
 # set aside for testing within each split
-pheno_all <- pheno; 
+pheno_all <- colData(dataList)
+pheno_all <- as.data.frame(pheno_all)
 
-logFile <- sprintf("%s/log.txt",megaDir)
-sink(logFile,split=TRUE)
-cat("Predictor started at:\n")
-print(Sys.time())
-tryCatch({
+message("Predictor started at:\n")
+message(Sys.time())
 
 # run featsel once per subtype
-subtypes <- unique(pheno$STATUS)
+subtypes <- unique(pheno_all$STATUS)
+
+# convert to list structure 
+exprs <- experiments(dataList)
+datList2 <- list()
+for (k in 1:length(exprs)) {
+	tmp <- exprs[[k]]
+	df <- sampleMap(dataList)[which(sampleMap(dataList)$assay==names(exprs)[k]),]
+	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
+	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
+	datList2[[names(exprs)[k]]]<- tmp	
+}
+if ("clinical" %in% names(groupList)) {
+	tmp <- colData(dataList)
+	vars <- unique(unlist(groupList[["clinical"]]))
+	datList2[["clinical"]] <- t(as.matrix(tmp[,vars,drop=FALSE]))
+}
+
+datList <- datList2; rm(datList2);rm(dataList)
 
 if (verbose_default){
-	cat(sprintf("-------------------------------\n"))
-	cat(sprintf("# patients = %i\n", nrow(pheno)))
-	cat(sprintf("# classes = %i { %s }\n", length(subtypes),
+	message(sprintf("-------------------------------\n"))
+	message(sprintf("# patients = %i\n", nrow(pheno_all)))
+	message(sprintf("# classes = %i { %s }\n", length(subtypes),
 		paste(subtypes,collapse=",")))
-	cat("Sample breakdown by class\n")
-	print(table(pheno$STATUS))
-	cat(sprintf("%i train/test splits",numSplits))
-	cat(sprintf("Feature selection cutoff = %i of %i\n",
+	message("Sample breakdown by class\n")
+	print(table(pheno_all$STATUS))
+	message(sprintf("%i train/test splits",numSplits))
+	message(sprintf("Feature selection cutoff = %i of %i\n",
 		featSelCutoff,featScoreMax))
-	cat(sprintf("Datapoints:\n"))
-	for (nm in names(dataList)) {
-		cat(sprintf("\t%s: %i units\n", nm, nrow(dataList[[nm]])))
+	message(sprintf("Datapoints:\n"))
+	for (nm in names(datsList)) {
+		message(sprintf("\t%s: %i units\n", nm, nrow(datsList[[nm]])))
 	}
 }
 
 # create master list of possible networks
 netFile <- sprintf("%s/inputNets.txt", megaDir)
+fileConn <- file(netFile)
 
-cat("NetType\tNetName\n",file=netFile)
+writeLines("NetType\tNetName\n",fileConn)
 for (nm in names(groupList)) {
 	curNames <- names(groupList[[nm]])
 	for (nm2 in curNames) {
-		cat(sprintf("%s\t%s\n",nm,nm2),file=netFile,append=TRUE)
+		writeLines(sprintf("%s\t%s\n",nm,nm2),netFile)
 	}
 }
-
+close(fileConn)
 
 if (verbose_default) {
-	cat("\n\nCustom function to generate input nets:\n")
+	message("\n\nCustom function to generate input nets:\n")
 	print(makeNetFunc)
-	cat(sprintf("-------------------------------\n\n"))
+	message(sprintf("-------------------------------\n\n"))
 }
 
+outList <- list()
 for (rngNum in startAt:numSplits) {
+	curList <- list()
+
 	if (verbose_default) {
-	cat(sprintf("-------------------------------\n"))
-	cat(sprintf("RNG seed = %i\n", rngNum))
-	cat(sprintf("-------------------------------\n"))
+	message(sprintf("-------------------------------\n"))
+	message(sprintf("RNG seed = %i\n", rngNum))
+	message(sprintf("-------------------------------\n"))
 	}
 	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
 	dir.create(outDir)
@@ -220,15 +246,16 @@ for (rngNum in startAt:numSplits) {
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 								setSeed=rngNum*5,verbose=verbose_default)
 	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
-	dats_train <- lapply(dataList,function(x) { 
-						 x[,which(colnames(x) %in% pheno$ID)]})
+
+	dats_train <- lapply(datList, function(x) 
+		x[,which(colnames(x) %in% pheno$ID)])
 
 	if (impute) {
-	if (verbose_default) cat("**** IMPUTING ****\n")
+	if (verbose_default) message("**** IMPUTING ****\n")
 	if (is.null(imputeGroups)) imputeGroups <- names(dats_train)
-	if (!any(imputeGroups %in% names(dats_train))) stop("imputeGroups must match names in dataList")
+	if (!any(imputeGroups %in% names(dats_train))) 
+		stop("imputeGroups must match names in datsList")
 
-	
 	dats_train <- sapply(names(dats_train), function(nm) {
 		x <- dats_train[[nm]]
 		if (nm %in% imputeGroups) {
@@ -245,12 +272,14 @@ for (rngNum in startAt:numSplits) {
 	# prefilter with lasso
 	if (preFilter) {
 	if (is.null(preFilterGroups)) preFilter <- names(dats_train)
-	if (!any(preFilterGroups %in% names(dats_train))) stop("preFilterGroups must match names in dataList")
+	if (!any(preFilterGroups %in% names(dats_train))) {
+		stop("preFilterGroups must match names in datsList")
+	}
 	
 	set.seed(preFilterSeed)
-	cat("Prefiltering enabled\n")
+	message("Prefiltering enabled\n")
 	for (nm in preFilterGroups) {
-		cat(sprintf("%s: %i variables\n",nm,nrow(dats_train[[nm]])))
+		message(sprintf("%s: %i variables\n",nm,nrow(dats_train[[nm]])))
 		if (nrow(dats_train[[nm]])<2)  # only has one var, take it.
 			vars <- rownames(dats_train[[nm]])
 		else { 
@@ -261,7 +290,7 @@ for (rngNum in startAt:numSplits) {
 					y=factor(tmp$STATUS), family="binomial", alpha=1) # lasso
 			}, error=function(ex) {
 				print(ex)
-				cat("*** You may need to set impute=TRUE for prefiltering ***\n")
+				message("*** You may need to set impute=TRUE for prefiltering ***\n")
 			},finally={
 			})
 			wt <- abs(coef(fit,s="lambda.min")[,1])
@@ -275,34 +304,36 @@ for (rngNum in startAt:numSplits) {
 		} else {
 			# leave dats_train as is, make a single net
 		} 
-		cat(sprintf("rngNum %i: %s: %s pruned\n",rngNum,nm,length(vars)))
+		message(sprintf("rngNum %i: %s: %s pruned\n",rngNum,nm,length(vars)))
 		}
 	}
 	
 	if (verbose_default) {
-	cat("# values per feature (training)\n")
+	message("# values per feature (training)\n")
 	for (nm in names(dats_train)) {
-		cat(sprintf("\tGroup %s: %i values\n", 
+		message(sprintf("\tGroup %s: %i values\n", 
 			nm,nrow(dats_train[[nm]])))
 	}
 	}
 
 	netDir <- sprintf("%s/networks",outDir)
-	if (verbose_default) cat("** Creating features\n")
+	if (verbose_default) message("** Creating features\n")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			verbose=verbose_makeFeatures)
-	if (verbose_default) cat("** Compiling features\n")
+	if (verbose_default) message("** Compiling features\n")
 	dbDir	<- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores, 
 				verbose=verbose_compileNets)
-	
 
-	if (verbose_default) cat("\n** Running feature selection\n")
+	if (verbose_default) message("\n** Running feature selection\n")
+
+	curList[["featureScores"]] <- list()
+
 	for (g in subtypes) {
 	    pDir <- sprintf("%s/%s",outDir,g)
 	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE);
 			dir.create(pDir)
-			if (verbose_default) cat(sprintf("\tClass: %s",g))
+			if (verbose_default) message(sprintf("\tClass: %s",g))
 			pheno_subtype <- pheno
 			pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
 			trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
@@ -311,7 +342,7 @@ for (rngNum in startAt:numSplits) {
 		
 			# Cross validation
 			resDir <- sprintf("%s/GM_results",pDir)
-			cat(sprintf("\tScoring features\n"))
+			message(sprintf("\tScoring features\n"))
 			runFeatureSelection(trainPred, 
 				outDir=resDir, dbPath=dbDir$dbDir, 
 				nrow(pheno_subtype),verbose=verbose_runFS, 
@@ -320,22 +351,25 @@ for (rngNum in startAt:numSplits) {
 	
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
-			if (verbose_default) cat("\tCompiling feature scores\n")
-			pTally		<- compileFeatureScores(paste(resDir,nrank,sep="/"),
+			if (verbose_default) message("\tCompiling feature scores\n")
+			pTally <- compileFeatureScores(paste(resDir,nrank,sep="/"),
 				verbose=verbose_compileFS)
-			tallyFile	<- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
+			tallyFile <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 			write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,
 				quote=FALSE)
-		if (verbose_default) cat("\n")
-		if (verbose_default) cat("\n")
+
+			curList[["featureScores"]][[g]] <- pTally
+		if (verbose_default) message("\n")
 	}
 	
 	## Class prediction for this split
-	if (verbose_default) cat("\n** Predicting labels for test\n")
+	if (verbose_default) message("\n** Predicting labels for test\n")
 	pheno <- pheno_all
 	predRes <- list()
+
+	curList[["featureSelected"]] <- list()
 	for (g in subtypes) {
-		if (verbose_default) cat(sprintf("%s\n",g))
+		if (verbose_default) message(sprintf("%s\n",g))
 		pDir <- sprintf("%s/%s",outDir,g)
 		pTally <- read.delim(
 			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
@@ -345,14 +379,20 @@ for (rngNum in startAt:numSplits) {
 		pTally <- pTally[idx,1]
 		pTally <- sub(".profile","",pTally)
 		pTally <- sub("_cont","",pTally)
+
+		curList[["featureSelected"]][[g]] <- pTally
+
 		if (verbose_default)
-			cat(sprintf("\t%i feature(s) selected\n",length(pTally)))
+			message(sprintf("\t%i feature(s) selected\n",length(pTally)))
 		netDir <- sprintf("%s/networks",pDir)
 
+cat("about to filter for train/test passed var\n")
+browser()
+
 		dats_tmp <- list()
-		for (nm in names(dataList)) {
+		for (nm in names(datsList)) {
 			passed <- rownames(dats_train[[nm]])
-			tmp <- dataList[[nm]]
+			tmp <- datsList[[nm]]
 			# only variables passing prefiltering should be used to make PSN
 			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),] 
 		}		
@@ -385,7 +425,7 @@ for (rngNum in startAt:numSplits) {
 		#alldat_tmp <- do.call("rbind",dats_tmp)
 		}
 
-		if (verbose_default) cat(sprintf("\tCreate & compile features\n",g))
+		if (verbose_default) message(sprintf("\tCreate & compile features\n",g))
 		if (length(pTally)>=1) {
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
 			netDir=sprintf("%s/networks",pDir),
@@ -398,7 +438,7 @@ for (rngNum in startAt:numSplits) {
 		qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
 		qFile <- sprintf("%s/%s_query",pDir,g)
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
-		if (verbose_default) cat(sprintf("\t** %s: Compute similarity\n",g))
+		if (verbose_default) message(sprintf("\t** %s: Compute similarity\n",g))
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
 			JavaMemory=JavaMemory, numCores=numCores,
 			verbose=verbose_runQuery)
@@ -407,12 +447,12 @@ for (rngNum in startAt:numSplits) {
 			predRes[[g]] <- NA
 		}
 	}
-	if (verbose_default) cat("\n")
+	if (verbose_default) message("\n")
 	
 	if (sum(is.na(predRes))>0 & verbose_default) {
-		cat(sprintf("RNG %i : One or more classes have no selected features. Not classifying\n", rngNum))
+		message(sprintf("RNG %i : One or more classes have no selected features. Not classifying\n", rngNum))
 	} else {
-		if (verbose_default) cat("** Predict labels\n")
+		if (verbose_default) message("** Predict labels\n")
 		predClass <- predictPatientLabels(predRes,
 			verbose=verbose_predict)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
@@ -421,29 +461,31 @@ for (rngNum in startAt:numSplits) {
 		
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		if (verbose_default)
-			cat(sprintf("Split %i: ACCURACY (N=%i test) = %2.1f%%\n",
+			message(sprintf("Split %i: ACCURACY (N=%i test) = %2.1f%%\n",
 			rngNum, nrow(out), acc*100))
+
+		curList[["predictions"]] <- out
+		curList[["accuracy"]] <- acc
 	}
         
 	if (!keepAllData) {
-    system(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       
+    system2(sprintf("rm -r %s/dataset %s/tmp %s/networks",                       
         outDir,outDir,outDir))                                                  
 	for (g in subtypes) {
-    system(sprintf("rm -r %s/%s/dataset %s/%s/networks",
+    system2(sprintf("rm -r %s/%s/dataset %s/%s/networks",
         outDir,g,outDir,g))
 	}
 	}# endif !keepAllData
-	if (verbose_default) {
-		cat("\n----------------------------------------\n")
-	}
-	}
-}, error=function(ex){
-	print(ex)
-}, finally={
-	cat("Predictor completed at:\n")
-	print(Sys.time())
-	sink(NULL)
-})
 
+	if (verbose_default) {
+		message("\n----------------------------------------\n")
+	}
+
+	outList[[rngNum]] <- curList
+	}
+	message("Predictor completed at:\n")
+	message(Sys.time())
+
+	return(outList)
 }
 

@@ -38,8 +38,8 @@
 #' @import parallel
 #' @import doParallel
 #' @importFrom combinat combn
-makePSN_RangeSets <- function(gr, rangeSet, netDir, simMetric="coincide",
-  quorum=2L,verbose=TRUE,numCores=1L) {
+makePSN_RangeSets <- function(gr, rangeSet, netDir=tempdir(), 
+	simMetric="coincide",quorum=2L,verbose=TRUE,numCores=1L) {
 if (!file.exists(netDir)) dir.create(netDir)
 
 TEST_MODE <- FALSE # for debugging
@@ -57,7 +57,7 @@ if (!simMetric %in% "coincide")
 
 # LOCUS_NAMES not provided? Compute these
 if (!"LOCUS_NAMES" %in% names(elementMetadata(gr))) {
-	cat("\tLOCUS_NAMES column not provided; computing overlap of patients
+	message("\tLOCUS_NAMES column not provided; computing overlap of patients
 		with regions\n")
 	gr <- getRegionOL(gr, rangeSet)
 }
@@ -65,14 +65,14 @@ if (!"LOCUS_NAMES" %in% names(elementMetadata(gr))) {
 # set up a matrix of patient by locus.
 # a[i,j] = 1 if patient i has a CNV affecting locus j
 # else 0
-cat("* Preparing patient-locus matrix\n")
-cat(sprintf("\t%i unique patients, %i unique locus symbols\n",
+message("* Preparing patient-locus matrix\n")
+message(sprintf("\t%i unique patients, %i unique locus symbols\n",
             length(uq_patients), length(uq_loci)))
 pgMat   <- big.matrix(0,
 		 nrow=length(uq_patients), ncol=length(uq_loci),
          type="integer")
 pgDesc  <- describe(pgMat)
-cat("\n")
+message("\n")
 
 cl <- makeCluster(numCores,outfile="")
 registerDoParallel(cl)
@@ -91,7 +91,7 @@ x <- foreach (spos=seq(1,num,ckSize)) %dopar% {
 		if (length(myloci)>0) {
         	inner_mat[k, which(uq_loci %in% myloci)] <- 1L
     	}
-    	if (k %% 100==0) cat(".")
+    	if (k %% 100==0) message(".")
 	}
 }
 t1 <- Sys.time()
@@ -106,11 +106,11 @@ inc_patients <- integer(length(uq_patients));
 names(inc_patients) <- uq_patients
 
 # now group set-by-set
-cat("* Writing networks\n")
+message("* Writing networks\n")
 t0 <- Sys.time()
 outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
 	curP<- names(rangeSet)[idx]
-    if (verbose) cat(sprintf("\t%s: ", curP))
+    if (verbose) message(sprintf("\t%s: ", curP))
 
     inner_mat 	<- bigmemory::attach.big.matrix(pgDesc)
 
@@ -122,14 +122,14 @@ outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
 	}
 
     hit_p[idx]	<- sum(hit_pathway>0)
-    if (verbose) cat(sprintf("%i patients with interactions",
+    if (verbose) message(sprintf("%i patients with interactions",
 		hit_p[idx]))
 
 	pScore	<- 1	# similarity score for default binary option
 	outFile <- ""
 	# pathway included in analysis
     if (hit_p[idx]>=quorum) {
-		if (verbose) cat(sprintf("\n\t\tlength=%i; score = %1.2f",
+		if (verbose) message(sprintf("\n\t\tlength=%i; score = %1.2f",
 								 length(rangeSet[[idx]]), pScore))
 		if (!TEST_MODE) {
 		inc_patients[hit_pathway>0] <-  inc_patients[hit_pathway>0]+1;
@@ -149,13 +149,13 @@ outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
 	  ##status	<- 0;
 	##		outFile <- ""
 	## }
-    if (idx %% 100==0) cat(".")
-    if (verbose) cat("\n")
+    if (idx %% 100==0) message(".")
+    if (verbose) message("\n")
 	##inc_status[idx] <- status
 	
 	if (!verbose) {
-		if (idx %% 100 == 0) cat(".")
-		if (idx %% 1000 == 0) cat("\n")
+		if (idx %% 100 == 0) message(".")
+		if (idx %% 1000 == 0) message("\n")
 	}
 
 	outFile

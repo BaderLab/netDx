@@ -9,8 +9,6 @@
 #' @param pctT (numeric between 0 and 1) Fraction of patients to randomly
 #' assign to the training set. The remainder will be used for blind test 
 #' set
-#' @param setSeed (integer) Random number generator seed for splitting
-#' the training and test set. If not NULL, seed will be set to this value.
 #' @param verbose (logical) print messages
 #' @return (char) vector of length \code{nrow(pheno_DF)}, with values of 
 #' "TRAIN" or "TEST". The order corresponds to pheno_DF; a patient labelled
@@ -22,11 +20,7 @@
 #' data(MB.pheno)
 #' x <- splitTestTrain(MB.pheno)
 #' @export
-splitTestTrain <- function(pheno_DF,pctT=0.7,setSeed=42,verbose=FALSE) { 
-if (!is.null(setSeed)) {
-	if (verbose) message(sprintf("Train/test split RNG seed=%i\n",setSeed))
-	set.seed(setSeed); # make reproducible
-}
+splitTestTrain <- function(pheno_DF,pctT=0.7,verbose=FALSE) { 
 
 lvls <- unique(pheno_DF$STATUS)
 IS_TRAIN	<- rep("TEST",nrow(pheno_DF))

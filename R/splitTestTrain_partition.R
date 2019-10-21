@@ -17,7 +17,6 @@
 #' Rows with duplicate IDs will be excluded.
 #' @param nFold (integer) number of resamplings. Each sample will be a test
 #' sample exactly once.
-#' @param setSeed (integer) if not NULL, RNG seed will be set to this value.
 #' @param predClass (char) name of predictor class
 #' @param verbose (logical) print messages
 #' @return (list) of length nFold, each with char vector of length 
@@ -26,12 +25,8 @@
 #' data(xpr,pheno,cnv_GR) 
 #' x <- splitTestTrain_resampling(pheno,predClass="LumA")
 #' @export
-splitTestTrain_resampling <- function(pheno_DF, nFold=3L, setSeed=42L,
+splitTestTrain_resampling <- function(pheno_DF, nFold=3L, 
  	predClass,verbose=FALSE){
-if (!is.null(setSeed)) {
-	message(sprintf("Resampling split: set seed: %i\n",setSeed))
-	set.seed(setSeed); # make reproducible
-}
 
 plus_idx	<- which(pheno_DF$STATUS %in% predClass)
 other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)

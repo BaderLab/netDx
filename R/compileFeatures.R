@@ -77,7 +77,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	netList2	<- dir(path=netDir, pattern=netSfx)
 	netList <- c(netList1,netList2)
 
-	if (verbose) message(sprintf("Got %i networks\n",length(netList)))
+	if (verbose) message(sprintf("Got %i networks",length(netList)))
 	idFile	<- sprintf("%s/ids.txt",outDir)
 	writeQueryBatchFile(netDir,netList,netDir,idFile,...)
 	system2('cp',args=c(sprintf("%s/batch.txt",netDir), '.')) 
@@ -85,7 +85,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 				row=FALSE,col=FALSE,quote=FALSE)
 
 	#### Step 1. placeholder files
-	if (verbose) message("\t* Creating placeholder files\n")
+	if (verbose) message("\t* Creating placeholder files")
 
 	# move files to tmpDir
 	#file.copy(netDir,tmpDir,recursive=TRUE)
@@ -104,7 +104,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	# that it should be written in R. Avoid calls to other languages 
 	# unless there is additional value in 
 	# doing so.
-	if (verbose) message("\t* Populating database files, recoding identifiers\n")
+	if (verbose) message("\t* Populating database files, recoding identifiers")
 	dir.create("profiles")
 	procNet <- paste(path.package("netDx"),
 					 "python/process_networks.py",sep="/")
@@ -118,7 +118,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	### Necessary because process_networks.py is prereq for ProfileToNetwork
 	### Driver and that doesn't get called until the step above.
 	if (length(netList1)>0) {
-		if (verbose) message("\t* Converting profiles to interaction networks\n")
+		if (verbose) message("\t* Converting profiles to interaction networks")
 
 		cl	<- makeCluster(numCores,outfile=sprintf("%s/P2N_log.txt",tmpDir))
 		registerDoParallel(cl)
@@ -156,21 +156,21 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 			args2 <- c(args2, '-syn', sprintf("%s/1.synonyms",tmpDir),
 				'-keepAllTies', '-limitTies')
 			#if (verbose) print(cmd)
-			system2('java', args=c(args, args2),wait=TRUE)
+			system2('java', args=c(args, args2),wait=TRUE,stdout=NULL)
 		}
 		))
 		stopCluster(cl)
 		netSfx=".txt"
 		netList2 <- dir(path=netOutDir,pattern=netSfx)
 
-		if (verbose) message(sprintf("Got %i networks from %i profiles\n", 
+		if (verbose) message(sprintf("Got %i networks from %i profiles", 
 			length(netList2),length(netList)))
 		netDir <- netOutDir
 		netList <- netList2; rm(netOutDir,netList2)
 	}
 
 	#### Step 4. Build GeneMANIA index
-	if (verbose) message("\t* Build GeneMANIA index\n")
+	if (verbose) message("\t* Build GeneMANIA index")
 	setwd(dataDir)
 	#cmd1 <- sprintf("java -Xmx10G -cp %s org.genemania.mediator.lucene.exporter.Generic2LuceneExporter",GM_jar)
 	#cmd2 <- sprintf("%s/db.cfg %s %s/colours.txt",tmpDir,tmpDir,tmpDir)
@@ -186,7 +186,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 		sprintf("%s/.",dataDir)))
 
 	#### Step 5. Build GeneMANIA cache
-	if (verbose) message("\t* Build GeneMANIA cache\n")
+	if (verbose) message("\t* Build GeneMANIA cache")
 	#cmd1<- sprintf("java -Xmx10G -cp %s", GM_jar)
 	#cmd2<- "org.genemania.engine.apps.CacheBuilder"
 	#cmd3<- sprintf("-cachedir cache -indexDir . -networkDir %s/INTERACTIONS -log %s/test.log"
@@ -196,12 +196,11 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	args <- c(args,'-cachedir','cache','-indexDir','.',
 		'-networkDir',sprintf("%s/INTERACTIONS",tmpDir),
 		'-log',sprintf("%s/test.log",tmpDir))
-	system2('java',args=args)
+	system2('java',args=args,stdout=NULL)
 
 	#### Step 6. Cleanup.
 	if (verbose) message("\t * Cleanup")
 	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx.examples"))
-cat("about to copy gm.xml")
 	system2('cp', args=c(GM_xml, sprintf("%s/.",dataDir))) 
 
 	}, error=function(ex) {

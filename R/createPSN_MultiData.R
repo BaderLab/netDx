@@ -58,12 +58,12 @@ if (missing(customFunc)) stop("customFunc must be suppled.\n")
 
 # Filter for nets (potentially feature-selected ones)
 if (!is.null(filterSet)) {
-	if (verbose) message("\tFilter set provided\n")
+	if (verbose) message("\tFilter set provided")
 	groupList2 <- list()
 	for (nm in names(groupList)) {
 			idx <- which(names(groupList[[nm]]) %in% filterSet)
 			if (verbose) {
-				message(sprintf("\t\t%s: %i of %i nets pass\n",nm,
+				message(sprintf("\t\t%s: %i of %i nets pass",nm,
 				length(idx),length(groupList[[nm]])))
 			}
 			if (length(idx)>0) {

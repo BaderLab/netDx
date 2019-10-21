@@ -58,7 +58,7 @@ writeEMapInput <- function(featScores, namedSets,netInfo,
 			} else {
 				idx  <- which(featScores >= sc)
 			}
-			if (verbose) message(sprintf("\t%i : %i pass\n", sc, length(idx)))
+			if (verbose) message(sprintf("\t%i : %i pass", sc, length(idx)))
 			maxNetS[idx,1] <- sc
 	}
 	idx <- which(!is.na(maxNetS))

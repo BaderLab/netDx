@@ -18,25 +18,23 @@
 compileFeatureScores <- function(fList,filter_WtSum=100,verbose=FALSE) {
 
 if (filter_WtSum < 5) {
-	message("filter_WtSum cannot be < 5 ; setting to 5\n")
+	message("filter_WtSum cannot be < 5 ; setting to 5")
 	filter_WtSum <- 5;
 }
 	
 pathwayTally <- list()
 ctr <- 1
-print(fList)
 for (fName in fList) {
 	tmp	<- basename(fName)
 
 	dat <- try(read.delim(fName,sep="\t",header=TRUE,as.is=TRUE,skip=1),
 		silent=TRUE)
 	ctr <- ctr+1
-	print(head(dat))
 
 	if (!inherits(dat,"try-error")) { # file not empty - continue
 		if (verbose) {
-		message("Net weight distribution:\n")
-		print(summary(dat$Weight))
+			message("Net weight distribution:")
+			print(summary(dat$Weight))
 		}
 		
 		# actually - it should already be sorted in decreasing order if we don't 
@@ -47,7 +45,7 @@ for (fName in fList) {
 		keep_max	<- which.min(abs(cs-filter_WtSum))
 		
 		dat			<- dat[1:keep_max,]
-		if (verbose) message(sprintf("filter_WtSum = %1.1f; %i of %i networks left\n",
+		if (verbose) message(sprintf("filter_WtSum = %1.1f; %i of %i networks left",
 				filter_WtSum, nrow(dat),length(cs)))
 		
 		# put all Network names in pathwaytally. The ones that are above threshold 

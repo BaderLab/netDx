@@ -73,7 +73,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 		dir.create(outDir)
 	} else {
 		if (!file.exists(outDir)) {
-				message("You asked for append but the directory doesn't exist. Helpfully creating it\n")
+				message("You asked for append but the directory doesn't exist. Helpfully creating it")
 				dir.create(outDir)
 		}
 	}
@@ -89,11 +89,11 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 	if (!runSerially) {
 	registerDoParallel(cl)
 	} else {
-		message("running serially\n")
+		message("running serially")
 	}
 
 	if (simMetric=="pearson") {
-		message("simMetric set to pearson; forcing minMembers to be 5.\n")
+		message("Pearson similarity chosen - enforcing min. 5 patients per net.")
 		minMembers <- 5;
 	}
 
@@ -101,7 +101,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 	outFiles <- foreach (curSet=names(namedSets)) %dopar% {
 		if (verbose) message(sprintf("%s: ", curSet))
 		idx <- which(nm %in% namedSets[[curSet]])
-		if (verbose) message(sprintf("%i members\n", length(idx)))
+		if (verbose) message(sprintf("%i members", length(idx)))
 
 		oFile <- NULL
  		# has sufficient connections to make network
@@ -112,7 +112,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 							col=FALSE,row=TRUE,quote=FALSE)
 			} else {
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
-				message(sprintf("computing sim for %s\n",curSet))
+				message(sprintf("computing sim for %s",curSet))
 				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
 										 type=simMetric,...)
 				if (is.null(sim)) {
@@ -149,7 +149,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 						stop("sparsify2 caught error\n"); 
 					})
 					} else {
-						message("sparsify3\n")
+						message("sparsify3")
 					tryCatch({
 				     sp_t0 <- Sys.time()
 					 spmat <- sparsify3(pat_pairs,cutoff=cutoff,
@@ -164,7 +164,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 				write.table(pat_pairs, file=outFile,sep="\t",
 					col=FALSE,row=FALSE,quote=FALSE)
 				print(basename(outFile))
-				message("done\n")
+				message("done")
 				}
 			}
 #message("got here\n")

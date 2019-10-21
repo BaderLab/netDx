@@ -40,8 +40,8 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose=TRUE,
 	# segments on GeneMANIA side
 	resFile <- sprintf("%s/%s-results.report.txt", resDir,qBase)
 	t0	<- Sys.time()
-	system2('java',args,wait=TRUE)
-	if (verbose) message(sprintf("QueryRunner time taken: %1.1f s\n", 
+	system2('java',args,wait=TRUE,stdout=NULL,stderr=NULL)
+	if (verbose) message(sprintf("QueryRunner time taken: %1.1f s", 
 		Sys.time()-t0))
 	Sys.sleep(3)
 	return(resFile)

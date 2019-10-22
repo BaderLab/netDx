@@ -207,18 +207,24 @@ if (verbose_default){
 	}
 }
 
+outputData <- list()
+
 # create master list of possible networks
 netFile <- sprintf("%s/inputNets.txt", megaDir)
-fileConn <- file(netFile)
-
-writeLines("NetType\tNetName\n",fileConn)
+#fileConn <- file(netFile,"w")
+#writeLines("NetType\tNetName",con=fileConn)
+tmp <- list()
 for (nm in names(groupList)) {
 	curNames <- names(groupList[[nm]])
 	for (nm2 in curNames) {
-		writeLines(sprintf("%s\t%s\n",nm,nm2),netFile)
+		#writeLines(sprintf("%s\t%s",nm,nm2),con=fileConn)
+		tmp <- c(nm,nm2)
 	}
 }
-close(fileConn)
+#close(fileConn)
+tmp <- do.call("rbind",tmp)
+colnames(tmp) <- c("NetType","NetName")
+outputData[["inputNets"]] <- tmp; rm(tmp)
 
 if (verbose_default) {
 	message("\n\nCustom function to generate input nets:")

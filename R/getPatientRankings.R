@@ -22,8 +22,8 @@
 #' NA.
 #' @examples
 #' data(xpr,pheno,cnv_GR)
-#' prankFile <- sprintf("%s/extdata/GM_PRANK.txt", 
-#' 	 path.package("netDx.examples"))
+#' prankFile <- sprintf("%s/extdata/GM_PRANK/CV_10.query-results.report.txt.PRANK",
+#' 	 path.package("netDx"))
 #' x <- getPatientRankings(prankFile, pheno, "LumA")
 getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
    verbose=FALSE) {

@@ -14,15 +14,18 @@
 #'	(Pearson corr) and single gene networks (normalized difference)
 #' 3) Multiple datatypes, multiple metrics: Expression -> Pathways; 
 #'	Clinical -> single or grouped nets
-#' @param pheno (data.frame) sample metadata, must have ID and STATUS columns
-#' @param dataList (list) keys are datatypes; values contain patient data
-#' for the corresponding datatype. e.g. dataList[["rna"]] contains expression
-#' matrix. Rows are units (e.g. genes, individual clinical variables) and 
-#' columns are patients
-#' @param groupList (list) keys are datatypes and values are lists indicating
-#' how units for those datatypes are to be grouped. Keys must match those 
-#' in dataList. Each entry of groupList[[k]] will generate a new PSN.
-#'  e.g. groupList[["rna"]] could be a list of pathway definitions. 
+#' @param dataList (MultiAssayExperiment) sample metadata. Clinical data is 
+#' in colData() and other input datatypes are in assays() slot.
+#' names(groupList) should match names(assays(dataList)). The only exception
+#' is clinical data. If a groupList entry is called "clinical", the algorithm
+#' will search for corresponding variable names in colData(dataList) (i.e.
+#' columns of sample metadata table).
+#' @param groupList (list of lists) keys are datatypes, and values are 
+#' lists indicating how units for those datatypes are to be grouped. 
+#' Keys must match names(assays(dataList)). The only exception is for clinical
+#' values. Variables for "clinical" will be extracted from columns of the sample
+#' metadata table (i.e. from colData(dataList)).   
+#' e.g. groupList[["rna"]] could be a list of pathway definitions. 
 #' So keys(groupList[["rna"]]) would have pathway names, generating one PSN
 #' per pathways, and values(groupList[["rna"]]) would be genes that would be
 #' grouped for the corresponding pathwayList.
@@ -65,10 +68,13 @@
 #' print key details (useful setting for most users)
 #' @import glmnet
 #' @importFrom stats median na.omit coef
-#' @importFrom utils read.delim write.table
-#' @return (list) of length (numSplits-startAt)+1 (i.e. one per train/test split).
-#' Each entry contains in turn a list of results for that split. Key-value pairs
-#' are:
+#' @importFrom utils read.delim 
+#' @return (list) 
+#' "inputNets": data.frame of all input network names. Columns are "NetType"
+#' (group) and "NetName" (network name).
+#' "Split<i>" is the data for train/test split i (i.e. one per train/test split).
+#' Each "SplitX" entry contains in turn a list of results for that split. 
+#' Key-value pairs are:
 #' 1) predictions: real and predicted labels for test patients
 #' 2) accuracy: percent accuracy of predictions
 #' 3) featureScores: list of length g, where g is number of patient classes.
@@ -78,49 +84,84 @@
 #'  Side effect of generating predictor-related data in <outDir>.
 #' @export
 #' @examples
-#' load(sprintf("%s/extdata/buildPred_input.rda",
-#'              path.package("netDx.examples")))
+#'
+#' library(curatedTCGAData)
+#' library(MultiAssayExperiment)
+#' library(TCGAutils)
+#' curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
 #' 
-#' # Custom function to tell netDx how to build features (PSN) from input data.
-#' # Each datatype is in a different entry of the dataList object.
-#' # The sets into which variables should be grouped (e.g. genes into pathways)i
-#' # is indicated in groupList.
-#' # names(dataList) should correspond to names(groupList)
-#' KIRC_makeNets <- function(dataList, groupList, netDir,...) {
+#' # fetch mrna, mutation data
+#' brca <- curatedTCGAData("BRCA",c("mRNAArray","Mutation"),FALSE)
+#' 
+#' # get subtype info
+#' pID <- colData(brca)$patientID
+#' pam50 <- colData(brca)$PAM50.mRNA
+#' staget <- colData(brca)$pathology_T_stage
+#' st2 <- rep(NA,length(staget))
+#' st2[which(staget %in% c("t1","t1a","t1b","t1c"))] <- 1
+#' st2[which(staget %in% c("t2","t2a","t2b"))] <- 2
+#' st2[which(staget %in% c("t3","t3a"))] <- 3
+#' st2[which(staget %in% c("t4","t4b","t4d"))] <- 4
+#' pam50[which(!pam50 %in% "Luminal A")] <- "notLumA"                         
+#' pam50[which(pam50 %in% "Luminal A")] <- "LumA"
+#' colData(brca)$ID <- pID
+#' colData(brca)$STAGE <- st2                                                 
+#' colData(brca)$STATUS <- pam50
+#' 
+#' # keep only tumour samples
+#' idx <- union(which(pam50 == "Normal-like"), which(is.na(st2)))
+#' cat(sprintf("excluding %i samples\n", length(idx)))
+#'                                                                            
+#' tokeep <- setdiff(pID, pID[idx])
+#' brca <- brca[,tokeep,]
+#' 
+#' pathList <- readPathways(getExamplePathways())
+#' brca <- brca[,,1] # keep only clinical and mRNA data
+#' 
+#' # remove duplicate arrays
+#' smp <- sampleMap(brca)
+#' samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
+#' notdup <- samps[which(!duplicated(samps$primary)),"colname"]
+#' brca[[1]] <- brca[[1]][,notdup]
+#' 
+#' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+#' groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
+#'     stage="STAGE")
+#' makeNets <- function(dataList, groupList, netDir,...) {
 #'     netList <- c()
-#'     # make RNA nets: group by pathway, use default similarity metric (pearson corr)
-#'     if (!is.null(groupList[["rna"]])) {
-#'     netList <- makePSN_NamedMatrix(dataList$rna,
-#'                     rownames(dataList$rna),
-#'                 groupList[["rna"]],netDir,verbose=FALSE,
-#'                 writeProfiles=TRUE,...)  
+#'     # make RNA nets: group by pathway
+#'     if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) {
+#'     netList <- makePSN_NamedMatrix(dataList[["BRCA_mRNAArray-20160128"]],
+#'                 rownames(dataList[["BRCA_mRNAArray-20160128"]]),
+#'                 groupList[["BRCA_mRNAArray-20160128"]],
+#'                 netDir,verbose=FALSE,
+#'                 writeProfiles=TRUE,...)
 #'     netList <- unlist(netList)
+#'     cat(sprintf("Made %i RNA pathway nets\n", length(netList)))
 #'     }
 #' 
-#'     # make clinical nets, one net for **each variable**.
-#'   # use custom similarity metric
+#'     # make clinical nets,one net for each variable
 #'     netList2 <- c()
 #'     if (!is.null(groupList[["clinical"]])) {
 #'     netList2 <- makePSN_NamedMatrix(dataList$clinical,
 #'         rownames(dataList$clinical),
 #'         groupList[["clinical"]],netDir,
-#'         simMetric="custom",customFunc=netDx::normDiff, # custom function
+#'         simMetric="custom",customFunc=normDiff, # custom function
 #'         writeProfiles=FALSE,
 #'         sparsify=TRUE,verbose=TRUE,append=TRUE,...)
 #'     }
 #'     netList2 <- unlist(netList2)
-#' 
-#'     netList <- c(netList,netList2)  # concatenate net names as output
+#'     cat(sprintf("Made %i clinical nets\n", length(netList2)))
+#'     netList <- c(netList,netList2)
+#'     cat(sprintf("Total of %i nets\n", length(netList)))
 #'     return(netList)
 #' }
 #' 
-#' # build predictor
-#' # uncomment to run
-#' # buildPredictor(pheno,
-#' #   dataList=dats,groupList=groupList,
-#' #   makeNetFunc=KIRC_makeNets, ### custom function defined above
-#' #   outDir=sprintf("%s/pred_output",getwd()), ## absolute path
-#' #   numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
+#' # takes 10 minutes to run
+#' #out <- buildPredictor(dataList=brca,groupList=groupList,
+#' #   makeNetFunc=makeNets, ### custom network creation function
+#' #   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
+#' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(dataList,groupList,outDir,makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
@@ -207,24 +248,17 @@ if (verbose_default){
 	}
 }
 
-outputData <- list()
+outList <- list()
 
 # create master list of possible networks
-netFile <- sprintf("%s/inputNets.txt", megaDir)
-#fileConn <- file(netFile,"w")
-#writeLines("NetType\tNetName",con=fileConn)
 tmp <- list()
 for (nm in names(groupList)) {
 	curNames <- names(groupList[[nm]])
-	for (nm2 in curNames) {
-		#writeLines(sprintf("%s\t%s",nm,nm2),con=fileConn)
-		tmp <- c(nm,nm2)
-	}
+	tmp[[nm]] <- cbind(rep("nm",length(curNames)),curNames)
 }
-#close(fileConn)
 tmp <- do.call("rbind",tmp)
 colnames(tmp) <- c("NetType","NetName")
-outputData[["inputNets"]] <- tmp; rm(tmp)
+outList[["inputNets"]] <- tmp
 
 if (verbose_default) {
 	message("\n\nCustom function to generate input nets:")
@@ -232,7 +266,6 @@ if (verbose_default) {
 	message(sprintf("-------------------------------\n"))
 }
 
-outList <- list()
 for (rngNum in startAt:numSplits) {
 	curList <- list()
 
@@ -357,7 +390,6 @@ for (rngNum in startAt:numSplits) {
 			tallyFile <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
 			write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,
 				quote=FALSE)
-
 			curList[["featureScores"]][[g]] <- pTally
 		if (verbose_default) message("")
 	}
@@ -454,7 +486,6 @@ for (rngNum in startAt:numSplits) {
 			verbose=verbose_predict)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- sprintf("%s/predictionResults.txt",outDir)
-		write.table(out,file=outFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 		
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		if (verbose_default)
@@ -466,21 +497,14 @@ for (rngNum in startAt:numSplits) {
 	}
         
 	if (!keepAllData) {
-		args <- c('-r', sprintf("%s/dataset", outDir), 
-			sprintf("%s/networks",outDir),sprintf("%s/tmp",outDir))
-		system2('cp',args=args)
-	for (g in subtypes) {
-		args <- c('-r', sprintf("%s/%s/dataset", outDir,g), 
-			sprintf("%s/%s/networks",outDir,g))
-		system2('rm',args=args)
-	}
+		system2('rm',args=c('-r',outDir))
 	}# endif !keepAllData
 
 	if (verbose_default) {
 		message("\n----------------------------------------")
 	}
 
-	outList[[rngNum]] <- curList
+	outList[[sprintf("Split%i",rngNum)]] <- curList
 	}
 	message("Predictor completed at:")
 	message(Sys.time())

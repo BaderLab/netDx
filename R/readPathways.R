@@ -34,8 +34,7 @@
 #' pathway name as key, vector of genes as value. If TRUE, returns list of
 #' length two, (1) geneSets: pathway-gene mappings as default, 
 #' (2) pNames: data.frame with original and cleaned names.
-#' @examples pathFile <- sprintf("%s/extdata/pathways.gmt",
-#'		path.package("netDx"))
+#' pathFile <- getExamplePathways()
 #'	pathwayList    <- readPathways(pathFile)
 #' 
 #' @export
@@ -84,16 +83,16 @@ Sys.setlocale("LC_ALL","C")
     }
     close(f)
 	if (verbose) {
-		message(sprintf("Read %i pathways in total, internal list has %i entries\n",
+		message(sprintf("Read %i pathways in total, internal list has %i entries",
 				ctr, length(out)))
-    	message(sprintf("\tFILTER: sets with num genes in [%i, %i]\n",
+    	message(sprintf("\tFILTER: sets with num genes in [%i, %i]",
 				MIN_SIZE,MAX_SIZE))
 	}
     ln <- unlist(lapply(out, length))
     idx	<- which(ln < MIN_SIZE | ln >= MAX_SIZE)
     out[idx] <- NULL
     #pName[idx] <- NULL
-    if (verbose) message(sprintf("\t  => %i pathways excluded\n\t  => %i left\n", 
+    if (verbose) message(sprintf("\t  => %i pathways excluded\n\t  => %i left", 
 				length(idx),length(out)))
 
 	# clean pathway names

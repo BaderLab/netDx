@@ -63,9 +63,8 @@
 #' 4) netPng: (char) path to png file with patient dissimilarity network
 #' created by Cytoscape
 #' @examples
-#' require(netDx.examples)
 #' data(KIRC_pheno)
-#' inDir <- sprintf("%s/extdata/KIRC_output", path.package("netDx.examples"))
+#' inDir <- sprintf("%s/extdata/example_output", path.package("netDx"))
 #' outDir <- paste(getwd(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))

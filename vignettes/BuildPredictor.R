@@ -1,6 +1,5 @@
 rm(list=ls())
 suppressWarnings(suppressMessages(require(netDx)))
-suppressWarnings(suppressMessages(require(netDx.examples)))
 
 library(curatedTCGAData)
 library(MultiAssayExperiment)
@@ -26,18 +25,14 @@ colData(brca)$ID <- pID
 colData(brca)$STAGE <- st2
 colData(brca)$STATUS <- pam50
 
-# clean
+# keep only tumour samples
 idx <- union(which(pam50 == "Normal-like"), which(is.na(st2)))
 cat(sprintf("excluding %i samples\n", length(idx)))
 
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
 
-pFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt", 
-	path.package("netDx.examples"))
-pathList <- readPathways(pFile)
-
-groupList <- list()
+pathList <- readPathways(getExamplePathways())
 
 brca <- brca[,,1] # keep only clinical and mRNA data
 
@@ -47,6 +42,7 @@ samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
 brca[[1]] <- brca[[1]][,notdup]
 
+groupList <- list()
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
 	stage="STAGE")
@@ -83,28 +79,13 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 
 ## ----eval=TRUE-----------------------------------------------------------
-buildPredictor(dataList=brca,groupList=groupList,
+out <- buildPredictor(dataList=brca,groupList=groupList,
    makeNetFunc=makeNets, ### custom network creation function
    outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
-   numCores=1L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
+   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 
+print(summary(out))
 
-## ----eval=TRUE-----------------------------------------------------------
-outDir <- sprintf("%s/pred_output",tempdir())
-dir(outDir)
-
-
-## ------------------------------------------------------------------------
-dir(sprintf("%s/rng1",outDir))
-pred <- read.delim(sprintf("%s/rng1/predictionResults.txt",outDir),h=TRUE,as.is=TRUE)
-head(pred)
-
-
-## ------------------------------------------------------------------------
-dir(sprintf("%s/rng1/SURVIVEYES",outDir))
-sc <- read.delim(sprintf("%s/rng1/SURVIVEYES/GM_results/SURVIVEYES_pathway_CV_score.txt",outDir),
-   sep="\t",h=TRUE,as.is=TRUE)
-head(sc)
 
 
 ## ------------------------------------------------------------------------

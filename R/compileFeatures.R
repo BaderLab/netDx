@@ -200,7 +200,7 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 
 	#### Step 6. Cleanup.
 	if (verbose) message("\t * Cleanup")
-	GM_xml	<- sprintf("%s/java/genemania.xml",path.package("netDx.examples"))
+	GM_xml	<- sprintf("%s/extdata/genemania.xml",path.package("netDx"))
 	system2('cp', args=c(GM_xml, sprintf("%s/.",dataDir))) 
 
 	}, error=function(ex) {

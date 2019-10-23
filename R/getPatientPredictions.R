@@ -25,9 +25,7 @@
 #' Side effect of plotting a dot plot of % accuracy. Each dot is a patient, and
 #' the value is "% splits for which patient was classified correctly".
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output",
-#'    path.package("netDx.examples"))
-#' require(netDx.examples)
+#' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
 #' data(KIRC_pheno)
 #' all_rngs <- list.dirs(inDir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {

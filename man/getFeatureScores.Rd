@@ -33,7 +33,6 @@ Given network scores over a set of trian/test splits, compiles these
 into a matrix for downstream analysis. See the section on "Output Files"
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output",
-		path.package("netDx.examples"))
+inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
 netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 }

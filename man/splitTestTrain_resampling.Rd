@@ -4,8 +4,8 @@
 \alias{splitTestTrain_resampling}
 \title{Assign train/test labels over several resamplings of the data.}
 \usage{
-splitTestTrain_resampling(pheno_DF, nFold = 3L, setSeed = 42L,
-  predClass, verbose = FALSE)
+splitTestTrain_resampling(pheno_DF, nFold = 3L, predClass,
+  verbose = FALSE)
 }
 \arguments{
 \item{pheno_DF}{(data.frame) table with patient ID and status.
@@ -18,8 +18,6 @@ Rows with duplicate IDs will be excluded.}
 
 \item{nFold}{(integer) number of resamplings. Each sample will be a test
 sample exactly once.}
-
-\item{setSeed}{(integer) if not NULL, RNG seed will be set to this value.}
 
 \item{predClass}{(char) name of predictor class}
 

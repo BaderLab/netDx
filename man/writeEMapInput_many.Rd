@@ -29,23 +29,17 @@ network  name. I.E:
 
 \item{...}{parameters for writeEMap()}
 }
-\value{
-(list)
-1) <outPfx>.gmt file - for enrichment map
-2) <outPfx>_nodeAttr.txt (file) table with node properties net name, max
-score and net type
-}
 \description{
 Wrapper to generate multiple EnrichmentMaps (perhaps one per class)
 }
 \examples{
 data(featScores)
-pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
-          path.package("netDx.examples"))
-pathwayList <- readPathways(pathFile)
+
+pathwayList <- readPathways(getExamplePathways())
 pathwayList <- pathwayList[c(1:5)]
-netInfoFile <- sprintf("\%s/extdata/KIRC_output/inputNets.txt",
-     path.package("netDx.examples"))
+
+netInfoFile <- sprintf("\%s/extdata/example_output/inputNets.txt",
+     path.package("netDx"))
 netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
 outDir <- paste(tempdir(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)

@@ -98,9 +98,8 @@ For visualization, only edges representing the top fraction of distances
 (strongest edge weights) are included.
 }
 \examples{
-require(netDx.examples)
 data(KIRC_pheno)
-inDir <- sprintf("\%s/extdata/KIRC_output", path.package("netDx.examples"))
+inDir <- sprintf("\%s/extdata/example_output", path.package("netDx"))
 outDir <- paste(getwd(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))

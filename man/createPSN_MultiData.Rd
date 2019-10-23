@@ -40,23 +40,76 @@ Wrapper to create custom input features (patient similarity networks)
 }
 \examples{
 
-makeNetFunc <- function(dataList, groupList, netDir,...) {
- netList <- c()
- # make RNA nets: group by pathway, use default similarity 
- # metric (pearson corr)
- if (!is.null(groupList[["rna"]])) {
- netList <- makePSN_NamedMatrix(dataList$rna,
-                 rownames(dataList$rna),
-             groupList[["rna"]],netDir,verbose=FALSE,
-             writeProfiles=TRUE,...)  # writeProfiles=TRUE when simMetric 
-									 # is Pearson correlation
- netList <- unlist(netList)
- } 
+
+library(curatedTCGAData)
+library(MultiAssayExperiment)
+library(TCGAutils)
+curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+
+# fetch mrna, mutation data
+brca <- curatedTCGAData("BRCA",c("mRNAArray","Mutation"),FALSE)
+
+# get subtype info
+pID <- colData(brca)$patientID
+pam50 <- colData(brca)$PAM50.mRNA
+staget <- colData(brca)$pathology_T_stage
+st2 <- rep(NA,length(staget))
+st2[which(staget \%in\% c("t1","t1a","t1b","t1c"))] <- 1
+st2[which(staget \%in\% c("t2","t2a","t2b"))] <- 2
+st2[which(staget \%in\% c("t3","t3a"))] <- 3
+st2[which(staget \%in\% c("t4","t4b","t4d"))] <- 4
+pam50[which(!pam50 \%in\% "Luminal A")] <- "notLumA"                         
+pam50[which(pam50 \%in\% "Luminal A")] <- "LumA"
+colData(brca)$ID <- pID
+colData(brca)$STAGE <- st2                                                 
+colData(brca)$STATUS <- pam50
+
+# keep only tumour samples
+idx <- union(which(pam50 == "Normal-like"), which(is.na(st2)))
+cat(sprintf("excluding \%i samples\\n", length(idx)))
+                                                                           
+tokeep <- setdiff(pID, pID[idx])
+brca <- brca[,tokeep,]
+
+pathList <- readPathways(getExamplePathways())
+
+brca <- brca[,,1] # keep only clinical and mRNA data
+
+# remove duplicate arrays
+smp <- sampleMap(brca)
+samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
+notdup <- samps[which(!duplicated(samps$primary)),"colname"]
+brca[[1]] <- brca[[1]][,notdup]
+
+groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
+    stage="STAGE")
+makeNets <- function(dataList, groupList, netDir,...) {
+    netList <- c()
+    # make RNA nets: group by pathway
+    if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) {
+    netList <- makePSN_NamedMatrix(dataList[["BRCA_mRNAArray-20160128"]],
+                rownames(dataList[["BRCA_mRNAArray-20160128"]]),
+                groupList[["BRCA_mRNAArray-20160128"]],
+                netDir,verbose=FALSE,
+                writeProfiles=TRUE,...)
+    netList <- unlist(netList)
+    cat(sprintf("Made \%i RNA pathway nets\\n", length(netList)))
+    }
+
+    cat(sprintf("Total of \%i nets\\n", length(netList)))
+    return(netList)
 }
-require(netDx.examples)
-data(KIRC_dat)
-data(KIRC_group)
-data(KIRC_pheno)
-createPSN_MultiData(dataList=KIRC_dat,groupList=KIRC_group,
-netDir=tempdir(),customFunc=makeNetFunc,numCores=1)
+
+datList2 <- list()
+for (k in 1:length(exprs)) {
+	tmp <- exprs[[k]]
+	df <- sampleMap(dataList)[which(sampleMap(dataList)$assay==names(exprs)[k]),]
+	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
+	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
+	datList2[[names(exprs)[k]]]<- tmp	
+}
+
+createPSN_MultiData(dataList=datList2,groupList=groupList,
+netDir=tempdir(),customFunc=makeNets,numCores=1)
 }

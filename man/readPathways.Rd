@@ -36,6 +36,8 @@ Depends on value of getOrigNames. If FALSE (Default), list with
 pathway name as key, vector of genes as value. If TRUE, returns list of
 length two, (1) geneSets: pathway-gene mappings as default, 
 (2) pNames: data.frame with original and cleaned names.
+pathFile <- getExamplePathways()
+pathwayList    <- readPathways(pathFile)
 }
 \description{
 Parse GMT file and return pathways as list
@@ -56,10 +58,4 @@ ABACAVIR METABOLISM%REACTOME DATABASE ID RELEASE 55%2161541	Abacavir metabolism	
 This function requires the specific formatting of the first column
 to assign the key name of the output list (see \code{useIDasName} 
 argument).
-}
-\examples{
-pathFile <- sprintf("\%s/extdata/pathways.gmt",
-	path.package("netDx"))
-pathwayList    <- readPathways(pathFile)
-
 }

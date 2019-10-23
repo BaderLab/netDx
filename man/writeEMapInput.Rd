@@ -4,8 +4,7 @@
 \alias{writeEMapInput}
 \title{write enrichment map for consensus nets}
 \usage{
-writeEMapInput(featScores, namedSets, netInfo,
-  outPfx = sprintf("\%s/curr", tempdir()), pctPass = 0.7,
+writeEMapInput(featScores, namedSets, netInfo, pctPass = 0.7,
   minScore = 1, maxScore = 10, trimFromName = c(".profile", "_cont"),
   verbose = FALSE)
 }
@@ -23,9 +22,6 @@ genes). Should only contain units profiled in this dataset}
       rna GUANOSINE_NUCLEOTIDES__I_DE_NOVO__I__BIOSYNTHESIS
       rna                              RETINOL_BIOSYNTHESIS}
 
-\item{outPfx}{(char) prefix for output files. Should include directory
-name and prefix of file name.}
-
 \item{pctPass}{(numeric between 0 and 1) fraction of splits for which
 the highest score for the network is required, for that to be the network's
 maxScore}
@@ -40,29 +36,19 @@ validation. e.g. for 10-fold cross-validation, maxScore=10.}
 
 \item{verbose}{(logical) print messages}
 }
-\value{
-1) <outPfx>.gmt file - for enrichment map
-2) <outPfx>_nodeAttr.txt (file) table with node properties, notably type,
-pctPass
-}
 \description{
 write enrichment map for consensus nets
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output", 
-path.package("netDx.examples"))
-outDir <- paste(getwd(),"plots",sep="/")
+inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
+outDir <- paste(tempdir(),"plots",sep="/")
 if (!file.exists(outDir)) dir.create(outDir)
 featScores <- getFeatureScores(inDir,predClasses=c("SURVIVEYES","SURVIVENO"))
 gp <- names(featScores)[1]
-pathFile <- sprintf("\%s/extdata/Human_160124_AllPathways.gmt",
-          path.package("netDx.examples"))
-pathwayList <- readPathways(pathFile)
+pathwayList <- readPathways(getExamplePathways())
 pathwayList <- pathwayList[c(1:5)]
-netInfoFile <- sprintf("\%s/extdata/KIRC_output/inputNets.txt",
-     path.package("netDx.examples"))
-netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
+netInfoFile <- sprintf("\%s/extdata/example_output/inputNets.txt",
+     path.package("netDx"))
 netInfo <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
-output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo,
-                  outPfx=sprintf("\%s/\%s",outDir,gp))
+output_files <- writeEMapInput(featScores[[gp]],pathwayList,netInfo)
 }

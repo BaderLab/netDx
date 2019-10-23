@@ -4,17 +4,13 @@
 \alias{makeQueries}
 \title{Randomly select patients for queries for feature selection}
 \usage{
-makeQueries(incPat, featScoreMax = 10L, setSeed = 42L,
-  verbose = TRUE)
+makeQueries(incPat, featScoreMax = 10L, verbose = TRUE)
 }
 \arguments{
 \item{incPat}{(char) vector of patient IDs to be included in query}
 
 \item{featScoreMax}{(integer) Number of times to run query, usually equal to the max 
 score for features in the design (e.g. if featScoreMax=10, then this value is 10).}
-
-\item{setSeed}{(integer) Set this to an integer to make results
-reproducible. If NULL, seed is not explicitly set.}
 
 \item{verbose}{(logical) print messages}
 }

@@ -17,18 +17,14 @@
 #'       rna                              RETINOL_BIOSYNTHESIS
 #' @param outDir (char) path to output directory
 #' @param ... parameters for writeEMap()
-#' @return (list)
-#' 1) <outPfx>.gmt file - for enrichment map
-#' 2) <outPfx>_nodeAttr.txt (file) table with node properties net name, max
-#' score and net type
 #' @examples
 #' data(featScores)
-#' pathFile <- sprintf("%s/extdata/Human_160124_AllPathways.gmt",
-#'           path.package("netDx.examples"))
-#' pathwayList <- readPathways(pathFile)
+#' 
+#' pathwayList <- readPathways(getExamplePathways())
 #' pathwayList <- pathwayList[c(1:5)]
-#' netInfoFile <- sprintf("%s/extdata/KIRC_output/inputNets.txt",
-#'      path.package("netDx.examples"))
+#' 
+#' netInfoFile <- sprintf("%s/extdata/example_output/inputNets.txt",
+#'      path.package("netDx"))
 #' netTypes <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
 #' outDir <- paste(tempdir(),"plots",sep="/")
 #' if (!file.exists(outDir)) dir.create(outDir)
@@ -38,13 +34,12 @@
 writeEMapInput_many <- function(featScores, namedSets_valid, netTypes,
 	outDir,...){
 
-gmt_attr_files <- list()
+out <- list()
 for (gp in names(featScores)) {
-	cur_out_files <- writeEMapInput(featScores[[gp]],namedSets_valid,netTypes,
-			outPfx=sprintf("%s/%s",outDir,gp),...)
-
-  gmt_attr_files[[gp]] <- cur_out_files
+  cur_out_files <- writeEMapInput(featScores[[gp]],namedSets_valid,netTypes,
+	,...)
+  out[[gp]] <- cur_out_files
 
 }
-return(gmt_attr_files)
+return(out)
 }

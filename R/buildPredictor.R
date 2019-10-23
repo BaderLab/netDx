@@ -124,6 +124,7 @@
 #' notdup <- samps[which(!duplicated(samps$primary)),"colname"]
 #' brca[[1]] <- brca[[1]][,notdup]
 #' 
+#' groupList <- list()
 #' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 #' groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
 #'     stage="STAGE")

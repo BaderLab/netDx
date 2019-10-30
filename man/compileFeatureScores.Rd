@@ -24,7 +24,7 @@ at least once in \code{fList}.
 Tally the score of networks through cross-validation
 }
 \examples{
-netDir <- sprintf("\%s/extdata/example_output/GM_NRANK",path.packages("netDx"))
+netDir <- sprintf("\%s/extdata/GM_NRANK",path.package("netDx"))
 netFiles <- sprintf("\%s/\%s", netDir,dir(netDir,pattern="NRANK$"))
 pTally <- compileFeatureScores(netFiles,verbose=TRUE)
 print(head(pTally))

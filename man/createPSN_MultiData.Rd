@@ -81,9 +81,8 @@ samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
 brca[[1]] <- brca[[1]][,notdup]
 
+groupList <- list()
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
-groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
-    stage="STAGE")
 makeNets <- function(dataList, groupList, netDir,...) {
     netList <- c()
     # make RNA nets: group by pathway
@@ -101,6 +100,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
     return(netList)
 }
 
+exprs <- experiments(dataList)
 datList2 <- list()
 for (k in 1:length(exprs)) {
 	tmp <- exprs[[k]]

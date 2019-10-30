@@ -189,6 +189,7 @@ if (logging == "all") {
 # Check input
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
+if (length(groupList)<1) stop("groupList must be of length 1+\n")
 if (missing(outDir)) outDir <- tempdir()
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
@@ -255,9 +256,10 @@ outList <- list()
 tmp <- list()
 for (nm in names(groupList)) {
 	curNames <- names(groupList[[nm]])
-	tmp[[nm]] <- cbind(rep("nm",length(curNames)),curNames)
+	tmp[[nm]] <- cbind(rep(nm,length(curNames)),curNames)
 }
 tmp <- do.call("rbind",tmp)
+if (length(nm) < 2) tmp <- as.matrix(tmp)
 colnames(tmp) <- c("NetType","NetName")
 outList[["inputNets"]] <- tmp
 

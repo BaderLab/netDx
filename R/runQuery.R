@@ -38,6 +38,5 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose=TRUE,
 	if (verbose) message(sprintf("QueryRunner time taken: %1.1f s", 
 		Sys.time()-t0))
 	Sys.sleep(3)
-	resFile <- c(sprintf("%s.NRANK",resFile),sprintf("%s.PRANK"))
 	return(resFile)
 }

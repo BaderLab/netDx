@@ -19,7 +19,7 @@
 #' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
 #' @export
-getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
+getFeatureScores <- function(inDir,predClasses,getFullCons=TRUE) {
 	if (missing(inDir)) stop("inDir not provided");
 	if (missing(predClasses))
 		stop("predClasses missing; please specify classes");

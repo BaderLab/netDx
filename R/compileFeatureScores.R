@@ -60,7 +60,6 @@ out <- unlist(pathwayTally)
 print(out)
 out <- sort(out,decreasing=TRUE)
 out <- data.frame(name=names(out), score=as.integer(out))
-print(head(out))
 out[,2] <- as.integer(as.character(out[,2]))
 
 out

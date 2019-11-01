@@ -250,6 +250,7 @@ if (verbose_default){
 	}
 }
 
+
 outList <- list()
 
 # create master list of possible networks
@@ -293,8 +294,10 @@ for (rngNum in startAt:numSplits) {
 	if (!any(imputeGroups %in% names(dats_train))) 
 		stop("imputeGroups must match names in dataList")
 
-	dats_train <- sapply(names(dats_train), function(nm) {
+	nmset <- names(dats_train)
+	dats_train <- lapply(names(dats_train), function(nm) {
 		x <- dats_train[[nm]]
+		print(class(x))
 		if (nm %in% imputeGroups) {
 			missidx <- which(rowSums(is.na(x))>0) 
 			for (i in missidx) {
@@ -304,11 +307,12 @@ for (rngNum in startAt:numSplits) {
 		} 
 		x
 	})
+	names(dats_train) <- nmset
 	}
 
 	# prefilter with lasso
 	if (preFilter) {
-	if (is.null(preFilterGroups)) preFilter <- names(dats_train)
+	if (is.null(preFilterGroups)) preFilterGroups <- names(dats_train)
 	if (!any(preFilterGroups %in% names(dats_train))) {
 		stop("preFilterGroups must match names in dataList")
 	}
@@ -358,9 +362,8 @@ for (rngNum in startAt:numSplits) {
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			verbose=verbose_makeFeatures)
 	if (verbose_default) message("** Compiling features")
-	dbDir	<- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores, 
-				verbose=verbose_compileNets)
-
+	dbDir <- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores, 
+			verbose=verbose_compileNets)
 	if (verbose_default) message("\n** Running feature selection")
 
 	curList[["featureScores"]] <- list()
@@ -426,7 +429,7 @@ for (rngNum in startAt:numSplits) {
 			passed <- rownames(dats_train[[nm]])
 			tmp <- dataList[[nm]]
 			# only variables passing prefiltering should be used to make PSN
-			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),] 
+			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),,drop=FALSE] 
 		}		
 
 		# ------
@@ -435,7 +438,8 @@ for (rngNum in startAt:numSplits) {
 		if (impute) {
 		train_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TRAIN")]
 		test_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TEST")]
-		dats_tmp <- sapply(names(dats_tmp), function(nm) {
+		nmSet <- names(dats_tmp)
+		dats_tmp <- lapply(names(dats_tmp), function(nm) {
 			x <- dats_tmp[[nm]]
 			if (nm %in% imputeGroups) {
 				missidx <- which(rowSums(is.na(x))>0) 
@@ -454,6 +458,7 @@ for (rngNum in startAt:numSplits) {
 			}
 			x
 		})
+		names(dats_tmp) <- nmSet
 		#alldat_tmp <- do.call("rbind",dats_tmp)
 		}
 

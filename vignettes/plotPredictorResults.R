@@ -68,14 +68,19 @@ Emap_res <- writeEMapInput_many(featScores,pathwayList,
 
 message("writing EMap")
 # write emap results to file)
+gmtFiles <- list()
+nodeAttrFiles <- list()
+
 for (g in names(Emap_res)) {
 	outFile <- sprintf("%s/%s_nodeAttrs.txt",outDir,g)
 	write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
 		sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+	nodeAttrFiles[[g]] <- outFile
 
 	outFile <- sprintf("%s/%s.gmt",outDir,g)
 	conn <- base::file(outFile,"w")
 	tmp <- Emap_res[[g]][["featureSets"]]
+	gmtFiles[[g]] <- outFile
 
 	for (cur in names(tmp)) {
 		curr <- sprintf("%s\t%s\t%s", cur,cur,

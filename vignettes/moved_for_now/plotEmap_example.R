@@ -69,13 +69,12 @@ for (g in names(Emap_res)) {
    nodeAttrFiles[[g]] <- outFile
    
    outFile <- sprintf("%s/%s.gmt",outDir,g)
-   conn <- base::file(outFile,"w")
+   conn <- suppressMessages(base::file(outFile,"w"))
    tmp <- Emap_res[[g]][["featureSets"]]
    gmtFiles[[g]] <- outFile
    
    for (cur in names(tmp)) {
-      curr <- sprintf("%s\t%s\t%s", cur,cur,
-                      paste(tmp[[cur]],collapse="\t"))
+      curr <- sprintf("%s\t%s\t%s", cur,cur,paste(tmp[[cur]],collapse="\t"))
       writeLines(curr,con=conn)
    }
    print(outFile)

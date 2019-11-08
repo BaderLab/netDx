@@ -4,7 +4,7 @@
 \alias{getFeatureScores}
 \title{Compile network scores into a matrix}
 \usage{
-getFeatureScores(inDir, predClasses, getFullCons = FALSE)
+getFeatureScores(inDir, predClasses, getFullCons = TRUE)
 }
 \arguments{
 \item{inDir}{(char/list) directory containing directories with all split info

@@ -80,18 +80,17 @@
 #'     return(netList)
 #' }
 #' 
-#' exprs <- experiments(dataList)
+#' exprs <- experiments(brca)
 #' datList2 <- list()
 #' for (k in 1:length(exprs)) {
 #' 	tmp <- exprs[[k]]
-#' 	df <- sampleMap(dataList)[which(sampleMap(dataList)$assay==names(exprs)[k]),]
+#' 	df <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
 #' 	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
 #' 	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
 #' 	datList2[[names(exprs)[k]]]<- tmp	
 #' }
-#' 
 #' createPSN_MultiData(dataList=datList2,groupList=groupList,
-#'	netDir=tempdir(),customFunc=makeNets,numCores=1)
+#' 	netDir=tempdir(),customFunc=makeNets,numCores=1)
 #' @export
 createPSN_MultiData <- function(dataList,groupList,netDir,filterSet=NULL,
 			verbose=TRUE,customFunc,...) {

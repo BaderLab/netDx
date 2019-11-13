@@ -8,7 +8,7 @@ getCorrType <- function(inFile, plusID, minusID) {
 	dat		<- read.delim(inFile,sep="\t",header=FALSE,as.is=TRUE)
 	pp_idx	<- dat[,1] %in% plusID & dat[,2] %in% plusID
 	pp_corr <- mean(dat[pp_idx,3])
-	pm_corr <- mean(dat[setdiff(1:nrow(dat),pp_idx),3])
+	pm_corr <- mean(dat[setdiff(seq_len(nrow(dat)),pp_idx),3])
 
 	return(c(pp_corr,pm_corr))
 }

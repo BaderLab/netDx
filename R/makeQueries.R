@@ -7,7 +7,7 @@
 #' @return (list) of length \code{featScoreMax}, containing names of patients in
 #' query file for each fold
 #' @examples 
-#' data(xpr,pheno,cnv_GR)
+#' data(pheno)
 #' x <- makeQueries(pheno$ID)
 #' @export
 makeQueries <- function(incPat, featScoreMax=10L,verbose=TRUE) {
@@ -25,7 +25,7 @@ if (verbose) {
 }
 
 out <- list()
-for (k in 1:featScoreMax) {
+for (k in seq_len(featScoreMax)) {
 	sidx	<- ((k-1)*csize)+1;
 	eidx	<- k*csize; 
 	if (k==featScoreMax) eidx <- length(incPat)

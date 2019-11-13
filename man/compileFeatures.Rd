@@ -59,7 +59,7 @@ Interaction networks have pairwise similarity measures:
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
-data(xpr,pheno,cnv_GR,pathwayList);
+data(xpr,pheno,pathwayList);
 # note: the paths in the calls below need to be absolute. If you 
 # do not have write access to /tmp, change to a different directory.
 tmpDir <- tempdir()

@@ -22,14 +22,14 @@
 #' @return (list) of length nFold, each with char vector of length 
 #' nrow(pheno_DF). Values of "TRAIN" or "TEST"
 #' @examples
-#' data(xpr,pheno,cnv_GR) 
+#' data(pheno) 
 #' x <- splitTestTrain_resampling(pheno,predClass="LumA")
 #' @export
 splitTestTrain_resampling <- function(pheno_DF, nFold=3L, 
  	predClass,verbose=FALSE){
 
 plus_idx	<- which(pheno_DF$STATUS %in% predClass)
-other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)
+other_idx	<- setdiff(seq_len(nrow(pheno_DF)),plus_idx)
 
 # num +/- that should be test per resampling 
 plus_csize 	<- floor((1/nFold)*length(plus_idx))
@@ -50,7 +50,7 @@ plus_order 	<- sample(plus_idx,replace=FALSE)
 other_order <- sample(other_idx,replace=FALSE) 
 
 out <- list()
-for (k in 1:nFold) {
+for (k in seq_len(nFold)) {
 	status <- rep("TRAIN",nrow(pheno_DF))
 	
 	# first for + samples

@@ -367,11 +367,12 @@ save(out,file=sprintf("%s/results.rda",outDir))
 Write prediction results to text files:
 ```{r,eval=TRUE}
 numSplits <- 2
-st <- unique(brca)$STATUS # to get similarity scores for each class
+st <- unique(colData(brca)$STATUS) # to get similarity scores for each class
 for (k in 1:numSplits) { 
 	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+	oF <- sprintf("%s/Split%i_predictionResults.txt",outDir,k)
 	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",sprintf("%s_SCORE",st))]
-	write.table(tmp,file=oF,sep="\t",col=T,row=F,quote=F)
+	write.table(tmp,file=oF,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
 }
 ``` 
 

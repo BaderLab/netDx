@@ -30,8 +30,6 @@ as been assigned to the test set.
 Split samples into train/test
 }
 \examples{
-data(xpr,pheno,cnv_GR)
+data(pheno)
 x <- splitTestTrain(pheno)
-data(MB.pheno)
-x <- splitTestTrain(MB.pheno)
 }

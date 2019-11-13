@@ -34,7 +34,7 @@
 #' "NA".
 #' @export
 #' @examples
-#' data(xpr,pheno,cnv_GR,pathway_GR,pathwayList)
+#' data(cnv_GR,pathway_GR,pathwayList)
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList),
@@ -79,7 +79,7 @@ fetch_NetUnits <- function(pat_GR, netList, whichNets,
 ###		hist2_pat <- c()
 		# map unit-to-feature for each structural variant
 		outcol <- c()
-		for (k in 1:length(pat_GR)) {
+		for (k in seq_len(length(pat_GR))) {
 			myg 		<- unlist(strsplit(pat_GR$LOCUS_NAMES[k],","))
 
 ###			patFeatures	<- c(patFeatures, sum(myg %in% hist_genes))

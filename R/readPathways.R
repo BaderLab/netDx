@@ -34,6 +34,7 @@
 #' pathway name as key, vector of genes as value. If TRUE, returns list of
 #' length two, (1) geneSets: pathway-gene mappings as default, 
 #' (2) pNames: data.frame with original and cleaned names.
+#' @examples
 #' pathFile <- getExamplePathways()
 #'	pathwayList    <- readPathways(pathFile)
 #' 

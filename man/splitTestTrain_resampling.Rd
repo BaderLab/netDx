@@ -41,6 +41,6 @@ avoids the situation where one resampling has too many positives and
 another has too few).
 }
 \examples{
-data(xpr,pheno,cnv_GR) 
+data(pheno) 
 x <- splitTestTrain_resampling(pheno,predClass="LumA")
 }

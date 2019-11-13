@@ -26,7 +26,7 @@
 #' @examples
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
-#' pruneNets(netDir,"~/tmp",filterIDs=npheno[1:10,],
+#' pruneNets(netDir,"~/tmp",filterIDs=npheno[seq_len(10),],
 #' 	netSfx="txt$")
 #' @export
 pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
@@ -57,7 +57,7 @@ pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 					length(filterIDs)))
 		for (f in filterNets) {
 			dat <- read.delim(sprintf("%s/%s",oldDir,f),
-							  sep="\t",h=FALSE,as.is=TRUE)
+							  sep="\t",header=FALSE,as.is=TRUE)
 
 			# both nodes of edge should be eligible
 			idx <- intersect(which(dat[,1]%in% filterIDs),

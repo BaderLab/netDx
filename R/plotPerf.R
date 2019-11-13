@@ -26,7 +26,7 @@
 #' @examples
 #' inDir <- sprintf("%s/extdata/example_output",
 #' 	path.package("netDx"))
-#' plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
+#' plotPerf(inDir, predClasses = c("LumA","notLumA"))
 #' @import ROCR
 #' @import pracma
 #' @importFrom stats sd

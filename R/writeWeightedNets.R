@@ -37,6 +37,7 @@
 #' per input net. Used to troubleshoot problems introduced by specific nets.
 #' Expects a graphic device to be open already (e.g. by pdf() call)
 #' @importFrom stats qexp density
+#' @importFrom utils write.table
 #' @return If an aggregated network is written (writeAggNet=TRUE),
 #' returns the filename of the net. Else returns an empty value.
 #' Side effect of writing one tab-delimited file per
@@ -64,12 +65,12 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		keepNets[,1] <- as.character(keepNets[,1])
 	}
 
-	pid		<- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)[,1:2]
-	colnames(pid)[1:2] <- c("GM_ID","ID")
+	pid		<- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)[,seq_len(2)]
+	colnames(pid)[seq_len(2)] <- c("GM_ID","ID")
 
 	simMode <- "normal"
 	netid	<- read.delim(netInfo,sep="\t",header=FALSE,as.is=TRUE)
-	colnames(netid)[1:2] <- c("NET_ID", "NETWORK")
+	colnames(netid)[seq_len(2)] <- c("NET_ID", "NETWORK")
 	if (ncol(netid)>2) {
 		message("binary status provided; switching to BinProp mode of similarity!")
 		colnames(netid)[3]<- "isBinary"
@@ -97,7 +98,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		numInt <- matrix(0,nrow=numPat,ncol=numPat)
 	}
 
-	contNets <- 1:nrow(nets)
+	contNets <- seq_len(nrow(nets))
 	if (simMode=="BinProp") {
 		intColl <- matrix(0,nrow=numPat,ncol=numPat)
 		binNets <- which(nets[,"isBinary"]>0)
@@ -108,7 +109,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
 												 		# harmless
 			if (nrow(ints)>=1) {
-				midx <- rbind(as.matrix(ints[,c(1:2)]),
+				midx <- rbind(as.matrix(ints[,seq_len(2)]),
 						 as.matrix(ints[,c(2:1)]))
 				intColl[midx] <- intColl[midx] + ints[,3] # increase tally for pairs
 														# with shared events
@@ -144,7 +145,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 				oldcount,nrow(ints)))
 		}
 		if (nrow(ints)>=1) {
-			midx <- rbind(as.matrix(ints[,c(1:2)]),
+			midx <- rbind(as.matrix(ints[,seq_len(2)]),
 						  as.matrix(ints[,c(2:1)]))
 
 			if (writeAggNet=="MEAN") {
@@ -195,7 +196,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (!is.infinite(limitToTop)){
 			message(sprintf("* Limiting to top %i edges per patient",
 				limitToTop))
-			for (k in 1:ncol(intColl)) {
+			for (k in seq_len(ncol(intColl))) {
 				mytop <- order(tmp[k,],decreasing=TRUE)
 				#message(sprintf("%s: mytop=%i\n", k,length(mytop)))
 			  if (limitToTop <= (length(mytop)-1)) {
@@ -205,7 +206,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		} else if (!is.infinite(limitToBottom)) {
 			message(sprintf("* Limiting to bottom %i edges per patient",
 				limitToBottom))
-			for (k in 1:ncol(intColl)) {
+			for (k in seq_len(ncol(intColl))) {
 				mybot <- order(tmp[k,])
 				message(sprintf("%s: mybot=%i", k,length(mybot)))
 			  if (limitToBottom <= (length(mybot)-1)) {
@@ -233,7 +234,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 			n <- nrow(ints)
 			# painfully slow, need way to vectorize this.
 			# this pass-through is needed for initial pruning of duplicates
-			for (k in 1:(n-1)) {
+			for (k in seq_len((n-1))) {
 					dup <- which(ints[(k+1):n,2]==ints[k,1] & 
 										ints[(k+1):n,1]==ints[k,2])
 					if (any(dup)) torm <- c(torm,dup)	

@@ -23,7 +23,7 @@ patient is misclassified, using a dot plot}
 \value{
 (list) of length 2.
 1) (data.frame) rows are patients, (length(predFiles)+2) columns.
-Columns 1:length(predFiles): Predicted labels for a given split (NA if
+Columns seq_len(length(predFiles)): Predicted labels for a given split (NA if
 patient was training sample for the split).
 Column (length(predFiles)+1):
 split, value is NA. Columns are : ID, REAL_STATUS, predStatus1,...
@@ -43,9 +43,9 @@ train/test splits.
 }
 \examples{
 inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
-data(KIRC_pheno)
+data(pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {
     paste(x, "predictionResults.txt", sep = "/")}))
-pred_mat <- getPatientPredictions(all_pred_files, KIRC_pheno)
+pred_mat <- getPatientPredictions(all_pred_files, pheno)
 }

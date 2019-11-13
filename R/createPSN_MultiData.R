@@ -23,7 +23,6 @@
 #'
 #' library(curatedTCGAData)
 #' library(MultiAssayExperiment)
-#' library(TCGAutils)
 #' curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
 #' 
 #' # fetch mrna, mutation data
@@ -62,7 +61,7 @@
 #' brca[[1]] <- brca[[1]][,notdup]
 #' 
 #' groupList <- list()
-#' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+#' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[seq_len(3)]
 #' makeNets <- function(dataList, groupList, netDir,...) {
 #'     netList <- c()
 #'     # make RNA nets: group by pathway
@@ -82,7 +81,7 @@
 #' 
 #' exprs <- experiments(brca)
 #' datList2 <- list()
-#' for (k in 1:length(exprs)) {
+#' for (k in seq_len(length(exprs))) {
 #' 	tmp <- exprs[[k]]
 #' 	df <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
 #' 	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]

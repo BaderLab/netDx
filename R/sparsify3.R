@@ -12,6 +12,13 @@
 #' @param verbose (logical) print detailed messages, useful for debugging
 #' @return writes SIF content to text file (node1,node2,edge weight)
 #' @import reshape2
+#' @importFrom utils write.table
+#' @examples
+#' m <- matrix(runif(500*500),nrow=500)
+#' y <- sparsify2(m)
+#' @examples 
+#' m <- matrix(runif(500*500),nrow=500)
+#' y <- sparsify2(m)
 #' @export
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=Inf,
 	includeAllNodes=TRUE,verbose=TRUE) { 
@@ -44,12 +51,12 @@ if (is.infinite(EDGE_MAX)) {
 	maxEdge <- nrow(mmat)
 	if (!is.infinite(EDGE_MAX)) {
 		if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
-		mmat <- mmat[1:maxEdge,]
+		mmat <- mmat[seq_len(maxEdge),]
 	}
 
 	# we should guarantee an edge from all patients- in this case
 	# the edge_max would be violated unless we come up with a better rule
-message("past this\n")
+#message("past this\n")
 	if (includeAllNodes) {
 		mmat[,1] <- as.character(mmat[,1])
 		mmat[,2] <- as.character(mmat[,2])
@@ -70,7 +77,7 @@ message("past this\n")
 			}
 		}	
 	}
-message("past include all\n")
+#message("past include all\n")
 
 	head(mmat)
 	mmat <- na.omit(mmat) # boundary case where cutoff exceeds net max

@@ -52,6 +52,6 @@ Currently, the only similarity measure supported is binary; two patients
 are related in a network N if they both overlap elements of set N.
 }
 \examples{
-data(pathway_GR,xpr,pheno,cnv_GR)
+data(pathway_GR,cnv_GR)
 netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 }

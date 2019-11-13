@@ -68,7 +68,7 @@
 #' print key details (useful setting for most users)
 #' @import glmnet
 #' @importFrom stats median na.omit coef
-#' @importFrom utils read.delim 
+#' @importFrom utils read.delim write.table
 #' @return (list) 
 #' "inputNets": data.frame of all input network names. Columns are "NetType"
 #' (group) and "NetName" (network name).
@@ -83,11 +83,11 @@
 #' selected features for corresponding patient class, for that train/test split 
 #'  Side effect of generating predictor-related data in <outDir>.
 #' @export
+#' @import MultiAssayExperiment
 #' @examples
 #'
 #' library(curatedTCGAData)
 #' library(MultiAssayExperiment)
-#' library(TCGAutils)
 #' curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
 #' 
 #' # fetch mrna, mutation data
@@ -125,7 +125,7 @@
 #' brca[[1]] <- brca[[1]][,notdup]
 #' 
 #' groupList <- list()
-#' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+#' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[seq_len(3)]
 #' groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
 #'     stage="STAGE")
 #' makeNets <- function(dataList, groupList, netDir,...) {
@@ -219,7 +219,7 @@ subtypes <- unique(pheno_all$STATUS)
 # convert to list structure 
 exprs <- experiments(dataList)
 datList2 <- list()
-for (k in 1:length(exprs)) {
+for (k in seq_len(length(exprs))) {
 	tmp <- exprs[[k]]
 	df <- sampleMap(dataList)[which(sampleMap(dataList)$assay==names(exprs)[k]),]
 	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]

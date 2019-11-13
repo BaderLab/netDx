@@ -36,7 +36,7 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 	qSamps <- makeQueries(trainID_pred,verbose=verbose,...)	
 
 	# write query files
-	for (m in 1:length(qSamps)) {
+	for (m in seq_len(length(qSamps))) {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
 		if(is.null(numTrainSamps)){
@@ -48,7 +48,7 @@ runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 						  qFile,orgName)
 	}
 	qFiles <- list()
-	for (m in 1:length(qSamps)) {
+	for (m in seq_len(length(qSamps))) {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
 		qFiles <- append(qFiles, qFile)
 	}

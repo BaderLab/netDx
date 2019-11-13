@@ -83,7 +83,7 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	# now repeat for all pairwise classes
 	cpairs <- as.matrix(combinat::combn(cnames,2))
 	message("Pairwise classes:\n")
-	for (k in 1:ncol(cpairs)) {
+	for (k in seq_len(ncol(cpairs))) {
 		type1 <- pheno$ID[which(pheno$GROUP %in% cpairs[1,k])]
 		type2 <- pheno$ID[which(pheno$GROUP %in% cpairs[2,k])]
 		idx <- which(net[,1] %in% type1 & net[,2] %in% type2)

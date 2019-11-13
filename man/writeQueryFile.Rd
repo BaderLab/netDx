@@ -27,6 +27,6 @@ No value. Side effect of writing the query file to
 Wrapper to write GeneMANIA query file
 }
 \examples{
-data(xpr,pheno,cnv_GR)
-writeQueryFile(pheno$ID[1:5], "all",nrow(pheno), "myquery.txt")
+data(pheno)
+writeQueryFile(pheno$ID[seq_len(5)], "all",nrow(pheno), "myquery.txt")
 }

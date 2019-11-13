@@ -27,7 +27,7 @@ symmetric matrix of size N, where N is number of samples
 Measures of patient similarity
 }
 \examples{
-data(xpr,pheno,cnv_GR) 
+data(xpr) 
 x <- getSimilarity(xpr) # similarity by Pearson corr
 mySim <- function(x) cor(x,method="kendall")
 x <- getSimilarity(xpr,customFunc=mySim) # custom similarity

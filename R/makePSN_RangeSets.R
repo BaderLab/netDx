@@ -29,10 +29,11 @@
 #' network to be constructed
 #' @return Vector of network filenames
 #' @examples
-#' data(pathway_GR,xpr,pheno,cnv_GR)
+#' data(pathway_GR,cnv_GR)
 #' netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 #' @export
 #' @import GenomicRanges
+#' @importFrom utils write.table
 #' @import bigmemory
 #' @import foreach
 #' @import parallel
@@ -108,7 +109,7 @@ names(inc_patients) <- uq_patients
 # now group set-by-set
 message("* Writing networks\n")
 t0 <- Sys.time()
-outFiles <- foreach (idx=1:length(rangeSet)) %dopar% {
+outFiles <- foreach (idx=seq_len(length(rangeSet))) %dopar% {
 	curP<- names(rangeSet)[idx]
     if (verbose) message(sprintf("\t%s: ", curP))
 

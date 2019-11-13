@@ -52,7 +52,7 @@ featSelNet <- lapply(featScores, function(x) {
 ###netInfo <- read.delim(netInfoFile,sep="\t",h=TRUE,as.is=TRUE)
 ###
 #### fetch input to create EnrichmentMap
-###Emap_res <- writeEMapInput_many(featScores,pathwayList,
+###Emap_res <- getEMapInput_many(featScores,pathwayList,
 ###	maxScore=10,pctPass=0.7,netInfo,verbose=FALSE)
 ###
 # write emap results to file 

@@ -3,6 +3,7 @@
 #' @param x (char) name
 #' @return (char) Changes case so start of each word is in upper-case, and
 #' the rest is in lowercase
+#' @examples simpleCap("this IS a TEST sEnTenCe")
 #' @export
 simpleCap <- function(x) {
 	x <- tolower(x)

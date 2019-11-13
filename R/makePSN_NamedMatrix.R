@@ -56,7 +56,7 @@
 #' @return (char) Basename of files to which networks are written.  
 #' Side effect of writing interaction networks in \code{outDir}
 #' @import doParallel
-#' @examples data(xpr,pheno,cnv_GR,pathwayList); 
+#' @examples data(xpr,pheno,pathwayList); 
 #' # you may get a warning message that the output directory already
 #' # exists; ignore it
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
@@ -83,8 +83,6 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 		stop("writeProfiles must only be TRUE with simMetric set to pearson or MI. For all other metrics, set writeProfiles=FALSE")
 	}
 	
-	#if (!sparsify & useSparsify2) { stop("if useSparsify=TRUE then sparsify must also be set to TRUE\n")}
-
 	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
 	if (!runSerially) {
 	registerDoParallel(cl)
@@ -118,26 +116,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 				if (is.null(sim)) {
 					stop(sprintf("makePSN_NamedMatrix:%s: similarity matrix is empty (NULL)\nCheck that there isn't a mistake in the input data or similarity method of choice.\n",curSet))
 				}
-###				if (!useSparsify2) {# prepare for internal sparsifier
-###					idx <- which(upper.tri(sim,diag=F))
-###					ij <- matrix_getIJ(dim(sim),idx)
-###	
-###					# make interaction network
-###					pat_pairs <- data.frame(p1=rownames(sim)[ij[,1]], 
-###										p2=colnames(sim)[ij[,2]], 
-###										similarity=sim[idx])
-###
-###					too_weak    <- which(pat_pairs[,3] < cutoff | 
-###										is.na(pat_pairs[,3]))
-###					if (any(too_weak)) {
-###						if (verbose) 
-###							message(sprintf("\t%i weak connections\n", 
-###										length(too_weak)))
-###						pat_pairs <- pat_pairs[-too_weak,]
-###					}
-###				} else {	 # stick to sim matrix
 					pat_pairs <- sim
-###				}
 
 				if (sparsify) {
 					if (useSparsify2) {

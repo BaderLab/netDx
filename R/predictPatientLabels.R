@@ -9,7 +9,7 @@
 #' @export
 predictPatientLabels <- function(resSet,verbose=TRUE) {
 	type_rank <- NULL
-	for (k in 1:length(resSet)){
+	for (k in seq_len(length(resSet))){
     x   <- resSet[[k]]$fullmat
 	idx <- which(colnames(x) == "GM_score")
 	if (any(idx)) colnames(x)[idx] <- "similarityScore"
@@ -34,7 +34,7 @@ if (any(na_sum>0))
 type_rank <- na.omit(type_rank)
 
 # finally, select the class with the highest rank as the subject label.
-maxScore    <- sapply(1:nrow(type_rank),function(i){
+maxScore    <- sapply(seq_len(nrow(type_rank)),function(i){
 					  which.max(type_rank[i,-1])})
 patClass	<- sub("_SCORE","",names(maxScore))
 type_rank	<- cbind(type_rank, PRED_CLASS=patClass)

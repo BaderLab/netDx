@@ -91,7 +91,7 @@ networks. Networks can be sparsified by excluding weak connections
 (cutoff).
 }
 \examples{
-data(xpr,pheno,cnv_GR,pathwayList); 
+data(xpr,pheno,pathwayList); 
 # you may get a warning message that the output directory already
 # exists; ignore it
 out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 

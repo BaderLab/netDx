@@ -19,9 +19,9 @@ perfCalc_multiClass <- function(realLabels,predLabels) {
 	ctr <- 1
 	for (lvl in lvls) {
 		rLab <- realLabels; 
-		rLab[setdiff(1:length(rLab),which(rLab%in%lvl))] <- "other"
+		rLab[setdiff(seq_len(length(rLab)),which(rLab%in%lvl))] <- "other"
 		predLab <- predLabels; 
-		predLab[setdiff(1:length(rLab),which(predLab%in%lvl))] <- "other"
+		predLab[setdiff(seq_len(length(rLab)),which(predLab%in%lvl))] <- "other"
 		
 		tp <- sum(rLab %in% lvl & rLab==predLab)
 		tn <- sum(rLab %in% "other" & rLab==predLab)

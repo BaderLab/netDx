@@ -18,5 +18,5 @@ takes average of normdiff of each row in x
 }
 \examples{
 data(xpr)
-sim <- avgNormDiff(xpr[,1:2])
+sim <- avgNormDiff(xpr[,seq_len(2)])
 }

@@ -43,7 +43,7 @@ for (fName in fList) {
 		cs			<- cumsum(dat$Weight)
 		keep_max	<- which.min(abs(cs-filter_WtSum))
 		
-		dat			<- dat[1:keep_max,]
+		dat			<- dat[seq_len(keep_max),]
 		if (verbose) message(sprintf("filter_WtSum = %1.1f; %i of %i networks left",
 				filter_WtSum, nrow(dat),length(cs)))
 		

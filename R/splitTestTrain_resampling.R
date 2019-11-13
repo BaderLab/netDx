@@ -15,10 +15,8 @@
 #' "TRAIN" has been assigned to the training set, and one labelled "TEST"
 #' as been assigned to the test set.
 #' @examples
-#' data(xpr,pheno,cnv_GR)
+#' data(pheno)
 #' x <- splitTestTrain(pheno)
-#' data(MB.pheno)
-#' x <- splitTestTrain(MB.pheno)
 #' @export
 splitTestTrain <- function(pheno_DF,pctT=0.7,verbose=FALSE) { 
 
@@ -30,7 +28,7 @@ for (lv in lvls) {
 }
 
 ###plus_idx	<- which(pheno_DF$STATUS %in% predClass)
-###other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)
+###other_idx	<- setdiff(seq_len(nrow(pheno_DF)),plus_idx)
 #### randomly assign test/train
 ###IS_TRAIN[sample(other_idx, floor(pctT*length(other_idx)), F)] <- "TRAIN"
 

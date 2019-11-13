@@ -42,5 +42,5 @@ predictionResults.txt contains a (data.frame)
 \examples{
 inDir <- sprintf("\%s/extdata/example_output",
 	path.package("netDx"))
-plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
+plotPerf(inDir, predClasses = c("LumA","notLumA"))
 }

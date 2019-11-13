@@ -17,7 +17,7 @@
 #' the inner fold of CV.
 #' @examples
 #' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
-#' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
+#' netScores <- getFeatureScores(inDir, predClasses = c("LumA","notLumA"))
 #' @export
 getFeatureScores <- function(inDir,predClasses,getFullCons=TRUE) {
 	if (missing(inDir)) stop("inDir not provided");
@@ -49,7 +49,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=TRUE) {
 			spos <- gregexpr("\\/",fList)
 			# get the name of the iteration (rngX) assuming directory structure
 			# rngX/<class>/GM_results>/pathway_CV_score.txt
-			fNames <- lapply(1:length(spos), function(x) {
+			fNames <- lapply(seq_len(length(spos)), function(x) {
 				  n <- length(spos[[x]])
 					y <- substr(fList[x], spos[[x]][n-3]+1,spos[[x]][n-2]-1)
 					y

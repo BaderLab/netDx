@@ -157,7 +157,7 @@ normDiff <- function(x) {
     out <- matrix(NA,nrow=n,ncol=n);
     # weight between i and j is
     # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
-    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+    for (j in seq_len(n)) out[,j] <- 1-(abs((x-x[j])/rngX))
     rownames(out) <- nm; colnames(out)<- nm
     out
 }
@@ -169,7 +169,7 @@ normDiff <- function(x) {
 #' pairwise patient similarities
 #' @examples
 #' data(xpr)
-#' sim <- avgNormDiff(xpr[,1:2])
+#' sim <- avgNormDiff(xpr[,seq_len(2)])
 #' @export
 avgNormDiff <- function(x) {
 # normalized difference
@@ -184,13 +184,13 @@ normDiff <- function(x) {
     out <- matrix(NA,nrow=n,ncol=n);
     # weight between i and j is
     # wt(i,j) = 1 - (abs(x[i]-x[j])/(max(x)-min(x)))
-    for (j in 1:n) out[,j] <- 1-(abs((x-x[j])/rngX))
+    for (j in seq_len(n)) out[,j] <- 1-(abs((x-x[j])/rngX))
     rownames(out) <- nm; colnames(out)<- nm
     out
 }
 
 sim <- matrix(0,nrow=ncol(x),ncol=ncol(x))
-for (k in 1:nrow(x)) {
+for (k in seq_len(nrow(x))) {
         tmp <- normDiff(x[k,,drop=FALSE])
         sim <- sim + tmp
         rownames(sim) <- rownames(tmp)

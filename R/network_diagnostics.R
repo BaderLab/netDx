@@ -56,13 +56,13 @@ med <- mean(unlist(lapply(out,median)))
 pdf(sprintf("%s/%s_edgeDistr.pdf",netDir,setName),height=6,width=13)
 par(mar=c(10,5,3,3),las=2)
 tryCatch({
-	violins(out,connect=FALSE,at=1:length(out),names=rep("",length(out)),
+	violins(out,connect=FALSE,at=seq_len(length(out)),names=rep("",length(out)),
 		main=sprintf("%s:Edge wts",setName),ylab="pairwise similarity")	
 	nm <- names(out)
-	for (k in 1:length(stripFromFileName)) { 
+	for (k in seq_len(length(stripFromFileName))) { 
 		nm <- sub(stripFromFileName[k],"",nm)
 	}
-	axis(1,at=1:length(out),labels=nm,cex=0.8)
+	axis(1,at=seq_len(length(out)),labels=nm,cex=0.8)
 },error=function(ex) {
 	print(ex)
 },finally={

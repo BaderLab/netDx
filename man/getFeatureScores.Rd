@@ -29,7 +29,7 @@ the inner fold of CV.
 Compile network scores into a matrix
 }
 \details{
-Given network scores over a set of trian/test splits, compiles these
+Given network scores over a set of train/test splits, compiles these
 into a matrix for downstream analysis. See the section on "Output Files"
 }
 \examples{

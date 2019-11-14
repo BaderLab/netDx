@@ -1,6 +1,6 @@
 #' Compile network scores into a matrix
 #'
-#' @details Given network scores over a set of trian/test splits, compiles these
+#' @details Given network scores over a set of train/test splits, compiles these
 #' into a matrix for downstream analysis. See the section on "Output Files"
 #' @param inDir (char/list) directory containing directories with all split info
 #' or list of all CV score files.

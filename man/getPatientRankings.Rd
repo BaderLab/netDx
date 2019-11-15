@@ -37,8 +37,8 @@ NA.
 Process GM PRANK files to get the ROC curve for the query
 }
 \examples{
-data(xpr,pheno,cnv_GR)
-prankFile <- sprintf("\%s/extdata/GM_PRANK.txt", 
-	 path.package("netDx.examples"))
+data(pheno)
+prankFile <- sprintf("\%s/extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK",
+	 path.package("netDx"))
 x <- getPatientRankings(prankFile, pheno, "LumA")
 }

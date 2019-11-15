@@ -16,9 +16,6 @@
 #' @param verbose (logical) print messages
 #' @param numCores (logical) num parallel threads for cross-validation
 #' @param JavaMemory (integer) memory for GeneMANIA run, in Gb.
-#' @param seed_queryResample (integer) RNG seed for inner cross validation loop.
-#' Makes deterministic samples held-out for each GeneMANIA query (see
-#' makeQueries())
 #' @param verbose_runQuery (logical) print messages for runQuery()
 #' @param ... args for \code{makeQueries()}
 #' @return No value. Side effect of generating feature scores.
@@ -30,31 +27,28 @@
 #' @export
 runFeatureSelection <- function(trainID_pred,outDir,dbPath,numTrainSamps = NULL,
 	incNets="all",orgName="predictor",fileSfx="CV",verbose=FALSE,
-	numCores=2L,JavaMemory=6L,seed_queryResample=42L,
-	verbose_runQuery=FALSE,...) {
+	numCores=2L,JavaMemory=6L,verbose_runQuery=FALSE,...) {
 
-	#TODO if results already exist, what do we do? Delete with a warning?
 	if (!file.exists(outDir)) dir.create(outDir)
 
 	# get query names
-	if (verbose) cat("\tWriting queries:\n")
-	qSamps <- makeQueries(trainID_pred,verbose=verbose,
-		setSeed=seed_queryResample,...)
+	if (verbose) message("\tWriting queries:\n")
+	qSamps <- makeQueries(trainID_pred,verbose=verbose,...)	
 
 	# write query files
-	for (m in 1:length(qSamps)) {
+	for (m in seq_len(length(qSamps))) {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx,m)
 
 		if(is.null(numTrainSamps)){
 			numTrainSamps = 5
-			cat("Memory saver option: using 5 training samples for CV")
+			message("Memory saver option: using 5 training samples for CV")
 		}
 
 		writeQueryFile(qSamps[[m]], incNets, numTrainSamps,
 						  qFile,orgName)
 	}
 	qFiles <- list()
-	for (m in 1:length(qSamps)) {
+	for (m in seq_len(length(qSamps))) {
 		qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
 		qFiles <- append(qFiles, qFile)
 	}

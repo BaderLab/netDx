@@ -9,7 +9,7 @@ pruneNetByStrongest(net, vertices, topX = 0.1)
 \arguments{
 \item{net}{(data.frame)  Network to prune. Columns are: source,target,weight}
 
-\item{vertices}{(char) node names. Should match those in net[,1:2]}
+\item{vertices}{(char) node names. Should match those in net[,seq_len(2)]}
 
 \item{topX}{(numeric 0 to 1) Fraction of strongest edges to retain}
 }

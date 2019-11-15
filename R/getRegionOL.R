@@ -15,12 +15,12 @@
 #' Where a range overlaps with multiple loci, the names are reported as a 
 #' comma-separated vector
 #' @examples
-#' data(xpr,pheno,cnv_GR,pathway_GR)
+#' data(cnv_GR,pathway_GR)
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' @export
 getRegionOL <- function(gr, rngList) {
 	rng <- GRanges()
-	for (k in 1:length(rngList)) {
+	for (k in seq_len(length(rngList))) {
 		cur <- rngList[[k]]
 		seqlevels(rng) <- unique(c(seqlevels(rng), seqlevels(cur)))
 		rng <- c(rng, cur)

@@ -4,7 +4,7 @@
 \alias{splitTestTrain}
 \title{Split samples into train/test}
 \usage{
-splitTestTrain(pheno_DF, pctT = 0.7, setSeed = 42, verbose = FALSE)
+splitTestTrain(pheno_DF, pctT = 0.7, verbose = FALSE)
 }
 \arguments{
 \item{pheno_DF}{(data.frame) patient information
@@ -18,9 +18,6 @@ Expects rows with unique IDs}
 assign to the training set. The remainder will be used for blind test 
 set}
 
-\item{setSeed}{(integer) Random number generator seed for splitting
-the training and test set. If not NULL, seed will be set to this value.}
-
 \item{verbose}{(logical) print messages}
 }
 \value{
@@ -33,8 +30,6 @@ as been assigned to the test set.
 Split samples into train/test
 }
 \examples{
-data(xpr,pheno,cnv_GR)
+data(pheno)
 x <- splitTestTrain(pheno)
-data(MB.pheno)
-x <- splitTestTrain(MB.pheno)
 }

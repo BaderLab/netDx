@@ -4,7 +4,7 @@
 \alias{getFeatureScores}
 \title{Compile network scores into a matrix}
 \usage{
-getFeatureScores(inDir, predClasses, getFullCons = FALSE)
+getFeatureScores(inDir, predClasses, getFullCons = TRUE)
 }
 \arguments{
 \item{inDir}{(char/list) directory containing directories with all split info
@@ -29,11 +29,10 @@ the inner fold of CV.
 Compile network scores into a matrix
 }
 \details{
-Given network scores over a set of trian/test splits, compiles these
+Given network scores over a set of train/test splits, compiles these
 into a matrix for downstream analysis. See the section on "Output Files"
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output",
-		path.package("netDx.examples"))
-netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
+inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
+netScores <- getFeatureScores(inDir, predClasses = c("LumA","notLumA"))
 }

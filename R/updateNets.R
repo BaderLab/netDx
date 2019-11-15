@@ -35,7 +35,7 @@ updateNets <- function(p_net, pheno_DF,writeNewNets=TRUE,
 	idx <- which(colSums(p_net)>=2); p_net   <- p_net[,idx];
 	idx <- which(rowSums(p_net)>=1); p_net   <- p_net[idx,]
 	if (verbose) {
-		cat("Update: (num patients) x (num networks)\n")
+		message("Update: (num patients) x (num networks)")
 		print(dim(p_net))
 	}
 

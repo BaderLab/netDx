@@ -4,9 +4,10 @@
 \alias{compileFeatures}
 \title{Create GeneMANIA database}
 \usage{
-compileFeatures(netDir, patientID, outDir, simMetric = "pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
-  P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L, ...)
+compileFeatures(netDir, patientID, outDir = tempdir(),
+  simMetric = "pearson", netSfx = "_cont.txt$", verbose = TRUE,
+  numCores = 1L, P2N_threshType = "off", P2N_maxMissing = 100,
+  JavaMemory = 4L, altBaseDir = NULL, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -28,11 +29,15 @@ profiles to interaction networks.}
 \item{numCores}{(integer) num cores for parallel processing}
 
 \item{P2N_threshType}{(char) Most users shouldn't have to change this.
-ProfileToNetworkDriver's threshold option. One of "off|auto".}
+ProfileToNetworkDriver's threshold option. One of "off|auto". 
+unit testing}
 
 \item{P2N_maxMissing}{(integer 5-100)}
 
 \item{JavaMemory}{(integer) Memory for GeneMANIA (in Gb)}
+
+\item{altBaseDir}{(char) Only use this if you're developing netDx. Used in
+unit tests}
 
 \item{...}{params for \code{writeQueryBatchFile()}}
 }
@@ -58,7 +63,7 @@ Interaction networks have pairwise similarity measures:
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
-data(xpr,pheno,cnv_GR,pathwayList);
+data(xpr,pheno,pathwayList);
 # note: the paths in the calls below need to be absolute. If you 
 # do not have write access to /tmp, change to a different directory.
 tmpDir <- tempdir()

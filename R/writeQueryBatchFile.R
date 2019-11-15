@@ -22,19 +22,19 @@
 #' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
 #' netList <- dir(netDir,pattern="txt$")
 #' writeQueryBatchFile(netDir,netList, "~/tmp", npheno$ID)
-writeQueryBatchFile <- function(netDir,netList,outDir,idFile,
+writeQueryBatchFile <- function(netDir,netList,outDir=tempdir(),idFile,
 	orgName="predictor",orgDesc="my_predictor",orgAlias="my_predictor",
 	taxID=1339) {
 	
 	outF <- sprintf("%s/batch.txt",outDir)
-	if (file.exists(outF)) unlink(outF)
+	fileConn <- file(outF,"w")
 
 	# organism info
 	tmp 	<- c("#organism","id","file","name","description","alias","taxonomyid")
 	tmp2	<- c("organism",basename(idFile),orgName,orgDesc,orgAlias,
 				 as.character(taxID))
-	cat(sprintf("%s\n",paste(tmp,collapse="\t")),file=outF)
-	cat(sprintf("%s\n\n",paste(tmp2,collapse="\t")),file=outF,append=TRUE)
+	writeLines(sprintf("%s",paste(tmp,collapse="\t")),con=fileConn)
+	writeLines(sprintf("%s\n",paste(tmp2,collapse="\t")),con=fileConn)
 	rm(tmp,tmp2)
 
 	# group info
@@ -43,14 +43,15 @@ writeQueryBatchFile <- function(netDir,netList,outDir,idFile,
 	groupDesc	<- "dummy_group"
 	tmp		<- c("#group","name","code","description","RRGGBB colour","organism")
 	tmp2	<- c("group",groupName,groupCode,groupDesc,"ff00ff",orgName)
-	cat(sprintf("%s\n",paste(tmp,collapse="\t")),file=outF,append=TRUE)
-	cat(sprintf("%s\n\n",paste(tmp2,collapse="\t")),file=outF,append=TRUE)
+	writeLines(sprintf("%s",paste(tmp,collapse="\t")),con=fileConn)
+	writeLines(sprintf("%s\n",paste(tmp2,collapse="\t")),con=fileConn)
 	rm(tmp,tmp2)
 
 	# network info - header
 	tmp		<- c("#network","filename","name","description","group code")
-	cat(sprintf("%s\n",paste(tmp,collapse="\t")),file=outF,append=TRUE)
+	writeLines(sprintf("%s",paste(tmp,collapse="\t")),fileConn)
 	rm(tmp)
+	close(fileConn)
 
 	# write networks
 	net_DF	<- data.frame(type="network",

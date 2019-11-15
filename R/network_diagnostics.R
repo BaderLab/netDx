@@ -29,11 +29,11 @@ plotNetEdgeDistribution <- function(netDir,setName="netDir",randomSample=NULL,
 	grepFiles="cont.txt",stripFromFileName="_cont.txt",numPatients=NULL,
 	verbose=TRUE) {
 fList <- dir(path=netDir,pattern=grepFiles)
-cat(sprintf("%i files match pattern\n", length(fList)))
+message(sprintf("%i files match pattern\n", length(fList)))
 
 if (!is.null(randomSample)) {
 	randomSample <- min(randomSample, length(fList))
-	cat(sprintf("randomSample set - picking %i files\n", randomSample))
+	message(sprintf("randomSample set - picking %i files\n", randomSample))
 	
 	oldseed <- NULL
 	if (exists(".Random.seed")) oldseed <- .Random.seed
@@ -56,24 +56,24 @@ med <- mean(unlist(lapply(out,median)))
 pdf(sprintf("%s/%s_edgeDistr.pdf",netDir,setName),height=6,width=13)
 par(mar=c(10,5,3,3),las=2)
 tryCatch({
-	violins(out,connect=FALSE,at=1:length(out),names=rep("",length(out)),
+	violins(out,connect=FALSE,at=seq_len(length(out)),names=rep("",length(out)),
 		main=sprintf("%s:Edge wts",setName),ylab="pairwise similarity")	
 	nm <- names(out)
-	for (k in 1:length(stripFromFileName)) { 
+	for (k in seq_len(length(stripFromFileName))) { 
 		nm <- sub(stripFromFileName[k],"",nm)
 	}
-	axis(1,at=1:length(out),labels=nm,cex=0.8)
+	axis(1,at=seq_len(length(out)),labels=nm,cex=0.8)
 },error=function(ex) {
 	print(ex)
 },finally={
 	dev.off()
 })
 
-cat(sprintf("Network statistics\n"))
-cat("----------------------------\n")
-cat(sprintf("Mean edge weight = %1.2f\n",mu)) 
-cat(sprintf("Median edge weight = %1.2f\n",med)) 
-cat("\n")
+message(sprintf("Network statistics\n"))
+message("----------------------------\n")
+message(sprintf("Mean edge weight = %1.2f\n",mu)) 
+message(sprintf("Median edge weight = %1.2f\n",med)) 
+message("\n")
 
 edge_count <- unlist(edge_count)
 pdf(sprintf("%s/%s_edgeCount.pdf",netDir,setName),height=9,width=5)
@@ -91,10 +91,10 @@ tryCatch({
 	dev.off()
 })
 
-cat(sprintf("Network statistics\n"))
-cat("----------------------------\n")
-cat(sprintf("Edge count = %i - %i \n", min(edge_count),max(edge_count)))
-cat(sprintf("Mean edge count = %1.2f\n",mean(edge_count))) 
-cat(sprintf("Median edge count = %1.2f\n",median(edge_count))) 
-cat("\n")
+message(sprintf("Network statistics\n"))
+message("----------------------------\n")
+message(sprintf("Edge count = %i - %i \n", min(edge_count),max(edge_count)))
+message(sprintf("Mean edge count = %1.2f\n",mean(edge_count))) 
+message(sprintf("Median edge count = %1.2f\n",median(edge_count))) 
+message("\n")
 }

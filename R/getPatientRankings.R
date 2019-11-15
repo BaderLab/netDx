@@ -21,9 +21,9 @@
 #' If < 2 patients in PRANK file, roc,auc, precall, f are all returned as
 #' NA.
 #' @examples
-#' data(xpr,pheno,cnv_GR)
-#' prankFile <- sprintf("%s/extdata/GM_PRANK.txt", 
-#' 	 path.package("netDx.examples"))
+#' data(pheno)
+#' prankFile <- sprintf("%s/extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK",
+#' 	 path.package("netDx"))
 #' x <- getPatientRankings(prankFile, pheno, "LumA")
 getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
    verbose=FALSE) {
@@ -35,9 +35,9 @@ getPatientRankings <- function(pFile,pheno_DF, predClass, plotIt=FALSE,
 	# 1 is what we predict, 0 is the other class
 	pheno_DF$STATUS <- as.integer(pheno_DF$STATUS==predClass)
 
-	if (verbose) cat(sprintf("%i total ; ", nrow(dat))) 
+	if (verbose) message(sprintf("%i total ; ", nrow(dat))) 
 	dat	<- dat[which(!is.na(dat[,2])),]
-	if (verbose) cat(sprintf("%i non-query entries in PRANK file\n", 
+	if (verbose) message(sprintf("%i non-query entries in PRANK file\n", 
 							 nrow(dat)))
 
 	# match the pheno matrix to the labels

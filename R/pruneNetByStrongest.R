@@ -1,7 +1,7 @@
 #' Prune network by retaining strongest edges
 #'
 #' @param net (data.frame)  Network to prune. Columns are: source,target,weight
-#' @param vertices (char) node names. Should match those in net[,1:2]
+#' @param vertices (char) node names. Should match those in net[,seq_len(2)]
 #' @param topX (numeric 0 to 1) Fraction of strongest edges to retain
 #' @return (data.frame) pruned network. Three columns: AliasA, AliasB, and 
 #' weight

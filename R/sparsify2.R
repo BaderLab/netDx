@@ -16,7 +16,7 @@
 sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	includeAllNodes=TRUE,verbose=TRUE)  {
 	
-	if (verbose) cat(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%1.2f;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
+	if (verbose) message(sprintf("sparsify2:maxInt=%i;EDGE_MAX=%1.2f;cutoff=%1.2e;includeAllNodes=%s",maxInt,EDGE_MAX,cutoff,includeAllNodes))
 
 	if (maxInt > ncol(W)) maxInt <- ncol(W)
 
@@ -24,23 +24,23 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
    W[upper.tri(W,diag=TRUE)] <- NA 
 	 W[W < cutoff] <- NA
 	x <- list()
-	for (i in 1:nrow(W)) { x[[i]] <- sort(W[i,],decreasing=TRUE,na.last=TRUE)}
-cat("past sorting\n")
+	for (i in seq_len(nrow(W))) { x[[i]] <- sort(W[i,],decreasing=TRUE,na.last=TRUE)}
+#message("past sorting\n")
 	names(x) <- rownames(W)
-	 for (k in 1:length(x)) {
-			print(k)
+	 for (k in seq_len(length(x))) {
+#			print(k)
 			cur <- x[[k]]
-			tokeep <- names(cur)[1:min(length(cur),maxInt)]
+			tokeep <- names(cur)[seq_len(min(length(cur),maxInt))]
 			W[k,which(!colnames(W)%in% tokeep)] <- NA
 		}
-cat("got past b\n")
+#message("got past b\n")
 	mmat <- na.omit(melt(W))
 	mmat <- mmat[order(mmat[,3],decreasing=TRUE),]
 	
 	if (!is.infinite(EDGE_MAX)) {
 	maxEdge <- nrow(mmat)
 	if (maxEdge>EDGE_MAX) maxEdge <- EDGE_MAX
-	mmat <- mmat[1:maxEdge,]
+	mmat <- mmat[seq_len(maxEdge),]
 	}
 
 	# we should guarantee an edge from all patients- in this case
@@ -50,14 +50,14 @@ cat("got past b\n")
 		mmat[,2] <- as.character(mmat[,2])
 		univ <- c(mmat[,1],mmat[,2])
 		missing <- setdiff(rownames(W), univ)
-		#cat(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
+		#message(sprintf("missing = { %s }\n",paste(missing, collapse=",")))
 		if (length(missing)>0) {
-			cat(sprintf("Sparsify2: found %i missing patients; adding strongest edge\n",
+			message(sprintf("Sparsify2: found %i missing patients; adding strongest edge\n",
 				length(missing)))
 			for (k in missing) { # add the strongest edge for the patient
 				tmp <- x[[k]]
 				if (is.na(tmp[1])) {
-					cat("\tMissing edge is below cutoff; setting to cutoff\n")
+					message("\tMissing edge is below cutoff; setting to cutoff\n")
 					tmp[1] <- cutoff
 				}
 				mmat <- rbind(mmat, c(k, names(tmp)[1],tmp[1]))
@@ -78,7 +78,7 @@ cat("got past b\n")
 ###	W2 <- W2[colnames(W),]
 ###	n <- ncol(W);
 ###	sp <- nrow(mmat)/(n*(n-1))/2
-###	cat(sprintf("%i -> %i edges (%i%% sparsity)\n",
+###	message(sprintf("%i -> %i edges (%i%% sparsity)\n",
 ###		sum(!is.na(W)), nrow(mmat), round(sp*100)))
 ###   return(W2);
 }

@@ -40,7 +40,7 @@ cross-validation or a similar repeated design.
 predictionResults.txt contains a (data.frame)
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output",
-	path.package("netDx.examples"))
-plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
+inDir <- sprintf("\%s/extdata/example_output",
+	path.package("netDx"))
+plotPerf(inDir, predClasses = c("LumA","notLumA"))
 }

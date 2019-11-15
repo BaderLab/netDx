@@ -7,7 +7,7 @@
 runFeatureSelection(trainID_pred, outDir, dbPath, numTrainSamps = NULL,
   incNets = "all", orgName = "predictor", fileSfx = "CV",
   verbose = FALSE, numCores = 2L, JavaMemory = 6L,
-  seed_queryResample = 42L, verbose_runQuery = FALSE, ...)
+  verbose_runQuery = FALSE, ...)
 }
 \arguments{
 \item{trainID_pred}{(char) vector with universe of predictor class
@@ -34,10 +34,6 @@ The default value will likely never need to be changed.}
 \item{numCores}{(logical) num parallel threads for cross-validation}
 
 \item{JavaMemory}{(integer) memory for GeneMANIA run, in Gb.}
-
-\item{seed_queryResample}{(integer) RNG seed for inner cross validation loop.
-Makes deterministic samples held-out for each GeneMANIA query (see
-makeQueries())}
 
 \item{verbose_runQuery}{(logical) print messages for runQuery()}
 

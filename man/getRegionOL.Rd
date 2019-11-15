@@ -31,6 +31,6 @@ scenario \code{gr} would contain the patient CNVs, and \code{rngList}
 would be a list of GenomicRanges objects, one per cellular pathway.
 }
 \examples{
-data(xpr,pheno,cnv_GR,pathway_GR)
+data(cnv_GR,pathway_GR)
 x <- getRegionOL(cnv_GR,pathway_GR)
 }

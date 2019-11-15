@@ -35,17 +35,20 @@ Plots a set of ROC/PR curves with average.
 Plots average curves with individual curves imposed.
 }
 \examples{
-inDir <- sprintf("\%s/extdata/KIRC_output", 
-path.package("netDx.examples"))
+inDir <- sprintf("\%s/extdata/example_output", 
+path.package("netDx"))
 all_rng <- list.files(path = inDir, pattern = "rng.")
 fList <- sprintf("\%s/\%s/predictionResults.txt", inDir,all_rng)
-dat <- read.delim(fList[1],sep="\\t",h=TRUE,as.is=TRUE)
-predClasses <- c('SURVIVEYES', 'SURVIVENO')
-pred_col1 <- sprintf("\%s_SCORE",predClasses[1])
-pred_col2 <- sprintf("\%s_SCORE",predClasses[2])
-idx1 <- which(colnames(dat) == pred_col1)
-idx2 <- which(colnames(dat) == pred_col2)
-pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
-curRoc <- ROCR::performance(pred,"tpr","fpr")
-plotPerf_multi(list(curRoc=curRoc),"ROC")
+rocList <- list()
+for (k in seq_len(length(fList))) {
+  dat <- read.delim(fList[1],sep="\\t",h=TRUE,as.is=TRUE)
+  predClasses <- c('LumA', 'notLumA')
+  pred_col1 <- sprintf("\%s_SCORE",predClasses[1])
+  pred_col2 <- sprintf("\%s_SCORE",predClasses[2])
+  idx1 <- which(colnames(dat) == pred_col1)
+  idx2 <- which(colnames(dat) == pred_col2)
+ pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
+ rocList[[k]] <- ROCR::performance(pred,"tpr","fpr")
+}
+plotPerf_multi(rocList,"ROC")
 }

@@ -4,8 +4,9 @@
 \alias{makePSN_RangeSets}
 \title{Create patient similarity interaction networks based on range sets}
 \usage{
-makePSN_RangeSets(gr, rangeSet, netDir, simMetric = "coincide",
-  quorum = 2L, verbose = TRUE, numCores = 1L)
+makePSN_RangeSets(gr, rangeSet, netDir = tempdir(),
+  simMetric = "coincide", quorum = 2L, verbose = TRUE,
+  numCores = 1L)
 }
 \arguments{
 \item{gr}{(GRanges) patient ranges. Metadata should contain:
@@ -51,6 +52,6 @@ Currently, the only similarity measure supported is binary; two patients
 are related in a network N if they both overlap elements of set N.
 }
 \examples{
-data(pathway_GR,xpr,pheno,cnv_GR)
+data(pathway_GR,cnv_GR)
 netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
 }

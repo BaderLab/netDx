@@ -26,26 +26,26 @@
 #' @examples
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
-#' pruneNets(netDir,"~/tmp",filterIDs=npheno[1:10,],
+#' pruneNets(netDir,"~/tmp",filterIDs=npheno[seq_len(10),],
 #' 	netSfx="txt$")
 #' @export
 pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 	netSfx="_cont.txt$",verbose=TRUE) {
 	if (length(filterNets)==1) {
 		if (filterNets=="*") {
-			if (verbose) cat("* Including all networks\n")
+			if (verbose) message("* Including all networks\n")
 			fList <- dir(path=oldDir,pattern=netSfx)
 			filterNets <- fList
 		}
 	} 
-	if (verbose) cat(sprintf("Limiting to %i networks\n", 
+	if (verbose) message(sprintf("Limiting to %i networks\n", 
 			length(filterNets)))
 
 	if (!file.exists(newDir)) dir.create(newDir)
 
 	if (length(filterIDs)==1) {
 		if (filterIDs=="*") {	# keep all patients
-			cat("* Including all patients\n")
+			message("* Including all patients\n")
 			for (f in filterNets) {
 				oldf <- sprintf("%s/%s",oldDir,f)
 				newf <- sprintf("%s/%s", newDir,f)
@@ -53,11 +53,11 @@ pruneNets <- function(oldDir,newDir,filterNets="*",filterIDs="*",
 			}
 		}
 	} else {
-		if (verbose) cat(sprintf("Limiting to %i patients\n", 
+		if (verbose) message(sprintf("Limiting to %i patients\n", 
 					length(filterIDs)))
 		for (f in filterNets) {
 			dat <- read.delim(sprintf("%s/%s",oldDir,f),
-							  sep="\t",h=FALSE,as.is=TRUE)
+							  sep="\t",header=FALSE,as.is=TRUE)
 
 			# both nodes of edge should be eligible
 			idx <- intersect(which(dat[,1]%in% filterIDs),

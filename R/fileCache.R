@@ -32,3 +32,25 @@ getGMjar_path <- function( verbose = FALSE ) {
 
     bfcrpath(bfc, rids = rid)
 }
+
+#' download pathway gmt file used for several examples
+#' 
+#' @param verbose (logical) print messages
+#' @examples getExamplePathways()
+#' @return (char) Path to local cached copy of GMT file
+#' or initial download is required 
+#' @export
+getExamplePathways <- function (verbose = FALSE) {
+	pathwayURL <- "http://download.baderlab.org/EM_Genesets/January_24_2016/Human/symbol/Human_AllPathways_January_24_2016_symbol.gmt"
+	bfc <- .get_cache()
+    rid <- bfcquery(bfc, "Example_Pathways", "rname")$rid
+    if (!length(rid)) {
+     if( verbose )
+		 message( "Downloading example pathway definitions (only required once)" )
+     	rid <- names(bfcadd(bfc, "Example_Pathways", pathwayURL))
+    }
+    if (!isFALSE(bfcneedsupdate(bfc, rid)))
+    bfcdownload(bfc, rid)
+
+    bfcrpath(bfc, rids = rid)
+}

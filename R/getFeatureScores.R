@@ -1,6 +1,6 @@
 #' Compile network scores into a matrix
 #'
-#' @details Given network scores over a set of trian/test splits, compiles these
+#' @details Given network scores over a set of train/test splits, compiles these
 #' into a matrix for downstream analysis. See the section on "Output Files"
 #' @param inDir (char/list) directory containing directories with all split info
 #' or list of all CV score files.
@@ -16,30 +16,29 @@
 #' scores across all train/test splits. Each score is the output of
 #' the inner fold of CV.
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output",
-#' 		path.package("netDx.examples"))
-#' netScores <- getFeatureScores(inDir, predClasses = c("SURVIVEYES","SURVIVENO"))
+#' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
+#' netScores <- getFeatureScores(inDir, predClasses = c("LumA","notLumA"))
 #' @export
-getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
+getFeatureScores <- function(inDir,predClasses,getFullCons=TRUE) {
 	if (missing(inDir)) stop("inDir not provided");
 	if (missing(predClasses))
 		stop("predClasses missing; please specify classes");
 
 	out <- list()
 	for (gp in predClasses) {
-		cat(sprintf("%s\n",gp))
+		message(sprintf("%s\n",gp))
 
 		if(is(inDir,"character")) {
-			cat("\tSingle directory provided, retrieving CV score files\n")
+			message("\tSingle directory provided, retrieving CV score files\n")
 			rngDirs <- dir(path=inDir, pattern="^rng")
 			fList <-sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt",
 					 inDir,rngDirs,gp,gp)
 		} else {
-			cat("\tList of filenames provided\n")
+			message("\tList of filenames provided\n")
 			fList <- inDir[[gp]]
 		}
 
-		cat(sprintf("Got %i iterations\n", length(fList)))
+		message(sprintf("Got %i iterations\n", length(fList)))
 		netColl <- list()
 
 		for (scoreFile in fList) {
@@ -50,7 +49,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 			spos <- gregexpr("\\/",fList)
 			# get the name of the iteration (rngX) assuming directory structure
 			# rngX/<class>/GM_results>/pathway_CV_score.txt
-			fNames <- lapply(1:length(spos), function(x) {
+			fNames <- lapply(seq_len(length(spos)), function(x) {
 				  n <- length(spos[[x]])
 					y <- substr(fList[x], spos[[x]][n-3]+1,spos[[x]][n-2]-1)
 					y
@@ -59,7 +58,7 @@ getFeatureScores <- function(inDir,predClasses,getFullCons=FALSE) {
 			names(netColl) <- fNames
 
 			# filter for nets meeting cutoff criteria
-			cat("* Computing consensus\n")
+			message("* Computing consensus\n")
 
 			cons <- getNetConsensus(netColl); x1 <- nrow(cons)
 			na_sum <- rowSums(is.na(cons))

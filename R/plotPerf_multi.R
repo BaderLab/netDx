@@ -11,19 +11,22 @@
 #' @param meanCol (char) colour for mean trendline
 #' @return No value. Side effect of plotting ROC and PR curves
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output", 
-#'	path.package("netDx.examples"))
+#' inDir <- sprintf("%s/extdata/example_output", 
+#'	path.package("netDx"))
 #' all_rng <- list.files(path = inDir, pattern = "rng.")
 #' fList <- sprintf("%s/%s/predictionResults.txt", inDir,all_rng)
-#' dat <- read.delim(fList[1],sep="\t",h=TRUE,as.is=TRUE)
-#' predClasses <- c('SURVIVEYES', 'SURVIVENO')
-#' pred_col1 <- sprintf("%s_SCORE",predClasses[1])
-#' pred_col2 <- sprintf("%s_SCORE",predClasses[2])
-#' idx1 <- which(colnames(dat) == pred_col1)
-#' idx2 <- which(colnames(dat) == pred_col2)
-#' pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
-#' curRoc <- ROCR::performance(pred,"tpr","fpr")
-#' plotPerf_multi(list(curRoc=curRoc),"ROC")
+#' rocList <- list()
+#' for (k in seq_len(length(fList))) {
+#'   dat <- read.delim(fList[1],sep="\t",h=TRUE,as.is=TRUE)
+#'   predClasses <- c('LumA', 'notLumA')
+#'   pred_col1 <- sprintf("%s_SCORE",predClasses[1])
+#'   pred_col2 <- sprintf("%s_SCORE",predClasses[2])
+#'   idx1 <- which(colnames(dat) == pred_col1)
+#'   idx2 <- which(colnames(dat) == pred_col2)
+#'  pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
+#'  rocList[[k]] <- ROCR::performance(pred,"tpr","fpr")
+#' }
+#' plotPerf_multi(rocList,"ROC")
 #' @importFrom stats aggregate
 #' @export
 plotPerf_multi <- function(inList,plotTitle="performance",
@@ -35,7 +38,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	} else if (plotType=="PR") {
 		xlab <- "Precision"; ylab <- "Recall"
 	} else {
-		cat("custom type plot\n")
+		message("custom type plot\n")
 	}
 
 	plot(0,0,type='n',bty='n',las = 1,xlim=xlim,ylim=ylim,
@@ -44,7 +47,7 @@ plotPerf_multi <- function(inList,plotTitle="performance",
 	out <- list()
 
 	is_empty <- 0
-	for (k in 1:length(inList)) {
+	for (k in seq_len(length(inList))) {
 		if(length(slotNames(inList[[k]])) == 0)	{
 			is_empty <- is_empty+1;
 			next;

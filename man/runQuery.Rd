@@ -2,7 +2,7 @@
 % Please edit documentation in R/runQuery.R
 \name{runQuery}
 \alias{runQuery}
-\title{Run a GeneMANIA query}
+\title{Run a query}
 \usage{
 runQuery(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L,
   numCores = 1L)
@@ -22,15 +22,16 @@ numCores*GMmemory will be used and distributed for all GM threads}
 \item{numCores}{(integer) number of CPU cores for parallel processing}
 }
 \value{
-path to GeneMANIA query result file
+(char) path to GeneMANIA query result files with patient similarity
+rankings (*PRANK) and feature weights (*NRANK)
 of results file
 }
 \description{
-Run a GeneMANIA query
+Run a query
 }
 \examples{
 dbPath <- sprintf("\%s/extdata/dbPath", path.package("netDx"))
-GM_query <- sprintf("\%s/extdata/GM_query.txt",
+queryFile <- sprintf("\%s/extdata/GM_query.txt",
 	path.package("netDx"))
-runQuery(dbPath, GM_query,"/tmp")
+runQuery(dbPath, queryFile,tempdir())
 }

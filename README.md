@@ -1,7 +1,13 @@
 
+<<<<<<< HEAD
+# UPDATE 14 June 2019: netDx is being integrated with the BioConductor package.
+**The install instructions below may not be up to date.**
+**Please contact Shraddha Pai (shraddha.pai@utoronto.ca) in case of errors.**
+=======
 # UPDATE 31 Oct 2019: We are making major changes to netDx for BioConductor integration. The main branch is currently unstable.
 # Please [install netDx v1.0.23](https://github.com/BaderLab/netDx/archive/v1.0.23.tar.gz), which is the last stable release.
 **Please contact Shraddha Pai (shraddha.pai@utoronto.ca) in case of problems.**
+>>>>>>> master
 
 # netDx
 netDx is an algorithm for building patient classifiers by using patient similarity networks as features.

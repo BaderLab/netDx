@@ -19,7 +19,7 @@
 #' @export
 callFeatSel <- function(netScores,fsCutoff, fsPctPass) {
   fs_nets <- c()
-  for (index in 1:nrow(netScores)){
+  for (index in seq_len(nrow(netScores))){
     cur_pathway <- netScores[index,]
     pass_thresh <- length(which(cur_pathway >= fsCutoff))
     percent_pass <- pass_thresh/length(cur_pathway)

@@ -31,7 +31,7 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	colnames(net) <- c("source","target","weight")
 
 	if (verbose) {
-		cat("Weight distribution:\n")
+		message("Weight distribution:\n")
 		print(summary(net[,3]))
 	}
 
@@ -39,7 +39,7 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 		tmp <- mat[upper.tri(mat,diag=FALSE)]
 		idx <- which(is.infinite(tmp))
 		if (any(idx)) tmp <- tmp[-idx]
-		##if (verbose) cat(sprintf("\tN=%i distances\n", length(tmp)))
+		##if (verbose) message(sprintf("\tN=%i distances\n", length(tmp)))
 
 		c(mean(tmp,na.rm=TRUE), sd(tmp,na.rm=TRUE),length(tmp))
 	}
@@ -53,10 +53,10 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	
 	g <- igraph::graph_from_data_frame(net, vertices=pheno$ID)
 	d_overall <- igraph::shortest.paths(g,algorithm="dijkstra")
-	cat(sprintf("Overall: %i nodes\n",length(pheno$ID)))
+	message(sprintf("Overall: %i nodes\n",length(pheno$ID)))
 	tmp <- .getAvgD(d_overall)
 	if (verbose)
-		cat(sprintf("All-all shortest path = %2.3f (SD=%2.3f) (N=%i distances)\n",
+		message(sprintf("All-all shortest path = %2.3f (SD=%2.3f) (N=%i distances)\n",
 					tmp[1],tmp[2],tmp[3]))
 
 	cnames <- unique(pheno$GROUP)
@@ -64,26 +64,26 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 	dall <- list()
 	for (curr_cl in cnames) {
 		cl <- pheno$ID[which(pheno$GROUP%in% curr_cl)]
-		if (verbose) cat(sprintf("\n%s: N=%i nodes\n", curr_cl,length(cl)))
+		if (verbose) message(sprintf("\n%s: N=%i nodes\n", curr_cl,length(cl)))
 
 		#subgraph with intra-cluster connections
 		g2 <- igraph::graph_from_data_frame(
 			d=net[which(net[,1]%in%cl & net[,2]%in%cl),],
 			vertices=cl)
 		tmp <- igraph::shortest.paths(g2,algorithm="dijkstra")
-		cat(sprintf("%s\n",curr_cl))
+		message(sprintf("%s\n",curr_cl))
 		dset[[curr_cl]] <- .getAvgD(tmp)
 		dall[[curr_cl]] <- .getAllD(tmp)
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
-			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
+			message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
 						curr_cl,curr_cl,tmp[1],tmp[2],tmp[3]))
 	}
 
 	# now repeat for all pairwise classes
 	cpairs <- as.matrix(combinat::combn(cnames,2))
-	cat("Pairwise classes:\n")
-	for (k in 1:ncol(cpairs)) {
+	message("Pairwise classes:\n")
+	for (k in seq_len(ncol(cpairs))) {
 		type1 <- pheno$ID[which(pheno$GROUP %in% cpairs[1,k])]
 		type2 <- pheno$ID[which(pheno$GROUP %in% cpairs[2,k])]
 		idx <- which(net[,1] %in% type1 & net[,2] %in% type2)
@@ -98,7 +98,7 @@ compareShortestPath <- function(net,pheno, plotDist=FALSE,
 		
 		tmp <- dset[[curr_cl]]
 		if (verbose) 
-			cat(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
+			message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f) (N=%i dist)\n", 
 						cpairs[1,k],cpairs[2,k],tmp[1],tmp[2],tmp[3]))
 	}
 

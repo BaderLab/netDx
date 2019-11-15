@@ -53,7 +53,7 @@ overlaps with single features - here, genes - result in membership in a
 set - here, pathways.
 }
 \examples{
-data(xpr,pheno,cnv_GR,pathway_GR,pathwayList)
+data(cnv_GR,pathway_GR,pathwayList)
 x <- getRegionOL(cnv_GR,pathway_GR)
 y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 y <- fetch_NetUnits(x,pathwayList, names(pathwayList),

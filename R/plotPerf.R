@@ -24,9 +24,9 @@
 #' 3) ROC curve for all runs plus average
 #' 4) PR curve for all runs plus average
 #' @examples
-#' inDir <- sprintf("%s/extdata/KIRC_output",
-#' 	path.package("netDx.examples"))
-#' plotPerf(inDir, predClasses = c("SURVIVEYES", "SURVIVENO"))
+#' inDir <- sprintf("%s/extdata/example_output",
+#' 	path.package("netDx"))
+#' plotPerf(inDir, predClasses = c("LumA","notLumA"))
 #' @import ROCR
 #' @import pracma
 #' @importFrom stats sd
@@ -49,11 +49,11 @@ plotPerf <- function(inDir, predClasses) {
   }
 
   if(length(inDir) == 1){
-    cat("Single directory provided, retrieving prediction files\n")
+    message("Single directory provided, retrieving prediction files\n")
     all_rng <- list.files(path = inDir, pattern = "rng.")
 		fList <- sprintf("%s/%s/predictionResults.txt", inDir,all_rng)
 	} else {
-		cat("length(inDir)>1; assuming provided path to individual results\n")
+		message("length(inDir)>1; assuming provided path to individual results\n")
 		fList <- inDir
 	}
 

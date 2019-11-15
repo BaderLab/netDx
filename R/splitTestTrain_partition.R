@@ -17,24 +17,19 @@
 #' Rows with duplicate IDs will be excluded.
 #' @param nFold (integer) number of resamplings. Each sample will be a test
 #' sample exactly once.
-#' @param setSeed (integer) if not NULL, RNG seed will be set to this value.
 #' @param predClass (char) name of predictor class
 #' @param verbose (logical) print messages
 #' @return (list) of length nFold, each with char vector of length 
 #' nrow(pheno_DF). Values of "TRAIN" or "TEST"
 #' @examples
-#' data(xpr,pheno,cnv_GR) 
+#' data(pheno) 
 #' x <- splitTestTrain_resampling(pheno,predClass="LumA")
 #' @export
-splitTestTrain_resampling <- function(pheno_DF, nFold=3L, setSeed=42L,
+splitTestTrain_resampling <- function(pheno_DF, nFold=3L, 
  	predClass,verbose=FALSE){
-if (!is.null(setSeed)) {
-	cat(sprintf("Resampling split: set seed: %i\n",setSeed))
-	set.seed(setSeed); # make reproducible
-}
 
 plus_idx	<- which(pheno_DF$STATUS %in% predClass)
-other_idx	<- setdiff(1:nrow(pheno_DF),plus_idx)
+other_idx	<- setdiff(seq_len(nrow(pheno_DF)),plus_idx)
 
 # num +/- that should be test per resampling 
 plus_csize 	<- floor((1/nFold)*length(plus_idx))
@@ -44,9 +39,9 @@ plus_tsize <- length(plus_idx)-plus_csize
 other_tsize <- length(other_idx)-other_csize
 
 if (verbose) {
-cat(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n",
+message(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n",
 			predClass, length(plus_idx), plus_tsize, plus_csize))
-cat(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n",
+message(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n",
 			predClass, length(other_idx),other_tsize, other_csize))
 }
 
@@ -55,7 +50,7 @@ plus_order 	<- sample(plus_idx,replace=FALSE)
 other_order <- sample(other_idx,replace=FALSE) 
 
 out <- list()
-for (k in 1:nFold) {
+for (k in seq_len(nFold)) {
 	status <- rep("TRAIN",nrow(pheno_DF))
 	
 	# first for + samples
@@ -64,7 +59,7 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(plus_idx)
 
 	if (verbose) 
-		cat(sprintf("\t%i (+): %i test (%i-%i);\n", 
+		message(sprintf("\t%i (+): %i test (%i-%i);\n", 
 			k, eidx-sidx+1, sidx,eidx))
 	status[plus_order[sidx:eidx]] <- "TEST"
 
@@ -74,7 +69,7 @@ for (k in 1:nFold) {
 	if (k==nFold) eidx <- length(other_idx)
 
 	if (verbose) 
-			cat(sprintf("\t\t%i (-): %i test\n",k, eidx-sidx+1))
+			message(sprintf("\t\t%i (-): %i test\n",k, eidx-sidx+1))
 	status[other_order[sidx:eidx]] <- "TEST"
 	
 	out[[k]] <- status

@@ -33,7 +33,6 @@ getGMjar_path <- function( verbose = FALSE ) {
     bfcrpath(bfc, rids = rid)
 }
 
-
 #' download pathway gmt file used for several examples
 #' 
 #' @param verbose (logical) print messages

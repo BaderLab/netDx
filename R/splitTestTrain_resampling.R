@@ -37,6 +37,5 @@ IS_TRAIN <- factor(IS_TRAIN,levels=c("TRAIN","TEST"))
 pheno_DF	<- cbind(pheno_DF,IS_TRAIN=IS_TRAIN)
 if (verbose) print(table(pheno_DF[,c("STATUS","IS_TRAIN")]))
 
-
 return(IS_TRAIN)
 }

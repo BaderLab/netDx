@@ -45,7 +45,7 @@ readPathways <- function(fname,MIN_SIZE=10L, MAX_SIZE=200L,
 # change locale to accommodate nonstandard chars in pathway names
 oldLocale   <- Sys.getlocale("LC_ALL")
 Sys.setlocale("LC_ALL","C")
-    out <- list()
+out <- list()
     # read list of master pathways
 	if (verbose) message("---------------------------------------\n")
 	if (verbose) message(sprintf("File: %s\n\n", basename(fname)))

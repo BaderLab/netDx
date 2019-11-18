@@ -149,7 +149,6 @@ Here we load the required packages and download clinical and gene expression dat
 ```{r,eval=TRUE}
 suppressMessages(library(curatedTCGAData))
 suppressMessages(library(MultiAssayExperiment))
-suppressMessages(library(TCGAutils))
 ```
 
 This is the data we will use:

@@ -17,7 +17,6 @@ vignette: >
 suppressMessages(library(netDx))
 suppressMessages(library(curatedTCGAData))
 suppressMessages(library(MultiAssayExperiment))
-suppressMessages(library(TCGAutils))
 
 # load example predictor output data
 inDir <- sprintf("%s/extdata/example_output",
@@ -88,7 +87,6 @@ suppressMessages(require(netDx))
 
 suppressMessages(library(curatedTCGAData))
 suppressMessages(library(MultiAssayExperiment))
-suppressMessages(library(TCGAutils))
 ```
 
 # Prepare data 

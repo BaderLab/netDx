@@ -26,7 +26,7 @@ RUN echo $TZ > /etc/timezone && \
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
 RUN Rscript -e "install.packages(c('devtools','curl','bigmemory','foreach','combinat','doParallel','ROCR','pracma','RColorBrewer','reshape2','ggplot2', 'caroline', 'rmarkdown'))"
 RUN Rscript -e "source('http://bioconductor.org/biocLite.R');biocLite(c('Biobase','GenomicRanges', 'RCy3'))";
-RUN Rscript -e "install.packages(c('pheatmap','RColorBrewer','gProfileR','RJSONIO','httr','ggplot2','glmnet','igraph'))"
+RUN Rscript -e "install.packages(c('pheatmap','RColorBrewer','gProfileR','ggplot2','glmnet','igraph'))"
 RUN Rscript -e "devtools::install_github('cytoscape/r2cytoscape')"
 
 # python required for using genemania, pandoc for compiling the html vignettes

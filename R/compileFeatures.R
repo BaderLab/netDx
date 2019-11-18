@@ -68,7 +68,10 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	curwd <- getwd()
 	tryCatch( {
 	
-	system2('cp', args=c('-r',netDir,tmpDir))
+	#system2('cp', args=c('-r',netDir,tmpDir))
+	dir.create(tmpDir)
+	files <- list.files(netDir)
+	file.copy(from=sprintf("%s/%s",netDir,files),to=sprintf("%s/%s",tmpDir,files))
 	setwd(tmpDir)
 
 	# write batch.txt and ids.txt, currently required 
@@ -83,7 +86,8 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	if (verbose) message(sprintf("Got %i networks",length(netList)))
 	idFile	<- sprintf("%s/ids.txt",outDir)
 	writeQueryBatchFile(netDir,netList,netDir,idFile,...)
-	system2('cp',args=c(sprintf("%s/batch.txt",netDir), '.')) 
+	file.copy(from=sprintf("%s/batch.txt",netDir),to='.')
+	#system2('cp',args=c(sprintf("%s/batch.txt",netDir), '.')) 
 	write.table(patientID,file=idFile,sep="\t",
 				row=FALSE,col=FALSE,quote=FALSE)
 
@@ -175,8 +179,15 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	sprintf("%s/colours.txt",tmpDir))
 	system2('java', args,wait=TRUE)
 
-	system2('mv', args=c(sprintf("%s/lucene_index/*",dataDir), 
-		sprintf("%s/.",dataDir)))
+	olddir <- sprintf("%s/lucene_index",dataDir)
+	flist <- list.files(olddir,recursive=TRUE)
+	dirs <- list.dirs(olddir,recursive=TRUE,full.names=FALSE)
+	sapply(paste(dataDir,setdiff(dirs,""),sep="/"),dir.create)
+	file.copy(from=paste(olddir,flist,sep="/"),to=paste(dataDir,flist,sep="/"))
+	unlink(olddir)
+
+	#system2('mv', args=c(sprintf("%s/lucene_index/*",dataDir), 
+		#sprintf("%s/.",dataDir)))
 
 	#### Step 5. Build GeneMANIA cache
 	if (verbose) message("\t* Build GeneMANIA cache")
@@ -189,7 +200,8 @@ compileFeatures <- function(netDir,patientID,outDir=tempdir(),
 	#### Step 6. Cleanup.
 	if (verbose) message("\t * Cleanup")
 	GM_xml	<- sprintf("%s/extdata/genemania.xml",baseDir)
-	system2('cp', args=c(GM_xml, sprintf("%s/.",dataDir))) 
+	file.copy(from=GM_xml, to=sprintf("%s/.",dataDir))
+	#system2('cp', args=c(GM_xml, sprintf("%s/.",dataDir))) 
 
 	}, error=function(ex) {
 		print(ex)

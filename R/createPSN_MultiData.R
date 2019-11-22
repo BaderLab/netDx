@@ -137,7 +137,7 @@ if (length(netList)<1)
 	stop("\n\nNo features created! Filters may be too stringent.\n")
 
 netID <- data.frame(ID=1:length(netList),
-	name=netList,ID=1:length(netList),
+	name=netList,ID=1:length(netList),name2=netList,
 	0,1,stringsAsFactors=TRUE)
 
 # move network files
@@ -172,9 +172,10 @@ write(paste(1,"dummy_group","geneset_1","dummy_group",1,sep="\t"),
 	file=con)
 close(con)
 
-tmp <- paste(netID$ID,"","","","","","","","","",0,"","",0,"","","","","")
-write.table(tmp,file=sprintf("%s/NETWORK_METADATA.txt",netDir),sep="\t",
-	col=FALSE,row=FALSE,quote=FALSE)
+con <- file(sprintf("%s/NETWORK_METADATA.txt",netDir),"w")
+tmp <- paste(netID$ID,"","","","","","","","","",0,"","",0,"","","","","",sep="\t")
+write.table(tmp,file=con,sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+close(con)
 
 return(netList)
 }

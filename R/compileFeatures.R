@@ -121,8 +121,7 @@ compileFeatures <- function(netDir,outDir=tempdir(),
 	args <- c(args,'org.genemania.mediator.lucene.exporter.Generic2LuceneExporter')
 	args <- c(args, sprintf("%s/db.cfg",netDir),netDir,
 	sprintf("%s/colours.txt",netDir))
-browser()
-	system2('java', args,wait=TRUE)
+	system2('java', args,wait=TRUE,stdout=NULL)
 
 	olddir <- sprintf("%s/lucene_index",dataDir)
 	flist <- list.files(olddir,recursive=TRUE)

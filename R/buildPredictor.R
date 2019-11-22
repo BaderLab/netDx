@@ -366,10 +366,9 @@ for (rngNum in startAt:numSplits) {
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			verbose=verbose_makeFeatures)
 	if (verbose_default) message("** Compiling features")
-	dbDir <- compileFeatures(netDir, outDir, numCores=numCores, 
-			verbose=TRUE)
+	dbDir <- compileFeatures(netDir,outDir, numCores=numCores, 
+			verbose=verbose_compileFS)
 	if (verbose_default) message("\n** Running feature selection")
-browser()
 
 	curList[["featureScores"]] <- list()
 
@@ -441,39 +440,42 @@ browser()
 		# Impute test samples if flag set
 		# impute
 		if (impute) {
-		train_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TRAIN")]
-		test_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TEST")]
-		nmSet <- names(dats_tmp)
-		dats_tmp <- lapply(names(dats_tmp), function(nm) {
-			x <- dats_tmp[[nm]]
-			if (nm %in% imputeGroups) {
-				missidx <- which(rowSums(is.na(x))>0) 
-				train_idx <- which(colnames(x) %in% train_samp)
-				test_idx <- which(colnames(x) %in% test_samp)
-				for (i in missidx) {
-					# impute train and test separately
-					na_idx <- intersect(which(is.na(x[i,])),train_idx)
-					na_idx1 <- na_idx
-					x[i,na_idx] <- median(x[i,train_idx],na.rm=TRUE) 
-		
-					na_idx <- intersect(which(is.na(x[i,])),test_idx)
-					na_idx2 <- na_idx
-					x[i,na_idx] <- median(x[i,test_idx],na.rm=TRUE) 
+			train_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TRAIN")]
+			test_samp <- pheno_all$ID[which(pheno_all$TT_STATUS %in% "TEST")]
+			nmSet <- names(dats_tmp)
+			dats_tmp <- lapply(names(dats_tmp), function(nm) {
+				x <- dats_tmp[[nm]]
+				if (nm %in% imputeGroups) {
+					missidx <- which(rowSums(is.na(x))>0) 
+					train_idx <- which(colnames(x) %in% train_samp)
+					test_idx <- which(colnames(x) %in% test_samp)
+					for (i in missidx) {
+						# impute train and test separately
+						na_idx <- intersect(which(is.na(x[i,])),train_idx)
+						na_idx1 <- na_idx
+						x[i,na_idx] <- median(x[i,train_idx],na.rm=TRUE) 
+			
+						na_idx <- intersect(which(is.na(x[i,])),test_idx)
+						na_idx2 <- na_idx
+						x[i,na_idx] <- median(x[i,test_idx],na.rm=TRUE) 
+					}
 				}
+				x
+			})
+			names(dats_tmp) <- nmSet
+			#alldat_tmp <- do.call("rbind",dats_tmp)
 			}
-			x
-		})
-		names(dats_tmp) <- nmSet
-		#alldat_tmp <- do.call("rbind",dats_tmp)
-		}
 
 		if (verbose_default) message(sprintf("\tCreate & compile features",g))
 		if (length(pTally)>=1) {
+		netDir <- sprintf("%s/tmp",pDir)
+		dir.create(netDir)
+		pheno_id <- setupFeatureDB(pheno,netDir)
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
-			netDir=sprintf("%s/networks",pDir),
-			customFunc=makeNetFunc,numCores=numCores,
+			pheno=pheno_id,
+			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			filterSet=pTally,verbose=verbose_default)
-		dbDir <- compileFeatures(netDir,pheno$ID,pDir,numCores=numCores,
+		dbDir <- compileFeatures(netDir,outDir=pDir,numCores=numCores,
 			verbose=verbose_compileNets)
 
 		# run query for this class

@@ -4,17 +4,15 @@
 \alias{compileFeatures}
 \title{Create GeneMANIA database}
 \usage{
-compileFeatures(netDir, patientID, outDir = tempdir(),
-  simMetric = "pearson", netSfx = "_cont.txt$", verbose = TRUE,
-  numCores = 1L, P2N_threshType = "off", P2N_maxMissing = 100,
-  JavaMemory = 4L, altBaseDir = NULL, ...)
+compileFeatures(netDir, outDir = tempdir(), simMetric = "pearson",
+  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
+  P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L,
+  altBaseDir = NULL, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
 networks in this directory will be added to the GM database. Note:
 This needs to be an absolute path, not relative.}
-
-\item{patientID}{(char) vector of patient IDs.}
 
 \item{outDir}{(char) path to dir in which GeneMANIA database is created. 
 The database will be under \code{outDir/dataset}.}

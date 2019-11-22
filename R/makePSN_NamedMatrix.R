@@ -51,7 +51,6 @@
 #' number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)
 #' @param runSerially (logical) set to TRUE to create nets serially, rather 
 #' than in parallel
-#' @param append (logical) if TRUE does not overwrite netDir.
 #' @param ... passed to \code{getSimilarity()}
 #' @return (char) Basename of files to which networks are written.  
 #' Side effect of writing interaction networks in \code{outDir}
@@ -67,16 +66,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 	numCores=1L,writeProfiles=TRUE,
 	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=Inf,
 	sparsify_maxInt=50,minMembers=1L,runSerially=FALSE,
-	append=FALSE,...){
-	if (!append) {
-		if (file.exists(outDir)) unlink(outDir,recursive=TRUE) 
-		dir.create(outDir)
-	} else {
-		if (!file.exists(outDir)) {
-				message("You asked for append but the directory doesn't exist. Helpfully creating it")
-				dir.create(outDir)
-		}
-	}
+	...) {
 
 	if ((!simMetric %in% c("pearson","MI"))  & writeProfiles==TRUE) {
 	print(simMetric)

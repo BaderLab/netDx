@@ -356,15 +356,20 @@ for (rngNum in startAt:numSplits) {
 		}
 	}
 
-	netDir <- sprintf("%s/networks",outDir)
+	netDir <- sprintf("%s/tmp",outDir)
+	dir.create(netDir)
+	pheno_id <- setupFeatureDB(pheno,netDir)
+
 	if (verbose_default) message("** Creating features")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
+			pheno=pheno_id,
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			verbose=verbose_makeFeatures)
 	if (verbose_default) message("** Compiling features")
-	dbDir <- compileFeatures(netDir, pheno$ID, outDir, numCores=numCores, 
-			verbose=verbose_compileNets)
+	dbDir <- compileFeatures(netDir, outDir, numCores=numCores, 
+			verbose=TRUE)
 	if (verbose_default) message("\n** Running feature selection")
+browser()
 
 	curList[["featureScores"]] <- list()
 

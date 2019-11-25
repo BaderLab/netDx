@@ -97,7 +97,7 @@ compileFeatures <- function(netDir,outDir=tempdir(),
 		netOutDir <- sprintf("%s/INTERACTIONS",netDir)
 		tmpsfx <- sub("\\$","",netSfx)
 
-		foreach (curProf=dir(path=profDir,pattern="profile$")) %do% {
+		foreach (curProf=dir(path=profDir,pattern="profile$")) %dopar% {
 			args2 <- c('-in', sprintf("%s/%s",profDir,curProf))
 			args2 <- c(args2, '-out', sprintf("%s/%s",netOutDir, 
 				sub(".profile",".txt",curProf)))

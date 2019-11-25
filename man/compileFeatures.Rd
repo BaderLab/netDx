@@ -61,14 +61,24 @@ Interaction networks have pairwise similarity measures:
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
-data(xpr,pheno,pathwayList);
-# note: the paths in the calls below need to be absolute. If you 
-# do not have write access to /tmp, change to a different directory.
-tmpDir <- tempdir()
-netDir <- sprintf("\%s/nets",tmpDir)
-n <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList,netDir,
-	writeProfiles=TRUE); 
-outDir <- sprintf("\%s/dbdir",tmpDir)
-dir.create(outDir)
-dob <- compileFeatures(netDir,pheno$ID,outDir)
+data(xpr,pheno)
+pathwayList <- list(pathA=rownames(xpr)[1:10],pathB=rownames(xpr)[21:50])
+
+dataList <- list(rna=xpr)  #only one layer type
+groupList <- list(rna=pathwayList) # group genes by pathways
+
+makeNets <- function(dataList, groupList, netDir,...) {
+    netList <- makePSN_NamedMatrix(dataList[["rna"]],rownames(dataList[["rna"]]),
+                groupList[["rna"]],netDir,verbose=FALSE,writeProfiles=TRUE,...)
+    unlist(netList)
+}
+tmpDir <- tempdir(); netDir <- sprintf("\%s/nets",tmpDir)
+dir.create(netDir,recursive=TRUE)
+
+pheno_id <- setupFeatureDB(pheno,netDir)
+netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
+    pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
+
+outDir <- sprintf("\%s/dbdir",tmpDir); dir.create(outDir)
+dbDir <- compileFeatures(netDir,outDir)
 }

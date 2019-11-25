@@ -111,6 +111,10 @@ for (k in seq_len(length(exprs))) {
 	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
 	datList2[[names(exprs)[k]]]<- tmp	
 }
+pheno <- colData(brca)[,c("ID","STATUS")]
+netDir <- tempdir()
+pheno_id <- setupFeatureDB(colData(brca),netDir)
 createPSN_MultiData(dataList=datList2,groupList=groupList,
-	netDir=tempdir(),customFunc=makeNets,numCores=1)
+ pheno=pheno_id,
+	netDir=netDir,customFunc=makeNets,numCores=1)
 }

@@ -4,7 +4,7 @@
 \alias{createPSN_MultiData}
 \title{Wrapper to create custom input features (patient similarity networks)}
 \usage{
-createPSN_MultiData(dataList, groupList, netDir, filterSet = NULL,
+createPSN_MultiData(dataList, groupList, pheno, netDir, filterSet = NULL,
   verbose = TRUE, customFunc, ...)
 }
 \arguments{
@@ -17,6 +17,9 @@ e.g If dataList$rna contains genes, rownames(dataList) = gene names}
 for that datatype. e.g. If rna data will be grouped by pathways, then 
 groupList$rna would have pathway names as keys, and member genes as units.
 Each entry will be converted into a PSN.}
+
+\item{pheno}{(data.frame) mapping of user-provided patient identifiers (ID)
+with internally-generated identifiers.}
 
 \item{netDir}{(char) path to directory where networks will be stored}
 

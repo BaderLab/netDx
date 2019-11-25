@@ -180,7 +180,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
         groupList[["clinical"]],netDir,
         simMetric="custom",customFunc=normDiff, # custom function
         writeProfiles=FALSE,
-        sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+        sparsify=TRUE,verbose=TRUE,...)
     }
     netList2 <- unlist(netList2)
     cat(sprintf("Made \%i clinical nets\\n", length(netList2)))

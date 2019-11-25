@@ -8,6 +8,8 @@
 #' for that datatype. e.g. If rna data will be grouped by pathways, then 
 #' groupList$rna would have pathway names as keys, and member genes as units.
 #' Each entry will be converted into a PSN.
+#' @param pheno (data.frame) mapping of user-provided patient identifiers (ID)
+#' with internally-generated identifiers.
 #' @param netDir (char) path to directory where networks will be stored
 #' @param filterSet (char) vector of networks to include
 #' @param customFunc (function) custom user-function to create PSN. 
@@ -91,15 +93,19 @@
 #' createPSN_MultiData(dataList=datList2,groupList=groupList,
 #' 	netDir=tempdir(),customFunc=makeNets,numCores=1)
 #' @export
-createPSN_MultiData <- function(dataList,groupList,netDir,filterSet=NULL,
+createPSN_MultiData <- function(dataList,groupList,pheno,netDir,filterSet=NULL,
 			verbose=TRUE,customFunc,...) {
 
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (missing(netDir)) stop("netDir must be supplied.\n")
 
-if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
-dir.create(netDir)
+# resolve user-provided IDs with internal IDs
+dataList <- lapply(dataList,function(x) {
+		midx <- match(colnames(x),pheno$ID)
+		colnames(x) <- pheno$INTERNAL_ID[midx]
+		x
+})
 
 if (!is.null(filterSet)) {
 	if (length(filterSet)<1) 
@@ -127,7 +133,49 @@ groupList <- groupList2; rm(groupList2)
 # call user-defined function for making PSN
 netList <- customFunc(dataList=dataList,groupList=groupList,netDir=netDir,...)
 
-if (length(netList)<1) stop("\n\nNo features created! Filters may be too stringent.\n")
+if (length(netList)<1) 
+	stop("\n\nNo features created! Filters may be too stringent.\n")
+
+netID <- data.frame(ID=1:length(netList),
+	name=netList,ID=1:length(netList),name2=netList,
+	0,1,stringsAsFactors=TRUE)
+
+# move network files
+prof <- grep(".profile$",netList)
+if (length(prof)>0) {
+	prof <- netList[prof]
+	dir.create(sprintf("%s/profiles",netDir))
+	for (p in prof) {
+		file.rename(from=sprintf("%s/%s",netDir,p),
+								to=sprintf("%s/profiles/1.%i.profile",netDir,
+											netID$ID[which(netID$name==p)]))
+	}
+}
+dir.create(sprintf("%s/INTERACTIONS",netDir))
+cont <- grep("_cont.txt$",netList)
+if (length(cont)>0) {
+	cont <- netList[cont]
+	for (p in cont) {
+		file.rename(from=sprintf("%s/%s",netDir,p),
+								to=sprintf("%s/INTERACTIONS/1.%i.txt",netDir,
+											netID$ID[which(netID$name==p)]))
+	}
+}
+
+# write NETWORKS.txt
+write.table(netID,file=sprintf("%s/NETWORKS.txt",netDir),sep="\t",
+	col=FALSE,row=FALSE,quote=FALSE)
+
+# write NETWORK_GROUPS.txt
+con <- file(sprintf("%s/NETWORK_GROUPS.txt",netDir),"w")
+write(paste(1,"dummy_group","geneset_1","dummy_group",1,sep="\t"),
+	file=con)
+close(con)
+
+con <- file(sprintf("%s/NETWORK_METADATA.txt",netDir),"w")
+tmp <- paste(netID$ID,"","","","","","","","","",0,"","",0,"","","","","",sep="\t")
+write.table(tmp,file=con,sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+close(con)
 
 return(netList)
 }

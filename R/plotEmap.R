@@ -21,6 +21,12 @@
 #' @param createStyle (logical) if generating more than one EMap, set to 
 #' TRUE for first one and to FALSE for subsequent. Due to limitation in 
 #' current version of RCy3
+#' @param groupClusters (logical) if TRUE, redraws network with thematic
+#' clusters lined up in rows. This setting is useful if setting this flag to
+#' FALSE results in a cluttered network. However, applying this layout will
+#' organize nodes in each cluster into circles, which loses the c
+#' topology.
+#' 
 #' @examples
 #' #refer to getEMapInput_many.R for working getEMapInput_many() example
 #' data(featScores)
@@ -46,7 +52,8 @@
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 	minScore=1,maxScore=10,colorScheme="cont_heatmap",
-	imageFormat="png",verbose=FALSE,createStyle=TRUE){
+	imageFormat="png",verbose=FALSE,createStyle=TRUE,
+	groupClusters=FALSE){
 
 	validColSchemes <- c("cont_heatmap","netDx_ms")
 	if (!colorScheme %in% validColSchemes) {
@@ -117,12 +124,16 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName="generic",
 		createVisualStyle(styleName,defaults, list(nodeLabels,nodeFills))
 	}
 	setVisualStyle(styleName)
-	layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
-  redraw_command <- sprintf("autoannotate redraw network=%s",getNetworkSuid())
-  response <- commandsGET(redraw_command)
-	fitContent()
-  redraw_command <- sprintf("autoannotate redraw network=%s",getNetworkSuid())
-  response <- commandsGET(redraw_command)
-	fitContent()
-
+	if (groupClusters) {
+		layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
+  	redraw_command <- sprintf("autoannotate redraw network=%s",
+			getNetworkSuid())
+  	response <- commandsGET(redraw_command)
+		fitContent()
+  
+		redraw_command <- sprintf("autoannotate redraw network=%s",
+			getNetworkSuid())
+  	response <- commandsGET(redraw_command)
+		fitContent()
+	}
 }

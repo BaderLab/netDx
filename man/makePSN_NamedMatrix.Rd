@@ -8,7 +8,7 @@ makePSN_NamedMatrix(xpr, nm, namedSets, outDir = tempdir(),
   simMetric = "pearson", verbose = TRUE, numCores = 1L,
   writeProfiles = TRUE, sparsify = FALSE, useSparsify2 = FALSE,
   cutoff = 0.3, sparsify_edgeMax = Inf, sparsify_maxInt = 50,
-  minMembers = 1L, runSerially = FALSE, append = FALSE, ...)
+  minMembers = 1L, runSerially = FALSE, ...)
 }
 \arguments{
 \item{xpr}{(matrix) rows are measurements, columns are samples. Columns
@@ -59,8 +59,6 @@ number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)}
 
 \item{runSerially}{(logical) set to TRUE to create nets serially, rather 
 than in parallel}
-
-\item{append}{(logical) if TRUE does not overwrite netDir.}
 
 \item{...}{passed to \code{getSimilarity()}}
 }

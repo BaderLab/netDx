@@ -61,16 +61,19 @@ test_that("feature construction and compilation",{
         groupList[["clinical"]],netDir,
         simMetric="custom",customFunc=normDiff, # custom function
         writeProfiles=FALSE,
-        sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+        sparsify=TRUE,verbose=TRUE,...)
     netList2 <- unlist(netList2)
     netList <- c(netList,netList2)
     return(netList)
 }
 	# directory contains GENES.TXT, NETWORKS.TXT INTERACTIONS folder
 	 outDir <- tempdir()
-	netDir <- sprintf("%s/networks",outDir)
+	netDir <- sprintf("%s/tmp",outDir)
+	dir.create(netDir)
 
+	pheno_id <- setupFeatureDB(pheno,netDir)
 	x <-createPSN_MultiData(dataList=dataList,groupList=groupList,
+			pheno=pheno_id,
 			netDir=netDir,customFunc=makeNets,numCores=1,
 			verbose=FALSE)
 	
@@ -79,26 +82,24 @@ test_that("feature construction and compilation",{
 	expect_equal(sort(x),sort(y))
 
 	# created in dir
-	expect_equal(dir(netDir,pattern="cont.txt"),"age_cont.txt")
-	expect_equal(dir(netDir,pattern=".profile"),y[grep("profile$",y)])
+	#expect_equal(dir(sprintf("%s/INTERACTIONS",netDir),pattern="cont.txt"),
+	#	"age_cont.txt")
+	#expect_equal(length(dir(sprintf("%s/profiles",netDir),pattern="profile$")),,length(grep("profile$",y)))
 
 	# custom similarity function was used as provided
-	tmp <- read.delim(sprintf("%s/age_cont.txt",netDir),sep="\t",
+	tmp <- read.delim(sprintf("%s/INTERACTIONS/1.3.txt",netDir),sep="\t",
 			header=FALSE,as.is=TRUE)
 	x1 <- tmp[1,1]; x2 <- tmp[1,2]
 	z <- normDiff(clin)
 	expect_equal(round(z[x1,x2],3),round(tmp[1,3],3))
 
 	# compiling features 
-	dbDir <- compileFeatures(netDir,pheno$ID,outDir,numCores=1L,verbose=TRUE)
-			#altBaseDir=sprintf("%s/inst/",path.package("netDx")))
-	oDir <- sprintf("%s/..",dbDir$netDir)
-	expect_equal(length(dir(dbDir$netDir, ".txt")),3) # three networks
+	dbDir <- compileFeatures(netDir,outDir, numCores=1,verbose=TRUE)
+	oDir <- dbDir$netDir
+	expect_equal(length(dir(sprintf("%s/INTERACTIONS",oDir), ".txt")),3) # three networks
 	expect_match(dir(oDir, "GENES.txt"),"GENES.txt")
 	expect_match(dir(oDir, "NETWORKS.txt"),"NETWORKS.txt")
 	expect_match(dir(dbDir$dbDir,"lucene.index"),"lucene.index") # copied ok
-	expect_match(dir(dbDir$dbDir,"genemania.xml"),"genemania.xml") # copied ok
-
 })
 
 ###test_that("making PSN works: Pearson", {

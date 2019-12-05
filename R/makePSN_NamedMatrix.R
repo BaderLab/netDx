@@ -97,7 +97,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 			if (writeProfiles) {
 				outFile <- sprintf("%s/%s.profile",outDir,curSet)
 				write.table(t(xpr[idx,,drop=FALSE]),file=outFile,sep="\t",
-							col=FALSE,row=TRUE,quote=FALSE)
+							col.names=FALSE,row.names=TRUE,quote=FALSE)
 			} else {
 				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
 				message(sprintf("computing sim for %s",curSet))
@@ -131,7 +131,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
 					}
 				} else {
 				write.table(pat_pairs, file=outFile,sep="\t",
-					col=FALSE,row=FALSE,quote=FALSE)
+					col.names=FALSE,row.names=FALSE,quote=FALSE)
 				print(basename(outFile))
 				message("done")
 				}

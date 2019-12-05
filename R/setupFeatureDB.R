@@ -6,13 +6,29 @@
 #' @param prepDir (char) directory in which to setup database
 #' @return (data.frame) internal numerical id for patients (INTERNAL_ID) and
 #' user-provided ID (ID)
+#' @examples
+#' data(xpr,pheno)
+#' pathwayList <- list(pathA=rownames(xpr)[1:10],pathB=rownames(xpr)[21:50])
+#' 
+#' dataList <- list(rna=xpr)  #only one layer type
+#' groupList <- list(rna=pathwayList) # group genes by pathways
+#' 
+#' makeNets <- function(dataList, groupList, netDir,...) {
+#'     netList <- makePSN_NamedMatrix(dataList[["rna"]],rownames(dataList[["rna"]]),
+#'                 groupList[["rna"]],netDir,verbose=FALSE,writeProfiles=TRUE,...)
+#'     unlist(netList)
+#' }
+#' tmpDir <- tempdir(); netDir <- sprintf("%s/nets",tmpDir)
+#' dir.create(netDir,recursive=TRUE)
+#' 
+#' pheno_id <- setupFeatureDB(pheno,netDir)
 #' @export
 setupFeatureDB <- function(pheno,prepDir) {
 
 curd <- getwd()
 setwd(prepDir)
 
-pheno$INTERNAL_ID <- 1:nrow(pheno)
+pheno$INTERNAL_ID <- seq_len(nrow(pheno))
 
 # ORGANISMS.txt
 con <- file("ORGANISMS.txt","w")
@@ -23,19 +39,19 @@ close(con)
 # NODES.txt
 tmp <- pheno[,c("INTERNAL_ID","ID","INTERNAL_ID")]
 tmp$dummy <- 1
-write.table(tmp,file="NODES.txt",sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+write.table(tmp,file="NODES.txt",sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # GENES.txt
 tmp <- paste(pheno$INTERNAL_ID,pheno$ID,"N/A",1,pheno$INTERNAL_ID,1,0,sep="\t")
-write.table(tmp,file="GENES.txt",sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+write.table(tmp,file="GENES.txt",sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # GENE_DATA.txt
 write.table(pheno[,c("INTERNAL_ID","ID")],file="GENE_DATA.txt",sep="\t",
-	col=FALSE,row=FALSE,quote=FALSE)
+	col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # synonym file
 write.table(cbind(pheno$INTERNAL_ID,pheno$INTERNAL_ID),file="1.synonyms",
-	sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+	sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # GENE_NAMING_SOURCES.txt
 con <- file("GENE_NAMING_SOURCES.txt","w")

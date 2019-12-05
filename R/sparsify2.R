@@ -67,7 +67,7 @@ sparsify2 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=1000,
 	head(mmat)
 	mmat[,3] <- as.numeric(mmat[,3])
 	mmat[,3] <- round(mmat[,3],digits=4)
-	write.table(mmat,file=outFile,sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+	write.table(mmat,file=outFile,sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 	return(mmat)
 
 ### the code below converts the SIF format back to a matrix,potentially

@@ -136,7 +136,8 @@ compileFeatures <- function(netDir,outDir=tempdir(),
 	olddir <- sprintf("%s/lucene_index",dataDir)
 	flist <- list.files(olddir,recursive=TRUE)
 	dirs <- list.dirs(olddir,recursive=TRUE,full.names=FALSE)
-	sapply(paste(dataDir,setdiff(dirs,""),sep="/"),dir.create)
+	dirs <- setdiff(dirs,"")
+	for (d in dirs) dir.create(paste(dataDir,d,sep="/"))
 	file.copy(from=paste(olddir,flist,sep="/"),
 						to=paste(dataDir,flist,sep="/"))
 	unlink(olddir)

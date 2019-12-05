@@ -93,14 +93,14 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	numPat	<- nrow(pid) 
 	if (!writeAggNet %in% "NONE"){
 		# buffer for pairwise interactions
-		intColl <- matrix(0,nrow=numPat,ncol=numPat) 
+		intColl <- matrix(0,nrow.names=numPat,ncol.names=numPat) 
 		# num interactions
-		numInt <- matrix(0,nrow=numPat,ncol=numPat)
+		numInt <- matrix(0,nrow.names=numPat,ncol.names=numPat)
 	}
 
 	contNets <- seq_len(nrow(nets))
 	if (simMode=="BinProp") {
-		intColl <- matrix(0,nrow=numPat,ncol=numPat)
+		intColl <- matrix(0,nrow.names=numPat,ncol.names=numPat)
 		binNets <- which(nets[,"isBinary"]>0)
 		message(sprintf("Got %i binary nets", length(binNets)))
 		for (i in binNets) {
@@ -293,7 +293,7 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 		if (!is.infinite(limitToTop)) {
 			outF <- sub(".txt",sprintf("top%i.txt",limitToTop),outF)
 		}
-		write.table(ints,file=outF,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+		write.table(ints,file=outF,sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
 		
 		return(outF)
 	} else {

@@ -14,10 +14,10 @@
 #' @import reshape2
 #' @importFrom utils write.table
 #' @examples
-#' m <- matrix(runif(500*500),nrow=500)
+#' m <- matrix(runif(500*500),nrow.names=500)
 #' y <- sparsify2(m)
 #' @examples 
-#' m <- matrix(runif(500*500),nrow=500)
+#' m <- matrix(runif(500*500),nrow.names=500)
 #' y <- sparsify2(m)
 #' @export
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=Inf,
@@ -83,7 +83,7 @@ if (is.infinite(EDGE_MAX)) {
 	mmat <- na.omit(mmat) # boundary case where cutoff exceeds net max
 	mmat[,3] <- as.numeric(mmat[,3])
 	mmat[,3] <- round(mmat[,3],digits=4)
-	write.table(mmat,file=outFile,sep="\t",col=FALSE,row=FALSE,quote=FALSE)
+	write.table(mmat,file=outFile,sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 	return(mmat)
 
 ### the code below converts the SIF format back to a matrix,potentially

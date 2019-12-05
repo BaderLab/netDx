@@ -398,7 +398,8 @@ for (rngNum in startAt:numSplits) {
 			pTally <- compileFeatureScores(paste(resDir,nrank,sep="/"),
 				verbose=verbose_compileFS)
 			tallyFile <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
-			write.table(pTally,file=tallyFile,sep="\t",col=TRUE,row=FALSE,
+			write.table(pTally,file=tallyFile,sep="\t",
+				col.names=TRUE,row.names=FALSE,
 				quote=FALSE)
 			curList[["featureScores"]][[g]] <- pTally
 		if (verbose_default) message("")

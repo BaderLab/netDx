@@ -34,8 +34,8 @@ if (any(na_sum>0))
 type_rank <- na.omit(type_rank)
 
 # finally, select the class with the highest rank as the subject label.
-maxScore    <- sapply(seq_len(nrow(type_rank)),function(i){
-					  which.max(type_rank[i,-1])})
+maxScore    <- unlist(vapply(seq_len(nrow(type_rank)),function(i){
+					  which.max(type_rank[i,-1])}))
 patClass	<- sub("_SCORE","",names(maxScore))
 type_rank	<- cbind(type_rank, PRED_CLASS=patClass)
 type_rank$PRED_CLASS <- as.character(type_rank$PRED_CLASS)

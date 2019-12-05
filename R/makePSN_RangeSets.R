@@ -140,7 +140,7 @@ outFiles <- foreach (idx=seq_len(length(rangeSet))) %dopar% {
 		# write network for pathway
 		outFile		<- sprintf("%s/%s_cont.txt",netDir,curP)
 		write.table(pat_pairs, file=outFile,sep="\t",
-					col=FALSE,row=FALSE,quote=FALSE)
+					col.names=FALSE,row.names=FALSE,quote=FALSE)
 		outFile <- basename(outFile)
 	##	outFiles 	<- c(outFiles, basename(outFile))
 		

@@ -48,7 +48,7 @@ normalize <- function(X) {
     finiteMean <- function(x) {
         return(mean(x[is.finite(x)],na.rm=TRUE))
     }
-    means <- apply(sortedColumns[, 1:K + 1], 1, finiteMean) +
+    means <- apply(sortedColumns[, seq_len(K) + 1], 1, finiteMean) +
         .Machine$double.eps
     avg <- function(x, y) {
         return((x + y)/2)
@@ -114,7 +114,7 @@ normalize <- function(X) {
     finiteMean <- function(x) {
         return(mean(x[is.finite(x)],na.rm=TRUE))
     }
-    means <- apply(sortedColumns[, 1:K + 1], 1, finiteMean) +
+    means <- apply(sortedColumns[, seq_len(K) + 1], 1, finiteMean) +
         .Machine$double.eps
     avg <- function(x, y) {
         return((x + y)/2)

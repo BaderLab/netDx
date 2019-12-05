@@ -58,5 +58,5 @@ writeQueryBatchFile <- function(netDir,netList,outDir=tempdir(),idFile,
 			filename=netList,name=sub(".txt","",netList),
 			description=netList,groupCode=groupCode)
 	write.table(net_DF,file=outF,sep="\t",
-			col=FALSE,row=FALSE,quote=FALSE,append=TRUE)
+			col.names=FALSE,row.names=FALSE,quote=FALSE,append=TRUE)
 }

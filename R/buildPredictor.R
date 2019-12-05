@@ -69,6 +69,7 @@
 #' @import glmnet
 #' @importFrom stats median na.omit coef
 #' @importFrom utils read.delim write.table
+#' @importFrom methods is
 #' @return (list) 
 #' "inputNets": data.frame of all input network names. Columns are "NetType"
 #' (group) and "NetName" (network name).
@@ -83,6 +84,7 @@
 #' selected features for corresponding patient class, for that train/test split 
 #'  Side effect of generating predictor-related data in <outDir>.
 #' @export
+#' @importFrom methods is
 #' @import MultiAssayExperiment
 #' @examples
 #'

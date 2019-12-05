@@ -30,6 +30,7 @@
 #' @import ROCR
 #' @import pracma
 #' @importFrom stats sd
+#' @importFrom graphics abline axis par points segments text title hist
 #' @export
 plotPerf <- function(inDir, predClasses) {
 

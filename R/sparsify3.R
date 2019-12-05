@@ -14,10 +14,10 @@
 #' @import reshape2
 #' @importFrom utils write.table
 #' @examples
-#' m <- matrix(runif(500*500),nrow.names=500)
+#' m <- matrix(runif(500*500),nrow=500)
 #' y <- sparsify2(m)
 #' @examples 
-#' m <- matrix(runif(500*500),nrow.names=500)
+#' m <- matrix(runif(500*500),nrow=500)
 #' y <- sparsify2(m)
 #' @export
 sparsify3 <- function(W, outFile="tmp.txt",cutoff=0.3,maxInt=50,EDGE_MAX=Inf,

@@ -27,6 +27,7 @@
 #' organize nodes in each cluster into circles, which loses the c
 #' topology.
 #' 
+#' @importFrom grDevices colorRampPalette
 #' @examples
 #' #refer to getEMapInput_many.R for working getEMapInput_many() example
 #' data(featScores)

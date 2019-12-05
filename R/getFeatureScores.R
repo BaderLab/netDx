@@ -18,6 +18,7 @@
 #' @examples
 #' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
 #' netScores <- getFeatureScores(inDir, predClasses = c("LumA","notLumA"))
+#' @importFrom methods is
 #' @export
 getFeatureScores <- function(inDir,predClasses,getFullCons=TRUE) {
 	if (missing(inDir)) stop("inDir not provided");

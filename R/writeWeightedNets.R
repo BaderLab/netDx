@@ -38,6 +38,7 @@
 #' Expects a graphic device to be open already (e.g. by pdf() call)
 #' @importFrom stats qexp density
 #' @importFrom utils write.table
+#' @importFrom methods is
 #' @return If an aggregated network is written (writeAggNet=TRUE),
 #' returns the filename of the net. Else returns an empty value.
 #' Side effect of writing one tab-delimited file per
@@ -93,14 +94,14 @@ writeWeightedNets <- function(geneFile,netInfo,netDir,keepNets,outDir,
 	numPat	<- nrow(pid) 
 	if (!writeAggNet %in% "NONE"){
 		# buffer for pairwise interactions
-		intColl <- matrix(0,nrow.names=numPat,ncol.names=numPat) 
+		intColl <- matrix(0,nrow=numPat,ncol=numPat) 
 		# num interactions
-		numInt <- matrix(0,nrow.names=numPat,ncol.names=numPat)
+		numInt <- matrix(0,nrow=numPat,ncol=numPat)
 	}
 
 	contNets <- seq_len(nrow(nets))
 	if (simMode=="BinProp") {
-		intColl <- matrix(0,nrow.names=numPat,ncol.names=numPat)
+		intColl <- matrix(0,nrow=numPat,ncol=numPat)
 		binNets <- which(nets[,"isBinary"]>0)
 		message(sprintf("Got %i binary nets", length(binNets)))
 		for (i in binNets) {

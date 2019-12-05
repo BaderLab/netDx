@@ -10,6 +10,7 @@
 #' @param plotTitle (numeric) plot title
 #' @param meanCol (char) colour for mean trendline
 #' @return No value. Side effect of plotting ROC and PR curves
+#' @importFrom graphics abline axis par points segments text title hist
 #' @examples
 #' inDir <- sprintf("%s/extdata/example_output", 
 #'	path.package("netDx"))
@@ -28,6 +29,7 @@
 #' }
 #' plotPerf_multi(rocList,"ROC")
 #' @importFrom stats aggregate
+#' @importFrom methods slotNames
 #' @export
 plotPerf_multi <- function(inList,plotTitle="performance",
 		plotType="ROC", xlab="TPR",ylab="FPR",meanCol="darkblue",

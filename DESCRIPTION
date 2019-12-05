@@ -17,7 +17,7 @@ Depends:
 Suggests: 
     curatedTCGAData,
     testthat
-Imports: ROCR,pracma,ggplot2,RCy3,caroline,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment
+Imports: ROCR,pracma,ggplot2,RCy3,caroline,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: MIT + file LICENSE

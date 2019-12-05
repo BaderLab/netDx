@@ -13,7 +13,8 @@
 #' If set to an integer plots the number of networks requested, to the max
 #' number of networks available
 #' @param grepFiles (char) searches for files with the provided string.
-#' @param stripFromFileName (char) vector of char patterns to remove from file name
+#' @param stripFromFileName (char) vector of char patterns to remove from file 
+#' name
 #' @param verbose (logical) print messages
 #' @return No value. Side effect of creating plots of network edge-weight 
 #' distribution and printing network statistics to console. Files created
@@ -26,68 +27,69 @@
 #' @importFrom caroline violins
 #' @importFrom methods is
 #' @export
-plotNetEdgeDistribution <- function(netDir,setName="netDir",randomSample=NULL, 
-	grepFiles="cont.txt",stripFromFileName="_cont.txt",numPatients=NULL,
-	verbose=TRUE) {
-fList <- dir(path=netDir,pattern=grepFiles)
-message(sprintf("%i files match pattern\n", length(fList)))
-
-if (!is.null(randomSample)) {
-	randomSample <- min(randomSample, length(fList))
-	message(sprintf("randomSample set - picking %i files\n", randomSample))
-	
-	oldseed <- NULL
-	if (exists(".Random.seed")) oldseed <- .Random.seed
-	fList <- sample(fList,randomSample,FALSE)
-	if (!is.null(oldseed)) .Random.seed <- oldseed
-}
-
-out <- list()
-edge_count <- list()
-for (curr in fList) {
-    print(curr)
-    dat <- read.delim(sprintf("%s/%s",netDir,curr),sep="\t",header=FALSE,as.is=TRUE)
-    out[[curr]] <- dat[,3]
-	edge_count[[curr]] <- nrow(dat)
-}
-
-mu <- mean(unlist(lapply(out,mean)))
-med <- mean(unlist(lapply(out,median)))
-
-violins(out,connect=FALSE,at=seq_len(length(out)),names=rep("",length(out)),
-		main=sprintf("%s:Edge wts",setName),ylab="pairwise similarity")	
-	nm <- names(out)
-	for (k in seq_len(length(stripFromFileName))) { 
-		nm <- sub(stripFromFileName[k],"",nm)
-	}
-	axis(1,at=seq_len(length(out)),labels=nm,cex=0.8)
-
-message(sprintf("Network statistics\n"))
-message("----------------------------\n")
-message(sprintf("Mean edge weight = %1.2f\n",mu)) 
-message(sprintf("Median edge weight = %1.2f\n",med)) 
-message("\n")
-
-edge_count <- unlist(edge_count)
-pdf(sprintf("%s/%s_edgeCount.pdf",netDir,setName),height=9,width=5)
-tryCatch({
-	violins(edge_count,main=sprintf("%s: num edges",setName),
-	ylab="Num. edges")
-	if (!is.null(numPatients)) {
-		sparsity <- ( edge_count/choose(numPatients,2) ) * 100
-		violins(sparsity,main=sprintf("%s: sparsity",setName),
-		ylab="% sparsity")
-	}
-},error=function(ex) {
-	print(ex)
-},finally={
-	dev.off()
-})
-
-message(sprintf("Network statistics\n"))
-message("----------------------------\n")
-message(sprintf("Edge count = %i - %i \n", min(edge_count),max(edge_count)))
-message(sprintf("Mean edge count = %1.2f\n",mean(edge_count))) 
-message(sprintf("Median edge count = %1.2f\n",median(edge_count))) 
-message("\n")
+plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = NULL, 
+    grepFiles = "cont.txt", stripFromFileName = "_cont.txt", numPatients = NULL, 
+    verbose = TRUE) {
+    fList <- dir(path = netDir, pattern = grepFiles)
+    message(sprintf("%i files match pattern\n", length(fList)))
+    
+    if (!is.null(randomSample)) {
+        randomSample <- min(randomSample, length(fList))
+        message(sprintf("randomSample set - picking %i files\n", randomSample))
+        
+        oldseed <- NULL
+        if (exists(".Random.seed")) 
+            oldseed <- .Random.seed
+        fList <- sample(fList, randomSample, FALSE)
+        if (!is.null(oldseed)) 
+            .Random.seed <- oldseed
+    }
+    
+    out <- list()
+    edge_count <- list()
+    for (curr in fList) {
+        print(curr)
+        dat <- read.delim(sprintf("%s/%s", netDir, curr), sep = "\t", header = FALSE, 
+            as.is = TRUE)
+        out[[curr]] <- dat[, 3]
+        edge_count[[curr]] <- nrow(dat)
+    }
+    
+    mu <- mean(unlist(lapply(out, mean)))
+    med <- mean(unlist(lapply(out, median)))
+    
+    violins(out, connect = FALSE, at = seq_len(length(out)), names = rep("", length(out)), 
+        main = sprintf("%s:Edge wts", setName), ylab = "pairwise similarity")
+    nm <- names(out)
+    for (k in seq_len(length(stripFromFileName))) {
+        nm <- sub(stripFromFileName[k], "", nm)
+    }
+    axis(1, at = seq_len(length(out)), labels = nm, cex = 0.8)
+    
+    message(sprintf("Network statistics\n"))
+    message("----------------------------\n")
+    message(sprintf("Mean edge weight = %1.2f\n", mu))
+    message(sprintf("Median edge weight = %1.2f\n", med))
+    message("\n")
+    
+    edge_count <- unlist(edge_count)
+    pdf(sprintf("%s/%s_edgeCount.pdf", netDir, setName), height = 9, width = 5)
+    tryCatch({
+        violins(edge_count, main = sprintf("%s: num edges", setName), ylab = "Num. edges")
+        if (!is.null(numPatients)) {
+            sparsity <- (edge_count/choose(numPatients, 2)) * 100
+            violins(sparsity, main = sprintf("%s: sparsity", setName), ylab = "% sparsity")
+        }
+    }, error = function(ex) {
+        print(ex)
+    }, finally = {
+        dev.off()
+    })
+    
+    message(sprintf("Network statistics\n"))
+    message("----------------------------\n")
+    message(sprintf("Edge count = %i - %i \n", min(edge_count), max(edge_count)))
+    message(sprintf("Mean edge count = %1.2f\n", mean(edge_count)))
+    message(sprintf("Median edge count = %1.2f\n", median(edge_count)))
+    message("\n")
 }

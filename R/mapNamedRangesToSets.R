@@ -12,14 +12,15 @@
 #' @examples 
 #' data(genes,pathwayList); 
 #' gene_GR<- GRanges(genes$chrom,
-#'	IRanges(genes$txStart,genes$txEnd),name=genes$name2)
+#'\tIRanges(genes$txStart,genes$txEnd),name=genes$name2)
 #' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 #' @export
-mapNamedRangesToSets <- function(gr,rangeList,verbose=FALSE){ 
+mapNamedRangesToSets <- function(gr, rangeList, verbose = FALSE) {
     out <- list()
     for (nm in names(rangeList)) {
         my_gr <- gr[which(gr$name %in% rangeList[[nm]])]
-        if (verbose) message(sprintf("%s: %i ranges\n",nm,length(my_gr)))
+        if (verbose) 
+            message(sprintf("%s: %i ranges\n", nm, length(my_gr)))
         out[[nm]] <- my_gr
     }
     out

@@ -23,8 +23,8 @@
 #' @param groupList (list of lists) keys are datatypes, and values are 
 #' lists indicating how units for those datatypes are to be grouped. 
 #' Keys must match names(assays(dataList)). The only exception is for clinical
-#' values. Variables for "clinical" will be extracted from columns of the sample
-#' metadata table (i.e. from colData(dataList)).   
+#' values. Variables for "clinical" will be extracted from columns of the 
+#' sample metadata table (i.e. from colData(dataList)).   
 #' e.g. groupList[["rna"]] could be a list of pathway definitions. 
 #' So keys(groupList[["rna"]]) would have pathway names, generating one PSN
 #' per pathways, and values(groupList[["rna"]]) would be genes that would be
@@ -73,16 +73,18 @@
 #' @return (list) 
 #' "inputNets": data.frame of all input network names. Columns are "NetType"
 #' (group) and "NetName" (network name).
-#' "Split<i>" is the data for train/test split i (i.e. one per train/test split).
+#' "Split<i>" is the data for train/test split i 
+#' (i.e. one per train/test split).
 #' Each "SplitX" entry contains in turn a list of results for that split. 
 #' Key-value pairs are:
 #' 1) predictions: real and predicted labels for test patients
 #' 2) accuracy: percent accuracy of predictions
 #' 3) featureScores: list of length g, where g is number of patient classes.
-#' scores for all features following feature selection, for corresponding class.
+#' scores for all features following feature selection, for corresponding 
+#' class.
 #' 4) featureSelected: list of length g (num patient classes). List of 
-#' selected features for corresponding patient class, for that train/test split 
-#'  Side effect of generating predictor-related data in <outDir>.
+#' selected features for corresponding patient class, for that train/test 
+#' split. Side effect of generating predictor-related data in <outDir>.
 #' @export
 #' @importFrom methods is
 #' @import MultiAssayExperiment
@@ -128,8 +130,9 @@
 #' 
 #' groupList <- list()
 #' groupList[["BRCA_mRNAArray-20160128"]] <- pathList[seq_len(3)]
-#' groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
-#'     stage="STAGE")
+#' groupList[["clinical"]] <- list(
+#'	age="patient.age_at_initial_pathologic_diagnosis",
+#'  stage="STAGE")
 #' makeNets <- function(dataList, groupList, netDir,...) {
 #'     netList <- c()
 #'     # make RNA nets: group by pathway
@@ -195,9 +198,13 @@ if (length(groupList)<1) stop("groupList must be of length 1+\n")
 if (missing(outDir)) outDir <- tempdir()
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
-names_nomatch <- any(!setdiff(names(groupList),"clinical") %in% names(dataList))
+nm1 <-setdiff(names(groupList),"clinical") 
+names_nomatch <- any(!nm1 %in% names(dataList))
 if (!is(groupList,"list") || not_list || names_nomatch ) 
-	stop("groupList must be a list of lists. Names must match those in dataList, and each entry should be a list of networks for this group.")
+	msg <- c("groupList must be a list of lists.",
+	" Names must match those in dataList, and each entry should be a list",
+  " of networks for this group.")
+	stop(paste(msg,sep=""))
 if (!is(dataList,"MultiAssayExperiment"))
 	stop("dataList must be a MultiAssayExperiment")
 if (trainProp <= 0 | trainProp >= 1) 
@@ -497,7 +504,10 @@ for (rngNum in startAt:numSplits) {
 	if (verbose_default) message("")
 	
 	if (sum(is.na(predRes))>0 & verbose_default) {
-		message(sprintf("RNG %i : One or more classes have no selected features. Not classifying", rngNum))
+		str <- sprintf("RNG %i : One or more classes have no selected features.",
+				rngNum)
+		str <- sprintf("%s Not classifying.",str)
+		message(str)
 	} else {
 		if (verbose_default) message("** Predict labels")
 		predClass <- predictPatientLabels(predRes,

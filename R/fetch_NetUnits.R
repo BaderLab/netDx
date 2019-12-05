@@ -31,102 +31,90 @@
 #' Here, the CNV overlaps geneX, which belongs in pathway1 and pathway2, 
 #' and  also geneY, which belongs in pathway3. If a CNV does not overlap 
 #' any genes in any feature-selected pathways, the value for that CNV is 
-#' "NA".
+#' 'NA'.
 #' @export
 #' @examples
 #' data(cnv_GR,pathway_GR,pathwayList)
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList),
-#' 	trackMapping_detail=TRUE)
-fetch_NetUnits <- function(pat_GR, netList, whichNets,
-	trackMapping_detail=FALSE,verbose=FALSE) {
-	netg <- NULL
-	for (n in whichNets) {
-		netg <- c(netg,netList[[n]])
-	}
-	netg <- unique(unlist(netg))
-	message(sprintf("Total %i subfeatures\n",length(netg)))
-
-	patID 		<- unique(pat_GR$ID)
-	patUnit		<- rep(NA, length(patID))
-	patNets		<- rep(NA, length(patID))
-	ctr	<- 1
-
-	if (trackMapping_detail){
-		message("tracking detailed mapping. indexing unit membership\n")
-		unit_mat <- matrix(0,nrow=length(whichNets),ncol=length(netg))
-		colnames(unit_mat)	<- netg
-		rownames(unit_mat)	<- whichNets
-		ctr <- 1
-		for (netName in whichNets) {
-			idx <- which(netg %in% netList[[netName]])
-			if (verbose) message(sprintf("%s\n",netName))
-			unit_mat[ctr,idx] <- 1
-			ctr <- ctr+1
-		}
-
-###		## temp code to check histone genes.
-###		hist_idx	<- grep("^HIST[12]",colnames(unit_mat))
-###		hist2_idx	<- grep("^HIST2",colnames(unit_mat))
-###		hist_genes <- colnames(unit_mat)[hist_idx]
-###		hist2_genes	<- colnames(unit_mat)[hist2_idx]
-###
-###		has_histones <- which(rowSums(unit_mat[,hist_idx])>5)
-###		print(rowSums(unit_mat[has_histones,hist_idx]))
-###
-###	 	patFeatures <- c()
-###		hist2_pat <- c()
-		# map unit-to-feature for each structural variant
-		outcol <- c()
-		for (k in seq_len(length(pat_GR))) {
-			myg 		<- unlist(strsplit(pat_GR$LOCUS_NAMES[k],","))
-
-###			patFeatures	<- c(patFeatures, sum(myg %in% hist_genes))
-###			hist2_pat	<- c(hist2_pat, sum(myg %in% hist2_genes))
-		
-			# which genes are in fs pathways?
-			gene_col	<- which(colnames(unit_mat)%in% myg)
-			# get the pathways in which this gene occurs
-			has_gene	<- rowSums(unit_mat[,gene_col,drop=FALSE])
-			idx <- which(has_gene>0)
-
-			# create a semi-colon delimited pair of "gene:pathway" for this cnv
-			if (length(idx)>0) {
-				str <- c()
-				for (i in idx) {
-					feat		<- rownames(unit_mat)[i]
-					pull_gene	<- intersect(myg,netList[[feat]])
-					str			<- c(str,paste(pull_gene,feat,sep="@"))
-				}
-				str <- paste(str,collapse=";")
-				outcol	<- c(outcol,str)
-			} else {
-				outcol <- c(outcol, "NA")
-			}
-		}
-
-		pat_GR$unit2feature <- outcol
-		out <- pat_GR
-
-	} else {
-		for (uq in patID) {
-			myidx	<- which(pat_GR$ID == uq)
-			myg 	<- unlist(strsplit(pat_GR$LOCUS_NAMES[myidx],","))
-	
-			# genes that overlap my CNV and that are in 
-			patUnit[ctr]	<- paste(intersect(myg,netg),collapse=",") 
-	
-			tmp <- c()
-			for (n in whichNets) {
-				 m <- intersect(myg,netList[[n]])
-				if (length(m)>0)tmp <- c(tmp, n)
-			}
-			patNets[ctr] <- paste(tmp, collapse=",")
-			ctr <- ctr + 1
-		}
-		out <- data.frame(ID=patID,FEATURE=patNets,UNIT=patUnit)
-	}
-
-	return(out)
+#' \ttrackMapping_detail=TRUE)
+fetch_NetUnits <- function(pat_GR, netList, whichNets, trackMapping_detail = FALSE, 
+    verbose = FALSE) {
+    netg <- NULL
+    for (n in whichNets) {
+        netg <- c(netg, netList[[n]])
+    }
+    netg <- unique(unlist(netg))
+    message(sprintf("Total %i subfeatures\n", length(netg)))
+    
+    patID <- unique(pat_GR$ID)
+    patUnit <- rep(NA, length(patID))
+    patNets <- rep(NA, length(patID))
+    ctr <- 1
+    
+    if (trackMapping_detail) {
+        message("tracking detailed mapping. indexing unit membership\n")
+        unit_mat <- matrix(0, nrow = length(whichNets), ncol = length(netg))
+        colnames(unit_mat) <- netg
+        rownames(unit_mat) <- whichNets
+        ctr <- 1
+        for (netName in whichNets) {
+            idx <- which(netg %in% netList[[netName]])
+            if (verbose) 
+                message(sprintf("%s\n", netName))
+            unit_mat[ctr, idx] <- 1
+            ctr <- ctr + 1
+        }
+        
+        ### c() map unit-to-feature for each structural variant
+        outcol <- c()
+        for (k in seq_len(length(pat_GR))) {
+            myg <- unlist(strsplit(pat_GR$LOCUS_NAMES[k], ","))
+            
+            # which genes are in fs pathways?
+            gene_col <- which(colnames(unit_mat) %in% myg)
+            # get the pathways in which this gene occurs
+            has_gene <- rowSums(unit_mat[, gene_col, drop = FALSE])
+            idx <- which(has_gene > 0)
+            
+            # create a semi-colon delimited pair of 'gene:pathway' for this cnv
+            if (length(idx) > 0) {
+                str <- c()
+                for (i in idx) {
+                  feat <- rownames(unit_mat)[i]
+                  pull_gene <- intersect(myg, netList[[feat]])
+                  str <- c(str, paste(pull_gene, feat, sep = "@"))
+                }
+                str <- paste(str, collapse = ";")
+                outcol <- c(outcol, str)
+            } else {
+                outcol <- c(outcol, "NA")
+            }
+        }
+        
+        pat_GR$unit2feature <- outcol
+        out <- pat_GR
+        
+    } else {
+        for (uq in patID) {
+            myidx <- which(pat_GR$ID == uq)
+            myg <- unlist(strsplit(pat_GR$LOCUS_NAMES[myidx], ","))
+            
+            # genes that overlap my CNV and that are in
+            patUnit[ctr] <- paste(intersect(myg, netg), collapse = ",")
+            
+            tmp <- c()
+            for (n in whichNets) {
+                m <- intersect(myg, netList[[n]])
+                if (length(m) > 0) 
+                  tmp <- c(tmp, n)
+            }
+            patNets[ctr] <- paste(tmp, collapse = ",")
+            ctr <- ctr + 1
+        }
+        out <- data.frame(ID = patID, FEATURE = patNets, UNIT = patUnit)
+    }
+    
+    return(out)
 }

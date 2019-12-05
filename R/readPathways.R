@@ -7,16 +7,11 @@
 #' The version at baderlab.org has additional unique formatting of the
 #' <set name> column as follows:
 #' <pathway_full_name>%<pathway_source>%<pathway_source_id>
-#' 
-#' Example:
-#' UREA CYCLE%HUMANCYC%PWY-4984	urea cycle	ASS1	ARG1	CPS1	ASL	OTC
-#' ABACAVIR METABOLISM%REACTOME DATABASE ID RELEASE 55%2161541	Abacavir metabolism	ADH1A	GUK1	ADAL	PCK1	NT5C2
-#' 
 #' This function requires the specific formatting of the first column
 #' to assign the key name of the output list (see \code{useIDasName} 
 #' argument).
 #' @param fname (char) path to pathway file in gmt format
-#'	pathway score to include pathway in the filter list
+#'\tpathway score to include pathway in the filter list
 #' @param MIN_SIZE (integer) min num genes allowed in a pathway. Pathways
 #' with fewer number of genes are excluded from the output list
 #' @param MAX_SIZE (integer) max num genes allowed in a pathway. Pathways
@@ -36,74 +31,76 @@
 #' (2) pNames: data.frame with original and cleaned names.
 #' @examples
 #' pathFile <- getExamplePathways()
-#'	pathwayList    <- readPathways(pathFile)
+#'\tpathwayList    <- readPathways(pathFile)
 #' 
 #' @export
-readPathways <- function(fname,MIN_SIZE=10L, MAX_SIZE=200L, 
-	EXCLUDE_KEGG=TRUE,IDasName=FALSE,verbose=TRUE,getOrigNames=FALSE) {
-
-# change locale to accommodate nonstandard chars in pathway names
-oldLocale   <- Sys.getlocale("LC_ALL")
-Sys.setlocale("LC_ALL","C")
-out <- list()
+readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, EXCLUDE_KEGG = TRUE, 
+    IDasName = FALSE, verbose = TRUE, getOrigNames = FALSE) {
+    
+    # change locale to accommodate nonstandard chars in pathway names
+    oldLocale <- Sys.getlocale("LC_ALL")
+    Sys.setlocale("LC_ALL", "C")
+    out <- list()
     # read list of master pathways
-	if (verbose) message("---------------------------------------\n")
-	if (verbose) message(sprintf("File: %s\n\n", basename(fname)))
-    f	<- file(fname,"r")
+    if (verbose) 
+        message("---------------------------------------\n")
+    if (verbose) 
+        message(sprintf("File: %s\n\n", basename(fname)))
+    f <- file(fname, "r")
     # TODO: deal with duplicate pathway names
     
-    #pName <- list()
-	ctr <- 0
-	options(warn=1)
+    # pName <- list()
+    ctr <- 0
+    options(warn = 1)
     repeat {
-        s	<- scan(f, what="character",nlines=1,quiet=TRUE,sep="\t")
-        if (length(s)==0) break;
-
-        pPos<- gregexpr("%",s[1])[[1]];
-		src <- ""
-		src_id	<- ""
-        if (pPos[1]==-1) {
-            #message("\n\n% symbol not found in pathway name")
-			s[1]	<- s[1]
+        s <- scan(f, what = "character", nlines = 1, quiet = TRUE, sep = "\t")
+        if (length(s) == 0) 
+            break
+        
+        pPos <- gregexpr("%", s[1])[[1]]
+        src <- ""
+        src_id <- ""
+        if (pPos[1] == -1) {
+            # message('\n\n% symbol not found in pathway name')
+            s[1] <- s[1]
         } else {
-
-			src		<- substr(s[1],pPos[1]+1,pPos[2]-1)
-			src_id	<- substr(s[1],pPos[2]+1,nchar(s[1]))
-			if (IDasName) 
-				s[1]	<- paste(src,src_id,sep=":")
-			else 
-        		s[1]	<- substr(s[1],1,pPos[1]-1)
-		}
-		if (!EXCLUDE_KEGG || (src!="KEGG")) {
-			idx <- which(s=="") # remove trailing blank rows.
-			if (any(idx)) s <- s[-idx]
-        	out[[s[1]]]	<- s[3:length(s)]
-        	#pName[[s[1]]] <- s[2] # stores pathway source - prob not needed
-		} 
-		ctr <- ctr+1
+            
+            src <- substr(s[1], pPos[1] + 1, pPos[2] - 1)
+            src_id <- substr(s[1], pPos[2] + 1, nchar(s[1]))
+            if (IDasName) 
+                s[1] <- paste(src, src_id, sep = ":") else s[1] <- substr(s[1], 1, pPos[1] - 1)
+        }
+        if (!EXCLUDE_KEGG || (src != "KEGG")) {
+            idx <- which(s == "")  # remove trailing blank rows.
+            if (any(idx)) 
+                s <- s[-idx]
+            out[[s[1]]] <- s[3:length(s)]
+            # pName[[s[1]]] <- s[2] # stores pathway source - prob not needed
+        }
+        ctr <- ctr + 1
     }
     close(f)
-	if (verbose) {
-		message(sprintf("Read %i pathways in total, internal list has %i entries",
-				ctr, length(out)))
-    	message(sprintf("\tFILTER: sets with num genes in [%i, %i]",
-				MIN_SIZE,MAX_SIZE))
-	}
+    if (verbose) {
+        message(sprintf(paste("Read %i pathways in total, ", "internal list has %i entries", 
+            sep = ""), ctr, length(out)))
+        message(sprintf("\tFILTER: sets with num genes in [%i, %i]", MIN_SIZE, MAX_SIZE))
+    }
     ln <- unlist(lapply(out, length))
-    idx	<- which(ln < MIN_SIZE | ln >= MAX_SIZE)
+    idx <- which(ln < MIN_SIZE | ln >= MAX_SIZE)
     out[idx] <- NULL
-    #pName[idx] <- NULL
-    if (verbose) message(sprintf("\t  => %i pathways excluded\n\t  => %i left", 
-				length(idx),length(out)))
-
-	# clean pathway names
-	nm	<- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))
-	if (getOrigNames) {
-		pnames <- cbind(names(out), nm)
-    	names(out) <- nm
-		out <- list(geneSets=out,pNames=pnames)
-	} else {
-		names(out) <- nm
-	}
+    # pName[idx] <- NULL
+    if (verbose) 
+        message(sprintf("\t  => %i pathways excluded\n\t  => %i left", length(idx), 
+            length(out)))
+    
+    # clean pathway names
+    nm <- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))
+    if (getOrigNames) {
+        pnames <- cbind(names(out), nm)
+        names(out) <- nm
+        out <- list(geneSets = out, pNames = pnames)
+    } else {
+        names(out) <- nm
+    }
     return(out)
 }

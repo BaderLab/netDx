@@ -15,27 +15,28 @@
 #' x <- perfCalc(confmat)
 #' @export
 perfCalc <- function(dat) {
-	dat <- na.omit(dat)
-	# F1 - harmonic mean of precision recall resolves to the formula below
-	tp2 <- 2*dat$tp
-	f1 <- tp2/(tp2 + dat$fp + dat$fn)
-
-	#precision recall curve
-
-	# precision = positive predictive value (pr = ppv)
-	ppv	<- dat$tp/(dat$tp+dat$fp)
-	rec <- dat$tp/(dat$tp+dat$fn)
-	# trapz integrates from right to left, so you need to apply rev()
-	# otherwise you get a negative area.
-	prauc <- pracma::trapz(rev(rec),rev(ppv))
-
-	#roc auc
-	x <- dat$fp/(dat$fp+dat$tn)
-	y <- dat$tp/(dat$tp+dat$fn)
-	
-	x <- c(0,rev(x),1); y <- c(0,rev(y),1)
-	auc <- pracma::trapz(x,y)
-	out <- data.frame(score=dat$score,ppv=ppv,f1=f1,rec=rec)
-
-	return(list(stats=out,auc=auc,prauc=prauc))
+    dat <- na.omit(dat)
+    # F1 - harmonic mean of precision recall resolves to the formula below
+    tp2 <- 2 * dat$tp
+    f1 <- tp2/(tp2 + dat$fp + dat$fn)
+    
+    # precision recall curve
+    
+    # precision = positive predictive value (pr = ppv)
+    ppv <- dat$tp/(dat$tp + dat$fp)
+    rec <- dat$tp/(dat$tp + dat$fn)
+    # trapz integrates from right to left, so you need to apply rev() otherwise you
+    # get a negative area.
+    prauc <- pracma::trapz(rev(rec), rev(ppv))
+    
+    # roc auc
+    x <- dat$fp/(dat$fp + dat$tn)
+    y <- dat$tp/(dat$tp + dat$fn)
+    
+    x <- c(0, rev(x), 1)
+    y <- c(0, rev(y), 1)
+    auc <- pracma::trapz(x, y)
+    out <- data.frame(score = dat$score, ppv = ppv, f1 = f1, rec = rec)
+    
+    return(list(stats = out, auc = auc, prauc = prauc))
 }

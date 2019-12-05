@@ -8,10 +8,10 @@
 #' would be a list of GenomicRanges objects, one per cellular pathway.
 #' @param gr (GRanges) query ranges
 #' @param rngList (list) keys are names, and values are GRanges, each range
-#' of which has a name (in "name" column). Note: It is faster to provide
+#' of which has a name (in 'name' column). Note: It is faster to provide
 #' a list of length 1 ; if the list is long, combining into a single GRanges
 #' object could prove slow.
-#' @return (GRanges) query ranges with the added column "LOCUS_NAMES". 
+#' @return (GRanges) query ranges with the added column 'LOCUS_NAMES'. 
 #' Where a range overlaps with multiple loci, the names are reported as a 
 #' comma-separated vector
 #' @examples
@@ -19,30 +19,30 @@
 #' x <- getRegionOL(cnv_GR,pathway_GR)
 #' @export
 getRegionOL <- function(gr, rngList) {
-	rng <- GRanges()
-	for (k in seq_len(length(rngList))) {
-		cur <- rngList[[k]]
-		seqlevels(rng) <- unique(c(seqlevels(rng), seqlevels(cur)))
-		rng <- c(rng, cur)
-	}
-
-	rng <- rng[which(as.character(seqnames(rng)) %in% 
-					 as.character(seqlevels(gr)))]
-	seqlevels(rng) <- seqlevels(gr)
-
-	ol <- findOverlaps(gr, rng)
-	ol <- cbind(queryHits(ol),subjectHits(ol))
-
-	# could be made more efficient.
-	ol_nm <- rng$name[ol[,2]]
-	LOCUS_NAMES <- rep("", length(gr))
-	t0 <- Sys.time()
-	for (k in unique(ol[,1])) {
-		idx <- which(ol[,1] == k)
-		LOCUS_NAMES[k] <- paste(unique(ol_nm[idx]),collapse=",")
-	}
-	print(Sys.time()-t0)
-	gr$LOCUS_NAMES=LOCUS_NAMES
-
-	gr
+    rng <- GRanges()
+    for (k in seq_len(length(rngList))) {
+        cur <- rngList[[k]]
+        seqlevels(rng) <- unique(c(seqlevels(rng), seqlevels(cur)))
+        rng <- c(rng, cur)
+    }
+    
+    tmp <- as.character(seqlevels(gr))
+    rng <- rng[which(as.character(seqnames(rng)) %in% tmp)]
+    seqlevels(rng) <- seqlevels(gr)
+    
+    ol <- findOverlaps(gr, rng)
+    ol <- cbind(queryHits(ol), subjectHits(ol))
+    
+    # could be made more efficient.
+    ol_nm <- rng$name[ol[, 2]]
+    LOCUS_NAMES <- rep("", length(gr))
+    t0 <- Sys.time()
+    for (k in unique(ol[, 1])) {
+        idx <- which(ol[, 1] == k)
+        LOCUS_NAMES[k] <- paste(unique(ol_nm[idx]), collapse = ",")
+    }
+    print(Sys.time() - t0)
+    gr$LOCUS_NAMES = LOCUS_NAMES
+    
+    gr
 }

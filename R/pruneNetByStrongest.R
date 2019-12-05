@@ -11,17 +11,17 @@
 #' @importFrom igraph edge_attr
 #' @importFrom igraph E
 #' @export
-pruneNetByStrongest <- function(net,vertices, topX=0.1) {
-	g <- igraph::graph_from_data_frame(net,vertices)
-	weights <- sort(E(g)$weight, decreasing=TRUE)
-	thresh <- weights[length(weights) * topX]
-	g2 <- delete.edges(g,which(E(g)$weight < thresh))
-
-	df <- as.data.frame(get.edgelist(g2))
-	df[,1] <- as.character(df[,1])
-	df[,2] <- as.character(df[,2])
-	df$weight <- edge_attr(g2,name="weight")
-	colnames(df) <- c("AliasA","AliasB","weight")
-df	
+pruneNetByStrongest <- function(net, vertices, topX = 0.1) {
+    g <- igraph::graph_from_data_frame(net, vertices)
+    weights <- sort(E(g)$weight, decreasing = TRUE)
+    thresh <- weights[length(weights) * topX]
+    g2 <- delete.edges(g, which(E(g)$weight < thresh))
+    
+    df <- as.data.frame(get.edgelist(g2))
+    df[, 1] <- as.character(df[, 1])
+    df[, 2] <- as.character(df[, 2])
+    df$weight <- edge_attr(g2, name = "weight")
+    colnames(df) <- c("AliasA", "AliasB", "weight")
+    df
 }
 

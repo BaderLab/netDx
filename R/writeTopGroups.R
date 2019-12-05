@@ -12,23 +12,23 @@
 #' e.g. for a pathway, units are the genes that were present in the 
 #' dataset. Genes that were not assayed would not be included in the output.
 #' To include all genes (not recommended unless you know what you are doing)
-#' , set to "*".
+#' , set to '*'.
 #' @param outFile (char) where output should be written.
 #' @return No value. Side effect of writing the gene-sets of features passing
 #' `cutoff` to `outFile`.
 #' @export
-writeTopGroups <- function(groupList, scores, cutoff,units="*",outFile) {
-	pnames <- scores[which(scores$SCORE>=cutoff),1]
-	cat(sprintf("%i of %i groups selected\n", length(pnames),length(groupList)))
-
-	system(sprintf("cat /dev/null > %s",outFile))
-	for (p in pnames) {
-		if (units[1]!="*"){
-			g <- intersect(groupList[[p]],units)
-			cat(sprintf("%s\t%s\t%s\n",p,p,paste(g,collapse="\t")),
-				file=outFile,append=TRUE)
-		}
-	}
-
-	cat(sprintf("GMT written to %s\n", outFile))
+writeTopGroups <- function(groupList, scores, cutoff, units = "*", outFile) {
+    pnames <- scores[which(scores$SCORE >= cutoff), 1]
+    cat(sprintf("%i of %i groups selected\n", length(pnames), length(groupList)))
+    
+    system(sprintf("cat /dev/null > %s", outFile))
+    for (p in pnames) {
+        if (units[1] != "*") {
+            g <- intersect(groupList[[p]], units)
+            cat(sprintf("%s\t%s\t%s\n", p, p, paste(g, collapse = "\t")), file = outFile, 
+                append = TRUE)
+        }
+    }
+    
+    cat(sprintf("GMT written to %s\n", outFile))
 }

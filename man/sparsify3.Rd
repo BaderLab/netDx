@@ -34,8 +34,8 @@ Sets diagonal and edges < cutoff to NA. Keeps strongest maxInt edges
 per node. Ties are ignored. Keeps a max of EDGE_MAX edges in the network.
 }
 \examples{
-m <- matrix(runif(500*500),nrow=500)
+m <- matrix(runif(500*500),nrow.names=500)
 y <- sparsify2(m)
-m <- matrix(runif(500*500),nrow=500)
+m <- matrix(runif(500*500),nrow.names=500)
 y <- sparsify2(m)
 }

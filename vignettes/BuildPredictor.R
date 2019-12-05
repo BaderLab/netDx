@@ -237,6 +237,7 @@ outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
 out <- buildPredictor(dataList=brca,groupList=groupList,
   makeNetFunc=makeNets,outDir=outDir,
   numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
+  keepAllData=2,
 	numCores=1L)
 
 

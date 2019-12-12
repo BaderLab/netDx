@@ -21,7 +21,8 @@ makeQueries <- function(incPat, featScoreMax = 10L, verbose = TRUE) {
     csize <- round((1/featScoreMax) * length(incPat))
     
     if (verbose) {
-        message(sprintf("\t\t%i IDs; %i queries (%i sampled, %i test)", length(incPat), 
+        message(sprintf("\t\t%i IDs; %i queries (%i sampled, %i test)", 
+						length(incPat), 
             featScoreMax, num2samp, csize))
     }
     

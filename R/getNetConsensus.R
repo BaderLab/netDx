@@ -13,8 +13,8 @@ getNetConsensus <- function(scorelist) {
     out <- scorelist[[1]]
     colnames(out)[2] <- names(scorelist)[1]
     for (k in 2:length(scorelist)) {
-        x <- merge(x = out, y = scorelist[[k]], by = "PATHWAY_NAME", all.x = TRUE, 
-            all.y = TRUE)
+        x <- merge(x = out, y = scorelist[[k]], by = "PATHWAY_NAME", 
+						all.x = TRUE, all.y = TRUE)
         colnames(x)[k + 1] <- names(scorelist)[k]
         out <- x
     }

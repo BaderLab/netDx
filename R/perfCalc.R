@@ -25,7 +25,9 @@ perfCalc <- function(dat) {
     # precision = positive predictive value (pr = ppv)
     ppv <- dat$tp/(dat$tp + dat$fp)
     rec <- dat$tp/(dat$tp + dat$fn)
-    # trapz integrates from right to left, so you need to apply rev() otherwise you
+    # trapz integrates from right to left, so you need to apply rev() 
+		# otherwise you
+
     # get a negative area.
     prauc <- pracma::trapz(rev(rec), rev(ppv))
     

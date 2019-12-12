@@ -19,11 +19,12 @@
 #' @return writes SIF content to text file (node1,node2,edge weight)
 #' @import reshape2
 #' @export
-sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MAX = 1000, 
-    includeAllNodes = TRUE, verbose = TRUE) {
+sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, 
+		EDGE_MAX = 1000,includeAllNodes = TRUE, verbose = TRUE) {
     
     if (verbose) 
-        message(sprintf(paste("sparsify2:maxInt=%i;EDGE_MAX=%1.2f;", "cutoff=%1.2e;includeAllNodes=%s", 
+        message(sprintf(paste("sparsify2:maxInt=%i;EDGE_MAX=%1.2f;", 
+						"cutoff=%1.2e;includeAllNodes=%s", 
             sep = ""), maxInt, EDGE_MAX, cutoff, includeAllNodes))
     
     if (maxInt > ncol(W)) 
@@ -55,8 +56,8 @@ sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
         mmat <- mmat[seq_len(maxEdge), ]
     }
     
-    # we should guarantee an edge from all patients- in this case the edge_max would
-    # be violated unless we come up with a better rule
+    # we should guarantee an edge from all patients- in this case the edge_max 
+		# would be violated unless we come up with a better rule
     if (includeAllNodes) {
         mmat[, 1] <- as.character(mmat[, 1])
         mmat[, 2] <- as.character(mmat[, 2])
@@ -64,14 +65,15 @@ sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
         missing <- setdiff(rownames(W), univ)
         # message(sprintf('missing = { %s }\n',paste(missing, collapse=',')))
         if (length(missing) > 0) {
-            message(sprintf(paste("Sparsify2: ", "found %i missing patients; adding strongest edge\n", 
+            message(sprintf(paste("Sparsify2: ", 
+								"found %i missing patients; adding strongest edge\n", 
                 sep = ""), length(missing)))
             for (k in missing) {
                 # add the strongest edge for the patient
                 tmp <- x[[k]]
                 if (is.na(tmp[1])) {
-                  message(paste("\tMissing edge is below cutoff; ", "setting to cutoff\n", 
-                    sep = ""))
+                  message(paste("\tMissing edge is below cutoff; ", 
+										"setting to cutoff\n", sep = ""))
                   tmp[1] <- cutoff
                 }
                 mmat <- rbind(mmat, c(k, names(tmp)[1], tmp[1]))
@@ -81,8 +83,8 @@ sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
     head(mmat)
     mmat[, 3] <- as.numeric(mmat[, 3])
     mmat[, 3] <- round(mmat[, 3], digits = 4)
-    write.table(mmat, file = outFile, sep = "\t", col.names = FALSE, row.names = FALSE, 
-        quote = FALSE)
+    write.table(mmat, file = outFile, sep = "\t", col.names = FALSE, 
+				row.names = FALSE, quote = FALSE)
     return(mmat)
 }
 

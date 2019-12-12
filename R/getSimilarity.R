@@ -18,6 +18,6 @@
 #' @importFrom stats cor
 #' @export
 getSimilarity <- function(x, type = "pearson", customFunc, ...) {
-    switch(type, pearson = round(cor(na.omit(x), method = "pearson"), digits = 3), 
-        custom = customFunc(x, ...))
+    switch(type, pearson = round(cor(na.omit(x), method = "pearson"), 
+			digits = 3), custom = customFunc(x, ...))
 }

@@ -12,8 +12,8 @@
 #' higher ranked patient. 
 #' 2) realLbl: binary value indicating if patient label matches predictor
 #' label (real labels)
-#' 3) fullmat: pheno_DF merged with similarity scores ('similarityScore') and real label
-#' ('isPredClass')
+#' 3) fullmat: pheno_DF merged with similarity scores ('similarityScore') 
+#' and real label ('isPredClass')
 #' 4) roc: output of ROCRs performance(,'tpr','fpr') - ROC curve
 #' 5) auc: output of ROCRs auc() 
 #' 6) precall: output of ROCRs performance(, 'prec','rec')
@@ -25,9 +25,11 @@
 #' prankFile <- paste(path.package('netDx'),
 #'\t\t\t\t\t'extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK',sep='/')
 #' x <- getPatientRankings(prankFile, pheno, 'LumA')
-getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, verbose = FALSE) {
+getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, 
+		verbose = FALSE) {
     # Read in PRANK file need to skip comment line with new format
-    dat <- read.table(pFile, sep = "\t", header = TRUE, as.is = TRUE, skip = 1)
+    dat <- read.table(pFile, sep = "\t", header = TRUE, as.is = TRUE, 
+			skip = 1)
     
     pheno_DF$ID <- as.character(pheno_DF$ID)
     # 1 is what we predict, 0 is the other class
@@ -46,10 +48,12 @@ getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, verbo
     }
     curlbl <- pheno_DF[midx, , drop = FALSE]
     
-    # ROCR prediction object requires the label assignments to range from 0 to 1.
+    # ROCR prediction object requires the label assignments 
+		# to range from 0 to 1.
     # GeneMANIA gene scores appear to be positive but unbounded.  We therefore
     # rescale GM score to range from 0 to 1.
-    curlbl <- cbind(curlbl, similarityScore = order(dat[, 2])/nrow(dat), IsPredClass = curlbl$STATUS)
+    curlbl <- cbind(curlbl, similarityScore = order(dat[, 2])/nrow(dat), 
+			IsPredClass = curlbl$STATUS)
     curlbl <- curlbl[, -which(colnames(curlbl) %in% c("STATUS", "TT_STATUS"))]
     
     # compute quality measures for classifier
@@ -58,8 +62,8 @@ getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, verbo
     auc <- NA
     precall <- NA
     f <- NA
-    # second condition is because ROCRs functions fail if there aren't exactly two
-    # unique values in the real class label
+    # second condition is because ROCRs functions fail if there aren't exactly 
+		# two unique values in the real class label
     if (nrow(curlbl) >= 2 && length(unique(curlbl$IsPredClass)) == 2) {
         pred <- prediction(curlbl$similarityScore, curlbl$IsPredClass)
         perf <- performance(pred, "tpr", "fpr")
@@ -68,14 +72,15 @@ getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, verbo
         f <- performance(pred, "f")
         
         if (plotIt) {
-            plot(perf, main = sprintf("%i predictions; AUC= %1.2f", nrow(curlbl), 
-                auc), bty = "n", las = 1, cex.axis = 1.3)
+            plot(perf, main = sprintf("%i predictions; AUC= %1.2f", 
+								nrow(curlbl), auc), bty = "n", las = 1, cex.axis = 1.3)
         }
     }
     
     out <- merge(x = curlbl, y = pheno_DF, by = "ID", all.y = TRUE)
     
     # return data incase caller would use it.
-    return(list(predLbl = curlbl$similarityScore, realLbl = curlbl$IsPredClass, fullmat = out, 
+    return(list(predLbl = curlbl$similarityScore, 
+				realLbl = curlbl$IsPredClass, fullmat = out, 
         pred = pred, roc = perf, auc = auc, precall = precall, f = f))
 }

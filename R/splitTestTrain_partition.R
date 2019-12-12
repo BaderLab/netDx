@@ -25,7 +25,8 @@
 #' data(pheno) 
 #' x <- splitTestTrain_resampling(pheno,predClass='LumA')
 #' @export
-splitTestTrain_resampling <- function(pheno_DF, nFold = 3L, predClass, verbose = FALSE) {
+splitTestTrain_resampling <- function(pheno_DF, nFold = 3L, predClass, 
+		verbose = FALSE) {
     
     plus_idx <- which(pheno_DF$STATUS %in% predClass)
     other_idx <- setdiff(seq_len(nrow(pheno_DF)), plus_idx)
@@ -38,10 +39,10 @@ splitTestTrain_resampling <- function(pheno_DF, nFold = 3L, predClass, verbose =
     other_tsize <- length(other_idx) - other_csize
     
     if (verbose) {
-        message(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n", predClass, 
-            length(plus_idx), plus_tsize, plus_csize))
-        message(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n", predClass, 
-            length(other_idx), other_tsize, other_csize))
+        message(sprintf("\t(+) %s : %i total ; %i train, %i held-out per\n", 
+						predClass, length(plus_idx), plus_tsize, plus_csize))
+        message(sprintf("\t(-) (!%s): %i total ; %i train, %i held-out per\n", 
+						predClass, length(other_idx), other_tsize, other_csize))
     }
     
     # randomize order for test assignment
@@ -59,8 +60,8 @@ splitTestTrain_resampling <- function(pheno_DF, nFold = 3L, predClass, verbose =
             eidx <- length(plus_idx)
         
         if (verbose) 
-            message(sprintf("\t%i (+): %i test (%i-%i);\n", k, eidx - sidx + 1, sidx, 
-                eidx))
+            message(sprintf("\t%i (+): %i test (%i-%i);\n", k, 
+								eidx - sidx + 1, sidx, eidx))
         status[plus_order[sidx:eidx]] <- "TEST"
         
         # then for - samples

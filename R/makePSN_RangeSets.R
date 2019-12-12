@@ -39,7 +39,8 @@
 #' @import parallel
 #' @import doParallel
 #' @importFrom combinat combn
-makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), simMetric = "coincide", 
+makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), 
+		simMetric = "coincide", 
     quorum = 2L, verbose = TRUE, numCores = 1L) {
     if (!file.exists(netDir)) 
         dir.create(netDir)
@@ -61,7 +62,8 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), simMetric = "coi
     
     # LOCUS_NAMES not provided? Compute these
     if (!"LOCUS_NAMES" %in% names(elementMetadata(gr))) {
-        message(paste("\tLOCUS_NAMES column not provided; computing ", "overlap of patients\t\twith regions", 
+        message(paste("\tLOCUS_NAMES column not provided; computing ", 
+						"overlap of patients\t\twith regions", 
             sep = ""))
         gr <- getRegionOL(gr, rangeSet)
     }
@@ -69,9 +71,11 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), simMetric = "coi
     # set up a matrix of patient by locus.  a[i,j] = 1 if patient i has a CNV
     # affecting locus j else 0
     message("* Preparing patient-locus matrix\n")
-    message(sprintf("\t%i unique patients, %i unique locus symbols\n", length(uq_patients), 
+    message(sprintf("\t%i unique patients, %i unique locus symbols\n", 
+				length(uq_patients), 
         length(uq_loci)))
-    pgMat <- big.matrix(0, nrow = length(uq_patients), ncol = length(uq_loci), type = "integer")
+    pgMat <- big.matrix(0, nrow = length(uq_patients), 
+				ncol = length(uq_loci), type = "integer")
     pgDesc <- describe(pgMat)
     message("\n")
     
@@ -102,8 +106,8 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), simMetric = "coi
     hit_p <- integer(length(rangeSet))
     
     # binary vector indicating if this network was included inc_status <-
-    # integer(length(rangeSet)) patients that have at least one interaction in one
-    # network
+    # integer(length(rangeSet)) patients that have at least one 
+		# interaction in one network
     inc_patients <- integer(length(uq_patients))
     names(inc_patients) <- uq_patients
     
@@ -135,25 +139,24 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(), simMetric = "coi
         if (hit_p[idx] >= quorum) 
             {
                 if (verbose) 
-                  message(sprintf("\n\t\tlength=%i; score = %1.2f", length(rangeSet[[idx]]), 
-                    pScore))
+                  message(sprintf("\n\t\tlength=%i; score = %1.2f", 
+										length(rangeSet[[idx]]), pScore))
                 if (!TEST_MODE) {
                   x <- hit_pathway
                   inc_patients[x > 0] <- inc_patients[x > 0] + 1
-                  pat_pairs <- t(combinat::combn(uq_patients[hit_pathway > 0], 2))
+									tmp <- uq_patients[hit_pathway > 0]
+                  pat_pairs <- t(combinat::combn(tmp, 2))
                   pat_pairs <- cbind(pat_pairs, pScore)
                   
                   # write network for pathway
                   outFile <- sprintf("%s/%s_cont.txt", netDir, curP)
-                  write.table(pat_pairs, file = outFile, sep = "\t", col.names = FALSE, 
+                  write.table(pat_pairs, file = outFile, sep = "\t", 
+										col.names = FALSE, 
                     row.names = FALSE, quote = FALSE)
                   outFile <- basename(outFile)
-                  ## outFiles <- c(outFiles, basename(outFile))
-                  
                 }
                 ## status <- 1;
-            }  ## else {
-        ## status <- 0; outFile <- '' }
+            }  
         if (idx%%100 == 0) 
             message(".")
         if (verbose) 

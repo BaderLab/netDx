@@ -33,12 +33,13 @@
 #' @return (list) of length g, where g is the number of groups in featScores.
 #' Values are lists, corresponding to the output of getEmapInput.R
 #' @export
-getEMapInput_many <- function(featScores, namedSets_valid, netTypes, outDir, ...) {
+getEMapInput_many <- function(featScores, namedSets_valid, netTypes, 
+		outDir, ...) {
     
     out <- list()
     for (gp in names(featScores)) {
-        cur_out_files <- getEMapInput(featScores[[gp]], namedSets_valid, netTypes, 
-            ...)
+        cur_out_files <- getEMapInput(featScores[[gp]], namedSets_valid, 
+					netTypes,  ...)
         out[[gp]] <- cur_out_files
         
     }

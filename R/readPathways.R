@@ -34,7 +34,8 @@
 #'\tpathwayList    <- readPathways(pathFile)
 #' 
 #' @export
-readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, EXCLUDE_KEGG = TRUE, 
+readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, 
+		EXCLUDE_KEGG = TRUE, 
     IDasName = FALSE, verbose = TRUE, getOrigNames = FALSE) {
     
     # change locale to accommodate nonstandard chars in pathway names
@@ -68,7 +69,9 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, EXCLUDE_KEGG = 
             src <- substr(s[1], pPos[1] + 1, pPos[2] - 1)
             src_id <- substr(s[1], pPos[2] + 1, nchar(s[1]))
             if (IDasName) 
-                s[1] <- paste(src, src_id, sep = ":") else s[1] <- substr(s[1], 1, pPos[1] - 1)
+                s[1] <- paste(src, src_id, sep = ":") 
+						else 
+								s[1] <- substr(s[1], 1, pPos[1] - 1)
         }
         if (!EXCLUDE_KEGG || (src != "KEGG")) {
             idx <- which(s == "")  # remove trailing blank rows.
@@ -81,17 +84,19 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, EXCLUDE_KEGG = 
     }
     close(f)
     if (verbose) {
-        message(sprintf(paste("Read %i pathways in total, ", "internal list has %i entries", 
+        message(sprintf(paste("Read %i pathways in total, ", 
+						"internal list has %i entries", 
             sep = ""), ctr, length(out)))
-        message(sprintf("\tFILTER: sets with num genes in [%i, %i]", MIN_SIZE, MAX_SIZE))
+        message(sprintf("\tFILTER: sets with num genes in [%i, %i]", 	
+					MIN_SIZE, MAX_SIZE))
     }
     ln <- unlist(lapply(out, length))
     idx <- which(ln < MIN_SIZE | ln >= MAX_SIZE)
     out[idx] <- NULL
     # pName[idx] <- NULL
     if (verbose) 
-        message(sprintf("\t  => %i pathways excluded\n\t  => %i left", length(idx), 
-            length(out)))
+        message(sprintf("\t  => %i pathways excluded\n\t  => %i left", 
+						length(idx), length(out)))
     
     # clean pathway names
     nm <- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))

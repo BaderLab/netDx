@@ -26,8 +26,8 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
     for (fName in fList) {
         tmp <- basename(fName)
         
-        dat <- try(read.delim(fName, sep = "\t", header = TRUE, as.is = TRUE, skip = 1), 
-            silent = TRUE)
+        dat <- read.delim(fName, sep = "\t", header = TRUE, as.is = TRUE, 
+						skip = 1),silent = TRUE)
         ctr <- ctr + 1
         
         if (!inherits(dat, "try-error")) {
@@ -37,7 +37,8 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
                 print(summary(dat$Weight))
             }
             
-            # actually - it should already be sorted in decreasing order if we don't reverse
+            # actually - it should already be sorted in decreasing order 
+						# if we don't reverse
             # it above - but let's sort anyway
             dat <- dat[order(dat$Weight, decreasing = TRUE), ]
             
@@ -46,11 +47,12 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
             
             dat <- dat[seq_len(keep_max), ]
             if (verbose) 
-                message(sprintf("filter_WtSum = %1.1f; %i of %i networks left", filter_WtSum, 
-                  nrow(dat), length(cs)))
+                message(sprintf(paste("filter_WtSum = %1.1f; ",
+									"%i of %i networks left",sep=""),
+									filter_WtSum, nrow(dat), length(cs)))
             
-            # put all Network names in pathwaytally. The ones that are above threshold (Top
-            # pathways) get +1
+            # put all Network names in pathwaytally. The ones that are 
+						# above threshold (Top pathways) get +1
             for (k in dat$Network) {
                 if (!k %in% names(pathwayTally)) 
                   pathwayTally[[k]] <- 0

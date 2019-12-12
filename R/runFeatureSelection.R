@@ -25,8 +25,9 @@
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% 'WNT')],
 #'\t'~/tmp',dbPath,103L)
 #' @export
-runFeatureSelection <- function(trainID_pred, outDir, dbPath, numTrainSamps = NULL, 
-    incNets = "all", orgName = "predictor", fileSfx = "CV", verbose = FALSE, numCores = 2L, 
+runFeatureSelection <- function(trainID_pred, outDir, dbPath, 
+		numTrainSamps = NULL, incNets = "all", orgName = "predictor", 
+		fileSfx = "CV", verbose = FALSE, numCores = 2L, 
     JavaMemory = 6L, verbose_runQuery = FALSE, ...) {
     
     if (!file.exists(outDir)) 
@@ -54,7 +55,8 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath, numTrainSamps = NU
         qFiles <- append(qFiles, qFile)
     }
     
-    runQuery(dbPath, qFiles, outDir, JavaMemory = JavaMemory, verbose = verbose_runQuery, 
+    runQuery(dbPath, qFiles, outDir, JavaMemory = JavaMemory, 
+				verbose = verbose_runQuery, 
         numCores = numCores)
     
 }

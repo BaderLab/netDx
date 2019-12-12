@@ -37,8 +37,9 @@
 #' summary(emap_input)
 
 #' @export
-getEMapInput <- function(featScores, namedSets, netInfo, pctPass = 0.7, minScore = 1, 
-    maxScore = 10, trimFromName = c(".profile", "_cont"), verbose = FALSE) {
+getEMapInput <- function(featScores, namedSets, netInfo, pctPass = 0.7, 
+		minScore = 1, maxScore = 10, trimFromName = c(".profile", "_cont"), 
+		verbose = FALSE) {
     netNames <- featScores[, 1]
     featScores <- as.matrix(featScores[, -1])
     

@@ -29,7 +29,8 @@ countPatientsInNet <- function(netDir, fList, ids) {
     
     ctr <- 1
     for (f in fList) {
-        dat <- read.delim(sprintf("%s/%s", netDir, f), sep = "\t", header = FALSE, 
+        dat <- read.delim(sprintf("%s/%s", netDir, f), sep = "\t", 
+						header = FALSE, 
             as.is = TRUE)
         memb <- c(dat[, 1], dat[, 2])  # patients in this network
         outmat[which(ids %in% memb), ctr] <- 1

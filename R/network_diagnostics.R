@@ -27,8 +27,10 @@
 #' @importFrom caroline violins
 #' @importFrom methods is
 #' @export
-plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = NULL, 
-    grepFiles = "cont.txt", stripFromFileName = "_cont.txt", numPatients = NULL, 
+plotNetEdgeDistribution <- function(netDir, setName = "netDir", 
+		randomSample = NULL, 
+    grepFiles = "cont.txt", stripFromFileName = "_cont.txt", 
+		numPatients = NULL, 
     verbose = TRUE) {
     fList <- dir(path = netDir, pattern = grepFiles)
     message(sprintf("%i files match pattern\n", length(fList)))
@@ -49,8 +51,8 @@ plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = N
     edge_count <- list()
     for (curr in fList) {
         print(curr)
-        dat <- read.delim(sprintf("%s/%s", netDir, curr), sep = "\t", header = FALSE, 
-            as.is = TRUE)
+        dat <- read.delim(sprintf("%s/%s", netDir, curr), sep = "\t", 
+						header = FALSE, as.is = TRUE)
         out[[curr]] <- dat[, 3]
         edge_count[[curr]] <- nrow(dat)
     }
@@ -58,7 +60,8 @@ plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = N
     mu <- mean(unlist(lapply(out, mean)))
     med <- mean(unlist(lapply(out, median)))
     
-    violins(out, connect = FALSE, at = seq_len(length(out)), names = rep("", length(out)), 
+    violins(out, connect = FALSE, at = seq_len(length(out)), 
+				names = rep("", length(out)), 
         main = sprintf("%s:Edge wts", setName), ylab = "pairwise similarity")
     nm <- names(out)
     for (k in seq_len(length(stripFromFileName))) {
@@ -75,10 +78,12 @@ plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = N
     edge_count <- unlist(edge_count)
     pdf(sprintf("%s/%s_edgeCount.pdf", netDir, setName), height = 9, width = 5)
     tryCatch({
-        violins(edge_count, main = sprintf("%s: num edges", setName), ylab = "Num. edges")
+        violins(edge_count, main = sprintf("%s: num edges", setName), 
+					ylab = "Num. edges")
         if (!is.null(numPatients)) {
             sparsity <- (edge_count/choose(numPatients, 2)) * 100
-            violins(sparsity, main = sprintf("%s: sparsity", setName), ylab = "% sparsity")
+            violins(sparsity, main = sprintf("%s: sparsity", setName), 
+							ylab = "% sparsity")
         }
     }, error = function(ex) {
         print(ex)
@@ -88,7 +93,8 @@ plotNetEdgeDistribution <- function(netDir, setName = "netDir", randomSample = N
     
     message(sprintf("Network statistics\n"))
     message("----------------------------\n")
-    message(sprintf("Edge count = %i - %i \n", min(edge_count), max(edge_count)))
+    message(sprintf("Edge count = %i - %i \n", min(edge_count), 
+				max(edge_count)))
     message(sprintf("Mean edge count = %1.2f\n", mean(edge_count)))
     message(sprintf("Median edge count = %1.2f\n", median(edge_count)))
     message("\n")

@@ -26,7 +26,8 @@
 #' m <- matrix(runif(500*500),nrow=500)
 #' y <- sparsify2(m)
 #' @export
-sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MAX = Inf, 
+sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, 
+		EDGE_MAX = Inf, 
     includeAllNodes = TRUE, verbose = TRUE) {
     
     if (maxInt > ncol(W)) 
@@ -36,15 +37,15 @@ sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
         W <- as.matrix(W)
     W[which(is.na(W))] <- .Machine$double.eps  # don't allow missing values
     diag(W) <- NA
-    mytop <- cbind(colnames(W), colnames(W)[apply(W, 1, which.max)], apply(W, 1, 
-        max, na.rm = TRUE))
+    mytop <- cbind(colnames(W), colnames(W)[apply(W, 1, which.max)], 
+				apply(W, 1, max, na.rm = TRUE))
     # don't want same patient edge twice, nor self-similarity
     W[upper.tri(W, diag = TRUE)] <- NA
     W[W < cutoff] <- NA
     maxind <- min(ncol(W), maxInt)
     
-    # effectively empty out the slots that are not the top interactions create a
-    # 'switch off' matrix with NA in non-top edges
+    # effectively empty out the slots that are not the top interactions create 
+    # a 'switch off' matrix with NA in non-top edges
     W_order <- t(apply(W, 1, order, decreasing = TRUE, na.last = TRUE))
     W_order[which(W_order > maxInt)] <- NA
     W_order[which(W_order <= maxInt)] <- .Machine$double.eps
@@ -58,8 +59,9 @@ sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
         mmat <- mmat[seq_len(maxEdge), ]
     }
     
-    # we should guarantee an edge from all patients- in this case the edge_max would
-    # be violated unless we come up with a better rule message('past this\n')
+    # we should guarantee an edge from all patients- in this case the edge_max
+    # would be violated unless we come up with a better rule message('past 
+		# this\n')
     if (includeAllNodes) {
         mmat[, 1] <- as.character(mmat[, 1])
         mmat[, 2] <- as.character(mmat[, 2])
@@ -67,14 +69,16 @@ sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
         missing <- setdiff(rownames(W), univ)
         # message(sprintf('missing = { %s }\n',paste(missing, collapse=',')))
         if (length(missing) > 0) {
-            message(sprintf(paste("Sparsify2: found %i missing patients; ", "adding strongest edge\n", 
+            message(sprintf(paste("Sparsify2: found %i missing patients; ", 
+								"adding strongest edge\n", 
                 sep = ""), length(missing)))
             for (k in missing) {
                 # add the strongest edge for the patient
                 tmp <- mytop[which(mytop[, 1] %in% k), ]
                 x <- as.numeric(tmp[3])
                 if (x < cutoff) {
-                  message("\tMissing edge is below cutoff; setting to cutoff\n")
+                  message(paste("\tMissing edge is below cutoff; ",
+											"setting to cutoff\n")
                   x <- cutoff
                 }
                 mmat <- rbind(mmat, c(k, tmp[2], x))
@@ -86,8 +90,8 @@ sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, EDGE_MA
     mmat <- na.omit(mmat)  # boundary case where cutoff exceeds net max
     mmat[, 3] <- as.numeric(mmat[, 3])
     mmat[, 3] <- round(mmat[, 3], digits = 4)
-    write.table(mmat, file = outFile, sep = "\t", col.names = FALSE, row.names = FALSE, 
-        quote = FALSE)
+    write.table(mmat, file = outFile, sep = "\t", col.names = FALSE, 
+				row.names = FALSE, quote = FALSE)
     return(mmat)
 }
 

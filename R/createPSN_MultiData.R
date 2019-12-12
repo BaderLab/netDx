@@ -97,7 +97,8 @@
 #'  pheno=pheno_id,
 #' \tnetDir=netDir,customFunc=makeNets,numCores=1)
 #' @export
-createPSN_MultiData <- function(dataList, groupList, pheno, netDir, filterSet = NULL, 
+createPSN_MultiData <- function(dataList, groupList, pheno, netDir, 
+		filterSet = NULL, 
     verbose = TRUE, customFunc, ...) {
     
     if (missing(dataList)) 
@@ -131,7 +132,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir, filterSet = 
         for (nm in names(groupList)) {
             idx <- which(names(groupList[[nm]]) %in% filterSet)
             if (verbose) {
-                message(sprintf("\t\t%s: %i of %i nets pass", nm, length(idx), length(groupList[[nm]])))
+                message(sprintf("\t\t%s: %i of %i nets pass", 
+											nm, length(idx), length(groupList[[nm]])))
             }
             if (length(idx) > 0) {
                 groupList2[[nm]] <- groupList[[nm]][idx]
@@ -148,7 +150,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir, filterSet = 
     if (length(netList) < 1) 
         stop("\n\nNo features created! Filters may be too stringent.\n")
     
-    netID <- data.frame(ID = seq_len(length(netList)), name = netList, ID = seq_len(length(netList)), 
+    netID <- data.frame(ID = seq_len(length(netList)), 
+				name = netList, ID = seq_len(length(netList)), 
         name2 = netList, 0, 1, stringsAsFactors = TRUE)
     
     # move network files
@@ -157,7 +160,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir, filterSet = 
         prof <- netList[prof]
         dir.create(sprintf("%s/profiles", netDir))
         for (p in prof) {
-            file.rename(from = sprintf("%s/%s", netDir, p), to = sprintf("%s/profiles/1.%i.profile", 
+            file.rename(from = sprintf("%s/%s", netDir, p), 
+							to = sprintf("%s/profiles/1.%i.profile", 
                 netDir, netID$ID[which(netID$name == p)]))
         }
     }
@@ -166,24 +170,29 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir, filterSet = 
     if (length(cont) > 0) {
         cont <- netList[cont]
         for (p in cont) {
-            file.rename(from = sprintf("%s/%s", netDir, p), to = sprintf("%s/INTERACTIONS/1.%i.txt", 
+            file.rename(from = sprintf("%s/%s", netDir, p), 
+							to = sprintf("%s/INTERACTIONS/1.%i.txt", 
                 netDir, netID$ID[which(netID$name == p)]))
         }
     }
     
     # write NETWORKS.txt
-    write.table(netID, file = sprintf("%s/NETWORKS.txt", netDir), sep = "\t", col.names = FALSE, 
+    write.table(netID, file = sprintf("%s/NETWORKS.txt", netDir), 
+				sep = "\t", col.names = FALSE, 
         row.names = FALSE, quote = FALSE)
     
     # write NETWORK_GROUPS.txt
     con <- file(sprintf("%s/NETWORK_GROUPS.txt", netDir), "w")
-    write(paste(1, "dummy_group", "geneset_1", "dummy_group", 1, sep = "\t"), file = con)
+    write(paste(1, "dummy_group", "geneset_1", "dummy_group", 1, sep = "\t"),i
+			 file = con)
     close(con)
     
     con <- file(sprintf("%s/NETWORK_METADATA.txt", netDir), "w")
-    tmp <- paste(netID$ID, "", "", "", "", "", "", "", "", "", 0, "", "", 0, "", 
+    tmp <- paste(netID$ID, "", "", "", "", "", "", "", 
+				"", "", 0, "", "", 0, "", 
         "", "", "", "", sep = "\t")
-    write.table(tmp, file = con, sep = "\t", col.names = FALSE, row.names = FALSE, 
+    write.table(tmp, file = con, sep = "\t", col.names = FALSE, 	
+				row.names = FALSE, 
         quote = FALSE)
     close(con)
     

@@ -12,7 +12,8 @@
 #' data(pheno)
 #' writeQueryFile(pheno$ID[seq_len(5)], 'all',nrow(pheno), 'myquery.txt')
 #' @export
-writeQueryFile <- function(qSamps, incNets = "all", numReturn = 1L, outFile, orgName = "predictor") {
+writeQueryFile <- function(qSamps, incNets = "all", numReturn = 1L, outFile, 
+		orgName = "predictor") {
     fileConn <- file(outFile, "w")
     writeLines(sprintf("%s", orgName), con = fileConn)  # org name
     writeLines(sprintf("%s", paste(qSamps, collapse = "\t")), con = fileConn)

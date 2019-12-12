@@ -30,8 +30,8 @@
 #' netDir <- sprintf('%s/extdata/example_nets',path.package('netDx'))
 #' netmat <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
 #' x <- updateNets(netmat, npheno,writeNewNets=FALSE)
-updateNets <- function(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, newNetDir, 
-    verbose = TRUE, ...) {
+updateNets <- function(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, 
+		newNetDir, verbose = TRUE, ...) {
     idx <- which(colSums(p_net) >= 2)
     p_net <- p_net[, idx]
     idx <- which(rowSums(p_net) >= 1)
@@ -45,8 +45,8 @@ updateNets <- function(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, newNetDi
     pheno_DF <- pheno_DF[which(pheno_DF$ID %in% rownames(p_net)), ]
     
     if (writeNewNets) {
-        pruneNets(oldNetDir, newNetDir, filterNets = colnames(p_net), filterIDs = rownames(p_net), 
-            ...)
+        pruneNets(oldNetDir, newNetDir, filterNets = colnames(p_net), 
+					filterIDs = rownames(p_net),  ...)
     }
     
     return(list(p_net = p_net, pheno_DF = pheno_DF))

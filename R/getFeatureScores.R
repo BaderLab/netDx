@@ -34,8 +34,8 @@ getFeatureScores <- function(inDir, predClasses, getFullCons = TRUE) {
         if (is(inDir, "character")) {
             message("\tSingle directory provided, retrieving CV score files\n")
             rngDirs <- dir(path = inDir, pattern = "^rng")
-            fList <- sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt", inDir, 
-                rngDirs, gp, gp)
+            fList <- sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt", 
+								inDir, rngDirs, gp, gp)
         } else {
             message("\tList of filenames provided\n")
             fList <- inDir[[gp]]
@@ -45,7 +45,8 @@ getFeatureScores <- function(inDir, predClasses, getFullCons = TRUE) {
         netColl <- list()
         
         for (scoreFile in fList) {
-            tmp <- read.delim(scoreFile, sep = "\t", header = TRUE, as.is = TRUE)
+            tmp <- read.delim(scoreFile, sep = "\t", header = TRUE, 
+							as.is = TRUE)
             colnames(tmp)[1] <- "PATHWAY_NAME"
             netColl[[scoreFile]] <- tmp
         }

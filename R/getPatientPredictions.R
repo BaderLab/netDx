@@ -86,9 +86,11 @@ getPatientPredictions <- function(predFiles, pheno, plotAccuracy = FALSE) {
     
     if (plotAccuracy) {
         p <- ggplot(output_mat, aes(x = pctCorrect)) + geom_dotplot()
-        msg <- sprintf("Patient-level classification accuracy (N=%i)", length(predFiles))
+        msg <- sprintf("Patient-level classification accuracy (N=%i)", 
+					length(predFiles))
         p <- p + ggtitle(msg)
-        p <- p + theme(axis.text = element_text(size = 13), axis.title = element_text(size = 13))
+        p <- p + theme(axis.text = element_text(size = 13), 
+					axis.title = element_text(size = 13))
         print(p)
         return(list(predictions = output_mat, plot = p))
     } else return(list(predictions = output_mat))

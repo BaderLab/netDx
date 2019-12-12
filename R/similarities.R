@@ -42,7 +42,8 @@ sim.pearscale <- function(dat, K = 20, alpha = 0.5) {
         z1 <- ztrans(dat)
         euc <- as.matrix(dist(z1, method = "euclidean"))^(1/2)
     } else {
-        euc <- as.matrix(1 - cor(dat, method = "pearson", use = "pairwise.complete.obs"))
+        euc <- as.matrix(1 - cor(dat, method = "pearson", 
+					use = "pairwise.complete.obs"))
     }
     N <- nrow(euc)
     euc <- (euc + t(euc))/2
@@ -51,7 +52,8 @@ sim.pearscale <- function(dat, K = 20, alpha = 0.5) {
     finiteMean <- function(x) {
         return(mean(x[is.finite(x)], na.rm = TRUE))
     }
-    means <- apply(sortedColumns[, seq_len(K) + 1], 1, finiteMean) + .Machine$double.eps
+    means <- apply(sortedColumns[, seq_len(K) + 1], 1, finiteMean) 
+		means <- means + .Machine$double.eps
     avg <- function(x, y) {
         return((x + y)/2)
     }

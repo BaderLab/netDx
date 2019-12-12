@@ -32,7 +32,8 @@
 #' @importFrom stats aggregate
 #' @importFrom methods slotNames
 #' @export
-plotPerf_multi <- function(inList, plotTitle = "performance", plotType = "ROC", xlab = "TPR", 
+plotPerf_multi <- function(inList, plotTitle = "performance", 
+		plotType = "ROC", xlab = "TPR", 
     ylab = "FPR", meanCol = "darkblue", xlim = c(0, 1), ylim = c(0, 1)) {
     
     if (plotType == "ROC") {
@@ -45,7 +46,8 @@ plotPerf_multi <- function(inList, plotTitle = "performance", plotType = "ROC", 
         message("custom type plot\n")
     }
     
-    plot(0, 0, type = "n", bty = "n", las = 1, xlim = xlim, ylim = ylim, xlab = xlab, 
+    plot(0, 0, type = "n", bty = "n", las = 1, xlim = xlim, ylim = ylim, 
+				xlab = xlab, 
         ylab = ylab, main = plotTitle, cex.axis = 1.3)
     out <- list()
     
@@ -75,7 +77,8 @@ plotPerf_multi <- function(inList, plotTitle = "performance", plotType = "ROC", 
     out[[k]] <- cur
     points(x, y, type = "l", col = meanCol, lwd = 4)
     
-    text(0.8 * xlim[2], 0.1 * ylim[2], sprintf("N=%i", length(inList) - is_empty), 
+    text(0.8 * xlim[2], 0.1 * ylim[2], 
+			sprintf("N=%i", length(inList) - is_empty), 
         cex = 1.3)
     
     if (plotType == "ROC") 

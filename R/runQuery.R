@@ -16,8 +16,8 @@
 #'\t\tpath.package('netDx'))
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
-runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L, 
-    numCores = 1L) {
+runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 
+		JavaMemory = 6L, numCores = 1L) {
     
     GM_jar <- getGMjar_path()
     qBase <- basename(queryFiles[[1]][1])
@@ -27,10 +27,12 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L
     args <- c("-d64", sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
     args <- c(args, "org.genemania.plugin.apps.QueryRunner")
     args <- c(args, "--data", dbPath, "--in", "flat", "--out", "flat")
-    args <- c(args, "--threads", numCores, "--results", resDir, unlist(queryFiles))
+    args <- c(args, "--threads", numCores, "--results", resDir, 
+			unlist(queryFiles))
     args <- c(args, "--netdx-flag", "true")  #,'2>1','/dev/null')
     
-    # file is not actually created - is already split in PRANK and NRANK segments on
+    # file is not actually created - is already split in PRANK and 
+		# NRANK segments on
     # GeneMANIA side
     resFile <- sprintf("%s/%s-results.report.txt", resDir, qBase)
     t0 <- Sys.time()

@@ -63,14 +63,18 @@
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
 #' \t'.',writeProfiles=TRUE)
 #' @export
-makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), simMetric = "pearson", 
-    verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE, useSparsify2 = FALSE, 
-    cutoff = 0.3, sparsify_edgeMax = Inf, sparsify_maxInt = 50, minMembers = 1L, 
+makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), 
+		simMetric = "pearson", 
+    verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE, 
+		useSparsify2 = FALSE, 
+    cutoff = 0.3, sparsify_edgeMax = Inf, sparsify_maxInt = 50, 
+		minMembers = 1L, 
     runSerially = FALSE, ...) {
     
     if ((!simMetric %in% c("pearson", "MI")) & writeProfiles == TRUE) {
         print(simMetric)
-        stop(paste("writeProfiles must only be TRUE with simMetric", " set to pearson or MI. For all other metrics, ", 
+        stop(paste("writeProfiles must only be TRUE with simMetric", 
+					" set to pearson or MI. For all other metrics, ", 
             "set writeProfiles=FALSE", sep = ""))
     }
     
@@ -82,7 +86,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), simMetri
     }
     
     if (simMetric == "pearson") {
-        message(paste("Pearson similarity chosen - ", "enforcing min. 5 patients per net.", 
+        message(paste("Pearson similarity chosen - ", 
+						"enforcing min. 5 patients per net.", 
             sep = ""))
         minMembers <- 5
     }
@@ -100,16 +105,20 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), simMetri
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
                 outFile <- sprintf("%s/%s.profile", outDir, curSet)
-                write.table(t(xpr[idx, , drop = FALSE]), file = outFile, sep = "\t", 
+                write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
+									sep = "\t", 
                   col.names = FALSE, row.names = TRUE, quote = FALSE)
             } else {
                 outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
                 message(sprintf("computing sim for %s", curSet))
-                sim <- getSimilarity(xpr[idx, , drop = FALSE], type = simMetric, 
+                sim <- getSimilarity(xpr[idx, , drop = FALSE], 
+									type = simMetric, 
                   ...)
                 if (is.null(sim)) {
-                  stop(sprintf(paste("makePSN_NamedMatrix:%s: ", "similarity matrix is empty (NULL).\n", 
-                    "Check that there isn't a mistake in the ", "input data or similarity method of choice.\n", 
+                  stop(sprintf(paste("makePSN_NamedMatrix:%s: ", 
+										"similarity matrix is empty (NULL).\n", 
+                    "Check that there isn't a mistake in the ", 
+										"input data or similarity method of choice.\n", 
                     sep = ""), curSet))
                 }
                 pat_pairs <- sim
@@ -117,7 +126,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), simMetri
                 if (sparsify) {
                   if (useSparsify2) {
                     tryCatch({
-                      spmat <- sparsify2(pat_pairs, cutoff = cutoff, EDGE_MAX = sparsify_edgeMax, 
+                      spmat <- sparsify2(pat_pairs, cutoff = cutoff, 
+												EDGE_MAX = sparsify_edgeMax, 
                         outFile = outFile, maxInt = sparsify_maxInt)
                     }, error = function(ex) {
                       stop("sparsify2 caught error\n")
@@ -126,15 +136,18 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), simMetri
                     message("sparsify3")
                     tryCatch({
                       sp_t0 <- Sys.time()
-                      spmat <- sparsify3(pat_pairs, cutoff = cutoff, EDGE_MAX = sparsify_edgeMax, 
-                        outFile = outFile, maxInt = sparsify_maxInt, verbose = FALSE)
+                      spmat <- sparsify3(pat_pairs, cutoff = cutoff, 
+												EDGE_MAX = sparsify_edgeMax, 
+                        outFile = outFile, maxInt = sparsify_maxInt, 
+												verbose = FALSE)
                       print(Sys.time() - sp_t0)
                     }, error = function(ex) {
                       stop("sparsify3 caught error\n")
                     })
                   }
                 } else {
-                  write.table(pat_pairs, file = outFile, sep = "\t", col.names = FALSE, 
+                  write.table(pat_pairs, file = outFile, sep = "\t", 
+										col.names = FALSE, 
                     row.names = FALSE, quote = FALSE)
                   print(basename(outFile))
                   message("done")

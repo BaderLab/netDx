@@ -70,16 +70,16 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
             message(sprintf("\n%s: N=%i nodes\n", curr_cl, length(cl)))
         
         # subgraph with intra-cluster connections
-        g2 <- igraph::graph_from_data_frame(d = net[which(net[, 1] %in% cl & net[, 
-            2] %in% cl), ], vertices = cl)
+				tmp <- net[which(net[, 1] %in% cl & net[,2] %in% cl),] 
+        g2 <- igraph::graph_from_data_frame(d = tmp,vertices = cl)
         tmp <- igraph::shortest.paths(g2, algorithm = "dijkstra")
         message(sprintf("%s", curr_cl))
         dset[[curr_cl]] <- .getAvgD(tmp)
         dall[[curr_cl]] <- .getAllD(tmp)
         tmp <- dset[[curr_cl]]
         if (verbose) 
-            message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)", curr_cl, 
-                curr_cl, tmp[1], tmp[2]))
+            message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)", 
+							curr_cl, curr_cl, tmp[1], tmp[2]))
         message("(N=%i dist)", tmp[3])
     }
     
@@ -101,8 +101,8 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
         
         tmp <- dset[[curr_cl]]
         if (verbose) 
-            message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)", cpairs[1, 
-                k], cpairs[2, k], tmp[1], tmp[2]))
+            message(sprintf("\t%s-%s: Mean shortest = %2.3f (SD= %2.3f)", 
+							cpairs[1,k], cpairs[2, k], tmp[1], tmp[2]))
         message(sprintf("(N=%i dist)", tmp[3]))
     }
     
@@ -112,7 +112,8 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
     out <- list(avg = dset, all = dall)
     if (plotDist) {
         par(las = 1, bty = "n")
-        dl <- data.frame(intType = rep(names(dall), lapply(dall, length)), dijk = unlist(dall))
+        dl <- data.frame(intType = rep(names(dall), 
+							lapply(dall, length)), dijk = unlist(dall))
         plotList <- list()
         p <- ggplot(dl, aes(intType, dijk))
         p <- p + ylab("Pairwise Dijkstra distance\n(smaller is better)")

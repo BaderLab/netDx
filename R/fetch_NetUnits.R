@@ -39,8 +39,8 @@
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList))
 #' y <- fetch_NetUnits(x,pathwayList, names(pathwayList),
 #' \ttrackMapping_detail=TRUE)
-fetch_NetUnits <- function(pat_GR, netList, whichNets, trackMapping_detail = FALSE, 
-    verbose = FALSE) {
+fetch_NetUnits <- function(pat_GR, netList, whichNets, 
+		trackMapping_detail = FALSE, verbose = FALSE) {
     netg <- NULL
     for (n in whichNets) {
         netg <- c(netg, netList[[n]])

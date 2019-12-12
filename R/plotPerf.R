@@ -60,8 +60,9 @@ plotPerf <- function(inDir, predClasses) {
         all_rng <- list.files(path = inDir, pattern = "rng.")
         fList <- sprintf("%s/%s/predictionResults.txt", inDir, all_rng)
     } else {
-        message(paste("length(inDir)>1; assuming provided path to individual", "results", 
-            sep = ""))
+        message(
+					paste("length(inDir)>1; assuming provided path to individual", 
+							"results", sep = ""))
         fList <- inDir
     }
     
@@ -79,7 +80,8 @@ plotPerf <- function(inDir, predClasses) {
         
         idx1 <- which(colnames(dat) == pred_col1)
         idx2 <- which(colnames(dat) == pred_col2)
-        pred <- ROCR::prediction(dat[, idx1] - dat[, idx2], dat$STATUS == predClasses[1])
+        pred <- ROCR::prediction(dat[, idx1] - dat[, idx2], 
+						dat$STATUS == predClasses[1])
         
         c1 <- predClasses[1]  #numc[1]
         tp <- sum(dat$STATUS == dat$PRED_CLASS & dat$STATUS == c1)
@@ -100,7 +102,8 @@ plotPerf <- function(inDir, predClasses) {
         overall_acc <- c(overall_acc, corr/nrow(dat) * 100)
         
         ### TODO put in F1.
-        mega[[fName]] <- list(stats = out$stats, roc_curve = curRoc, pr_curve = curPr, 
+        mega[[fName]] <- list(stats = out$stats, roc_curve = curRoc, 
+						pr_curve = curPr, 
             auroc = auroc, aupr = aupr, accuracy = overall_acc)
     }
     # ---------------------------------- Plot mean+/- SEM
@@ -108,9 +111,9 @@ plotPerf <- function(inDir, predClasses) {
     .plotAvg <- function(res, name) {
         mu <- mean(res, na.rm = TRUE)
         sem <- sd(res, na.rm = TRUE)/sqrt(length(res))
-        plot(1, mu, type = "n", bty = "n", ylab = sprintf("%s (mean+/-SEM)", name), 
-            xaxt = "n", ylim = c(0.4, 1), las = 1, cex.axis = 1.4, xlim = c(0.8, 
-                1.2), cex.axis = 1.4, xlab = "")
+        plot(1, mu, type = "n", bty = "n", ylab = sprintf("%s (mean+/-SEM)", 
+						name), xaxt = "n", ylim = c(0.4, 1), las = 1, 
+								cex.axis = 1.4, xlim = c(0.8,1.2), cex.axis = 1.4, xlab = "")
         abline(h = c(0.7, 0.8), col = "cadetblue3", lty = 3, lwd = 3)
         points(1, mu, type = "p", cex = 1.4, pch = 16)
         

@@ -29,8 +29,8 @@
 #' pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
 #' \tnetSfx='txt$')
 #' @export
-pruneNets <- function(oldDir, newDir, filterNets = "*", filterIDs = "*", netSfx = "_cont.txt$", 
-    verbose = TRUE) {
+pruneNets <- function(oldDir, newDir, filterNets = "*", filterIDs = "*", 
+		netSfx = "_cont.txt$", verbose = TRUE) {
     if (length(filterNets) == 1) {
         if (filterNets == "*") {
             if (verbose) 
@@ -59,15 +59,15 @@ pruneNets <- function(oldDir, newDir, filterNets = "*", filterIDs = "*", netSfx 
         if (verbose) 
             message(sprintf("Limiting to %i patients\n", length(filterIDs)))
         for (f in filterNets) {
-            dat <- read.delim(sprintf("%s/%s", oldDir, f), sep = "\t", header = FALSE, 
-                as.is = TRUE)
+            dat <- read.delim(sprintf("%s/%s", oldDir, f), sep = "\t", 
+								header = FALSE, as.is = TRUE)
             
             # both nodes of edge should be eligible
-            idx <- intersect(which(dat[, 1] %in% filterIDs), which(dat[, 2] %in% 
-                filterIDs))
+            idx <- intersect(which(dat[, 1] %in% filterIDs), 
+								which(dat[, 2] %in% filterIDs))
             
-            write.table(dat[idx, ], file = sprintf("%s/%s", newDir, f), sep = "\t", 
-                col = FALSE, row = FALSE, quote = FALSE)
+            write.table(dat[idx, ], file = sprintf("%s/%s", newDir, f), 
+								sep = "\t", col = FALSE, row = FALSE, quote = FALSE)
         }
     }
 }

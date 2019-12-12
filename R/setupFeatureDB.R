@@ -34,28 +34,33 @@ setupFeatureDB <- function(pheno, prepDir) {
     
     # ORGANISMS.txt
     con <- file("ORGANISMS.txt", "w")
-    write(paste("1", "predictor", "my_predictor", "my_predictor", -1, 1339, sep = "\t"), 
+    write(paste("1", "predictor", "my_predictor", "my_predictor", -1, 1339, 
+				sep = "\t"), 
         file = con, append = FALSE)
     close(con)
     
     # NODES.txt
     tmp <- pheno[, c("INTERNAL_ID", "ID", "INTERNAL_ID")]
     tmp$dummy <- 1
-    write.table(tmp, file = "NODES.txt", sep = "\t", col.names = FALSE, row.names = FALSE, 
+    write.table(tmp, file = "NODES.txt", sep = "\t", col.names = FALSE, 
+				row.names = FALSE, 
         quote = FALSE)
     
     # GENES.txt
-    tmp <- paste(pheno$INTERNAL_ID, pheno$ID, "N/A", 1, pheno$INTERNAL_ID, 1, 0, 
-        sep = "\t")
-    write.table(tmp, file = "GENES.txt", sep = "\t", col.names = FALSE, row.names = FALSE, 
+    tmp <- paste(pheno$INTERNAL_ID, pheno$ID, "N/A", 1, pheno$INTERNAL_ID, 1, 
+					0, sep = "\t")
+    write.table(tmp, file = "GENES.txt", sep = "\t", col.names = FALSE, 
+				row.names = FALSE, 
         quote = FALSE)
     
     # GENE_DATA.txt
-    write.table(pheno[, c("INTERNAL_ID", "ID")], file = "GENE_DATA.txt", sep = "\t", 
+    write.table(pheno[, c("INTERNAL_ID", "ID")], file = "GENE_DATA.txt", 
+				sep = "\t", 
         col.names = FALSE, row.names = FALSE, quote = FALSE)
     
     # synonym file
-    write.table(cbind(pheno$INTERNAL_ID, pheno$INTERNAL_ID), file = "1.synonyms", 
+    write.table(cbind(pheno$INTERNAL_ID, pheno$INTERNAL_ID), 
+				file = "1.synonyms", 
         sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE)
     
     # GENE_NAMING_SOURCES.txt

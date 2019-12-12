@@ -52,13 +52,16 @@
 #' session of Cytoscape.
 #' @import RCy3
 #' @export
-plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", minScore = 1, maxScore = 10, 
-    colorScheme = "cont_heatmap", imageFormat = "png", verbose = FALSE, createStyle = TRUE, 
+plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", 
+		minScore = 1, maxScore = 10, 
+    colorScheme = "cont_heatmap", imageFormat = "png", verbose = FALSE, 
+		createStyle = TRUE, 
     groupClusters = FALSE) {
     
     validColSchemes <- c("cont_heatmap", "netDx_ms")
     if (!colorScheme %in% validColSchemes) {
-        stop(sprintf("colorScheme should be one of { %s }\n", paste(validColSchemes, 
+        stop(sprintf("colorScheme should be one of { %s }\n", 
+					paste(validColSchemes, 
             collapse = ",")))
     }
     
@@ -66,21 +69,24 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", minScore = 1, m
     if (netName %in% getNetworkList()) {
         deleteNetwork(netName)
     }
-    em_command <- paste("enrichmentmap build analysisType=\"generic\"", "gmtFile=", 
-        gmtFile, "pvalue=", 1, "qvalue=", 1, "similaritycutoff=", 0.05, "coefficients=", 
-        "JACCARD")
+    em_command <- paste("enrichmentmap build analysisType=\"generic\"", 
+				"gmtFile=", gmtFile, "pvalue=", 1, "qvalue=", 1, 
+				"similaritycutoff=", 0.05, "coefficients=", "JACCARD")
     response <- commandsGET(em_command)
     renameNetwork(netName, getNetworkSuid())
     
     ### #annotate the network using AutoAnnotate app
-    aa_command <- paste("autoannotate annotate-clusterBoosted", "clusterAlgorithm=MCL", 
+    aa_command <- paste("autoannotate annotate-clusterBoosted", 
+				"clusterAlgorithm=MCL", 
         "labelColumn=name", "maxWords=3", "network=", netName)
     print(aa_command)
     response <- commandsGET(aa_command)
     
     message("* Importing node attributes\n")
-    table_command <- sprintf(paste("table import file file=%s ", "keyColumnIndex=1", 
-        "firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s ", "WhereImportTable=To%%20selected%%20networks%%20only", 
+    table_command <- sprintf(paste("table import file file=%s ", 
+				"keyColumnIndex=1", 
+        "firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s ", 
+				"WhereImportTable=To%%20selected%%20networks%%20only", 
         sep = ""), nodeAttrFile, netName)
     response <- commandsGET(table_command)
     
@@ -99,16 +105,17 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", minScore = 1, m
         style_cols <- colfunc(length(scoreVals))
     } else if (colorScheme == "netDx_ms") {
         if (minScore < 1 | maxScore > 10) 
-            stop(paste("The 'netDx_ms' colorScheme requires minScore and ", "maxScore to be between 1 and 10.", 
-                sep = ""))
+            stop(paste("The 'netDx_ms' colorScheme requires minScore and ", 
+								"maxScore to be between 1 and 10.", sep = ""))
         style_cols <- rep("white", length(scoreVals))
         style_cols[which(scoreVals >= 7)] <- "orange"
         style_cols[which(scoreVals == 10)] <- "red"
     }
     nodeLabels <- mapVisualProperty("node label", "name", "p")
-    nodeFills <- mapVisualProperty("node fill color", "maxScore", "d", scoreVals, 
-        style_cols)
-    defaults <- list(NODE_SHAPE = "ellipse", NODE_SIZE = 30, EDGE_TRANSPARENCY = 200, 
+    nodeFills <- mapVisualProperty("node fill color", "maxScore", "d", 
+				scoreVals, style_cols)
+    defaults <- list(NODE_SHAPE = "ellipse", NODE_SIZE = 30, 
+				EDGE_TRANSPARENCY = 200, 
         NODE_TRANSPARENCY = 255, EDGE_STROKE_UNSELECTED_PAINT = "#999999")
     if (createStyle) {
         message("Making style\n")
@@ -117,11 +124,13 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", minScore = 1, m
     setVisualStyle(styleName)
     if (groupClusters) {
         layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
-        redraw_command <- sprintf("autoannotate redraw network=%s", getNetworkSuid())
+        redraw_command <- sprintf("autoannotate redraw network=%s", 
+					getNetworkSuid())
         response <- commandsGET(redraw_command)
         fitContent()
         
-        redraw_command <- sprintf("autoannotate redraw network=%s", getNetworkSuid())
+        redraw_command <- sprintf("autoannotate redraw network=%s", 
+					getNetworkSuid())
         response <- commandsGET(redraw_command)
         fitContent()
     }

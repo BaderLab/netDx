@@ -51,8 +51,10 @@
 #' 4) weight similarity for the network (WT_SIM)
 #' @importFrom reshape2 melt
 #' @export
-writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filterEdgeWt = 0, 
-    writeAggNet = "MAX", limitToTop = 50L, limitToBottom = Inf, outFileName = NULL, 
+writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, 
+		filterEdgeWt = 0, 
+    writeAggNet = "MAX", limitToTop = 50L, limitToBottom = Inf, 
+		outFileName = NULL, 
     writeSingleNets = FALSE, plotEdgeDensity = FALSE, verbose = FALSE) {
     
     writeAggNet <- toupper(writeAggNet)
@@ -73,8 +75,8 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
     netid <- read.delim(netInfo, sep = "\t", header = FALSE, as.is = TRUE)
     colnames(netid)[seq_len(2)] <- c("NET_ID", "NETWORK")
     if (ncol(netid) > 2) {
-        message(paste("binary status provided; ", "switching to BinProp mode of similarity!", 
-            sep = ""))
+        message(paste("binary status provided; ", 
+						"switching to BinProp mode of similarity!", sep = ""))
         colnames(netid)[3] <- "isBinary"
         simMode <- "BinProp"
     }
@@ -111,7 +113,8 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
             # probably never needed but harmless
             ints <- subset(ints, ints[, 3] >= filterEdgeWt)
             if (nrow(ints) >= 1) {
-                midx <- rbind(as.matrix(ints[, seq_len(2)]), as.matrix(ints[, c(2:1)]))
+                midx <- rbind(as.matrix(ints[, seq_len(2)]), 
+									as.matrix(ints[, c(2:1)]))
                 # increase tally for pairs
                 intColl[midx] <- intColl[midx] + ints[, 3]
                 # with shared events
@@ -121,10 +124,11 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         }
         
         if (length(binNets) > 0) {
-            # finally divide by total num binary nets to get proportion similarity
+            # finally divide by total num binary nets to get proportion 
+						# similarity
             intColl <- intColl/length(binNets)
-            # now convert to the range between filterEdgeWts and 1 to put on par with
-            # correlation-based nets
+            # now convert to the range between filterEdgeWts and 1 to put on 
+						# par with correlation-based nets
             tmp <- qexp(intColl)
             midx <- which(numInt > 0)
             oldVal <- intColl[midx]
@@ -143,13 +147,16 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         oldcount <- nrow(ints)
         ints <- subset(ints, ints[, 3] >= filterEdgeWt)
         if (verbose) {
-            message(sprintf("Edge wt filter: %i -> %i interactions", oldcount, nrow(ints)))
+            message(sprintf("Edge wt filter: %i -> %i interactions", oldcount, 
+								nrow(ints)))
         }
         if (nrow(ints) >= 1) {
-            midx <- rbind(as.matrix(ints[, seq_len(2)]), as.matrix(ints[, c(2:1)]))
+            midx <- rbind(as.matrix(ints[, seq_len(2)]), 
+								as.matrix(ints[, c(2:1)]))
             
             if (writeAggNet == "MEAN") {
-                # count each edge in both directions so that the upper and lower triangle of the
+                # count each edge in both directions so that the upper and 
+								# lower triangle of the
                 # matrix are filled.
                 still_empty <- which(is.na(intColl[midx]))
                 if (any(still_empty)) 
@@ -166,14 +173,15 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
                 ### cannot run max() like that
                 intColl[midx] <- pmax(intColl[midx], ints[, 3], na.rm = TRUE)
                 if (plotEdgeDensity) {
-                  plot(density(na.omit(as.numeric(ints[, 3]))), main = nets$NETWORK[i])
+                  plot(density(na.omit(as.numeric(ints[, 3]))), 
+										main = nets$NETWORK[i])
                 }
                 
                 numInt[midx] <- numInt[midx] + 1
                 ### maxNet[midx] <- nets$NET_ID[i]
                 if (verbose) 
-                  message(sprintf("\t%s: %i: %i interactions added", basename(nf), 
-                    i, nrow(midx)))
+                  message(sprintf("\t%s: %i: %i interactions added", 
+											basename(nf),i, nrow(midx)))
                 ## print(table(maxNet)) print(summary(as.numeric(intColl)))
             }
         }
@@ -196,7 +204,8 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         }
         
         if (!is.infinite(limitToTop)) {
-            message(sprintf("* Limiting to top %i edges per patient", limitToTop))
+            message(sprintf("* Limiting to top %i edges per patient", 
+							limitToTop))
             for (k in seq_len(ncol(intColl))) {
                 mytop <- order(tmp[k, ], decreasing = TRUE)
                 # message(sprintf('%s: mytop=%i\n', k,length(mytop)))
@@ -205,7 +214,8 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
                 }
             }
         } else if (!is.infinite(limitToBottom)) {
-            message(sprintf("* Limiting to bottom %i edges per patient", limitToBottom))
+            message(sprintf("* Limiting to bottom %i edges per patient", 
+							limitToBottom))
             for (k in seq_len(ncol(intColl))) {
                 mybot <- order(tmp[k, ])
                 message(sprintf("%s: mybot=%i", k, length(mybot)))
@@ -223,8 +233,8 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         
         
         ints <- melt(tmp)
-        message(sprintf("\n\t%i pairs have no edges (counts directed edges)", sum(is.nan(ints$value)) + 
-            sum(is.na(ints$value))))
+        message(sprintf("\n\t%i pairs have no edges (counts directed edges)", 
+					sum(is.nan(ints$value)) + sum(is.na(ints$value))))
         ints <- na.omit(ints)
         
         
@@ -232,11 +242,12 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         if (!is.infinite(limitToTop)) {
             torm <- c()
             n <- nrow(ints)
-            # painfully slow, need way to vectorize this.  this pass-through is needed for
+            # painfully slow, need way to vectorize this.  this pass-through 
+						# is needed for
             # initial pruning of duplicates
             for (k in seq_len((n - 1))) {
-                dup <- which(ints[(k + 1):n, 2] == ints[k, 1] & ints[(k + 1):n, 1] == 
-                  ints[k, 2])
+                dup <- which(ints[(k + 1):n, 2] == ints[k, 1] & 
+									ints[(k + 1):n, 1] == ints[k, 2])
                 if (any(dup)) 
                   torm <- c(torm, dup)
             }
@@ -250,21 +261,23 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
             z <- which(y %in% x)
             if (any(z)) {
                 ints <- ints[-z, ]
-                message(sprintf("\tSecond pass-through: removed %i more dups", length(z)))
+                message(sprintf("\tSecond pass-through: removed %i more dups", 
+									length(z)))
             }
             x <- paste(ints[, 1], ints[, 2], sep = ".")
             y <- paste(ints[, 2], ints[, 1], sep = ".")
             dup <- intersect(x, y)
             if (length(dup) > 0) {
-                stop(paste("writeWeightedNets.R: despite attempts to remove ", "duplicates, duplicate edges still remain.\n", 
+                stop(paste("writeWeightedNets.R: despite attempts to remove ", 
+									"duplicates, duplicate edges still remain.\n", 
                   sep = ""))
             }
             
         }
         
         den <- choose(ncol(intColl), 2)
-        message(sprintf("\tSparsity = %i/%i (%i %%)", nrow(ints), den, round((nrow(ints)/den) * 
-            100)))
+        message(sprintf("\tSparsity = %i/%i (%i %%)", nrow(ints), den, 
+						round((nrow(ints)/den) * 100)))
         
         # resolve to patient name
         midx <- match(ints[, 1], pid$GM_ID)
@@ -282,16 +295,16 @@ writeWeightedNets <- function(geneFile, netInfo, netDir, keepNets, outDir, filte
         ints <- ints[, c(4, 5, 3, 1, 2)]
         
         if (is.null(outFileName)) {
-            outF <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt", outDir, filterEdgeWt, 
-                writeAggNet)
+            outF <- sprintf("%s/aggregateNet_filterEdgeWt%1.2f_%s.txt", 
+							outDir, filterEdgeWt, writeAggNet)
         } else {
             outF <- sprintf("%s/%s", outDir, outFileName)
         }
         if (!is.infinite(limitToTop)) {
             outF <- sub(".txt", sprintf("top%i.txt", limitToTop), outF)
         }
-        write.table(ints, file = outF, sep = "\t", col.names = TRUE, row.names = FALSE, 
-            quote = FALSE)
+        write.table(ints, file = outF, sep = "\t", col.names = TRUE, 
+						row.names = FALSE, quote = FALSE)
         
         return(outF)
     } else {

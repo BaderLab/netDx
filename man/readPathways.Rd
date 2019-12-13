@@ -48,11 +48,6 @@ one row per set, with values tab-delimited.
 The version at baderlab.org has additional unique formatting of the
 <set name> column as follows:
 <pathway_full_name>%<pathway_source>%<pathway_source_id>
-
-Example:
-UREA CYCLE%HUMANCYC%PWY-4984	urea cycle	ASS1	ARG1	CPS1	ASL	OTC
-ABACAVIR METABOLISM%REACTOME DATABASE ID RELEASE 55%2161541	Abacavir metabolism	ADH1A	GUK1	ADAL	PCK1	NT5C2
-
 This function requires the specific formatting of the first column
 to assign the key name of the output list (see \code{useIDasName} 
 argument).

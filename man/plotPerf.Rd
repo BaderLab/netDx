@@ -8,8 +8,8 @@ plotPerf(inDir, predClasses)
 }
 \arguments{
 \item{inDir}{(char) path to predictionResults.txt files.
-if inDir is a single char and not a vector of prediction files, the expected
-directory structure is <inDir>/rng<X>/predictionResults.txt".
+if inDir is a single char and not a vector of prediction files, the 
+expected directory structure is <inDir>/rng<X>/predictionResults.txt'.
 Otherwise inDir is assumed
 to be a vector, each with absolute paths to predictionResults.txt}
 
@@ -18,7 +18,7 @@ to be a vector, each with absolute paths to predictionResults.txt}
 \value{
 (list) each key corresponds to an input file in inDir.
 Value is a list with:
-1) stats: "stats" component of perfCalc
+1) stats: 'stats' component of perfCalc
 2) rocCurve: ROCR performance object for ROC curve
 3) prCurve: ROCR performance object for PR curve
 4) auroc: Area under ROC curve
@@ -35,12 +35,13 @@ Side effect of plotting in a 2x2 format:
 Plots various measures of predictor performance for binary classifiers
 }
 \details{
-Plots individual and average ROC/PR curves. mean+/-SEM performance for a predictor run using nested
+Plots individual and average ROC/PR curves. mean+/-SEM performance 
+for a predictor run using nested
 cross-validation or a similar repeated design.
 predictionResults.txt contains a (data.frame)
 }
 \examples{
-inDir <- sprintf("\%s/extdata/example_output",
-	path.package("netDx"))
-plotPerf(inDir, predClasses = c("LumA","notLumA"))
+inDir <- sprintf('\%s/extdata/example_output',
+path.package('netDx'))
+plotPerf(inDir, predClasses = c('LumA','notLumA'))
 }

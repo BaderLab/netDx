@@ -27,28 +27,27 @@
 #' @export
 #' @examples
 #' data(npheno)
-#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
-#' netmat <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+#' netDir <- sprintf('%s/extdata/example_nets',path.package('netDx'))
+#' netmat <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
 #' x <- updateNets(netmat, npheno,writeNewNets=FALSE)
-updateNets <- function(p_net, pheno_DF,writeNewNets=TRUE,
-	oldNetDir,newNetDir,verbose=TRUE,...) {
-	idx <- which(colSums(p_net)>=2); p_net   <- p_net[,idx];
-	idx <- which(rowSums(p_net)>=1); p_net   <- p_net[idx,]
-	if (verbose) {
-		message("Update: (num patients) x (num networks)")
-		print(dim(p_net))
-	}
-
-	# training samples are only those that occur in 
-	# clique-filtered networks
-	pheno_DF <- pheno_DF[which(pheno_DF$ID %in% rownames(p_net)),]
-
-	if (writeNewNets) {
-		pruneNets(oldNetDir,newNetDir,
-				  filterNets=colnames(p_net),
-				  filterIDs=rownames(p_net),
-				  ...)
-	}
-
-	return(list(p_net=p_net, pheno_DF=pheno_DF))
+updateNets <- function(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, 
+		newNetDir, verbose = TRUE, ...) {
+    idx <- which(colSums(p_net) >= 2)
+    p_net <- p_net[, idx]
+    idx <- which(rowSums(p_net) >= 1)
+    p_net <- p_net[idx, ]
+    if (verbose) {
+        message("Update: (num patients) x (num networks)")
+        print(dim(p_net))
+    }
+    
+    # training samples are only those that occur in clique-filtered networks
+    pheno_DF <- pheno_DF[which(pheno_DF$ID %in% rownames(p_net)), ]
+    
+    if (writeNewNets) {
+        pruneNets(oldNetDir, newNetDir, filterNets = colnames(p_net), 
+					filterIDs = rownames(p_net),  ...)
+    }
+    
+    return(list(p_net = p_net, pheno_DF = pheno_DF))
 }

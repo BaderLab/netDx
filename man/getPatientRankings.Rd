@@ -10,7 +10,7 @@ getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE,
 \arguments{
 \item{pFile}{(char) path to PRANK file}
 
-\item{pheno_DF}{(data.frame) patient IDs ("ID") and label("STATUS")}
+\item{pheno_DF}{(data.frame) patient IDs ('ID') and label('STATUS')}
 
 \item{predClass}{(character) class label for which predictor is built}
 
@@ -24,12 +24,12 @@ getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE,
 higher ranked patient. 
 2) realLbl: binary value indicating if patient label matches predictor
 label (real labels)
-3) fullmat: pheno_DF merged with similarity scores ("similarityScore") and real label
-("isPredClass")
-4) roc: output of ROCRs performance(,"tpr","fpr") - ROC curve
+3) fullmat: pheno_DF merged with similarity scores ('similarityScore') 
+and real label ('isPredClass')
+4) roc: output of ROCRs performance(,'tpr','fpr') - ROC curve
 5) auc: output of ROCRs auc() 
-6) precall: output of ROCRs performance(, "prec","rec")
-7) f: output of ROCRs performance(,"f")
+6) precall: output of ROCRs performance(, 'prec','rec')
+7) f: output of ROCRs performance(,'f')
 If < 2 patients in PRANK file, roc,auc, precall, f are all returned as
 NA.
 }
@@ -38,7 +38,7 @@ Process GM PRANK files to get the ROC curve for the query
 }
 \examples{
 data(pheno)
-prankFile <- sprintf("\%s/extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK",
-	 path.package("netDx"))
-x <- getPatientRankings(prankFile, pheno, "LumA")
+prankFile <- paste(path.package('netDx'),
+'extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK',sep='/')
+x <- getPatientRankings(prankFile, pheno, 'LumA')
 }

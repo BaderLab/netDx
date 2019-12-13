@@ -35,20 +35,21 @@ Plots a set of ROC/PR curves with average.
 Plots average curves with individual curves imposed.
 }
 \examples{
-inDir <- sprintf("\%s/extdata/example_output", 
-path.package("netDx"))
-all_rng <- list.files(path = inDir, pattern = "rng.")
-fList <- sprintf("\%s/\%s/predictionResults.txt", inDir,all_rng)
+inDir <- sprintf('\%s/extdata/example_output', 
+	path.package('netDx'))
+all_rng <- list.files(path = inDir, pattern = 'rng.')
+fList <- sprintf('\%s/\%s/predictionResults.txt', inDir,all_rng)
 rocList <- list()
 for (k in seq_len(length(fList))) {
-  dat <- read.delim(fList[1],sep="\\t",h=TRUE,as.is=TRUE)
+  dat <- read.delim(fList[1],sep='\\t',h=TRUE,as.is=TRUE)
   predClasses <- c('LumA', 'notLumA')
-  pred_col1 <- sprintf("\%s_SCORE",predClasses[1])
-  pred_col2 <- sprintf("\%s_SCORE",predClasses[2])
+  pred_col1 <- sprintf('\%s_SCORE',predClasses[1])
+  pred_col2 <- sprintf('\%s_SCORE',predClasses[2])
   idx1 <- which(colnames(dat) == pred_col1)
   idx2 <- which(colnames(dat) == pred_col2)
- pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], dat$STATUS==predClasses[1])
- rocList[[k]] <- ROCR::performance(pred,"tpr","fpr")
+ pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], 
+		dat$STATUS==predClasses[1])
+ rocList[[k]] <- ROCR::performance(pred,'tpr','fpr')
 }
-plotPerf_multi(rocList,"ROC")
+plotPerf_multi(rocList,'ROC')
 }

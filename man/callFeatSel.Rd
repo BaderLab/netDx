@@ -10,7 +10,7 @@ callFeatSel(netScores, fsCutoff, fsPctPass)
 \item{netScores}{(matrix) matrix of net scores}
 
 \item{fsCutoff}{(integer) net must score at least this much in a split to
-"pass" the threshold}
+'pass' the threshold}
 
 \item{fsPctPass}{(numeric 0 to 1) net must pass at least this percent of
 splits to be considered feature-selected}

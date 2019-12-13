@@ -26,7 +26,8 @@ these ranges based on metabolic pathway.
 }
 \examples{
 data(genes,pathwayList); 
-gene_GR<- GRanges(genes$chrom,
-IRanges(genes$txStart,genes$txEnd),name=genes$name2)
+gene_GR<-GenomicRanges::GRanges(genes$chrom,
+  IRanges::IRanges(genes$txStart,genes$txEnd),
+		name=genes$name2)
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 }

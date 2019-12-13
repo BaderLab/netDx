@@ -9,14 +9,15 @@ makeQueries(incPat, featScoreMax = 10L, verbose = TRUE)
 \arguments{
 \item{incPat}{(char) vector of patient IDs to be included in query}
 
-\item{featScoreMax}{(integer) Number of times to run query, usually equal to the max 
-score for features in the design (e.g. if featScoreMax=10, then this value is 10).}
+\item{featScoreMax}{(integer) Number of times to run query, usually equal 
+to the max score for features in the design (e.g. if featScoreMax=10, then 
+this value is 10).}
 
 \item{verbose}{(logical) print messages}
 }
 \value{
-(list) of length \code{featScoreMax}, containing names of patients in
-query file for each fold
+(list) of length \code{featScoreMax}, containing names of patients 
+in query file for each fold
 }
 \description{
 Randomly select patients for queries for feature selection

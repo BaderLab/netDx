@@ -23,57 +23,58 @@
 #' 2) featureSets: key-value pairs of selected feature sets (e.g. if pathway
 #' features are used, keys are pathway names, and values are member genes).
 #' @examples
-#' inDir <- sprintf("%s/extdata/example_output",path.package("netDx"))
-#' outDir <- paste(tempdir(),"plots",sep="/")
+#' inDir <- sprintf('%s/extdata/example_output',path.package('netDx'))
+#' outDir <- paste(tempdir(),'plots',sep='/')
 #' if (!file.exists(outDir)) dir.create(outDir)
-#' featScores <- getFeatureScores(inDir,predClasses=c("LumA","notLumA"))
+#' featScores <- getFeatureScores(inDir,predClasses=c('LumA','notLumA'))
 #' gp <- names(featScores)[1]
 #' pathwayList <- readPathways(getExamplePathways())
 #' pathwayList <- pathwayList[seq_len(5)]
-#' netInfoFile <- sprintf("%s/extdata/example_output/inputNets.txt",
-#'      path.package("netDx"))
-#' netInfo <- read.delim(netInfoFile,sep="\t",h=FALSE,as.is=TRUE)
+#' netInfoFile <- sprintf('%s/extdata/example_output/inputNets.txt',
+#'      path.package('netDx'))
+#' netInfo <- read.delim(netInfoFile,sep='\t',h=FALSE,as.is=TRUE)
 #' emap_input <- getEMapInput(featScores[[gp]],pathwayList,netInfo)
 #' summary(emap_input)
 
 #' @export
-getEMapInput <- function(featScores, namedSets,netInfo,pctPass=0.70,
-	minScore=1,maxScore=10,
-	trimFromName=c(".profile","_cont"),verbose=FALSE) {
-	netNames <- featScores[,1];
-	featScores <- as.matrix(featScores[,-1])
-
-	# compute the max score per net for pctPass % of trials
-	maxNetS <- matrix(NA, nrow=length(netNames),ncol=1)
-	for (sc in minScore:maxScore) {
-			if (ncol(featScores)>=2) {
-				tmp <- rowSums(featScores >= sc)
-				idx <- which(tmp >= floor(pctPass * ncol(featScores)))
-			} else {
-				idx  <- which(featScores >= sc)
-			}
-			if (verbose) message(sprintf("\t%i : %i pass", sc, length(idx)))
-			maxNetS[idx,1] <- sc
-	}
-	idx <- which(!is.na(maxNetS))
-	maxNetS <- maxNetS[idx,,drop=FALSE]
-	netNames <- netNames[idx]
-
-	for (tr in trimFromName) netNames <- sub(tr,"",netNames)
-
-	df1 <- data.frame(netName=netNames, maxScore=maxNetS)
-	# TODO this colname setting can cause problems when using some pathway lists
-	colnames(netInfo) <- c("netType","netName")
-	df2 <- merge(x=df1,y=netInfo,by="netName")
-
-	featSet <- list()
-	for (cur in df2$netName) {
-			k2 <- simpleCap(cur)
-			if (is.null(namedSets[[cur]])) namedSets[[cur]] <- k2
-			featSet[[k2]] <- namedSets[[cur]]
-	}
-  out <- list(nodeAttrs=df2,featureSets=featSet)
-
-  return(out)
+getEMapInput <- function(featScores, namedSets, netInfo, pctPass = 0.7, 
+		minScore = 1, maxScore = 10, trimFromName = c(".profile", "_cont"), 
+		verbose = FALSE) {
+    netNames <- featScores[, 1]
+    featScores <- as.matrix(featScores[, -1])
+    
+    # compute the max score per net for pctPass % of trials
+    maxNetS <- matrix(NA, nrow = length(netNames), ncol = 1)
+    for (sc in minScore:maxScore) {
+        if (ncol(featScores) >= 2) {
+            tmp <- rowSums(featScores >= sc)
+            idx <- which(tmp >= floor(pctPass * ncol(featScores)))
+        } else {
+            idx <- which(featScores >= sc)
+        }
+        if (verbose) 
+            message(sprintf("\t%i : %i pass", sc, length(idx)))
+        maxNetS[idx, 1] <- sc
+    }
+    idx <- which(!is.na(maxNetS))
+    maxNetS <- maxNetS[idx, , drop = FALSE]
+    netNames <- netNames[idx]
+    
+    for (tr in trimFromName) netNames <- sub(tr, "", netNames)
+    
+    df1 <- data.frame(netName = netNames, maxScore = maxNetS)
+    colnames(netInfo) <- c("netType", "netName")
+    df2 <- merge(x = df1, y = netInfo, by = "netName")
+    
+    featSet <- list()
+    for (cur in df2$netName) {
+        k2 <- simpleCap(cur)
+        if (is.null(namedSets[[cur]])) 
+            namedSets[[cur]] <- k2
+        featSet[[k2]] <- namedSets[[cur]]
+    }
+    out <- list(nodeAttrs = df2, featureSets = featSet)
+    
+    return(out)
 }
 

@@ -30,8 +30,8 @@ of results file
 Run a query
 }
 \examples{
-dbPath <- sprintf("\%s/extdata/dbPath", path.package("netDx"))
-queryFile <- sprintf("\%s/extdata/GM_query.txt",
-	path.package("netDx"))
+dbPath <- sprintf('\%s/extdata/dbPath', path.package('netDx'))
+queryFile <- sprintf('\%s/extdata/GM_query.txt',
+path.package('netDx'))
 runQuery(dbPath, queryFile,tempdir())
 }

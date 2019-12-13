@@ -45,16 +45,16 @@ features are used, keys are pathway names, and values are member genes).
 write enrichment map for consensus nets
 }
 \examples{
-inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
-outDir <- paste(tempdir(),"plots",sep="/")
+inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
+outDir <- paste(tempdir(),'plots',sep='/')
 if (!file.exists(outDir)) dir.create(outDir)
-featScores <- getFeatureScores(inDir,predClasses=c("LumA","notLumA"))
+featScores <- getFeatureScores(inDir,predClasses=c('LumA','notLumA'))
 gp <- names(featScores)[1]
 pathwayList <- readPathways(getExamplePathways())
 pathwayList <- pathwayList[seq_len(5)]
-netInfoFile <- sprintf("\%s/extdata/example_output/inputNets.txt",
-     path.package("netDx"))
-netInfo <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
+netInfoFile <- sprintf('\%s/extdata/example_output/inputNets.txt',
+     path.package('netDx'))
+netInfo <- read.delim(netInfoFile,sep='\\t',h=FALSE,as.is=TRUE)
 emap_input <- getEMapInput(featScores[[gp]],pathwayList,netInfo)
 summary(emap_input)
 }

@@ -27,7 +27,7 @@ profiles to interaction networks.}
 \item{numCores}{(integer) num cores for parallel processing}
 
 \item{P2N_threshType}{(char) Most users shouldn't have to change this.
-ProfileToNetworkDriver's threshold option. One of "off|auto". 
+ProfileToNetworkDriver's threshold option. One of 'off|auto'. 
 unit testing}
 
 \item{P2N_maxMissing}{(integer 5-100)}
@@ -40,8 +40,8 @@ unit tests}
 \item{...}{params for \code{writeQueryBatchFile()}}
 }
 \value{
-(list). "dbDir": path to GeneMANIA database 
-	"netDir": path to directory with interaction networks. If profiles
+(list). 'dbDir': path to GeneMANIA database 
+'netDir': path to directory with interaction networks. If profiles
 are provided, this points to the INTERACTIONS/ subdirectory within 
 the text-based GeneMANIA generic database
 If the DB creation process results in an erorr, these values return 
@@ -52,12 +52,13 @@ Create GeneMANIA database
 }
 \details{
 Creates a generic_db for use with GeneMania QueryRunner.
-The database is in tab-delimited format, and indexes are built using Apache lucene.
+The database is in tab-delimited format, and indexes are built using Apache 
+lucene.
 NOTE: This pipeline expects input in the form of interaction networks
 and not profiles.
 Profile tables have patient-by-datapoint format (e.g. patient-by-genotype)
 Interaction networks have pairwise similarity measures:
-<PatientA>	<PatientB>	<similarity>
+<PatientA> <PatientB><similarity>
 Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 }
 \examples{
@@ -68,17 +69,19 @@ dataList <- list(rna=xpr)  #only one layer type
 groupList <- list(rna=pathwayList) # group genes by pathways
 
 makeNets <- function(dataList, groupList, netDir,...) {
-    netList <- makePSN_NamedMatrix(dataList[["rna"]],rownames(dataList[["rna"]]),
-                groupList[["rna"]],netDir,verbose=FALSE,writeProfiles=TRUE,...)
+    netList <- makePSN_NamedMatrix(dataList[['rna']],
+				rownames(dataList[['rna']]),
+         groupList[['rna']],netDir,verbose=FALSE,
+				writeProfiles=TRUE,...)
     unlist(netList)
 }
-tmpDir <- tempdir(); netDir <- sprintf("\%s/nets",tmpDir)
+tmpDir <- tempdir(); netDir <- sprintf('\%s/nets',tmpDir)
 dir.create(netDir,recursive=TRUE)
 
 pheno_id <- setupFeatureDB(pheno,netDir)
 netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
 
-outDir <- sprintf("\%s/dbdir",tmpDir); dir.create(outDir)
+outDir <- sprintf('\%s/dbdir',tmpDir); dir.create(outDir)
 dbDir <- compileFeatures(netDir,outDir)
 }

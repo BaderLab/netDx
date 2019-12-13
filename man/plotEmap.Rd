@@ -22,9 +22,9 @@ class name is a good idea. (e.g. SURVIVE_YES and SURVIVE_NO).}
 
 \item{maxScore}{(int) maximum score of node to show}
 
-\item{colorScheme}{(char) colour scheme for nodes. "cont_heatmap" 
+\item{colorScheme}{(char) colour scheme for nodes. 'cont_heatmap' 
 sets a discrete map ranging from yellow to red for increasing scores. 
-"netDx_ms" is the colour scheme used in the netDx methods paper.
+'netDx_ms' is the colour scheme used in the netDx methods paper.
 This map is (<=6: white; 7-9: orange; 10: red)}
 
 \item{imageFormat}{(char) one of PNG, PDF, SVG, or JPEG}
@@ -47,27 +47,28 @@ session of Cytoscape.
 }
 \description{
 Create a network where nodes are predictive pathways passing
-certain cutoff and edges indicate similarity in gene-sets. Pathways are then
-clustered to identify themes of predictive pathways. Generates one such
-network for each patient label.
+certain cutoff and edges indicate similarity in gene-sets. Pathways are 
+then clustered to identify themes of predictive pathways. Generates one 
+such network for each patient label.
 }
 \examples{
 #refer to getEMapInput_many.R for working getEMapInput_many() example
 data(featScores)
 pathwayList <- readPathways(getExamplePathways())
 pathwayList <- pathwayList[seq_len(5)]
-netInfoFile <- sprintf("\%s/extdata/example_output/inputNets.txt",
-     path.package("netDx"))
-netTypes <- read.delim(netInfoFile,sep="\\t",h=FALSE,as.is=TRUE)
-outDir <- paste(tempdir(),"plots",sep="/")
+netInfoFile <- sprintf('\%s/extdata/example_output/inputNets.txt',
+     path.package('netDx'))
+netTypes <- read.delim(netInfoFile,sep='\\t',h=FALSE,as.is=TRUE)
+outDir <- paste(tempdir(),'plots',sep='/')
 if (!file.exists(outDir)) dir.create(outDir)
 EMap_input <- getEMapInput_many(featScores,pathwayList,
      netTypes,outDir=outDir)
-outDir <- paste(getwd(),"plots",sep="/")
+outDir <- paste(getwd(),'plots',sep='/')
 if (!file.exists(outDir)) dir.create(outDir)
 gmtFile <- EMap_input[[1]][1]
 nodeAttrFile <- EMap_input[[1]][2]
 
 # not run because requires Cytoscape to be installed and open
-# plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, netName="HighRisk")
+# plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, 
+#\\t\\tnetName='HighRisk')
 }

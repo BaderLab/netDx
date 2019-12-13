@@ -20,5 +20,5 @@ simple capitalization
 used to format feature names so they are not in all-caps
 }
 \examples{
-simpleCap("this IS a TEST sEnTenCe")
+simpleCap('this IS a TEST sEnTenCe')
 }

@@ -8,18 +8,21 @@
 #' @param verbose (logical) print detailed messages
 #'
 #' @return RangeList. keys are names of \code{rangeList}, values are GRanges
-#' @import GenomicRanges
+#' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges
 #' @examples 
 #' data(genes,pathwayList); 
-#' gene_GR<- GRanges(genes$chrom,
-#'	IRanges(genes$txStart,genes$txEnd),name=genes$name2)
+#' gene_GR<-GenomicRanges::GRanges(genes$chrom,
+#'   IRanges::IRanges(genes$txStart,genes$txEnd),
+#' 		name=genes$name2)
 #' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 #' @export
-mapNamedRangesToSets <- function(gr,rangeList,verbose=FALSE){ 
+mapNamedRangesToSets <- function(gr, rangeList, verbose = FALSE) {
     out <- list()
     for (nm in names(rangeList)) {
         my_gr <- gr[which(gr$name %in% rangeList[[nm]])]
-        if (verbose) message(sprintf("%s: %i ranges\n",nm,length(my_gr)))
+        if (verbose) 
+            message(sprintf("%s: %i ranges\n", nm, length(my_gr)))
         out[[nm]] <- my_gr
     }
     out

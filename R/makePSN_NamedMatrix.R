@@ -43,12 +43,14 @@
 #' See useSparsify2, sparsify_edgeMax and sparsify_maxInt
 #' @param useSparsify2 (logical). Cleaner sparsification routine. 
 #' If FALSE, uses new matrix-based sparsify3
-#' @param sparsify_maxInt (numeric) Max num edges per node in sparsified network. 
+#' @param sparsify_maxInt (numeric) Max num edges per node in sparsified 
+#' network. 
 #' @param sparsify_edgeMax (numeric) Max number of edges to include in the
 #' final network
 #' @param minMembers (integer) min number of measures in a network for 
-#' the network to be included. Useful when similarity measures require a minimum
-#' number of measures to be meaningful (e.g. minimum of 6 for Pearson correlation)
+#' the network to be included. Useful when similarity measures require a 
+#' minimum number of measures to be meaningful (e.g. minimum of 6 for Pearson 
+#' correlation)
 #' @param runSerially (logical) set to TRUE to create nets serially, rather 
 #' than in parallel
 #' @param ... passed to \code{getSimilarity()}
@@ -59,89 +61,104 @@
 #' # you may get a warning message that the output directory already
 #' # exists; ignore it
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
-#' 	".",writeProfiles=TRUE)
+#' 	'.',writeProfiles=TRUE)
 #' @export
-makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir=tempdir(),
-	simMetric="pearson",verbose=TRUE,
-	numCores=1L,writeProfiles=TRUE,
-	sparsify=FALSE,useSparsify2=FALSE,cutoff=0.3,sparsify_edgeMax=Inf,
-	sparsify_maxInt=50,minMembers=1L,runSerially=FALSE,
-	...) {
-
-	if ((!simMetric %in% c("pearson","MI"))  & writeProfiles==TRUE) {
-	print(simMetric)
-		stop("writeProfiles must only be TRUE with simMetric set to pearson or MI. For all other metrics, set writeProfiles=FALSE")
-	}
-	
-	cl	<- makeCluster(numCores,outfile=sprintf("%s/makePSN_log.txt",outDir))
-	if (!runSerially) {
-	registerDoParallel(cl)
-	} else {
-		message("running serially")
-	}
-
-	if (simMetric=="pearson") {
-		message("Pearson similarity chosen - enforcing min. 5 patients per net.")
-		minMembers <- 5;
-	}
-
-	# process pathways in parallel
-	outFiles <- foreach (curSet=names(namedSets)) %dopar% {
-		if (verbose) message(sprintf("%s: ", curSet))
-		idx <- which(nm %in% namedSets[[curSet]])
-		if (verbose) message(sprintf("%i members", length(idx)))
-
-		oFile <- NULL
- 		# has sufficient connections to make network
-		if (length(idx)>=minMembers) {
-			if (writeProfiles) {
-				outFile <- sprintf("%s/%s.profile",outDir,curSet)
-				write.table(t(xpr[idx,,drop=FALSE]),file=outFile,sep="\t",
-							col=FALSE,row=TRUE,quote=FALSE)
-			} else {
-				outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
-				message(sprintf("computing sim for %s",curSet))
-				sim 	<- getSimilarity(xpr[idx,,drop=FALSE], 
-										 type=simMetric,...)
-				if (is.null(sim)) {
-					stop(sprintf("makePSN_NamedMatrix:%s: similarity matrix is empty (NULL)\nCheck that there isn't a mistake in the input data or similarity method of choice.\n",curSet))
-				}
-					pat_pairs <- sim
-
-				if (sparsify) {
-					if (useSparsify2) {
-					tryCatch({
-					 spmat <- sparsify2(pat_pairs,cutoff=cutoff,
-							EDGE_MAX=sparsify_edgeMax,
-							outFile=outFile,maxInt=sparsify_maxInt)
-					},error=function(ex) {
-						stop("sparsify2 caught error\n"); 
-					})
-					} else {
-						message("sparsify3")
-					tryCatch({
-				     sp_t0 <- Sys.time()
-					 spmat <- sparsify3(pat_pairs,cutoff=cutoff,
-							EDGE_MAX=sparsify_edgeMax,
-							outFile=outFile,maxInt=sparsify_maxInt,verbose=FALSE)
-					 print(Sys.time()-sp_t0)
-					},error=function(ex) {
-						stop("sparsify3 caught error\n"); 
-					})
-					}
-				} else {
-				write.table(pat_pairs, file=outFile,sep="\t",
-					col=FALSE,row=FALSE,quote=FALSE)
-				print(basename(outFile))
-				message("done")
-				}
-			}
-#message("got here\n")
-			oFile <- basename(outFile)
-		}
-		oFile
-#message("out of loop\n")
-	}
-	stopCluster(cl)
-	outFiles
+makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), 
+		simMetric = "pearson", 
+    verbose = TRUE, numCores = 1L, writeProfiles = TRUE, sparsify = FALSE, 
+		useSparsify2 = FALSE, 
+    cutoff = 0.3, sparsify_edgeMax = Inf, sparsify_maxInt = 50, 
+		minMembers = 1L, 
+    runSerially = FALSE, ...) {
+    
+    if ((!simMetric %in% c("pearson", "MI")) & writeProfiles == TRUE) {
+        print(simMetric)
+        stop(paste("writeProfiles must only be TRUE with simMetric", 
+					" set to pearson or MI. For all other metrics, ", 
+            "set writeProfiles=FALSE", sep = ""))
+    }
+    
+    cl <- makeCluster(numCores, outfile = sprintf("%s/makePSN_log.txt", outDir))
+    if (!runSerially) {
+        registerDoParallel(cl)
+    } else {
+        message("running serially")
+    }
+    
+    if (simMetric == "pearson") {
+        message(paste("Pearson similarity chosen - ", 
+						"enforcing min. 5 patients per net.", 
+            sep = ""))
+        minMembers <- 5
+    }
+    
+    # process pathways in parallel
+    outFiles <- foreach(curSet = names(namedSets)) %dopar% {
+        if (verbose) 
+            message(sprintf("%s: ", curSet))
+        idx <- which(nm %in% namedSets[[curSet]])
+        if (verbose) 
+            message(sprintf("%i members", length(idx)))
+        
+        oFile <- NULL
+        # has sufficient connections to make network
+        if (length(idx) >= minMembers) {
+            if (writeProfiles) {
+                outFile <- sprintf("%s/%s.profile", outDir, curSet)
+                write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
+									sep = "\t", 
+                  col.names = FALSE, row.names = TRUE, quote = FALSE)
+            } else {
+                outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
+                message(sprintf("computing sim for %s", curSet))
+                sim <- getSimilarity(xpr[idx, , drop = FALSE], 
+									type = simMetric, 
+                  ...)
+                if (is.null(sim)) {
+                  stop(sprintf(paste("makePSN_NamedMatrix:%s: ", 
+										"similarity matrix is empty (NULL).\n", 
+                    "Check that there isn't a mistake in the ", 
+										"input data or similarity method of choice.\n", 
+                    sep = ""), curSet))
+                }
+                pat_pairs <- sim
+                
+                if (sparsify) {
+                  if (useSparsify2) {
+                    tryCatch({
+                      spmat <- sparsify2(pat_pairs, cutoff = cutoff, 
+												EDGE_MAX = sparsify_edgeMax, 
+                        outFile = outFile, maxInt = sparsify_maxInt)
+                    }, error = function(ex) {
+                      stop("sparsify2 caught error\n")
+                    })
+                  } else {
+                    message("sparsify3")
+                    tryCatch({
+                      sp_t0 <- Sys.time()
+                      spmat <- sparsify3(pat_pairs, cutoff = cutoff, 
+												EDGE_MAX = sparsify_edgeMax, 
+                        outFile = outFile, maxInt = sparsify_maxInt, 
+												verbose = FALSE)
+                      print(Sys.time() - sp_t0)
+                    }, error = function(ex) {
+                      stop("sparsify3 caught error\n")
+                    })
+                  }
+                } else {
+                  write.table(pat_pairs, file = outFile, sep = "\t", 
+										col.names = FALSE, 
+                    row.names = FALSE, quote = FALSE)
+                  print(basename(outFile))
+                  message("done")
+                }
+            }
+            # message('got here\n')
+            oFile <- basename(outFile)
+        }
+        oFile
+        # message('out of loop\n')
+    }
+    stopCluster(cl)
+    outFiles
 }

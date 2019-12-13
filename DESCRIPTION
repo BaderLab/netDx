@@ -1,6 +1,6 @@
 Package: netDx
 Title: Network-based patient classifier
-Version: 0.99.8
+Version: 0.99.9
 Authors@R: c(person("Shraddha", "Pai", 
 		email = "shraddha.pai@utoronto.ca", 
 		role = c("aut", "cre"),
@@ -11,13 +11,14 @@ Authors@R: c(person("Shraddha", "Pai",
 	person("Ruth","Isserlin",role="aut"),
 	person("Hussam","Kaka", role="aut"),
 	person("Gary","Bader",role="aut"))
-Description: General-purpose algorithm to build a patient classifier from heterogenous patient data. The method converts data into patient similarity networks at the level of features. Feature selection identifies features of predictive value to each class. Methods are provided for versatile predictor design and performance evaluation using standard measures. netDx natively groups molecular data into pathway-level features and connects with Cytoscape for network visualization of pathway themes. For method details see: Pai et al. (2019). netDx: interpretable patient classification using integrated patient similarity networks. Molecular Systems Biology. 15, e8497
+Description: netDx is a general-purpose algorithm to build a patient classifier from heterogenous patient data. The method converts data into patient similarity networks at the level of features. Feature selection identifies features of predictive value to each class. Methods are provided for versatile predictor design and performance evaluation using standard measures. netDx natively groups molecular data into pathway-level features and connects with Cytoscape for network visualization of pathway themes. For method details see: Pai et al. (2019). netDx: interpretable patient classification using integrated patient similarity networks. Molecular Systems Biology. 15, e8497
 Depends:
-    R (>= 3.6),bigmemory,foreach,doParallel,combinat,BiocManager,GenomicRanges,knitr,htmltools,BiocFileCache,rappdirs
+    R (>= 3.6)
 Suggests: 
     curatedTCGAData,
-    testthat
-Imports: ROCR,pracma,ggplot2,RCy3,caroline,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment
+    testthat,
+		knitr
+Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: MIT + file LICENSE

@@ -10,15 +10,16 @@
 #' \code{outFile}
 #' @examples
 #' data(pheno)
-#' writeQueryFile(pheno$ID[seq_len(5)], "all",nrow(pheno), "myquery.txt")
+#' writeQueryFile(pheno$ID[seq_len(5)], 'all',nrow(pheno), 'myquery.txt')
 #' @export
-writeQueryFile <- function(qSamps, incNets="all", numReturn=1L, outFile,
-  orgName="predictor") {
-	fileConn <- file(outFile,"w")
-	writeLines(sprintf("%s",orgName),con=fileConn)# org name
-	writeLines(sprintf("%s",paste(qSamps,collapse="\t")),con=fileConn)
-	writeLines(sprintf("%s",paste(incNets,collapse="\t")),con=fileConn)# networks 	
-	writeLines(sprintf("%i",numReturn),con=fileConn) #num2return
-	writeLines("automatic",con=fileConn)			# combining
-	close(fileConn)
+writeQueryFile <- function(qSamps, incNets = "all", numReturn = 1L, outFile, 
+		orgName = "predictor") {
+    fileConn <- file(outFile, "w")
+    writeLines(sprintf("%s", orgName), con = fileConn)  # org name
+    writeLines(sprintf("%s", paste(qSamps, collapse = "\t")), con = fileConn)
+    # networks
+    writeLines(sprintf("%s", paste(incNets, collapse = "\t")), con = fileConn)
+    writeLines(sprintf("%i", numReturn), con = fileConn)  #num2return
+    writeLines("automatic", con = fileConn)  # combining
+    close(fileConn)
 }

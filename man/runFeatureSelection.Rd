@@ -50,7 +50,7 @@ Creates query files, runs GM for 10-fold cross validation.
 }
 \examples{
 data(MB.pheno)
-dbPath <- sprintf("\%s/extdata/dbPath",path.package("netDx"))
-runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS\%in\% "WNT")],
-"~/tmp",dbPath,103L)
+dbPath <- sprintf('\%s/extdata/dbPath',path.package('netDx'))
+runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS\%in\% 'WNT')],
+		'~/tmp',dbPath,103L)
 }

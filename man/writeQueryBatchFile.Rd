@@ -37,12 +37,12 @@ No value. Side effect of writing batch file to
 Write batch.txt file required to create GeneMANIA database
 }
 \details{
-Currently creates a single entry for network group. Future versions of this
-package may want to
+This file is used to compile features into a single database
+for feature selection.
 }
 \examples{
 data(npheno)
-netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
-netList <- dir(netDir,pattern="txt$")
-writeQueryBatchFile(netDir,netList, "~/tmp", npheno$ID)
+netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netList <- dir(netDir,pattern='txt$')
+writeQueryBatchFile(netDir,netList, '~/tmp', npheno$ID)
 }

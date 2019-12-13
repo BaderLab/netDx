@@ -3,22 +3,22 @@
 #' @param curP (char) pathway name
 #' @export
 #' @examples
-#' cleanPathwayName("7-(3-AMINO-3-CARBOXYPROPYL)-WYOSINE BIOSYNTHESIS%HUMANCYC%PWY-7286") 
+#' cleanPathwayName('7-(3-AMINO-3-CARBOXYPROPYL)-WYOSINE BIOSYNTHESIS%HUMANC')
 #' @return (char) Cleaned pathway name
 cleanPathwayName <- function(curP) {
-	pforfile	<- gsub(" ","_",curP)
-	pforfile	<- gsub("<","_",pforfile)
-	pforfile	<- gsub(">","_",pforfile)
-	pforfile	<- gsub("\\(","_",pforfile)
-	pforfile	<- gsub("\\)","_",pforfile)
-	pforfile	<- gsub("&","_",pforfile)
-	pforfile	<- gsub(";","_",pforfile)
-	pforfile	<- gsub("\\/","_",pforfile)
-	pforfile	<- gsub("\\\354","X",pforfile)
-	pforfile	<- gsub("\\\302\\\240","_",pforfile)
-	pforfile	<- gsub("\\\240","X",pforfile)
-	pforfile	<- gsub("\\\312","_",pforfile)
-	pforfile	<- gsub("\\+","plus",pforfile)
-
-	return(pforfile)
+    pforfile <- gsub(" ", "_", curP)
+    pforfile <- gsub("<", "_", pforfile)
+    pforfile <- gsub(">", "_", pforfile)
+    pforfile <- gsub("\\(", "_", pforfile)
+    pforfile <- gsub("\\)", "_", pforfile)
+    pforfile <- gsub("&", "_", pforfile)
+    pforfile <- gsub(";", "_", pforfile)
+    pforfile <- gsub("\\/", "_", pforfile)
+    pforfile <- gsub("\\\xec", "X", pforfile)
+    pforfile <- gsub("\\\xc2\\\xa0", "_", pforfile)
+    pforfile <- gsub("\\\xa0", "X", pforfile)
+    pforfile <- gsub("\\\xca", "_", pforfile)
+    pforfile <- gsub("\\+", "plus", pforfile)
+    
+    return(pforfile)
 }

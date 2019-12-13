@@ -12,7 +12,7 @@
 #' @examples 
 #' data(genes,pathwayList); 
 #' gene_GR<- GRanges(genes$chrom,
-#'\tIRanges(genes$txStart,genes$txEnd),name=genes$name2)
+#'   IRanges(genes$txStart,genes$txEnd),name=genes$name2)
 #' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 #' @export
 mapNamedRangesToSets <- function(gr, rangeList, verbose = FALSE) {

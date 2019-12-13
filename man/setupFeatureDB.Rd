@@ -27,11 +27,13 @@ dataList <- list(rna=xpr)  #only one layer type
 groupList <- list(rna=pathwayList) # group genes by pathways
 
 makeNets <- function(dataList, groupList, netDir,...) {
-    netList <- makePSN_NamedMatrix(dataList[["rna"]],rownames(dataList[["rna"]]),
-                groupList[["rna"]],netDir,verbose=FALSE,writeProfiles=TRUE,...)
+    netList <- makePSN_NamedMatrix(dataList[['rna']],
+		rownames(dataList[['rna']]),
+     groupList[['rna']],netDir,verbose=FALSE,
+			writeProfiles=TRUE,...)
     unlist(netList)
 }
-tmpDir <- tempdir(); netDir <- sprintf("\%s/nets",tmpDir)
+tmpDir <- tempdir(); netDir <- sprintf('\%s/nets',tmpDir)
 dir.create(netDir,recursive=TRUE)
 
 pheno_id <- setupFeatureDB(pheno,netDir)

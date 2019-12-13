@@ -23,3 +23,14 @@ compile net score across a set of predictor results
 used to compare how individual nets score for different
 predictor configurations
 }
+\examples{
+pathways <- paste("PATHWAY_",1:100,sep="")
+highrisk <- list()
+for (k in 1:10) { 
+	highrisk[[k]] <- data.frame(PATHWAY_NAME=pathways, 
+	SCORE=runif(length(pathways),min=0,max=10),
+			stringsAsFactors=FALSE);
+}
+names(highrisk) <- sprintf("Split\%i",1:length(highrisk))
+x <- getNetConsensus(highrisk)
+}

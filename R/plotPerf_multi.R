@@ -13,7 +13,7 @@
 #' @importFrom graphics abline axis par points segments text title hist
 #' @examples
 #' inDir <- sprintf('%s/extdata/example_output', 
-#'\tpath.package('netDx'))
+#' 	path.package('netDx'))
 #' all_rng <- list.files(path = inDir, pattern = 'rng.')
 #' fList <- sprintf('%s/%s/predictionResults.txt', inDir,all_rng)
 #' rocList <- list()
@@ -25,7 +25,7 @@
 #'   idx1 <- which(colnames(dat) == pred_col1)
 #'   idx2 <- which(colnames(dat) == pred_col2)
 #'  pred <- ROCR::prediction(dat[,idx1]-dat[,idx2], 
-#'\t\tdat$STATUS==predClasses[1])
+#' 		dat$STATUS==predClasses[1])
 #'  rocList[[k]] <- ROCR::performance(pred,'tpr','fpr')
 #' }
 #' plotPerf_multi(rocList,'ROC')

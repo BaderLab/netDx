@@ -11,7 +11,7 @@ splitTestTrain(pheno_DF, pctT = 0.7, verbose = FALSE)
 Must contain the following columns:
 1. ID: (char) patient IDs
 2. STATUS: (char) patient classes. Values not equal to \code{predClass}
-will be considered as "other"
+will be considered as 'other'
 Expects rows with unique IDs}
 
 \item{pctT}{(numeric between 0 and 1) Fraction of patients to randomly
@@ -22,8 +22,8 @@ set}
 }
 \value{
 (char) vector of length \code{nrow(pheno_DF)}, with values of 
-"TRAIN" or "TEST". The order corresponds to pheno_DF; a patient labelled
-"TRAIN" has been assigned to the training set, and one labelled "TEST"
+'TRAIN' or 'TEST'. The order corresponds to pheno_DF; a patient labelled
+'TRAIN' has been assigned to the training set, and one labelled 'TEST'
 as been assigned to the test set.
 }
 \description{

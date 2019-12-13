@@ -28,5 +28,5 @@ Wrapper to write GeneMANIA query file
 }
 \examples{
 data(pheno)
-writeQueryFile(pheno$ID[seq_len(5)], "all",nrow(pheno), "myquery.txt")
+writeQueryFile(pheno$ID[seq_len(5)], 'all',nrow(pheno), 'myquery.txt')
 }

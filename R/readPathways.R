@@ -11,7 +11,7 @@
 #' to assign the key name of the output list (see \code{useIDasName} 
 #' argument).
 #' @param fname (char) path to pathway file in gmt format
-#'\tpathway score to include pathway in the filter list
+#' pathway score to include pathway in the filter list
 #' @param MIN_SIZE (integer) min num genes allowed in a pathway. Pathways
 #' with fewer number of genes are excluded from the output list
 #' @param MAX_SIZE (integer) max num genes allowed in a pathway. Pathways
@@ -31,7 +31,7 @@
 #' (2) pNames: data.frame with original and cleaned names.
 #' @examples
 #' pathFile <- getExamplePathways()
-#'\tpathwayList    <- readPathways(pathFile)
+#' pathwayList    <- readPathways(pathFile)
 #' 
 #' @export
 readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L, 

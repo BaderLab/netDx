@@ -34,7 +34,7 @@ table to prune networks as feature selection proceeds
 }
 \examples{
 data(npheno)
-netDir <- sprintf("\%s/extdata/example_nets",
-path.package("netDx"))
-x <- countPatientsInNet(netDir,dir(netDir,pattern="txt$"), npheno[,1])
+netDir <- sprintf('\%s/extdata/example_nets',
+path.package('netDx'))
+x <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
 }

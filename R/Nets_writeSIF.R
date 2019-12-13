@@ -7,7 +7,7 @@
 #'
 #' @param netPath (char): vector of path to network files; file suffix
 #' should be '_cont.txt' 
-#' networks should be in format:\tA\tB\t1
+#' networks should be in format: A B 1
 #' where A and B are nodes, and 1 indicates an edge between them
 #' @param outFile (char) path to .sif file 
 #' @param netSfx (char) suffix for network file name

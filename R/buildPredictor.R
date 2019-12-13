@@ -200,11 +200,12 @@ tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
 nm1 <-setdiff(names(groupList),"clinical") 
 names_nomatch <- any(!nm1 %in% names(dataList))
-if (!is(groupList,"list") || not_list || names_nomatch ) 
+if (!is(groupList,"list") || not_list || names_nomatch ) {
 	msg <- c("groupList must be a list of lists.",
 	" Names must match those in dataList, and each entry should be a list",
   " of networks for this group.")
 	stop(paste(msg,sep=""))
+}
 if (!is(dataList,"MultiAssayExperiment"))
 	stop("dataList must be a MultiAssayExperiment")
 if (trainProp <= 0 | trainProp >= 1) 

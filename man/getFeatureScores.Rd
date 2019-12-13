@@ -7,12 +7,12 @@
 getFeatureScores(inDir, predClasses, getFullCons = TRUE)
 }
 \arguments{
-\item{inDir}{(char/list) directory containing directories with all split info
-or list of all CV score files.
-if inDir is a single directory then the expected format for CV score files is
-<inDir>/rngX/predClassX/GM_results/predClassX_pathway_CV_score.txt"
-if inDir is a list, it should have one key per class. The value should be the
-corresponding set of filenames for pathway_CV_score.txt}
+\item{inDir}{(char/list) directory containing directories with all split 
+info or list of all CV score files.
+if inDir is a single directory then the expected format for CV score files 
+is <inDir>/rngX/predClassX/GM_results/predClassX_pathway_CV_score.txt'
+if inDir is a list, it should have one key per class. The value should be 
+the corresponding set of filenames for pathway_CV_score.txt}
 
 \item{predClasses}{(char) possible STATUS for patients}
 
@@ -29,10 +29,11 @@ the inner fold of CV.
 Compile network scores into a matrix
 }
 \details{
-Given network scores over a set of train/test splits, compiles these
-into a matrix for downstream analysis. See the section on "Output Files"
+Given network scores over a set of train/test splits, compiles 
+these into a matrix for downstream analysis. See the section on 
+'Output Files'
 }
 \examples{
-inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
-netScores <- getFeatureScores(inDir, predClasses = c("LumA","notLumA"))
+inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
+netScores <- getFeatureScores(inDir, predClasses = c('LumA','notLumA'))
 }

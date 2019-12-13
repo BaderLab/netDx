@@ -11,10 +11,10 @@
 #' Currently, the only similarity measure supported is binary; two patients
 #' are related in a network N if they both overlap elements of set N.
 #' @param gr (GRanges) patient ranges. Metadata should contain:
-#'\tID: (char) unique patient ID
-#'\tLOCUS_NAME: (comma-separated char) named ranges overlapped
+#' ID: (char) unique patient ID
+#' LOCUS_NAME: (comma-separated char) named ranges overlapped
 #' @param rangeSet (list) list of GRanges, one entry per range set.
-#' \tKey is the name of the range set, and value is a GRanges object with
+#' Key is the name of the range set, and value is a GRanges object with
 #' corresponding ranges
 #' @param netDir (char) path to directory where networks should be written
 #' @param simMetric (char) Similarity metric. Currently only 'coincide' 

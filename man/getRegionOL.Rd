@@ -10,12 +10,12 @@ getRegionOL(gr, rngList)
 \item{gr}{(GRanges) query ranges}
 
 \item{rngList}{(list) keys are names, and values are GRanges, each range
-of which has a name (in "name" column). Note: It is faster to provide
+of which has a name (in 'name' column). Note: It is faster to provide
 a list of length 1 ; if the list is long, combining into a single GRanges
 object could prove slow.}
 }
 \value{
-(GRanges) query ranges with the added column "LOCUS_NAMES". 
+(GRanges) query ranges with the added column 'LOCUS_NAMES'. 
 Where a range overlaps with multiple loci, the names are reported as a 
 comma-separated vector
 }

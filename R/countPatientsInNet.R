@@ -11,14 +11,14 @@
 #' split). A matrix with patient/network membership serves as a lookup
 #' table to prune networks as feature selection proceeds
 #' @param netDir (char) dir with network set
-#' @param fList\t(char) filenames of interaction networks to count in
+#' @param fList (char) filenames of interaction networks to count in
 #' @param ids (char) patient IDs to look for
 #' @return (matrix) Size P by N, where P is num patients and N is 
 #' number of networks networks; a[i,j] =1 if patient i in network j, else 0
 #' @examples
 #' data(npheno)
 #' netDir <- sprintf('%s/extdata/example_nets',
-#'\tpath.package('netDx'))
+#' path.package('netDx'))
 #' x <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
 #' @export
 countPatientsInNet <- function(netDir, fList, ids) {

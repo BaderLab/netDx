@@ -18,7 +18,13 @@ sparsify3(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50,
 
 \item{EDGE_MAX}{(numeric) max num edges in network}
 
-\item{includeAllNodes}{(logical) if TRUE, ensures at least one edge is present for each patient. This feature is required when sparsification excludes test patients that are required to be classified. If the sparsification rules exclude all edges for a patient and this flag is set, then the strongest edge for each missing patient is added to the net. Note that this condition results in the total number of edges potentially exceeding EDGE_MAX}
+\item{includeAllNodes}{(logical) if TRUE, ensures at least one edge is 
+present for each patient. This feature is required when sparsification 
+excludes test patients that are required to be classified. If the 
+sparsification rules exclude all edges for a patient and this flag is set, 
+then the strongest edge for each missing patient is added to the net. Note 
+that this condition results in the total number of edges potentially 
+exceeding EDGE_MAX}
 
 \item{verbose}{(logical) print detailed messages, useful for debugging}
 }
@@ -34,8 +40,8 @@ Sets diagonal and edges < cutoff to NA. Keeps strongest maxInt edges
 per node. Ties are ignored. Keeps a max of EDGE_MAX edges in the network.
 }
 \examples{
-m <- matrix(runif(500*500),nrow.names=500)
+m <- matrix(runif(500*500),nrow=500)
 y <- sparsify2(m)
-m <- matrix(runif(500*500),nrow.names=500)
+m <- matrix(runif(500*500),nrow=500)
 y <- sparsify2(m)
 }

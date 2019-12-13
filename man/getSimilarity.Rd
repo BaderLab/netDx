@@ -11,10 +11,10 @@ getSimilarity(x, type = "pearson", customFunc, ...)
 computed. Expects one column per patient, and one measurement per row.}
 
 \item{type}{(character) name of similarity measure. Currently supports 
-Pearson correlation ("pearson") or a custom measure ("custom")}
+Pearson correlation ('pearson') or a custom measure ('custom')}
 
 \item{customFunc}{(function) custom similarity function. Only used when 
-\code{type="custom"}. The function takes \code{x} as first argument and 
+\code{type='custom'}. The function takes \code{x} as first argument and 
 can take additional argument. It should return a symmetric matrix of 
 pairwise patient similarities.}
 
@@ -29,6 +29,6 @@ Measures of patient similarity
 \examples{
 data(xpr) 
 x <- getSimilarity(xpr) # similarity by Pearson corr
-mySim <- function(x) cor(x,method="kendall")
+mySim <- function(x) cor(x,method='kendall')
 x <- getSimilarity(xpr,customFunc=mySim) # custom similarity
 }

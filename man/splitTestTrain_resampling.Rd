@@ -9,8 +9,8 @@ splitTestTrain_resampling(pheno_DF, nFold = 3L, predClass,
 }
 \arguments{
 \item{pheno_DF}{(data.frame) table with patient ID and status.
-Must contain columns for Patient ID (named "ID") and class
-(named "STATUS"). Status should be a char; value of predictor class 
+Must contain columns for Patient ID (named 'ID') and class
+(named 'STATUS'). Status should be a char; value of predictor class 
 should be specified in \code{predClass} param; 
 all other values are considered non-predictor class
 Expects rows with unique IDs
@@ -25,7 +25,7 @@ sample exactly once.}
 }
 \value{
 (list) of length nFold, each with char vector of length 
-nrow(pheno_DF). Values of "TRAIN" or "TEST"
+nrow(pheno_DF). Values of 'TRAIN' or 'TEST'
 }
 \description{
 Assign train/test labels over several resamplings of the data.
@@ -42,5 +42,5 @@ another has too few).
 }
 \examples{
 data(pheno) 
-x <- splitTestTrain_resampling(pheno,predClass="LumA")
+x <- splitTestTrain_resampling(pheno,predClass='LumA')
 }

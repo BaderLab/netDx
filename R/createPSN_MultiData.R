@@ -84,18 +84,18 @@
 #' exprs <- experiments(brca)
 #' datList2 <- list()
 #' for (k in seq_len(length(exprs))) {
-#' \ttmp <- exprs[[k]]
-#' \tdf <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
-#' \tcolnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
-#' \ttmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
-#' \tdatList2[[names(exprs)[k]]]<- tmp\t
+#'  tmp <- exprs[[k]]
+#'  df <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
+#'  colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
+#'  tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
+#'  datList2[[names(exprs)[k]]]<- tmp
 #' }
 #' pheno <- colData(brca)[,c('ID','STATUS')]
 #' netDir <- tempdir()
 #' pheno_id <- setupFeatureDB(colData(brca),netDir)
 #' createPSN_MultiData(dataList=datList2,groupList=groupList,
 #'  pheno=pheno_id,
-#' \tnetDir=netDir,customFunc=makeNets,numCores=1)
+#'  netDir=netDir,customFunc=makeNets,numCores=1)
 #' @export
 createPSN_MultiData <- function(dataList, groupList, pheno, netDir, 
 		filterSet = NULL, 
@@ -116,10 +116,11 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir,
     })
     
     if (!is.null(filterSet)) {
-        if (length(filterSet) < 1) 
-            s1 <- "filterSet is empty."
-        s2 <- "It needs to have at least one net to proceed."
-        stop(paste(s1, s2, sep = " "))
+        if (length(filterSet) < 1) {
+          s1 <- "filterSet is empty."
+        	s2 <- "It needs to have at least one net to proceed."
+        	stop(paste(s1, s2, sep = " "))
+				}
     }
     if (missing(customFunc)) 
         stop("customFunc must be suppled.\n")
@@ -144,8 +145,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir,
     }
     
     # call user-defined function for making PSN
-    netList <- customFunc(dataList = dataList, groupList = groupList, netDir = netDir, 
-        ...)
+    netList <- customFunc(dataList = dataList, groupList = groupList, 
+				netDir = netDir, ...)
     
     if (length(netList) < 1) 
         stop("\n\nNo features created! Filters may be too stringent.\n")
@@ -183,8 +184,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir,
     
     # write NETWORK_GROUPS.txt
     con <- file(sprintf("%s/NETWORK_GROUPS.txt", netDir), "w")
-    write(paste(1, "dummy_group", "geneset_1", "dummy_group", 1, sep = "\t"),i
-			 file = con)
+    write(paste(1, "dummy_group", "geneset_1", "dummy_group", 1, sep = "\t"),
+		file = con)
     close(con)
     
     con <- file(sprintf("%s/NETWORK_METADATA.txt", netDir), "w")

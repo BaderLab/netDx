@@ -14,7 +14,7 @@ ID: (char) unique patient ID
 LOCUS_NAME: (comma-separated char) named ranges overlapped}
 
 \item{rangeSet}{(list) list of GRanges, one entry per range set.
-    Key is the name of the range set, and value is a GRanges object with
+Key is the name of the range set, and value is a GRanges object with
 corresponding ranges}
 
 \item{netDir}{(char) path to directory where networks should be written}
@@ -53,5 +53,5 @@ are related in a network N if they both overlap elements of set N.
 }
 \examples{
 data(pathway_GR,cnv_GR)
-netList <- makePSN_RangeSets(cnv_GR,pathway_GR,".")
+netList <- makePSN_RangeSets(cnv_GR,pathway_GR,'.')
 }

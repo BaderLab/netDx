@@ -13,7 +13,7 @@
 #' @examples
 #' dbPath <- sprintf('%s/extdata/dbPath', path.package('netDx'))
 #' queryFile <- sprintf('%s/extdata/GM_query.txt',
-#'\t\tpath.package('netDx'))
+#'	path.package('netDx'))
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
 runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 

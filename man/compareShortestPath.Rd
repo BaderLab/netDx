@@ -22,11 +22,11 @@ shortest path distributions for each group.}
 \item{verbose}{(logical) print messages}
 }
 \value{
-(list) Two lists, "avg" and "all". keys are cluster names. 
-values for "avg" are mean shortest path ; for "all", are all pairwise
+(list) Two lists, 'avg' and 'all'. keys are cluster names. 
+values for 'avg' are mean shortest path ; for 'all', are all pairwise
 shortest paths
 for subnetworks that contain only the edges where source and target both 
-belong to the corresponding cluster. In addition, there is an "overall" 
+belong to the corresponding cluster. In addition, there is an 'overall' 
 entry for the mean shortest distance for the entire network.
 }
 \description{
@@ -40,6 +40,6 @@ for a network. This function requires the igraph package to be installed.
 }
 \examples{
 data(silh); 
-colnames(silh$net)[3] <- "weight"
+colnames(silh$net)[3] <- 'weight'
 compareShortestPath(silh$net, silh$groups)
 }

@@ -23,7 +23,7 @@
 #' @examples
 #' data(pheno)
 #' prankFile <- paste(path.package('netDx'),
-#'\t\t\t\t\t'extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK',sep='/')
+#'	'extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK',sep='/')
 #' x <- getPatientRankings(prankFile, pheno, 'LumA')
 getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, 
 		verbose = FALSE) {

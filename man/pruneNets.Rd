@@ -14,14 +14,14 @@ pruneNets(oldDir, newDir, filterNets = "*", filterIDs = "*",
 \item{newDir}{(char) path to output directory for pruned networks}
 
 \item{filterNets}{(char) vector of networks to include. These should 
-match filenames in \code{netDir}. Value of "*" results in pruning all
+match filenames in \code{netDir}. Value of '*' results in pruning all
 networks}
 
 \item{filterIDs}{(char) patients to include in pruned networks. These
 should match nodes in the input interaction networks}
 
 \item{netSfx}{(char) suffix for network file names. Only used if 
-\code{filterNets="*"}.}
+\code{filterNets='*'}.}
 
 \item{verbose}{(logical) print messages}
 }
@@ -47,7 +47,7 @@ original networks that consist of eligible patients.
 }
 \examples{
 data(npheno)
-netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
-pruneNets(netDir,"~/tmp",filterIDs=npheno[seq_len(10),],
-	netSfx="txt$")
+netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
+ netSfx='txt$')
 }

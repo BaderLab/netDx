@@ -14,6 +14,7 @@
 #' @return (GRanges) query ranges with the added column 'LOCUS_NAMES'. 
 #' Where a range overlaps with multiple loci, the names are reported as a 
 #' comma-separated vector
+#' @import GenomicRanges
 #' @examples
 #' data(cnv_GR,pathway_GR)
 #' x <- getRegionOL(cnv_GR,pathway_GR)

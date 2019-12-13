@@ -18,7 +18,7 @@ Similarity metric of normalized difference
 }
 \details{
 Similarity metric used when data for a network consists of
-exactly 1 continuous variable  (e.g. a network based only on "age"). 
+exactly 1 continuous variable  (e.g. a network based only on 'age'). 
 When number of variables is 2-5, use avgNormDiff() which 
 takes the average of normalized difference for individual variables
 }

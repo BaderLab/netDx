@@ -9,10 +9,10 @@
 #' avoids the situation where one resampling has too many positives and 
 #' another has too few).
 #' @param pheno_DF (data.frame) table with patient ID and status.
-#'\tMust contain columns for Patient ID (named 'ID') and class
+#' Must contain columns for Patient ID (named 'ID') and class
 #' (named 'STATUS'). Status should be a char; value of predictor class 
 #' should be specified in \code{predClass} param; 
-#'\tall other values are considered non-predictor class
+#' all other values are considered non-predictor class
 #' Expects rows with unique IDs
 #' Rows with duplicate IDs will be excluded.
 #' @param nFold (integer) number of resamplings. Each sample will be a test

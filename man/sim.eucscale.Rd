@@ -7,7 +7,8 @@
 sim.eucscale(dat, K = 20, alpha = 0.5)
 }
 \arguments{
-\item{dat}{(data.frame) Patient data; rows are measures, columns are patients.}
+\item{dat}{(data.frame) Patient data; rows are measures, columns are 
+patients.}
 
 \item{K}{(integer) Number of nearest neighbours to consider (K of KNN)}
 
@@ -22,8 +23,8 @@ pairwise patient similarities
 Computes Euclidean distance between patients. A scaled 
 exponential similarity kernel is used to determine edge weight. The 
 exponential scaling considers the K nearest neighbours, so that 
-similarities between non-neighbours is set to zero. Alpha is a hyperparameter
-that determines decay rate of the exponential. For details,
+similarities between non-neighbours is set to zero. Alpha is a 
+hyperparameterthat determines decay rate of the exponential. For details,
 see Wang et al. (2014). Nature Methods 11:333.
 }
 \examples{

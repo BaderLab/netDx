@@ -8,8 +8,8 @@ writeNetsSIF(netPath, outFile, netSfx = "_cont.txt")
 }
 \arguments{
 \item{netPath}{(char): vector of path to network files; file suffix
-should be "_cont.txt" 
-networks should be in format:    A    B    1
+should be '_cont.txt' 
+networks should be in format: A B 1
 where A and B are nodes, and 1 indicates an edge between them}
 
 \item{outFile}{(char) path to .sif file}
@@ -29,7 +29,7 @@ sif format.
 This utility permits visualization of feature selected networks.
 }
 \examples{
-netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
-netFiles <- sprintf("\%s/\%s", netDir, dir(netDir,pattern="txt$"))
-writeNetsSIF(netFiles,"merged.sif",netSfx=".txt")
+netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netFiles <- sprintf('\%s/\%s', netDir, dir(netDir,pattern='txt$'))
+writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 }

@@ -46,29 +46,29 @@ Wrapper to create custom input features (patient similarity networks)
 
 library(curatedTCGAData)
 library(MultiAssayExperiment)
-curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+curatedTCGAData(diseaseCode='BRCA', assays='*',dru.run=TRUE)
 
 # fetch mrna, mutation data
-brca <- curatedTCGAData("BRCA",c("mRNAArray","Mutation"),FALSE)
+brca <- curatedTCGAData('BRCA',c('mRNAArray','Mutation'),FALSE)
 
 # get subtype info
 pID <- colData(brca)$patientID
 pam50 <- colData(brca)$PAM50.mRNA
 staget <- colData(brca)$pathology_T_stage
 st2 <- rep(NA,length(staget))
-st2[which(staget \%in\% c("t1","t1a","t1b","t1c"))] <- 1
-st2[which(staget \%in\% c("t2","t2a","t2b"))] <- 2
-st2[which(staget \%in\% c("t3","t3a"))] <- 3
-st2[which(staget \%in\% c("t4","t4b","t4d"))] <- 4
-pam50[which(!pam50 \%in\% "Luminal A")] <- "notLumA"                         
-pam50[which(pam50 \%in\% "Luminal A")] <- "LumA"
+st2[which(staget \%in\% c('t1','t1a','t1b','t1c'))] <- 1
+st2[which(staget \%in\% c('t2','t2a','t2b'))] <- 2
+st2[which(staget \%in\% c('t3','t3a'))] <- 3
+st2[which(staget \%in\% c('t4','t4b','t4d'))] <- 4
+pam50[which(!pam50 \%in\% 'Luminal A')] <- 'notLumA'                         
+pam50[which(pam50 \%in\% 'Luminal A')] <- 'LumA'
 colData(brca)$ID <- pID
 colData(brca)$STAGE <- st2                                                 
 colData(brca)$STATUS <- pam50
 
 # keep only tumour samples
-idx <- union(which(pam50 == "Normal-like"), which(is.na(st2)))
-cat(sprintf("excluding \%i samples\\n", length(idx)))
+idx <- union(which(pam50 == 'Normal-like'), which(is.na(st2)))
+cat(sprintf('excluding \%i samples\\n', length(idx)))
                                                                            
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
@@ -79,42 +79,42 @@ brca <- brca[,,1] # keep only clinical and mRNA data
 
 # remove duplicate arrays
 smp <- sampleMap(brca)
-samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-notdup <- samps[which(!duplicated(samps$primary)),"colname"]
+samps <- smp[which(smp$assay=='BRCA_mRNAArray-20160128'),]
+notdup <- samps[which(!duplicated(samps$primary)),'colname']
 brca[[1]] <- brca[[1]][,notdup]
 
 groupList <- list()
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList[seq_len(3)]
+groupList[['BRCA_mRNAArray-20160128']] <- pathList[seq_len(3)]
 makeNets <- function(dataList, groupList, netDir,...) {
     netList <- c()
     # make RNA nets: group by pathway
-    if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) {
-    netList <- makePSN_NamedMatrix(dataList[["BRCA_mRNAArray-20160128"]],
-                rownames(dataList[["BRCA_mRNAArray-20160128"]]),
-                groupList[["BRCA_mRNAArray-20160128"]],
+    if (!is.null(groupList[['BRCA_mRNAArray-20160128']])) {
+    netList <- makePSN_NamedMatrix(dataList[['BRCA_mRNAArray-20160128']],
+                rownames(dataList[['BRCA_mRNAArray-20160128']]),
+                groupList[['BRCA_mRNAArray-20160128']],
                 netDir,verbose=FALSE,
                 writeProfiles=TRUE,...)
     netList <- unlist(netList)
-    cat(sprintf("Made \%i RNA pathway nets\\n", length(netList)))
+    cat(sprintf('Made \%i RNA pathway nets\\n', length(netList)))
     }
 
-    cat(sprintf("Total of \%i nets\\n", length(netList)))
+    cat(sprintf('Total of \%i nets\\n', length(netList)))
     return(netList)
 }
 
 exprs <- experiments(brca)
 datList2 <- list()
 for (k in seq_len(length(exprs))) {
-	tmp <- exprs[[k]]
-	df <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
-	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
-	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
-	datList2[[names(exprs)[k]]]<- tmp	
+ tmp <- exprs[[k]]
+ df <- sampleMap(brca)[which(sampleMap(brca)$assay==names(exprs)[k]),]
+ colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
+ tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
+ datList2[[names(exprs)[k]]]<- tmp
 }
-pheno <- colData(brca)[,c("ID","STATUS")]
+pheno <- colData(brca)[,c('ID','STATUS')]
 netDir <- tempdir()
 pheno_id <- setupFeatureDB(colData(brca),netDir)
 createPSN_MultiData(dataList=datList2,groupList=groupList,
  pheno=pheno_id,
-	netDir=netDir,customFunc=makeNets,numCores=1)
+ netDir=netDir,customFunc=makeNets,numCores=1)
 }

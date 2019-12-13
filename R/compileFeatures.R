@@ -7,7 +7,7 @@
 #' and not profiles.
 #' Profile tables have patient-by-datapoint format (e.g. patient-by-genotype)
 #' Interaction networks have pairwise similarity measures:
-#' <PatientA>\t<PatientB>\t<similarity>
+#' <PatientA> <PatientB><similarity>
 #' Documentation: https://github.com/GeneMANIA/pipeline/wiki/GenericDb
 #' @param netDir (char) path to dir with input networks/profiles. All
 #' networks in this directory will be added to the GM database. Note:
@@ -28,7 +28,7 @@
 #' unit tests
 #' @param ... params for \code{writeQueryBatchFile()}
 #' @return (list). 'dbDir': path to GeneMANIA database 
-#' \t'netDir': path to directory with interaction networks. If profiles
+#' 'netDir': path to directory with interaction networks. If profiles
 #' are provided, this points to the INTERACTIONS/ subdirectory within 
 #' the text-based GeneMANIA generic database
 #' If the DB creation process results in an erorr, these values return 
@@ -42,9 +42,9 @@
 #' 
 #' makeNets <- function(dataList, groupList, netDir,...) {
 #'     netList <- makePSN_NamedMatrix(dataList[['rna']],
-#'\t\t\t\t\t\t\t\t\trownames(dataList[['rna']]),
-#'                 groupList[['rna']],netDir,verbose=FALSE,
-#'\t\t\t\t\t\t\t\t\twriteProfiles=TRUE,...)
+#'					rownames(dataList[['rna']]),
+#'          groupList[['rna']],netDir,verbose=FALSE,
+#'					writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
 #' tmpDir <- tempdir(); netDir <- sprintf('%s/nets',tmpDir)

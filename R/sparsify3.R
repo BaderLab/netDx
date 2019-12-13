@@ -78,7 +78,7 @@ sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50,
                 x <- as.numeric(tmp[3])
                 if (x < cutoff) {
                   message(paste("\tMissing edge is below cutoff; ",
-											"setting to cutoff\n")
+											"setting to cutoff\n"))
                   x <- cutoff
                 }
                 mmat <- rbind(mmat, c(k, tmp[2], x))

@@ -26,7 +26,7 @@
 #' 4) PR curve for all runs plus average
 #' @examples
 #' inDir <- sprintf('%s/extdata/example_output',
-#' \tpath.package('netDx'))
+#' path.package('netDx'))
 #' plotPerf(inDir, predClasses = c('LumA','notLumA'))
 #' @import ROCR
 #' @import pracma

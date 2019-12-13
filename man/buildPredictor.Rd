@@ -21,8 +21,8 @@ columns of sample metadata table).}
 \item{groupList}{(list of lists) keys are datatypes, and values are 
 lists indicating how units for those datatypes are to be grouped. 
 Keys must match names(assays(dataList)). The only exception is for clinical
-values. Variables for "clinical" will be extracted from columns of the sample
-metadata table (i.e. from colData(dataList)).   
+values. Variables for "clinical" will be extracted from columns of the 
+sample metadata table (i.e. from colData(dataList)).   
 e.g. groupList[["rna"]] could be a list of pathway definitions. 
 So keys(groupList[["rna"]]) would have pathway names, generating one PSN
 per pathways, and values(groupList[["rna"]]) would be genes that would be
@@ -87,16 +87,18 @@ pairwise patient similarities
 (list) 
 "inputNets": data.frame of all input network names. Columns are "NetType"
 (group) and "NetName" (network name).
-"Split<i>" is the data for train/test split i (i.e. one per train/test split).
+"Split<i>" is the data for train/test split i 
+(i.e. one per train/test split).
 Each "SplitX" entry contains in turn a list of results for that split. 
 Key-value pairs are:
 1) predictions: real and predicted labels for test patients
 2) accuracy: percent accuracy of predictions
 3) featureScores: list of length g, where g is number of patient classes.
-scores for all features following feature selection, for corresponding class.
+scores for all features following feature selection, for corresponding 
+class.
 4) featureSelected: list of length g (num patient classes). List of 
-selected features for corresponding patient class, for that train/test split 
- Side effect of generating predictor-related data in <outDir>.
+selected features for corresponding patient class, for that train/test 
+split. Side effect of generating predictor-related data in <outDir>.
 }
 \description{
 Run nested cross-validation on data
@@ -157,8 +159,9 @@ brca[[1]] <- brca[[1]][,notdup]
 
 groupList <- list()
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[seq_len(3)]
-groupList[["clinical"]] <- list(age="patient.age_at_initial_pathologic_diagnosis",
-    stage="STAGE")
+groupList[["clinical"]] <- list(
+age="patient.age_at_initial_pathologic_diagnosis",
+ stage="STAGE")
 makeNets <- function(dataList, groupList, netDir,...) {
     netList <- c()
     # make RNA nets: group by pathway

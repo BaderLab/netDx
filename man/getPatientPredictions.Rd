@@ -11,7 +11,7 @@ getPatientPredictions(predFiles, pheno, plotAccuracy = FALSE)
 (e.g. 100 files for a 100 train/test split design).
 Alternately, the user can also  provide a single directory name, and allow
 the script to retrieve prediction files.
-Format is "rootDir/rngX/predictionResults.txt"}
+Format is 'rootDir/rngX/predictionResults.txt'}
 
 \item{pheno}{(data.frame) ID=patient ID, STATUS=ground truth (known class
 label). This table is required to get the master list of all patients, as
@@ -23,13 +23,13 @@ patient is misclassified, using a dot plot}
 \value{
 (list) of length 2.
 1) (data.frame) rows are patients, (length(predFiles)+2) columns.
-Columns seq_len(length(predFiles)): Predicted labels for a given split (NA if
-patient was training sample for the split).
+Columns seq_len(length(predFiles)): Predicted labels for a given split (NA 
+if patient was training sample for the split).
 Column (length(predFiles)+1):
 split, value is NA. Columns are : ID, REAL_STATUS, predStatus1,...
 predStatusN.
-Side effect of plotting a dot plot of % accuracy. Each dot is a patient, and
-the value is "% splits for which patient was classified correctly".
+Side effect of plotting a dot plot of % accuracy. Each dot is a patient, 
+and the value is '% splits for which patient was classified correctly'.
 }
 \description{
 Calculates patient-level classification accuracy across train/test splits
@@ -42,10 +42,10 @@ we get a measure of individual classification accuracy across the different
 train/test splits.
 }
 \examples{
-inDir <- sprintf("\%s/extdata/example_output",path.package("netDx"))
+inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
 data(pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {
-    paste(x, "predictionResults.txt", sep = "/")}))
+    paste(x, 'predictionResults.txt', sep = '/')}))
 pred_mat <- getPatientPredictions(all_pred_files, pheno)
 }

@@ -61,7 +61,7 @@
 #' # you may get a warning message that the output directory already
 #' # exists; ignore it
 #' out <- makePSN_NamedMatrix(xpr,rownames(xpr),pathwayList, 
-#' \t'.',writeProfiles=TRUE)
+#' 	'.',writeProfiles=TRUE)
 #' @export
 makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(), 
 		simMetric = "pearson", 

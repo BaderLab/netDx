@@ -15,9 +15,9 @@
 #' 
 #' makeNets <- function(dataList, groupList, netDir,...) {
 #'     netList <- makePSN_NamedMatrix(dataList[['rna']],
-#'\t\t\t\trownames(dataList[['rna']]),
-#'                 groupList[['rna']],netDir,verbose=FALSE,
-#' \t\t\twriteProfiles=TRUE,...)
+#'			rownames(dataList[['rna']]),
+#'      groupList[['rna']],netDir,verbose=FALSE,
+#' 			writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
 #' tmpDir <- tempdir(); netDir <- sprintf('%s/nets',tmpDir)

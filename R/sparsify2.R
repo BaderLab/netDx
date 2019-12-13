@@ -18,6 +18,9 @@
 #' @param verbose (logical) print detailed messages, useful for debugging
 #' @return writes SIF content to text file (node1,node2,edge weight)
 #' @import reshape2
+#' @examples 
+#' data(xpr); 
+#' sparsify2(cor(xpr))
 #' @export
 sparsify2 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, 
 		EDGE_MAX = 1000,includeAllNodes = TRUE, verbose = TRUE) {

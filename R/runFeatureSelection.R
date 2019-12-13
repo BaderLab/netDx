@@ -5,7 +5,7 @@
 #' patients (ie all that can possibly be included in the query file
 #' @param outDir (char) directory to store query file and GM results
 #' @param dbPath (char) path to GeneMANIA generic database with
-#'\ttraining population
+#' training population
 #' @param numTrainSamps (integer) number of training samples in total
 #' leave blank to use 5 training samples in order to save memory
 #' @param incNets (char) vector of networks to include in this analysis
@@ -23,7 +23,7 @@
 #' data(MB.pheno)
 #' dbPath <- sprintf('%s/extdata/dbPath',path.package('netDx'))
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% 'WNT')],
-#'\t'~/tmp',dbPath,103L)
+#' 		'~/tmp',dbPath,103L)
 #' @export
 runFeatureSelection <- function(trainID_pred, outDir, dbPath, 
 		numTrainSamps = NULL, incNets = "all", orgName = "predictor", 

@@ -17,7 +17,8 @@
 #' netFiles <- sprintf('%s/%s', netDir, dir(netDir,pattern='txt$'))
 #' writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 #' @export
-writeNetsSIF <- function(netPath, outFile, netSfx = "_cont.txt") {
+writeNetsSIF <- function(netPath, outFile=sprintf("%s/out.sif",tempdir()),
+	netSfx = "_cont.txt") {
     
     system2(sprintf("cat /dev/null > %s", outFile))
     for (n in netPath) {

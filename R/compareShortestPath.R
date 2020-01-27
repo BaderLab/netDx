@@ -115,7 +115,7 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
         dl <- data.frame(intType = rep(names(dall), 
 							lapply(dall, length)), dijk = unlist(dall))
         plotList <- list()
-        p <- ggplot(dl, aes(intType, dijk))
+        p <- ggplot(dl, aes(dl$intType, dl$dijk))
         p <- p + ylab("Pairwise Dijkstra distance\n(smaller is better)")
         p <- p + xlab("Pair groups")
         p2 <- p + geom_violin(scale = "width") + geom_boxplot(width = 0.02)

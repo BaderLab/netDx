@@ -4,8 +4,8 @@
 \alias{createPSN_MultiData}
 \title{Wrapper to create custom input features (patient similarity networks)}
 \usage{
-createPSN_MultiData(dataList, groupList, pheno, netDir, filterSet = NULL,
-  verbose = TRUE, customFunc, ...)
+createPSN_MultiData(dataList, groupList, pheno, netDir = tempdir(),
+  filterSet = NULL, verbose = TRUE, customFunc, ...)
 }
 \arguments{
 \item{dataList}{(list) key is datatype (e.g. clinical, rna, etc.,), value is

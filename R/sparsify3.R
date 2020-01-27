@@ -26,7 +26,8 @@
 #' m <- matrix(runif(500*500),nrow=500)
 #' y <- sparsify2(m)
 #' @export
-sparsify3 <- function(W, outFile = "tmp.txt", cutoff = 0.3, maxInt = 50, 
+sparsify3 <- function(W, outFile = sprintf("%s/tmp.txt",tempdir()), 
+		cutoff = 0.3, maxInt = 50, 
 		EDGE_MAX = Inf, 
     includeAllNodes = TRUE, verbose = TRUE) {
     

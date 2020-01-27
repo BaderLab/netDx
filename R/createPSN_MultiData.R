@@ -97,7 +97,7 @@
 #'  pheno=pheno_id,
 #'  netDir=netDir,customFunc=makeNets,numCores=1)
 #' @export
-createPSN_MultiData <- function(dataList, groupList, pheno, netDir, 
+createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(), 
 		filterSet = NULL, 
     verbose = TRUE, customFunc, ...) {
     
@@ -105,8 +105,6 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir,
         stop("dataList must be supplied.\n")
     if (missing(groupList)) 
         stop("groupList must be supplied.\n")
-    if (missing(netDir)) 
-        stop("netDir must be supplied.\n")
     
     # resolve user-provided IDs with internal IDs
     dataList <- lapply(dataList, function(x) {

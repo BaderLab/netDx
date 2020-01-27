@@ -29,7 +29,8 @@
 #' pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
 #'  netSfx='txt$')
 #' @export
-pruneNets <- function(oldDir, newDir, filterNets = "*", filterIDs = "*", 
+pruneNets <- function(oldDir, newDir=tempdir(), 
+		filterNets = "*", filterIDs = "*", 
 		netSfx = "_cont.txt$", verbose = TRUE) {
     if (length(filterNets) == 1) {
         if (filterNets == "*") {
@@ -67,7 +68,8 @@ pruneNets <- function(oldDir, newDir, filterNets = "*", filterIDs = "*",
 								which(dat[, 2] %in% filterIDs))
             
             write.table(dat[idx, ], file = sprintf("%s/%s", newDir, f), 
-								sep = "\t", col = FALSE, row = FALSE, quote = FALSE)
+								sep = "\t", col.names = FALSE, row.names = FALSE, 
+								quote = FALSE)
         }
     }
 }

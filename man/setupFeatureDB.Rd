@@ -4,7 +4,7 @@
 \alias{setupFeatureDB}
 \title{setup database of features for feature selection}
 \usage{
-setupFeatureDB(pheno, prepDir)
+setupFeatureDB(pheno, prepDir = tempdir())
 }
 \arguments{
 \item{pheno}{(data.frame) patient metadata. Must contain ID column}

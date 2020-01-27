@@ -4,7 +4,7 @@
 \alias{buildPredictor}
 \title{Run nested cross-validation on data}
 \usage{
-buildPredictor(dataList, groupList, outDir, makeNetFunc,
+buildPredictor(dataList, groupList, outDir = tempdir(), makeNetFunc,
   featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
   JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
   startAt = 1L, preFilter = FALSE, impute = FALSE,

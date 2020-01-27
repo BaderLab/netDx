@@ -168,7 +168,7 @@
 #' #   makeNetFunc=makeNets, ### custom network creation function
 #' #   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
-buildPredictor <- function(dataList,groupList,outDir,makeNetFunc,
+buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
 	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default") { 
@@ -195,7 +195,6 @@ if (logging == "all") {
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (length(groupList)<1) stop("groupList must be of length 1+\n")
-if (missing(outDir)) outDir <- tempdir()
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
 nm1 <-setdiff(names(groupList),"clinical") 
@@ -293,7 +292,7 @@ for (rngNum in startAt:numSplits) {
 
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
 								verbose=verbose_default)
-	pheno <- subset(pheno_all, TT_STATUS %in% "TRAIN")
+	pheno <- pheno_all[which(pheno_all$TT_STATUS %in% "TRAIN"),]
 
 	dats_train <- lapply(dataList, function(x) 
 		x[,which(colnames(x) %in% pheno$ID)])
@@ -526,7 +525,7 @@ for (rngNum in startAt:numSplits) {
 	}
         
 	if (!keepAllData) {
-		system2('rm',args=c('-r',outDir))
+		unlink(outDir, recursive=TRUE)
 	}# endif !keepAllData
 
 	if (verbose_default) {

@@ -8,11 +8,6 @@ Demo feature-level scores from running feature selection on two-class problem
 List with one entry per patient label ("SURVIVEYES" and "SURVIVENO"). Each entry contains scores obtained through feature-selection acros 100 train/test splits. Scores range from 0 to 10. Scores in data.frame format, with rows corresponding to features and columns to a particular train/test split.
 }
 \usage{data(featScores)}
-\source{
-
-}
-\references{
-}
 \examples{
 data(featScores)
 head(featScores)

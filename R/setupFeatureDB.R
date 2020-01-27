@@ -25,7 +25,7 @@
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
 #' @export
-setupFeatureDB <- function(pheno, prepDir) {
+setupFeatureDB <- function(pheno, prepDir=tempdir()) {
     
     curd <- getwd()
     setwd(prepDir)

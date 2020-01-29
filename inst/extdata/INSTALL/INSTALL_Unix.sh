@@ -25,16 +25,6 @@ else {
  }
 fi
 
-echo "* Checking if Python installed ..."
-if [[ $(python --version 2>&1)  ]]
-    then
-        echo -e "\tdone"
-    else {
-        echo -e "*** ERROR: Python not found; install (https://www.python.org/downloads/) or add to path"
-	exit 0;
-	}
-fi
-
 echo "* Checking if R installed ..."
 if R --version | grep -q "R version" ;  
     then

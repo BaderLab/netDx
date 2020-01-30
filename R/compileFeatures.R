@@ -58,8 +58,9 @@
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
 #' @export
-compileFeatures <- function(netDir, outDir = tempdir(), simMetric = "pearson", 
-		netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L, 
+compileFeatures <- function(netDir, outDir = tempdir(), 
+		simMetric = "pearson", 
+		netSfx = "txt$", verbose = TRUE, numCores = 1L, 
 		P2N_threshType = "off", P2N_maxMissing = 100, 
     JavaMemory = 4L, altBaseDir = NULL, ...) {
     
@@ -73,8 +74,7 @@ compileFeatures <- function(netDir, outDir = tempdir(), simMetric = "pearson",
     if (!P2N_threshType %in% c("off", "auto")) 
         P2N_threshType <- "off"
     
-    if (!file.exists(dataDir)) 
-        dir.create(dataDir)
+    if (!file.exists(dataDir)) dir.create(dataDir)
     curwd <- getwd()
     setwd(netDir)
     
@@ -93,7 +93,8 @@ compileFeatures <- function(netDir, outDir = tempdir(), simMetric = "pearson",
         if (verbose) 
             message("\t* Converting profiles to interaction networks")
         
-        cl <- makeCluster(numCores, outfile = sprintf("%s/P2N_log.txt", netDir))
+        cl <- makeCluster(numCores, 
+			outfile = sprintf("%s/P2N_log.txt", netDir))
         registerDoParallel(cl)
         
         if (simMetric == "pearson") {
@@ -108,7 +109,8 @@ compileFeatures <- function(netDir, outDir = tempdir(), simMetric = "pearson",
 					"evaluation.ProfileToNetworkDriver",sep=""))
         args <- c(args, c("-proftype", "continuous", "-cor", corType))
         args <- c(args, c("-threshold", P2N_threshType, 
-							"-maxmissing", sprintf("%1.1f", P2N_maxMissing)))
+							"-maxmissing", 
+							sprintf("%1.1f", P2N_maxMissing)))
         profDir <- sprintf("%s/profiles", netDir)
         netOutDir <- sprintf("%s/INTERACTIONS", netDir)
         tmpsfx <- sub("\\$", "", netSfx)
@@ -120,7 +122,8 @@ compileFeatures <- function(netDir, outDir = tempdir(), simMetric = "pearson",
 								sub(".profile", ".txt", curProf)))
             args2 <- c(args2, "-syn", sprintf("%s/1.synonyms", netDir), 
 								"-keepAllTies", "-limitTies")
-            system2("java", args = c(args, args2), wait = TRUE, stdout = NULL)
+            system2("java", args = c(args, args2), wait = TRUE, 
+				stdout = NULL)
         }
         stopCluster(cl)
         netSfx = ".txt"

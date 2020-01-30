@@ -53,13 +53,6 @@ cliqueFilterNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 today	<- format(Sys.Date(),"%y%m%d")
 runtime	<- format(Sys.time(),"%H%M")
 
-# ---------------------------------------------------------------------
-# work begins
-logFile	<- sprintf("%s/%s_%s.log", outDir,outPref,today)
-sink(logFile,split=TRUE)
-
-tryCatch({
-
 message(sprintf("Network dir:\n\t%s", netDir))
 message(sprintf("Output dir:\n\t%s\n", outDir))
 
@@ -185,10 +178,4 @@ if (getShufResults) {
 	return(out)
 }
 
-}, error=function(ex) {
-	print(ex)
-}, finally={
-		message("Closing log")
-		sink(NULL)
-})
 }

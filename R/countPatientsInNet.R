@@ -16,10 +16,15 @@
 #' @return (matrix) Size P by N, where P is num patients and N is 
 #' number of networks networks; a[i,j] =1 if patient i in network j, else 0
 #' @examples
-#' data(npheno)
-#' netDir <- sprintf('%s/extdata/example_nets',
-#' path.package('netDx'))
-#' x <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
+#' d <- tempdir()
+#' pids <- paste("P",1:5,sep="")
+#' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
+#' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
+#'	col.names=F,row.names=F,quote=F)
+#' m2 <- matrix(c("P3","P4",1),nrow=1)
+#' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
+#'	col.names=F,row.names=F,quote=F)
+#' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
 #' @export
 countPatientsInNet <- function(netDir, fList, ids) {
     

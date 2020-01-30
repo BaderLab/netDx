@@ -56,8 +56,10 @@
 #' @importFrom reshape2 melt
 #' @importFrom utils write.table
 #' @export
-Nway_netSum <- function(netmat=NULL, phenoDF,predClass,outDir,netDir,
-	splitN=3L,seed_resampling=103L, featScoreMax=10L,filter_WtSum=100L,
+Nway_netSum <- function(netmat=NULL, phenoDF,predClass,
+	outDir=tempdir(),netDir,
+	splitN=3L,seed_resampling=103L, featScoreMax=10L,
+	filter_WtSum=100L,
 	cliqueFilter=TRUE,cliquePthresh=0.07,cliqueReps=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,
 	seed_queryResample=42L,...) {

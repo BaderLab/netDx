@@ -56,8 +56,21 @@
 #' 7) relEnr: 6) divided by 3).
 #' @importFrom utils write.table
 #' @export 
+#' @examples
+#' data(cnv_patientNetCount) # patient presence/absence in nets
+#' data(cnv_pheno)		# patient ID, label
+#' data(cnv_netScores)	# network scores for resampling
+#' data(cnv_TTstatus)	# train/test status
+#' data(cnv_netPass) 	# nets passing label enrichment
+#'
+#' d <- tempdir()
+#' RR_featureTally(cnv_patientNetCount,
+#' 		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
+#' 		outDir=d,cliqueFilter=TRUE,cliqueNets=cnv_netPass,
+#' 		maxScore=30L)
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
-	pScore,outDir,cliqueFilter=TRUE, cliqueNets,maxScore=30L,
+	pScore,outDir=tempdir(),cliqueFilter=TRUE,
+	cliqueNets,maxScore=30L,
 	verbose=FALSE) {
 
 # tally pathway score across resamplings
@@ -81,7 +94,7 @@ pathDF <- pathDF[order(pathDF[,2],decreasing=TRUE),]
 
 tmpOut <- sprintf("%s/pathway_cumTally.txt",outDir)
 if (!testMode){
-write.table(pathDF, file=tmpOut,sep="\t",col=TRUE, row=FALSE,quote=FALSE)
+write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, row=FALSE,quote=FALSE)
 }
 
 # now run test
@@ -115,7 +128,7 @@ resampPerf <- list(allNets=list(),cliqueNets=list())
 for (setScore in scoreColl){
 	selPath <- pathDF[which(pathDF[,2]>=setScore),1]
 	## uncomment to test with original pathways
-	if (verbose) cat(sprintf("Thresh = %i ; %i pathways\n",
+	if (verbose) message(sprintf("Thresh = %i ; %i pathways",
 		setScore,length(selPath)))
 
 	currmat				<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
@@ -131,7 +144,7 @@ for (setScore in scoreColl){
 	otherCurr_cl <- ""
 
 	for (k in 1:length(TT_STATUS)) {
-		if (verbose) cat(sprintf("\t(k = %i)",k))
+		if (verbose) message(sprintf("\t(k = %i)",k))
 		# first run for denominator = all nets
 		# set pheno and p to contain only test samples
 		pheno_test	<- phenoDF[which(TT_STATUS[[k]]%in% "TEST"),]
@@ -212,7 +225,7 @@ for (setScore in scoreColl){
 
 	predCurr 	<- unique(predCurr)
 	otherCurr	<- unique(otherCurr) 
-	if (verbose) {cat(sprintf("\t# contrib: %i pred ; %i other\n",
+	if (verbose) {message(sprintf("\t# contrib: %i pred ; %i other",
 				length(predCurr),length(otherCurr)))
 	}
 
@@ -223,7 +236,7 @@ for (setScore in scoreColl){
 		predCurr_cl 	<- unique(predCurr_cl)
 		otherCurr_cl	<- unique(otherCurr_cl) 
 		if (verbose) {
-			cat(sprintf("\tCLIQUE: # contributing: %i pred ; %i other\n",
+			messaget(sprintf("\tCLIQUE: # contributing: %i pred ; %i other",
 			length(predCurr_cl),length(otherCurr_cl)))
 		}
 	
@@ -231,7 +244,6 @@ for (setScore in scoreColl){
 		otherContr_cl[ctr]	<- paste(otherCurr_cl,collapse=",")
 	}
 	
-	if (verbose) cat("\n")
 	outdf[ctr,] <- c(setScore,length(selPath),colMeans(currmat),
 		min(currmat[,3]),max(currmat[,3]),min(currmat[,6]),max(currmat[,6]))
 
@@ -253,7 +265,6 @@ for (setScore in scoreColl){
 
 
 	ctr <- ctr+1
-	if (verbose) cat("\n")
 } # end loop over score cutoffs
 
 numresamp <- nrow(resampPerf[[1]][[1]])
@@ -278,14 +289,14 @@ outdf <- cbind(outdf, CONTRIBUT_PRED=predContr,
 outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets.txt",
 				   outDir)
 if (!testMode){
-write.table(outdf,file=outFile,sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+write.table(outdf,file=outFile,sep="\t",col.names=TRUE,row=FALSE,quote=FALSE)
 }
 
 outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets_train.txt",
 				   outDir)
 if (!testMode){
 write.table(outdf_train,file=outFile,sep="\t",
-			col=TRUE,row=FALSE,quote=FALSE)
+			col.names=TRUE,row=FALSE,quote=FALSE)
 }
 
 if (cliqueFilter) {
@@ -298,14 +309,14 @@ if (cliqueFilter) {
 				   outDir)
 	if (!testMode){
 	write.table(outdf_clique,file=outFile,sep="\t",
-		col=TRUE,row=FALSE,quote=FALSE)
+		col.names=TRUE,row=FALSE,quote=FALSE)
 	}
 
 	outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets_train.txt",
 				   outDir)
 	if (!testMode){
 	write.table(outdf_clique_tr,file=outFile,sep="\t",
-		col=TRUE,row=FALSE,quote=FALSE)
+		col.names=TRUE,row=FALSE,quote=FALSE)
 	}
 }
 }

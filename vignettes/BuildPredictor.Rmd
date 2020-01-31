@@ -58,7 +58,7 @@ colData(brca)$STATUS <- colData(brca)$pam_mod
 groupList <- list()
 
 # genes in mRNA data are grouped by pathways
-pathList <- readPathways(getExamplePathways())
+pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 # clinical data is not grouped; each variable is its own feature
 groupList[["clinical"]] <- list(
@@ -241,7 +241,7 @@ This object tells the predictor how to group units when constructing a network. 
 groupList <- list()
 
 # genes in mRNA data are grouped by pathways
-pathList <- readPathways(getExamplePathways())
+pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 # clinical data is not grouped; each variable is its own feature
 groupList[["clinical"]] <- list(

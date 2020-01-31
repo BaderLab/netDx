@@ -53,7 +53,7 @@ to assign the key name of the output list (see \code{useIDasName}
 argument).
 }
 \examples{
-pathFile <- getExamplePathways()
+pathFile <- fetchPathwayDefinitions()
 pathwayList    <- readPathways(pathFile)
 
 }

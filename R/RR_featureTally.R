@@ -21,8 +21,9 @@
 #' for each resampling of the data. The data.frame has two columns: 
 #' 1) pathway name, 2) pathway score
 #' @param outDir (char) path to dir where results should be written
-#' @param cliqueFilter (logical) was clique filtering used?
-#' @param cliqueNets (list of chars) networks passing clique filtering
+#' @param enrichLabels (logical) was network label enrichment used?
+#' @param enrichedNets (list of chars) networks passing network label 
+#' enrichment
 #' @param maxScore (integer) max achievable score for pathways
 #' corresponding to N-way resampling
 #' @param verbose (logical) print messages
@@ -39,13 +40,13 @@
 #' (pred_pct_min) ; max pred_pct in all resamplings (pred_pct_max) ; 
 #' min other_pct in all resamplings (other_pct_min); max other_pct in all
 #' resamplings (other_pct_max)
-#' 3) positive, negative calls at each cutoff ; clique filtering option:  
-#' \code{<outDir>/RR_changeNetSum_stats_denCliqueNets.txt}: format same
+#' 3) positive, negative calls at each cutoff ; label enrichment option:  
+#' \code{<outDir>/RR_changeNetSum_stats_denEnrichedNets.txt}: format same
 #' as the previous file. However, the denominator here is limited to
-#' patients present in networks that pass clique filtering. 
+#' patients present in networks that pass label enrichment
 #' 4) breakdown of performance for each of the resamplings, at each of the 
 #' cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
-#' one for cliqueNets. The value is a matrix with (resamp * 7) columns and S rows,
+#' one for enrichedNets. The value is a matrix with (resamp * 7) columns and S rows,
 #' one row per score. The columns contain the followin information per resampling:
 #' 1) pred_total: total num patients of predClass
 #' 2) pred_OL: num of pred_total with a CNV in the selected net
@@ -66,11 +67,11 @@
 #' d <- tempdir()
 #' RR_featureTally(cnv_patientNetCount,
 #' 		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
-#' 		outDir=d,cliqueFilter=TRUE,cliqueNets=cnv_netPass,
+#' 		outDir=d,enrichLabels=TRUE,enrichedNets=cnv_netPass,
 #' 		maxScore=30L)
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
-	pScore,outDir=tempdir(),cliqueFilter=TRUE,
-	cliqueNets,maxScore=30L,
+	pScore,outDir=tempdir(),enrichLabels=TRUE,
+	enrichedNets,maxScore=30L,
 	verbose=FALSE) {
 
 # tally pathway score across resamplings
@@ -99,7 +100,7 @@ write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, row=FALSE,quote=FALSE)
 
 # now run test
 scoreColl <- seq_len(maxScore)
-# two sets of results: one for den=allnets and one for den=cliquenets
+# two sets of results: one for den=allnets and one for den=enrichedNets
 outdf <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
 colnames(outdf) <- c("score", "numPathways",
 	"pred_tot","pred_ol","pred_pct","other_tot","other_ol","other_pct", "rr",
@@ -109,11 +110,11 @@ colnames(outdf) <- c("score", "numPathways",
 outdf_train <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
 colnames(outdf_train) <- colnames(outdf)
 
-if (cliqueFilter) {
-	outdf_clique <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
-	colnames(outdf_clique) <- colnames(outdf)
-	outdf_clique_tr <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
-	colnames(outdf_clique_tr) <- colnames(outdf)
+if (enrichLabels) {
+	outdf_enriched <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
+	colnames(outdf_enriched) <- colnames(outdf)
+	outdf_enriched_tr <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
+	colnames(outdf_enriched_tr) <- colnames(outdf)
 }
 
 ctr <- 1
@@ -123,7 +124,7 @@ predContr		<- rep("",length(scoreColl))
 otherContr		<- rep("",length(scoreColl))
 predContr_cl	<- rep("",length(scoreColl))
 otherContr_cl	<- rep("",length(scoreColl))
-resampPerf <- list(allNets=list(),cliqueNets=list())
+resampPerf <- list(allNets=list(),enrichedNets=list())
 
 for (setScore in scoreColl){
 	selPath <- pathDF[which(pathDF[,2]>=setScore),1]
@@ -132,10 +133,10 @@ for (setScore in scoreColl){
 		setScore,length(selPath)))
 
 	currmat				<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
-	currmat_clique 		<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
+	currmat_enriched 		<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
 	# train
 	currmat_train 		<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
-	currmat_clique_tr 	<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
+	currmat_enriched_tr 	<- matrix(NA, nrow=length(TT_STATUS),ncol=7)
 
 	# store highest 
 	predCurr	<- ""
@@ -180,20 +181,20 @@ for (setScore in scoreColl){
 						tmp$relEnr)
 		rm(x,tmp,pheno_train,p_train)
 
-		if (cliqueFilter){
+		if (enrichLabels){
 		# --------------------------------------------------------------
-		# then run for denominator = clique filtered nets
+		# then run for denominator = label enriched nets
 		pheno_test	<- phenoDF[which(TT_STATUS[[k]]%in% "TEST"),]
 		p_test      <- netmat[which(rownames(netmat)%in% pheno_test$ID),]
 		p_test		<- p_test[,
-					which(colnames(p_test) %in% cliqueNets[[k]])]
+					which(colnames(p_test) %in% enrichedNets[[k]])]
 		tmp 	<- updateNets(p_test,pheno_test,writeNewNets=FALSE,
 							  verbose=FALSE)
 		p_test	<- tmp[[1]]; pheno_test <- tmp[[2]];
 		tmp <- getOR(p_test, pheno_test,predClass,selPath,verbose=FALSE)
 		x <- tmp$stats
 		# case: total, OL, pctOL. control: total, OL, pctOL. RelEnr.
-		currmat_clique[k,] <- c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],
+		currmat_enriched[k,] <- c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],
 					tmp$relEnr)
 
 		predCurr_cl		<- c(predCurr_cl, intersect(tmp$OLsamps, 
@@ -205,7 +206,7 @@ for (setScore in scoreColl){
 		pheno_train <- phenoDF[which(TT_STATUS[[k]]%in% "TRAIN"),]
 		p_train     <- netmat[which(rownames(netmat)%in% pheno_train$ID),]
 		p_train		<- p_train[,
-					which(colnames(p_train) %in% cliqueNets[[k]])]
+					which(colnames(p_train) %in% enrichedNets[[k]])]
 		tmp 	<- updateNets(p_train,pheno_train,writeNewNets=FALSE,
 							  verbose=FALSE)
 		p_train	<- tmp[[1]]; pheno_train <- tmp[[2]];
@@ -213,7 +214,7 @@ for (setScore in scoreColl){
 					 verbose=FALSE)
 		
 		x <- tmp$stats
-		currmat_clique_tr[k,] <- 
+		currmat_enriched_tr[k,] <- 
 			c(x[1,1],x[1,2],x[1,3],x[2,1],x[2,2],x[2,3],tmp$relEnr)
 		}
 
@@ -221,7 +222,7 @@ for (setScore in scoreColl){
 
 	# store resampling-wise info before averaging
 	resampPerf[["allNets"]][[setScore]] <- currmat
-	resampPerf[["cliqueNets"]][[setScore]] <- currmat_clique
+	resampPerf[["enrichedNets"]][[setScore]] <- currmat_enriched
 
 	predCurr 	<- unique(predCurr)
 	otherCurr	<- unique(otherCurr) 
@@ -232,7 +233,7 @@ for (setScore in scoreColl){
 	predContr[ctr]	<- paste(predCurr,collapse=",")
 	otherContr[ctr] <- paste(otherCurr,collapse=",")
 
-	if (cliqueFilter) {
+	if (enrichLabels) {
 		predCurr_cl 	<- unique(predCurr_cl)
 		otherCurr_cl	<- unique(otherCurr_cl) 
 		if (verbose) {
@@ -251,16 +252,16 @@ for (setScore in scoreColl){
 		min(currmat_train[,3]),max(currmat_train[,3]),
 		min(currmat_train[,6]),max(currmat_train[,6]))
 
-	if (cliqueFilter){
-	outdf_clique[ctr,] <- c(setScore,length(selPath),
-		colMeans(currmat_clique),
-		min(currmat_clique[,3]),max(currmat_clique[,3]),
-		min(currmat_clique[,6]),max(currmat_clique[,6]))
+	if (enrichLabels){
+	outdf_enriched[ctr,] <- c(setScore,length(selPath),
+		colMeans(currmat_enriched),
+		min(currmat_enriched[,3]),max(currmat_enriched[,3]),
+		min(currmat_enriched[,6]),max(currmat_enriched[,6]))
 
-	outdf_clique_tr[ctr,] <- c(setScore,length(selPath),
-		colMeans(currmat_clique_tr),
-		min(currmat_clique_tr[,3]),max(currmat_clique_tr[,3]),
-		min(currmat_clique_tr[,6]),max(currmat_clique_tr[,6]))
+	outdf_enriched_tr[ctr,] <- c(setScore,length(selPath),
+		colMeans(currmat_enriched_tr),
+		min(currmat_enriched_tr[,3]),max(currmat_enriched_tr[,3]),
+		min(currmat_enriched_tr[,6]),max(currmat_enriched_tr[,6]))
 	}
 
 
@@ -299,23 +300,23 @@ write.table(outdf_train,file=outFile,sep="\t",
 			col.names=TRUE,row=FALSE,quote=FALSE)
 }
 
-if (cliqueFilter) {
+if (enrichLabels) {
 	# add IDs of contributing samples
-	outdf_clique <- data.frame(outdf_clique)
-	outdf_clique <- cbind(outdf_clique, CONTRIBUT_PRED=predContr_cl,
+	outdf_enriched <- data.frame(outdf_enriched)
+	outdf_enriched <- cbind(outdf_enriched, CONTRIBUT_PRED=predContr_cl,
 			   CONTRIBUT_OTHER=otherContr_cl)
 	
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets.txt",
+	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",
 				   outDir)
 	if (!testMode){
-	write.table(outdf_clique,file=outFile,sep="\t",
+	write.table(outdf_enriched,file=outFile,sep="\t",
 		col.names=TRUE,row=FALSE,quote=FALSE)
 	}
 
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets_train.txt",
+	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets_train.txt",
 				   outDir)
 	if (!testMode){
-	write.table(outdf_clique_tr,file=outFile,sep="\t",
+	write.table(outdf_enriched_tr,file=outFile,sep="\t",
 		col.names=TRUE,row=FALSE,quote=FALSE)
 	}
 }

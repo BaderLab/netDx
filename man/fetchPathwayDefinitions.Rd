@@ -4,14 +4,14 @@
 \alias{fetchPathwayDefinitions}
 \title{fetch pathway definitions from downloads.baderlab.org}
 \usage{
-fetchPathwayDefinitions(mon = NULL, yr = NULL, verbose = FALSE)
+fetchPathwayDefinitions(month = NULL, year = NULL, verbose = FALSE)
 }
 \arguments{
-\item{mon}{(char) month of pathway definition file. Must be
+\item{month}{(char) month of pathway definition file. Must be
 textual name (e.g. "January","April"). If NULL, gets the latest
 release}
 
-\item{yr}{(numeric) year of pathway definition file. Must be in
+\item{year}{(numeric) year of pathway definition file. Must be in
 yyyy format (e.g. 2018).}
 
 \item{verbose}{(logical) print messages}

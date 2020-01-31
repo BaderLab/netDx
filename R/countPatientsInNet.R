@@ -7,7 +7,7 @@
 #' in each patients (e.g. CNVs or indels), rather than 'full-matrix' data
 #' (e.g. questionnaires or gene expression matrices). The former scenario
 #' requires an update in the list of eligible networks each time some type
-#' of patient subsetting is applied (e.g. clique filtering, or train/test
+#' of patient subsetting is applied (e.g. label enrichment, or train/test
 #' split). A matrix with patient/network membership serves as a lookup
 #' table to prune networks as feature selection proceeds
 #' @param netDir (char) dir with network set

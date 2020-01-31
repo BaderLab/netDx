@@ -41,7 +41,7 @@ updateNets <- function(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir,
         print(dim(p_net))
     }
     
-    # training samples are only those that occur in clique-filtered networks
+    # training samples are only those that occur in label-enriched networks
     pheno_DF <- pheno_DF[which(pheno_DF$ID %in% rownames(p_net)), ]
     
     if (writeNewNets) {

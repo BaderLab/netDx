@@ -6,7 +6,7 @@
 feature selected networks (binary networks only)}
 \usage{
 RR_featureTally(netmat, phenoDF, TT_STATUS, predClass, pScore,
-  outDir = tempdir(), cliqueFilter = TRUE, cliqueNets,
+  outDir = tempdir(), enrichLabels = TRUE, enrichedNets,
   maxScore = 30L, verbose = FALSE)
 }
 \arguments{
@@ -26,9 +26,10 @@ for each resampling of the data. The data.frame has two columns:
 
 \item{outDir}{(char) path to dir where results should be written}
 
-\item{cliqueFilter}{(logical) was clique filtering used?}
+\item{enrichLabels}{(logical) was network label enrichment used?}
 
-\item{cliqueNets}{(list of chars) networks passing clique filtering}
+\item{enrichedNets}{(list of chars) networks passing network label 
+enrichment}
 
 \item{maxScore}{(integer) max achievable score for pathways
 corresponding to N-way resampling}
@@ -49,13 +50,13 @@ pred_pct and other_pct (rr) ; min. pred_pct in all resamplings
 (pred_pct_min) ; max pred_pct in all resamplings (pred_pct_max) ; 
 min other_pct in all resamplings (other_pct_min); max other_pct in all
 resamplings (other_pct_max)
-3) positive, negative calls at each cutoff ; clique filtering option:  
-\code{<outDir>/RR_changeNetSum_stats_denCliqueNets.txt}: format same
+3) positive, negative calls at each cutoff ; label enrichment option:  
+\code{<outDir>/RR_changeNetSum_stats_denEnrichedNets.txt}: format same
 as the previous file. However, the denominator here is limited to
-patients present in networks that pass clique filtering. 
+patients present in networks that pass label enrichment
 4) breakdown of performance for each of the resamplings, at each of the 
 cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
-one for cliqueNets. The value is a matrix with (resamp * 7) columns and S rows,
+one for enrichedNets. The value is a matrix with (resamp * 7) columns and S rows,
 one row per score. The columns contain the followin information per resampling:
 1) pred_total: total num patients of predClass
 2) pred_OL: num of pred_total with a CNV in the selected net
@@ -91,6 +92,6 @@ data(cnv_netPass) 	# nets passing label enrichment
 d <- tempdir()
 RR_featureTally(cnv_patientNetCount,
 		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
-		outDir=d,cliqueFilter=TRUE,cliqueNets=cnv_netPass,
+		outDir=d,enrichLabels=TRUE,enrichedNets=cnv_netPass,
 		maxScore=30L)
 }

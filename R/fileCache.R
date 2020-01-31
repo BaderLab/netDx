@@ -57,10 +57,10 @@ getGMjar_path <- function(verbose = FALSE) {
 #' fetchPathwayDefinitions()
 fetchPathwayDefinitions <- function(month=NULL,year=NULL,verbose=FALSE){
 	if (is.null(month) || is.null(year)) {
-		pdate <- "current_release"
-	} else {
-		pdate <- sprintf("%s_01_%s",month,year)
+		month <- month.name[as.integer(format(Sys.Date(),"%m"))]
+		year <- as.integer(format(Sys.Date(),"%Y"))
 	}
+		pdate <- sprintf("%s_01_%i",month,year)
     pathwayURL <- paste("http://download.baderlab.org/EM_Genesets/", 
 		sprintf("%s/Human/symbol/",pdate),
         sprintf("Human_AllPathways_%s_symbol.gmt",pdate),

@@ -5,8 +5,9 @@
 \title{Computes positive and negative calls upon changing stringency of 
 feature selected networks (binary networks only)}
 \usage{
-RR_featureTally(netmat, phenoDF, TT_STATUS, predClass, pScore, outDir,
-  cliqueFilter = TRUE, cliqueNets, maxScore = 30L, verbose = FALSE)
+RR_featureTally(netmat, phenoDF, TT_STATUS, predClass, pScore,
+  outDir = tempdir(), cliqueFilter = TRUE, cliqueNets,
+  maxScore = 30L, verbose = FALSE)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet. Should contain
@@ -81,6 +82,15 @@ can then be used to compute performance measures such as the ROC or
 precision-recall curve.
 }
 \examples{
-RR_featureTally(netmat,pheno,TT_STATUS,"case",pScore,
-	outDir=outdir,cliqueFilter=FALSE,maxScore=1L)
+data(cnv_patientNetCount) # patient presence/absence in nets
+data(cnv_pheno)		# patient ID, label
+data(cnv_netScores)	# network scores for resampling
+data(cnv_TTstatus)	# train/test status
+data(cnv_netPass) 	# nets passing label enrichment
+
+d <- tempdir()
+RR_featureTally(cnv_patientNetCount,
+		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
+		outDir=d,cliqueFilter=TRUE,cliqueNets=cnv_netPass,
+		maxScore=30L)
 }

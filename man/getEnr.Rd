@@ -55,18 +55,18 @@ has ENR=0.
 \examples{
 d <- tempdir()
 options(stringsAsFactors=FALSE)
-pids <- paste("P",1:5,sep="")
+pids <- paste("P",seq_len(5),sep="")
 pheno <- data.frame(ID=pids,STATUS=c(rep("case",3),rep("control",2)))
 
-write PSN
+# write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\\t",
-col.names=F,row.names=F,quote=F)
+col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
 write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\\t",
-col.names=F,row.names=F,quote=F)
+col.names=FALSE,row.names=FALSE,quote=FALSE)
 
-compute enrichment
+# compute enrichment
 x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
 getEnr(d,pheno,"case","txt$")
 }

@@ -79,7 +79,7 @@ Nway_netSum <- function(netmat=NULL, phenoDF,predClass,
 
 	pScore		<- list()
 	cliqueNets	<- list()
-	for (k in 1:length(TT_STATUS)) {
+	for (k in seq_len(length(TT_STATUS))) {
 		p 		<- p_full
 		pheno 	<- pheno_full
 	

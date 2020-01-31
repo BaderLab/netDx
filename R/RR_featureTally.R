@@ -77,10 +77,10 @@ RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
 testMode <- FALSE # when true doesn't write files.
 
 pTally 			<- list()
-for (k in 1:length(TT_STATUS)) {
+for (k in seq_len(length(TT_STATUS))) {
 	dat <- pScore[[k]]
 	dat[,1] <- as.character(dat[,1])
-	for (m in 1:nrow(dat)) {
+	for (m in seq_len(nrow(dat))) {
 		curp <- dat[m,1]
 		if (!curp %in% names(pTally)) pTally[[curp]] <- 0
 		pTally[[curp]] <- pTally[[curp]] + dat[m,2]
@@ -98,7 +98,7 @@ write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, row=FALSE,quote=FALSE)
 }
 
 # now run test
-scoreColl <- 1:maxScore
+scoreColl <- seq_len(maxScore)
 # two sets of results: one for den=allnets and one for den=cliquenets
 outdf <- matrix(NA, nrow=length(scoreColl),ncol=9+4)
 colnames(outdf) <- c("score", "numPathways",
@@ -143,7 +143,7 @@ for (setScore in scoreColl){
 	predCurr_cl <- ""
 	otherCurr_cl <- ""
 
-	for (k in 1:length(TT_STATUS)) {
+	for (k in seq_len(length(TT_STATUS))) {
 		if (verbose) message(sprintf("\t(k = %i)",k))
 		# first run for denominator = all nets
 		# set pheno and p to contain only test samples
@@ -268,13 +268,13 @@ for (setScore in scoreColl){
 } # end loop over score cutoffs
 
 numresamp <- nrow(resampPerf[[1]][[1]])
-for (k in 1:length(resampPerf)) {
+for (k in seq_len(length(resampPerf))) {
 	tmp <- lapply(resampPerf[[k]], function(x) {as.numeric(t(x))})
 	tmp <- do.call(rbind,tmp)
 	x <- rep(c("pred_total","pred_OL","pred_OL_pct",
 				"other_total","other_OL","other_OL_pct","relEnr"),
 			numresamp)
-	colnames(tmp) <- paste(x,rep(1:numresamp,each=7),sep="_")
+	colnames(tmp) <- paste(x,rep(seq_len(numresamp),each=7),sep="_")
 	rownames(tmp) <- scoreColl
 	resampPerf[[k]] <- tmp
 }

@@ -29,13 +29,13 @@ Counts number of (+,+) and (+,-) interactions in a set of networks
 }
 \examples{
 d <- tempdir()
-write PSN
+# write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\\t",
-col.names=F,row.names=F,quote=F)
+col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
 write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\\t",
-col.names=F,row.names=F,quote=F)
+col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep="/"),
 	c("P1","P2","P3"),c("P4","P5"))

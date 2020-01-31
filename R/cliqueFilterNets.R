@@ -43,7 +43,7 @@
 #' 	numReps=500)
 #' print(x)
 #' 
-#' @import doParallel
+#' @import doParallel stats
 #' @export
 cliqueFilterNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 	minEnr=-1,outPref="cliqueFilterNets",verbose=TRUE,setSeed=42L,
@@ -86,7 +86,7 @@ n1		<- length(plusID); n <- length(both)
 # and for which it is useless to permute further 
 drop_out	<- integer()
 N			<- length(fList)
-to_run		<- 1:N
+to_run		<- seq_len(N)
 currRep		<- 1
 
 # rows are networks, columns are (pp-mp)/(pp+mp) for each shuffled rep
@@ -95,13 +95,11 @@ shuf_rat	<- matrix(NA,nrow=length(fList),ncol=numReps)
 x0 <- system.time( 
 while ((length(to_run)>0) &  (currRep <=numReps)) {
 	shuf	<- sample(both,replace=FALSE) # shuffle case-control label
-	##cat(sprintf("%i: shuf:\"+\"has %i + and %i -\n", currRep,
-	##	sum(shuf[1:n1] %in% plusID), sum(shuf[1:n1] %in% minusID)))
 
 	# recompute pp and pm for each network
 	# this step is run in parallel
 	tmp		<- countIntType_batch(fList[to_run],
-				shuf[1:n1], shuf[(n1+1):n],tmpDir=tmpDir,
+				shuf[seq_len(n1)], shuf[(n1+1):n],tmpDir=tmpDir,
 				enrType=enrType,...)
 	if (length(to_run)<2) tmp <- matrix(tmp,ncol=2)
 		
@@ -118,9 +116,14 @@ while ((length(to_run)>0) &  (currRep <=numReps)) {
 	# as well as the real data >=50% of the time;
 	# add these to drop-out and don't evaluate them in the future
 	if (currRep %%10 == 0) {
-		orig_pct	<-  sapply(to_run, function(k) {
-			return(sum(shuf_rat[k,1:currRep]>= orig_rat[k])/currRep)
-		})
+		orig_pct <- numeric(length(to_run))
+		ctr <- 1
+		cols <- seq_len(currRep)	
+		for (k in to_run) {
+			num <- sum(shuf_rat[k,cols]>= orig_rat[k])
+			orig_pct[ctr] <- num/currRep
+			ctr <- ctr+1
+		}
 
 		y	<- exp(-(currRep-1)/100) # decay term
 		y2	<- 3/currRep
@@ -128,7 +131,7 @@ while ((length(to_run)>0) &  (currRep <=numReps)) {
 		idx	<- which(orig_pct >= chk_thresh)
 		if (length(idx)>0)	
 			drop_out	<- c(drop_out, to_run[idx])
-		to_run		<- setdiff(1:N,drop_out)
+		to_run		<- setdiff(seq_len(N),drop_out)
 
 		if (verbose) {
 			message(sprintf("%i (%1.5f) %i drop out; %i left", 
@@ -150,14 +153,16 @@ mu			<- rowMeans(shuf_rat,na.rm=TRUE)
 sigma		<- apply(shuf_rat,1,sd,na.rm=TRUE)
 orig_z		<- (orig_rat - mu)/sigma
 
-orig_pct	<-  sapply(1:length(orig_rat), function(i) {
-	tmp		<- na.omit(shuf_rat[i,])
-	return(sum(tmp>= orig_rat[i])/length(tmp))
-})
+orig_pct <- numeric(length(orig_rat))
+for (i in seq_len(length(orig_rat))) { 
+	tmp	<- na.omit(shuf_rat[i,])
+	orig_pct[i] <- sum(tmp>= orig_rat[i])/length(tmp)
+}
 
-maxShufs	<- sapply(1:nrow(shuf_rat),function(i) {
-	max(which(!is.na(shuf_rat[i,])))
-})
+maxShufs <- numeric(nrow(shuf_rat)) 
+for (i in seq_len(nrow(shuf_rat))) {
+	maxShufs[i] <- max(which(!is.na(shuf_rat[i,])))
+}
 
 qval	<- p.adjust(orig_pct, method="BH")
 

@@ -24,10 +24,10 @@
 #' @examples
 #' d <- tempdir()
 #' options(stringsAsFactors=FALSE)
-#' pids <- paste("P",1:5,sep="")
+#' pids <- paste("P",seq_len(5),sep="")
 #' pheno <- data.frame(ID=pids,STATUS=c(rep("case",3),rep("control",2)))
 #' 
-#' write PSN
+#' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 #' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
@@ -35,7 +35,7 @@
 #' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
-#' compute enrichment
+#' # compute enrichment
 #' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
 #' getOR(x,pheno,"case",colnames(x)) # should give large RelEnr
 #' @export
@@ -122,10 +122,10 @@ out
 #' @examples
 #' d <- tempdir()
 #' options(stringsAsFactors=FALSE)
-#' pids <- paste("P",1:5,sep="")
+#' pids <- paste("P",seq_len(5),sep="")
 #' pheno <- data.frame(ID=pids,STATUS=c(rep("case",3),rep("control",2)))
 #' 
-#' write PSN
+#' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 #' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
@@ -133,7 +133,7 @@ out
 #' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
-#' compute enrichment
+#' # compute enrichment
 #' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
 #' getEnr(d,pheno,"case","txt$")
 getEnr	<- function(netDir, pheno_DF,predClass,netGrep="_cont.txt$",
@@ -149,7 +149,7 @@ pheno	<- pheno_DF
 pheno	<- pheno[!duplicated(pheno$ID),]
 plus_idx	<- which(pheno$STATUS %in% predClass)
 plusID	<- pheno$ID[plus_idx]
-minusID	<- pheno$ID[setdiff(1:nrow(pheno),plus_idx)]
+minusID	<- pheno$ID[setdiff(seq_len(nrow(pheno)),plus_idx)]
 
 message(sprintf("Total %i subjects ; %i of class %s, %i other", 
 			nrow(pheno), length(plusID), predClass, length(minusID)))
@@ -184,7 +184,7 @@ message("* Computing real (+,+) (+,-)")
 #' @export
 #' @examples
 #' d <- tempdir()
-#' write PSN
+#' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 #' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
@@ -212,7 +212,7 @@ countIntType <- function(inFile, plusID, minusID) {
 #' of other edges
 #' @examples
 #' d <- tempdir()
-#' write PSN
+#' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 #' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
@@ -239,7 +239,7 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 		cl <- makeCluster(2)
 		registerDoParallel(cl)
 	}
-	foreach (k=1:length(inFiles)) %dopar% {
+	foreach (k=seq_len(length(inFiles))) %dopar% {
 		m <- bigmemory::attach.big.matrix(
 				sprintf("%s/tmp.desc",tmpDir))
 		if (enrType == "binary")

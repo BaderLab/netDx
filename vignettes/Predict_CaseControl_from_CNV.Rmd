@@ -1,20 +1,5 @@
----
-title: "Building binary classifier from sparse genetic data"
-author: "Shraddha Pai"
-package: netDx
-date: "`r Sys.Date()`"
-output: 
-  BiocStyle::html_document:
-    toc_float: true
-vignette: >
-    %\VignetteIndexEntry{03. Classifier from sparse genetic data.}
-    %\VignetteEngine{knitr::knitr}
-    %\VignetteEncoding{UTF-8}
----
-#' predictor for autism case/control status using rare CNV occurrence
-#' in pathways.
-
-```{r}
+## ----setup---------------------------------------------------------------
+require(netDx)
 require(GenomicRanges)
 require(biomaRt) # for fetching gene coordinates
 
@@ -33,6 +18,8 @@ cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
 
+
+## ----setup2--------------------------------------------------------------
 # ----------------------
 # Feature selection
 outDir <- sprintf("%s/feature_select",outRoot)
@@ -58,7 +45,8 @@ gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
-# TODO For now make nets with all patients
+
+## ----makepsn-------------------------------------------------------------
 cat("* Make CNV-based patient networks\n")
 netDir <- sprintf("%s/networks_orig",outDir)
 netList <- makePSN_RangeSets(cnv_GR, path_GRList,netDir,verbose=F)
@@ -68,17 +56,17 @@ tmp	<- updateNets(p,pheno,writeNewNets=FALSE)
 p		<- tmp[[1]]
 pheno	<- tmp[[2]] 
 p_FULL <- p; pheno_FULL <- pheno; rm(p,pheno)
-
 cat("\n* Run clique-filtering three ways\n")
 
+
+## ----runpred-------------------------------------------------------------
 predictClass	<- "case"
-Nway_netSum(p_FULL,pheno_FULL,predictClass,outDir,netDir,
-			cliqueReps=20L,numCores=8L)
-```
+buildPredictor_sparseGenetic(p_FULL,pheno_FULL,predictClass,outDir,netDir,
+			enrichLabels=TRUE,numPermsEnrich=20L,numCores=8L,featScoreMax=3L)
 
-Get results.
-
-```{r}
+## ----plotresults---------------------------------------------------------
+baseDir_list <- list()
+baseDir_list[["cur"]] <- outDir
 	plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
 		las=1, xlab="FPR (%)", ylab="TPR (%)",bty='n',
 		cex.axis=1.5)
@@ -90,11 +78,11 @@ Get results.
 	baseDir <- baseDir_list[[nm]]
 
 		print(nm)
-		inFile <- sprintf("%s/RR_changeNetSum_stats_denCliqueNets.txt",	
+		inFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",	
 			baseDir)
 		dat	<- read.delim(inFile,sep="\t",header=TRUE,as.is=TRUE)
 		points(dat$other_pct,dat$pred_pct,
-			  col=colList[[bdir]],type="o",pch=16,cex=0.5)
+			  col="red",type="o",pch=16,cex=0.5)
 	
 		tmp <- data.frame(	
 			score=dat$score,
@@ -105,8 +93,6 @@ Get results.
 			fn=dat$pred_tot - dat$pred_ol) 
 		stats <- netDx::perfCalc(tmp)
 		tmp <- stats$stats
-		i <- which(rownames(auc_mat) %in% bdir)
-		j <- which(colnames(auc_mat) %in% nm)
 		cat(sprintf("%s: PRAUC = %1.2f\n", nm, stats$prauc))
 		cat(sprintf("%s: ROCAUC = %1.2f\n", nm, stats$auc))
 
@@ -114,7 +100,3 @@ Get results.
 		ptmp <- read.delim(sprintf("%s/pathway_cumTally.txt",
 			baseDir),sep="\t",h=T,as.is=T)
 	}
-	legend("topleft",col=unlist(colList),legend=names(colList),
-		fill=NA,border=NA,pch=16,bty='n',lwd=2)
-
-```

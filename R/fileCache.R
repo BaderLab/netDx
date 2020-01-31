@@ -34,26 +34,50 @@ getGMjar_path <- function(verbose = FALSE) {
     bfcrpath(bfc, rids = rid)
 }
 
-#' download pathway gmt file used for several examples
+#' fetch pathway definitions from downloads.baderlab.org
 #' 
+#' @details Fetches genesets compiled from multiple curated pathway
+#' databases. Downloaded from: http://download.baderlab.org/EM_Genesets/
+#' The file contains pathways from HumanCyc, NetPath, Reactome, NCI
+#' Curated Pathways and mSigDB.
+#' For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.
+#' (2010). PLoS One. 5(11):e13984.
 #' @param verbose (logical) print messages
-#' @examples getExamplePathways()
+#' @examples fetchPathwayDefinitions()
+#' @param month (char) month of pathway definition file. Must be
+#' textual name (e.g. "January","April"). If NULL, gets the latest
+#' release
+#' @param year (numeric) year of pathway definition file. Must be in
+#' yyyy format (e.g. 2018).
 #' @return (char) Path to local cached copy of GMT file
 #' or initial download is required 
 #' @export
-getExamplePathways <- function(verbose = FALSE) {
+#' @examples 
+#' fetchPathwayDefinitions("January","2018")
+#' fetchPathwayDefinitions()
+fetchPathwayDefinitions <- function(month=NULL,year=NULL,verbose=FALSE){
+	if (is.null(month) || is.null(year)) {
+		pdate <- "current_release"
+	} else {
+		pdate <- sprintf("%s_01_%s",month,year)
+	}
     pathwayURL <- paste("http://download.baderlab.org/EM_Genesets/", 
-				"January_24_2016/Human/symbol/", 
-        "Human_AllPathways_January_24_2016_symbol.gmt", sep = "")
+		sprintf("%s/Human/symbol/",pdate),
+        sprintf("Human_AllPathways_%s_symbol.gmt",pdate),
+		 sep = "")
+
+	message(sprintf("Fetching %s",pathwayURL))
     bfc <- .get_cache()
-    rid <- bfcquery(bfc, "Example_Pathways", "rname")$rid
+	cache_name <- sprintf("%s_Pathways",pdate)
+    rid <- bfcquery(bfc, cache_name,  "rname")$rid
     if (!length(rid)) {
         if (verbose) 
             message(paste("Downloading example pathway definitions (only ", 
 								"required once)", 
                 sep = ""))
-        rid <- names(bfcadd(bfc, "Example_Pathways", pathwayURL))
+        rid <- names(bfcadd(bfc, cache_name, pathwayURL))
     }
+
     if (!isFALSE(bfcneedsupdate(bfc, rid))) 
         bfcdownload(bfc, rid)
     

@@ -1,12 +1,115 @@
-## ----setup---------------------------------------------------------------
+---
+title: "Predicting case/control status from sparse genetic data"
+author: "Shraddha Pai"
+package: netDx
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{01. Build basic predictor.}
+    %\VignetteEngine{knitr::knitr}
+    %\VignetteEncoding{UTF-8}
+---
+
+This vignette predicts autism case/control status from rare CNV deletions. CNVs are grouped
+by pathways, based on affected genes. 
+
+# TL;DR
+```{r,eval=FALSE}
+require(netDx)
+require(GenomicRanges)
+require(biomaRt) # for fetching gene coordinates
+
+numCores	<- 8L 
+set.seed(123)
+
+outDir <- sprintf("%s/200129_threeWay",tempdir())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
+dir.create(outDir)
+
+cat("* Setting up sample metadata\n")
+phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",
+                     path.package("netDx"))
+pheno   <- read.delim(phenoFile,sep="\t",header=T,as.is=T)
+colnames(pheno)[1] <- "ID"
+head(pheno)
+
+cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
+                        ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
+pheno <- pheno[!duplicated(pheno$ID),]
+
+# create gene-range sets for pathways
+# first fetch pathway defintions and gene coordinates
+cat("* Create pathway range-sets\n")
+pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
+pathwayList <- readPathways(pathFile)
+ensembl <- useMart("ENSEMBL_MART_ENSEMBL",
+	dataset="hsapiens_gene_ensembl",
+	host="may2009.archive.ensembl.org",
+	path="/biomart/martservice",archive=FALSE)
+genes <- getBM(attributes=c("chromosome_name",
+		"start_position",
+		"end_position",
+		"hgnc_symbol"),
+	mart=ensembl)
+genes <- genes[which(genes[,4]!=""),]
+# create GRanges object and group by pathways
+gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
+   name=genes[,4])
+path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+
+# run the predictor
+predictClass	<- "case"
+buildPredictor_sparseGenetic(pheno,predictClass,outDir,
+			enrichLabels=TRUE,numPermsEnrich=20L,
+			numCores=8L,featScoreMax=3L)
+
+# evaluate performance
+plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
+   las=1, xlab="FPR (%)", ylab="TPR (%)",bty='n',
+	cex.axis=1.5)
+	
+# pathway scores
+pathList <- list()
+
+inFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",	
+		outDir)
+dat	<- read.delim(inFile,sep="\t",header=TRUE,as.is=TRUE)
+points(dat$other_pct,dat$pred_pct,
+	  col="red",type="o",pch=16,cex=0.5)
+
+tmp <- data.frame(	
+	score=dat$score,
+	tp=dat$pred_ol,fp=dat$other_ol,
+	# "-" that were correctly not called
+	tn=dat$other_tot - dat$other_ol,
+	# "+" that were not called 
+	fn=dat$pred_tot - dat$pred_ol) 
+
+stats <- netDx::perfCalc(tmp)
+tmp <- stats$stats
+cat(sprintf("PRAUC = %1.2f\n", stats$prauc))
+cat(sprintf("ROCAUC = %1.2f\n", stats$auc))
+
+# now get pathway score
+ptmp <- read.delim(sprintf("%s/pathway_cumTally.txt",
+   outDir),sep="\t",h=T,as.is=T)
+```
+
+# Setup
+
+CNV coordinates are read in, and converted into a `GRanges` object.
+
+```{r,eval=TRUE}
 require(netDx)
 require(GenomicRanges)
 require(biomaRt) # for fetching gene coordinates
 
 numCores	<- 8L 
 
-outRoot <- sprintf("%s/200129_threeWay",tempdir())
-if (file.exists(outRoot)) unlink(outRoot,recursive=TRUE); dir.create(outRoot)
+outDir <- sprintf("%s/200129_threeWay",tempdir())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
 
 cat("* Setting up sample metadata\n")
 phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
@@ -17,14 +120,18 @@ head(pheno)
 cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
+```
+
+# Group CNVs by pathways
+
+The `fetchPathwayDefinitions()` function downloads pathway definitions from `baderlab.org` 
+but users may provide custom `.gmt` files as well. In the example below, gene coordinates
+for the hg18 genome build are also automatically fetched from BioMart, using the
+`biomaRt` package, and converted to a `GRanges` object. The function 
+`mapNamedRangesToSets()` is used to group this `GRanges` object into pathway-level sets.
 
 
-## ----setup2--------------------------------------------------------------
-# ----------------------
-# Feature selection
-outDir <- sprintf("%s/feature_select",outRoot)
-dir.create(outDir)
-
+```{r,eval=TRUE}
 cat("* Create pathway range-sets\n")
 pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
@@ -44,59 +151,72 @@ genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+```
 
+# Run predictor
+Once the phenotype matrix and grouping rules are set up, the predictor is called
+using `buildPredictor_sparseGenetic()`. Note that unlike with non-sparse data, 
+the user does not provide a custom similarity function in this application.
+Features are scored `splitN` times, each time leaving 1/Nth of the samples out.
+In each split, features are scored between 0 and `featScoreMax`, using the same approach
+as is used for continuous-valued input. An additional label enrichment step is recommended 
+to reduce false positives in feature selection; this is achieved by setting `enrichLabels` to
+`TRUE`. This step filters networks to only allow those with enrichment for the 
+label of interest (e.g. "cases") to be part of feature-selection.
+It excludes small networks that are not enriched, such as networks where the case-control
+ratio is even.
 
-## ----makepsn-------------------------------------------------------------
-cat("* Make CNV-based patient networks\n")
-netDir <- sprintf("%s/networks_orig",outDir)
-netList <- makePSN_RangeSets(cnv_GR, path_GRList,netDir,verbose=F)
-
-p 	<- countPatientsInNet(netDir,netList, pheno$ID)
-tmp	<- updateNets(p,pheno,writeNewNets=FALSE)
-p		<- tmp[[1]]
-pheno	<- tmp[[2]] 
-p_FULL <- p; pheno_FULL <- pheno; rm(p,pheno)
-cat("\n* Run clique-filtering three ways\n")
-
-
-## ----runpred-------------------------------------------------------------
+```{r,eval=TRUE}
 predictClass	<- "case"
-buildPredictor_sparseGenetic(p_FULL,pheno_FULL,predictClass,outDir,netDir,
-			enrichLabels=TRUE,numPermsEnrich=20L,numCores=8L,featScoreMax=3L)
+buildPredictor_sparseGenetic(pheno,predictClass,
+                             outDir,
+                             splitN=3L, featScoreMax=3L,
+                             enrichLabels=TRUE,numPermsEnrich=20L,
+                             numCores=8L)
+```
 
-## ----plotresults---------------------------------------------------------
-baseDir_list <- list()
-baseDir_list[["cur"]] <- outDir
-	plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
-		las=1, xlab="FPR (%)", ylab="TPR (%)",bty='n',
-		cex.axis=1.5)
-	
-	# pathway scores
-	pathList <- list()
-	
-	for (nm in names(baseDir_list)) {
-	baseDir <- baseDir_list[[nm]]
+# Plot results
 
-		print(nm)
-		inFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",	
-			baseDir)
-		dat	<- read.delim(inFile,sep="\t",header=TRUE,as.is=TRUE)
-		points(dat$other_pct,dat$pred_pct,
-			  col="red",type="o",pch=16,cex=0.5)
-	
-		tmp <- data.frame(	
-			score=dat$score,
-			tp=dat$pred_ol,fp=dat$other_ol,
-			# "-" that were correctly not called
-			tn=dat$other_tot - dat$other_ol,
-			# "+" that were not called 
-			fn=dat$pred_tot - dat$pred_ol) 
-		stats <- netDx::perfCalc(tmp)
-		tmp <- stats$stats
-		cat(sprintf("%s: PRAUC = %1.2f\n", nm, stats$prauc))
-		cat(sprintf("%s: ROCAUC = %1.2f\n", nm, stats$auc))
+Feature selection identifies pathways that are consistently enriched for the label
+of interest; here, "case" status. From the diagnostic point of view, a patient with a
+genetic event in a selected feature - here, a CNV in a feature-selected pathway -
+is labelled a "case". "True positives" are therefore cases with CNVs in feature-selected
+pathways, while "false positives" are controls with CNVs in feature-selected pathways.
+These definitions are used to compute the ROC curve below.
 
-		# now get pathway score
-		ptmp <- read.delim(sprintf("%s/pathway_cumTally.txt",
-			baseDir),sep="\t",h=T,as.is=T)
-	}
+```{r,eval=TRUE}
+plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
+	las=1, xlab="FPR (%)", ylab="TPR (%)",bty='n',
+	cex.axis=1.5)
+	
+# pathway scores
+pathList <- list()
+
+inFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",	
+	outDir)
+dat	<- read.delim(inFile,sep="\t",header=TRUE,as.is=TRUE)
+points(dat$other_pct,dat$pred_pct,
+	  col="red",type="o",pch=16,cex=0.5)
+
+tmp <- data.frame(	
+	score=dat$score,
+	tp=dat$pred_ol,fp=dat$other_ol,
+	# "-" that were correctly not called
+	tn=dat$other_tot - dat$other_ol,
+	# "+" that were not called 
+	fn=dat$pred_tot - dat$pred_ol) 
+stats <- netDx::perfCalc(tmp)
+tmp <- stats$stats
+cat(sprintf("PRAUC = %1.2f\n", stats$prauc))
+cat(sprintf("ROCAUC = %1.2f\n", stats$auc))
+```
+
+Pathway scores are also added across the splits, for a total of 9 across the 3 splits
+(3 + 3 + 3).
+
+```{r,eval=TRUE}
+# now get pathway score
+ptmp <- read.delim(sprintf("%s/pathway_cumTally.txt",
+   outDir),sep="\t",h=T,as.is=T)
+head(ptmp[order(ptmp[,2],decreasing=TRUE),])
+```

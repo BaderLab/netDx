@@ -15,19 +15,11 @@
 #' 
 #' In short, this function performs all steps involved in building and 
 #' evaluating the predictor. 
-#' @param netmat (matrix) output of countPatientsInNet()
-#' @param phenoDF (data.frame) patient ID,STATUS, ATTRIB_GROUP,ATTRIB_NAME
-#' last two are optional and only used if useAttributes is not NULL. Note
-#' that duplicate ATTRIB_NAMEs are currently not supported, even if they
-#' are in different ATTRIB_GROUPs.
+#' @param phenoDF (data.frame) sample metadat. patient ID,STATUS
 #' @param predClass (char) patient class to predict
 #' @param outDir (char) path to dir where results should be stored. 
 #' Results for resampling i are under \code{<outDir>/part<i>}, while
 #' predictor evaluation results are directly in \code{outDir}.
-#' @param netDir (char) path to dir where patient similarity networks
-#' are stored. These networks should contain all training and test patients
-#' in the dataset. This function will subset these networks to generate
-#' networks consisting e.g. only of training samples.
 #' @param splitN (integer) number of data resamplings to use
 #' @param featScoreMax (integer) max score for features in feature selection
 #' @param filter_WtSum (numeric between 5-100) Limit to top-ranked 
@@ -52,12 +44,21 @@
 #' @importFrom reshape2 melt
 #' @importFrom utils write.table
 #' @export
-buildPredictor_sparseGenetic <- function(netmat=NULL, phenoDF,predClass,
-	outDir=tempdir(),netDir,
+buildPredictor_sparseGenetic <- function(phenoDF,predClass,
+	outDir=tempdir(),
 	splitN=3L, featScoreMax=10L,
 	filter_WtSum=100L,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
+
+	netDir <- sprintf("%s/networks_orig",outDir)
+	netList <- makePSN_RangeSets(cnv_GR, path_GRList,netDir,verbose=FALSE)
+
+	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
+	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE)
+
+	netmat	<- tmp[[1]]
+	phenoDF	<- tmp[[2]] 
 
 	if (is.null(FS_numCores)) FS_numCores <- max(1,numCores-1)
 	
@@ -159,7 +160,7 @@ buildPredictor_sparseGenetic <- function(netmat=NULL, phenoDF,predClass,
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
 			sep="/")
 		pathwayRank	<- compileFeatureScores(nrankFiles,
-			filter_WtSum=filter_WtSum,verbose=TRUE)
+			filter_WtSum=filter_WtSum,verbose=FALSE)
 		write.table(pathwayRank,file=sprintf("%s/pathwayScore.txt",resDir),
 			col.names=TRUE,row.names=FALSE,quote=FALSE)
 		

@@ -320,7 +320,8 @@ Finally we call the function that runs the netDx predictor. We provide:
 * threshold to call feature-selected networks for each  train/test split (`featSelCutoff`),
 * and the information to create the PSN, including patient data (`dataList`), how variables are to be grouped into networks (`groupList`) and the custom function to generate features (`makeNetFunc`).
 
-Running the below takes a lot of time so we have commented it out. Feel free to uncomment and run. Change `numCores` to match the number of cores available on your machine for parallel processing.
+Change `numCores` to match the number of cores available on your machine for 
+parallel processing.
 
 The call below runs 2 train/test splits. Within each split, it:
 

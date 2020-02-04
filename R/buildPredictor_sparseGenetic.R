@@ -16,6 +16,8 @@
 #' In short, this function performs all steps involved in building and 
 #' evaluating the predictor. 
 #' @param phenoDF (data.frame) sample metadat. patient ID,STATUS
+#' @param cnv_GR (GRanges) genetic events. Must contain "ID" column mapping
+#' the event to a patient. ID must correspond to the ID column in phenoDF
 #' @param predClass (char) patient class to predict
 #' @param outDir (char) path to dir where results should be stored. 
 #' Results for resampling i are under \code{<outDir>/part<i>}, while
@@ -44,18 +46,18 @@
 #' @importFrom reshape2 melt
 #' @importFrom utils write.table
 #' @export
-buildPredictor_sparseGenetic <- function(phenoDF,predClass,
-	outDir=tempdir(),
+buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
+	group_GRList,outDir=tempdir(),
 	splitN=3L, featScoreMax=10L,
 	filter_WtSum=100L,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
 
 	netDir <- sprintf("%s/networks_orig",outDir)
-	netList <- makePSN_RangeSets(cnv_GR, path_GRList,netDir,verbose=FALSE)
+	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,verbose=FALSE)
 
 	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
-	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE)
+	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE,verbose=FALSE)
 
 	netmat	<- tmp[[1]]
 	phenoDF	<- tmp[[2]] 
@@ -103,7 +105,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 		message("Training only:")
 		trainNetDir <- sprintf("%s/networks",newOut)
 		tmp			<- updateNets(p_train,pheno_train, 
-							oldNetDir=netDir, newNetDir=trainNetDir)
+							oldNetDir=netDir, newNetDir=trainNetDir,verbose=FALSE)
 		p_train		<- tmp[[1]]
 		pheno_train	<- tmp[[2]]
 
@@ -114,7 +116,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 			if (!file.exists(tmpDir)) dir.create(tmpDir)
 			netInfo <- enrichLabelNets(trainNetDir,pheno_train,newOut,
 				predClass=predClass,numReps=numPermsEnrich,
-				numCores=numCores,tmpDir=tmpDir)
+				numCores=numCores,tmpDir=tmpDir,verbose=FALSE)
 			pvals   <- as.numeric(netInfo[,"pctl"])
 
 			netInfo <- netInfo[which(pvals < enrichPthresh),] 
@@ -126,7 +128,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 			trainNetDir <- sprintf("%s/networksEnriched",newOut)
 			tmp			<- updateNets(p_train, pheno_train,
 							oldNetDir=netDir, 
-							newNetDir=trainNetDir)
+							newNetDir=trainNetDir,verbose=FALSE)
 			p_train		<- tmp[[1]]
 			pheno_train	<- tmp[[2]]
 
@@ -139,7 +141,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 				pheno=pheno_train)
 		
 		# create networks for cross-validation
-		x <- compileFeatures(trainNetDir,newOut)
+		x <- compileFeatures(trainNetDir,newOut,verbose=FALSE)
 		
 		# we query for training samples of the predictor class
 		trainPred <- pheno_train$ID[
@@ -150,7 +152,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 		runFeatureSelection(trainID_pred=trainPred, 
 				outDir=resDir, dbPath=dbPath, 
 				numTrainSamps=nrow(p_train),
-				verbose=TRUE,numCores=FS_numCores,
+				verbose=FALSE,numCores=FS_numCores,
 				featScoreMax=featScoreMax,...)
 		t1 <- Sys.time()
 		message("Score features for this train/test split")
@@ -168,9 +170,16 @@ buildPredictor_sparseGenetic <- function(phenoDF,predClass,
 	}
 
 	phenoDF$TT_STATUS <- NULL
-	outDat <- sprintf("%s/resampling_savedDat.Rdata",outDir)
-	save(netmat,phenoDF,TT_STATUS,predClass,pScore,outDir,enrichLabels,
-		 enrichedNets, file=outDat)
+	#outDat <- sprintf("%s/resampling_savedDat.Rdata",outDir)
+
+	out <- list(
+		netmat=netmat,
+		pheno=phenoDF,
+		TT_STATUS=TT_STATUS,
+		pathwayScores=pScore,
+		enrichedNets=enrichedNets)	
+	#save(netmat,phenoDF,TT_STATUS,predClass,pScore,outDir,enrichLabels,
+	#	 enrichedNets, file=outDat)
 # Measure performance based on pathway tally across pplits
 	RR_featureTally(netmat, phenoDF, TT_STATUS, predClass,pScore,
 			outDir,enrichLabels, enrichedNets,verbose=FALSE)

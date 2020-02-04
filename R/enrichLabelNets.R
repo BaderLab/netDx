@@ -54,9 +54,6 @@ enrichLabelNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 today	<- format(Sys.Date(),"%y%m%d")
 runtime	<- format(Sys.time(),"%H%M")
 
-message(sprintf("Network dir:\n\t%s", netDir))
-message(sprintf("Output dir:\n\t%s\n", outDir))
-
 cl	<- makeCluster(numCores)
 registerDoParallel(cl)
 
@@ -149,7 +146,6 @@ while ((length(to_run)>0) &  (currRep <=numReps)) {
 stopCluster(cl)
 
 # consolidate results
-message("* Consolidating results")
 mu			<- rowMeans(shuf_rat,na.rm=TRUE)
 sigma		<- apply(shuf_rat,1,sd,na.rm=TRUE)
 orig_z		<- (orig_rat - mu)/sigma

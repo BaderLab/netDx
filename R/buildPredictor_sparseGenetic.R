@@ -5,7 +5,7 @@
 #' the scenario where patient networks are sparse and binary. 
 #' This function should be called after defining all patient networks. It
 #' performs the following steps:
-#' For i = 1..splitN
+#' For i = 1..numSplits
 #' 		randomly split patients into training and test
 #' 		(optional) filter training networks to exclude random-like networks
 #' 		compile features into database for cross-validation
@@ -22,7 +22,7 @@
 #' @param outDir (char) path to dir where results should be stored. 
 #' Results for resampling i are under \code{<outDir>/part<i>}, while
 #' predictor evaluation results are directly in \code{outDir}.
-#' @param splitN (integer) number of data resamplings to use
+#' @param numSplits (integer) number of data resamplings to use
 #' @param featScoreMax (integer) max score for features in feature selection
 #' @param filter_WtSum (numeric between 5-100) Limit to top-ranked 
 #' networks such that cumulative weight is less than this parameter. 
@@ -48,7 +48,7 @@
 #' @export
 buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	group_GRList,outDir=tempdir(),
-	splitN=3L, featScoreMax=10L,
+	numSplits=3L, featScoreMax=10L,
 	filter_WtSum=100L,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
@@ -66,7 +66,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	
 	# split into testing and training - resampling mode
 	message("* Resampling train/test samples")
-	TT_STATUS 	<- splitTestTrain_resampling(phenoDF, nFold=splitN,
+	TT_STATUS 	<- splitTestTrain_resampling(phenoDF, nFold=numSplits,
 		predClass=predClass, verbose=TRUE)
 	p_full 		<- netmat
 	pheno_full	<- phenoDF

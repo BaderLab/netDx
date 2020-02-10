@@ -4,30 +4,23 @@
 \alias{buildPredictor_sparseGenetic}
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
-buildPredictor_sparseGenetic(netmat = NULL, phenoDF, predClass,
-  outDir = tempdir(), netDir, splitN = 3L, featScoreMax = 10L,
+buildPredictor_sparseGenetic(phenoDF, cnv_GR, predClass, group_GRList,
+  outDir = tempdir(), splitN = 3L, featScoreMax = 10L,
   filter_WtSum = 100L, enrichLabels = TRUE, enrichPthresh = 0.07,
   numPermsEnrich = 2500L, minEnr = -1, numCores = 1L,
   FS_numCores = NULL, ...)
 }
 \arguments{
-\item{netmat}{(matrix) output of countPatientsInNet()}
+\item{phenoDF}{(data.frame) sample metadat. patient ID,STATUS}
 
-\item{phenoDF}{(data.frame) patient ID,STATUS, ATTRIB_GROUP,ATTRIB_NAME
-last two are optional and only used if useAttributes is not NULL. Note
-that duplicate ATTRIB_NAMEs are currently not supported, even if they
-are in different ATTRIB_GROUPs.}
+\item{cnv_GR}{(GRanges) genetic events. Must contain "ID" column mapping
+the event to a patient. ID must correspond to the ID column in phenoDF}
 
 \item{predClass}{(char) patient class to predict}
 
 \item{outDir}{(char) path to dir where results should be stored. 
 Results for resampling i are under \code{<outDir>/part<i>}, while
 predictor evaluation results are directly in \code{outDir}.}
-
-\item{netDir}{(char) path to dir where patient similarity networks
-are stored. These networks should contain all training and test patients
-in the dataset. This function will subset these networks to generate
-networks consisting e.g. only of training samples.}
 
 \item{splitN}{(integer) number of data resamplings to use}
 

@@ -7,7 +7,7 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{01. Build basic predictor.}
+    %\VignetteIndexEntry{03. Build binary classifier from sparse genetic data.}
     %\VignetteEngine{knitr::knitr}
     %\VignetteEncoding{UTF-8}
 ---
@@ -61,7 +61,7 @@ path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
 # run the predictor
 predictClass	<- "case"
-buildPredictor_sparseGenetic(pheno,predictClass,outDir,
+nuildPredictor_sparseGenetic(pheno,predictClass,outDir,
 			enrichLabels=TRUE,numPermsEnrich=20L,
 			numCores=8L,featScoreMax=3L)
 
@@ -157,7 +157,7 @@ path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 Once the phenotype matrix and grouping rules are set up, the predictor is called
 using `buildPredictor_sparseGenetic()`. Note that unlike with non-sparse data, 
 the user does not provide a custom similarity function in this application.
-Features are scored `splitN` times, each time leaving 1/Nth of the samples out.
+Features are scored `numSplits` times, each time leaving 1/Nth of the samples out.
 In each split, features are scored between 0 and `featScoreMax`, using the same approach
 as is used for continuous-valued input. An additional label enrichment step is recommended 
 to reduce false positives in feature selection; this is achieved by setting `enrichLabels` to
@@ -168,9 +168,9 @@ ratio is even.
 
 ```{r,eval=TRUE}
 predictClass	<- "case"
-buildPredictor_sparseGenetic(pheno,predictClass,
-                             outDir,
-                             splitN=3L, featScoreMax=3L,
+buildPredictor_sparseGenetic(pheno, cnv_GR, predictClass,
+                             path_GRList,outDir,
+                             numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
                              numCores=8L)
 ```

@@ -23,7 +23,7 @@ options(stringsAsFactors = FALSE)
 # prepare data
 library(curatedTCGAData)
 library(MultiAssayExperiment)
-curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 brca <- curatedTCGAData("BRCA",c("mRNAArray"),FALSE)
 
 staget <- colData(brca)$pathology_T_stage
@@ -153,7 +153,7 @@ suppressMessages(library(MultiAssayExperiment))
 
 This is the data we will use:
 ```{r}
-curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 ```
 Let's fetch and store the data locally:
 ```{r}

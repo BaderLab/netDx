@@ -7,7 +7,7 @@
 ## # prepare data
 ## library(curatedTCGAData)
 ## library(MultiAssayExperiment)
-## curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+## curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 ## brca <- curatedTCGAData("BRCA",c("mRNAArray"),FALSE)
 ## 
 ## staget <- colData(brca)$pathology_T_stage
@@ -42,7 +42,7 @@
 ## groupList <- list()
 ## 
 ## # genes in mRNA data are grouped by pathways
-## pathList <- readPathways(getExamplePathways())
+## pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 ## groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 ## # clinical data is not grouped; each variable is its own feature
 ## groupList[["clinical"]] <- list(
@@ -73,7 +73,7 @@
 ## 		groupList[["clinical"]],netDir,
 ## 		simMetric="custom",customFunc=normDiff, # custom function
 ## 		writeProfiles=FALSE,
-## 		sparsify=TRUE,verbose=TRUE,append=TRUE,...)
+## 		sparsify=TRUE,verbose=TRUE,...)
 ## 	}
 ## 	netList <- c(unlist(netList),unlist(netList2))
 ## 	return(netList)
@@ -120,7 +120,7 @@ suppressMessages(library(MultiAssayExperiment))
 
 
 ## ------------------------------------------------------------------------
-curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 
 
 ## ------------------------------------------------------------------------
@@ -178,7 +178,7 @@ summary(dataList)
 groupList <- list()
 
 # genes in mRNA data are grouped by pathways
-pathList <- readPathways(getExamplePathways())
+pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
 # clinical data is not grouped; each variable is its own feature
 groupList[["clinical"]] <- list(
@@ -237,7 +237,6 @@ outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
 out <- buildPredictor(dataList=brca,groupList=groupList,
   makeNetFunc=makeNets,outDir=outDir,
   numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
-  keepAllData=2,
 	numCores=1L)
 
 

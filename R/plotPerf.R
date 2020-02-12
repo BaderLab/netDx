@@ -4,11 +4,10 @@
 #' for a predictor run using nested
 #' cross-validation or a similar repeated design.
 #' predictionResults.txt contains a (data.frame)
-#' @param inDir (char) path to predictionResults.txt files.
-#' if inDir is a single char and not a vector of prediction files, the 
-#' expected directory structure is <inDir>/rng<X>/predictionResults.txt'.
-#' Otherwise inDir is assumed
-#' to be a vector, each with absolute paths to predictionResults.txt
+#' @param resList (list) list of prediction results. If provided, the method
+#' will ignore inDir
+#' @param inFiles (char) path to predictionResults.txt files.
+#' A vector, each with absolute paths to predictionResults.txt
 #' @param predClasses (char) vector of class names.
 #' @return (list) each key corresponds to an input file in inDir.
 #' Value is a list with:
@@ -26,17 +25,20 @@
 #' 4) PR curve for all runs plus average
 #' @examples
 #' inDir <- sprintf('%s/extdata/example_output',
-#' path.package('netDx'))
-#' plotPerf(inDir, predClasses = c('LumA','notLumA'))
+#'			path.package('netDx'))
+#' inFiles <- paste(inDir, sprintf("rng%i",1:3),"predictionResults.txt",
+#'	 sep="/")
+#' plotPerf(inFiles, predClasses = c('LumA','notLumA'))
 #' @import ROCR
 #' @import pracma
 #' @importFrom stats sd
 #' @importFrom graphics abline axis par points segments text title hist
 #' @export
-plotPerf <- function(inDir, predClasses) {
-    
-    if (missing(inDir)) 
-        stop("inDir not provided")
+plotPerf <- function(resList=NULL, inFiles, predClasses) {
+	if (is.null(resList)) {
+    	if (missing(inFiles)) 
+        	stop("inDir not provided")
+	}
     if (missing(predClasses)) 
         stop("predClasses missing; please specify classes")
     
@@ -55,25 +57,22 @@ plotPerf <- function(inDir, predClasses) {
         pracma::trapz(x, y)
     }
     
-    if (length(inDir) == 1) {
-        message("Single directory provided, retrieving prediction files\n")
-        all_rng <- list.files(path = inDir, pattern = "rng.")
-        fList <- sprintf("%s/%s/predictionResults.txt", inDir, all_rng)
-    } else {
-        message(
-					paste("length(inDir)>1; assuming provided path to individual", 
-							"results", sep = ""))
-        fList <- inDir
-    }
+	if (is.null(resList)) {
+		resList <- list(); ctr <- 1
+	    for (fName in inFiles) {
+	        resList[[ctr]] <- read.delim(fName, 
+				sep = "\t", header = TRUE, as.is = TRUE)
+			ctr <- ctr+1
+		}
+	}
     
-    mega <- list()
-    for (fName in fList) {
+   	mega <- list()
+	for (ctr  in 1:length(resList)) {
+		dat <- resList[[ctr]]
         out <- list()
         overall_acc <- numeric()
         curRoc <- list()
         curPr <- list()
-        
-        dat <- read.delim(fName, sep = "\t", header = TRUE, as.is = TRUE)
         
         pred_col1 <- sprintf("%s_SCORE", predClasses[1])
         pred_col2 <- sprintf("%s_SCORE", predClasses[2])
@@ -102,18 +101,18 @@ plotPerf <- function(inDir, predClasses) {
         overall_acc <- c(overall_acc, corr/nrow(dat) * 100)
         
         ### TODO put in F1.
-        mega[[fName]] <- list(stats = out$stats, roc_curve = curRoc, 
+        mega[[ctr]] <- list(stats = out$stats, roc_curve = curRoc, 
 						pr_curve = curPr, 
             auroc = auroc, aupr = aupr, accuracy = overall_acc)
     }
-    # ---------------------------------- Plot mean+/- SEM
     
     .plotAvg <- function(res, name) {
         mu <- mean(res, na.rm = TRUE)
         sem <- sd(res, na.rm = TRUE)/sqrt(length(res))
         plot(1, mu, type = "n", bty = "n", ylab = sprintf("%s (mean+/-SEM)", 
 						name), xaxt = "n", ylim = c(0.4, 1), las = 1, 
-								cex.axis = 1.4, xlim = c(0.8,1.2), cex.axis = 1.4, xlab = "")
+								xlim = c(0.8,1.2), 
+								cex.axis = 1.4, xlab = "")
         abline(h = c(0.7, 0.8), col = "cadetblue3", lty = 3, lwd = 3)
         points(1, mu, type = "p", cex = 1.4, pch = 16)
         
@@ -126,7 +125,6 @@ plotPerf <- function(inDir, predClasses) {
     }
     
     # plot average +/-SEM
-    
     par(mfrow = c(2, 2))
     x <- unlist(lapply(mega, function(x) x$auroc))
     .plotAvg(x, "AUROC")

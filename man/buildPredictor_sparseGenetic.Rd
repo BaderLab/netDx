@@ -5,7 +5,7 @@
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
 buildPredictor_sparseGenetic(phenoDF, cnv_GR, predClass, group_GRList,
-  outDir = tempdir(), splitN = 3L, featScoreMax = 10L,
+  outDir = tempdir(), numSplits = 3L, featScoreMax = 10L,
   filter_WtSum = 100L, enrichLabels = TRUE, enrichPthresh = 0.07,
   numPermsEnrich = 2500L, minEnr = -1, numCores = 1L,
   FS_numCores = NULL, ...)
@@ -22,7 +22,7 @@ the event to a patient. ID must correspond to the ID column in phenoDF}
 Results for resampling i are under \code{<outDir>/part<i>}, while
 predictor evaluation results are directly in \code{outDir}.}
 
-\item{splitN}{(integer) number of data resamplings to use}
+\item{numSplits}{(integer) number of data resamplings to use}
 
 \item{featScoreMax}{(integer) max score for features in feature selection}
 
@@ -64,7 +64,7 @@ using multiple resamplings of input data. It is intended for use in
 the scenario where patient networks are sparse and binary. 
 This function should be called after defining all patient networks. It
 performs the following steps:
-For i = 1..splitN
+For i = 1..numSplits
 		randomly split patients into training and test
 		(optional) filter training networks to exclude random-like networks
 		compile features into database for cross-validation

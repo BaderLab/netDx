@@ -56,7 +56,7 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
 		minScore = 1, maxScore = 10, 
     colorScheme = "cont_heatmap", imageFormat = "png", verbose = FALSE, 
 		createStyle = TRUE, 
-    groupClusters = FALSE) {
+    groupClusters = FALSE, hideNodeLabels=FALSE) {
     
     validColSchemes <- c("cont_heatmap", "netDx_ms")
     if (!colorScheme %in% validColSchemes) {
@@ -84,10 +84,10 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
     
     message("* Importing node attributes\n")
     table_command <- sprintf(paste("table import file file=%s ", 
-				"keyColumnIndex=1", 
+				"keyColumnIndex=1 ", 
         "firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s ", 
 				"WhereImportTable=To%%20selected%%20networks%%20only", 
-        sep = ""), nodeAttrFile, netName)
+        sep = " "), nodeAttrFile, netName)
     response <- commandsGET(table_command)
     
     # apply style
@@ -134,4 +134,8 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
         response <- commandsGET(redraw_command)
         fitContent()
     }
+
+		if (hideNodeLabels) {
+			setNodeFontSizeDefault(0,styleName)
+	}
 }

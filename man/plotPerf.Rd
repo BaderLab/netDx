@@ -4,7 +4,7 @@
 \alias{plotPerf}
 \title{Plots various measures of predictor performance for binary classifiers}
 \usage{
-plotPerf(inDir, predClasses)
+plotPerf(inDir, resList = NULL, predClasses)
 }
 \arguments{
 \item{inDir}{(char) path to predictionResults.txt files.
@@ -12,6 +12,9 @@ if inDir is a single char and not a vector of prediction files, the
 expected directory structure is <inDir>/rng<X>/predictionResults.txt'.
 Otherwise inDir is assumed
 to be a vector, each with absolute paths to predictionResults.txt}
+
+\item{resList}{(list) list of prediction results. If provided, the method
+will ignore inDir}
 
 \item{predClasses}{(char) vector of class names.}
 }

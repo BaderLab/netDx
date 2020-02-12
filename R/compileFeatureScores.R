@@ -65,7 +65,8 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
     }
     out <- unlist(pathwayTally)
     out <- sort(out, decreasing = TRUE)
-    out <- data.frame(name = names(out), score = as.integer(out))
+    out <- data.frame(name = names(out), score = as.integer(out),
+		stringsAsFactors=FALSE)
     out[, 2] <- as.integer(as.character(out[, 2]))
     
     out

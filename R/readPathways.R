@@ -21,7 +21,7 @@
 #' physiologically relevant
 #' @param IDasName (boolean) Value for key in output list. 
 #' If TRUE, uses db name and ID as name (e.g.  KEGG:hsa04940)
-#' If FALSE, pathway name. If TRUE, 
+#' If FALSE, pathway name. 
 #' @param getOrigNames (logical) when TRUE also returns a mapping of the
 #' cleaned pathway names to the original names
 #' @param verbose (logical) print detailed messages
@@ -97,7 +97,6 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L,
     if (verbose) 
         message(sprintf("\t  => %i pathways excluded\n\t  => %i left", 
 						length(idx), length(out)))
-    
     # clean pathway names
     nm <- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))
     if (getOrigNames) {

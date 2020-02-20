@@ -37,11 +37,10 @@ corresponding to N-way resampling}
 \item{verbose}{(logical) print messages}
 }
 \value{
-No value. Side effect of writing the following files: 
-1) pathway tally file: \code{<outDir>/pathway_cumTally.txt} : 
-pathway name, cumulative score over N-way data resampling.
-2) positive,negative calls at each cutoff: 
-\code{<outDir>/RR_changeNetSum_stats_denAllNets.txt}: 
+(list) 
+1) cumulativeFeatScores: pathway name, cumulative score over 
+N-way data resampling.
+2) performance_denAllNets: positive,negative calls at each cutoff: 
 network score cutoff (score); num networks at cutoff (numPathways) ; 
 total +, ground truth (pred_tot); + calls (pred_ol); 
 + calls as pct of total (pred_pct); total -, ground truth (other_tot) ; 
@@ -50,14 +49,16 @@ pred_pct and other_pct (rr) ; min. pred_pct in all resamplings
 (pred_pct_min) ; max pred_pct in all resamplings (pred_pct_max) ; 
 min other_pct in all resamplings (other_pct_min); max other_pct in all
 resamplings (other_pct_max)
-3) positive, negative calls at each cutoff ; label enrichment option:  
-\code{<outDir>/RR_changeNetSum_stats_denEnrichedNets.txt}: format same
-as the previous file. However, the denominator here is limited to
+3) performance_denEnrichedNets: positive, negative calls at each cutoff 
+label enrichment option: format same as performance_denAllNets. 
+However, the denominator here is limited to
 patients present in networks that pass label enrichment
-4) breakdown of performance for each of the resamplings, at each of the 
-cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
-one for enrichedNets. The value is a matrix with (resamp * 7) columns and S rows,
-one row per score. The columns contain the followin information per resampling:
+4) resamplingPerformance: breakdown of performance for each of the 
+resamplings, at each of the cutoffs. 
+This is a list of length 2, one for allNets and one for enrichedNets. 
+The value is a matrix with (resamp * 7) columns and S rows,
+one row per score. The columns contain the following information
+per resampling:
 1) pred_total: total num patients of predClass
 2) pred_OL: num of pred_total with a CNV in the selected net
 3) pred_OL_pct: 2) divided by 1) (percent)
@@ -90,8 +91,9 @@ data(cnv_TTstatus)	# train/test status
 data(cnv_netPass) 	# nets passing label enrichment
 
 d <- tempdir()
-RR_featureTally(cnv_patientNetCount,
+out <- RR_featureTally(cnv_patientNetCount,
 		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
 		outDir=d,enrichLabels=TRUE,enrichedNets=cnv_netPass,
 		maxScore=30L)
+print(summary(out))
 }

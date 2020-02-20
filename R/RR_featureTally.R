@@ -27,11 +27,10 @@
 #' @param maxScore (integer) max achievable score for pathways
 #' corresponding to N-way resampling
 #' @param verbose (logical) print messages
-#' @return No value. Side effect of writing the following files: 
-#' 1) pathway tally file: \code{<outDir>/pathway_cumTally.txt} : 
-#' pathway name, cumulative score over N-way data resampling.
-#' 2) positive,negative calls at each cutoff: 
-#' \code{<outDir>/RR_changeNetSum_stats_denAllNets.txt}: 
+#' @return (list) 
+#' 1) cumulativeFeatScores: pathway name, cumulative score over 
+#' N-way data resampling.
+#' 2) performance_denAllNets: positive,negative calls at each cutoff: 
 #' network score cutoff (score); num networks at cutoff (numPathways) ; 
 #' total +, ground truth (pred_tot); + calls (pred_ol); 
 #' + calls as pct of total (pred_pct); total -, ground truth (other_tot) ; 
@@ -40,14 +39,16 @@
 #' (pred_pct_min) ; max pred_pct in all resamplings (pred_pct_max) ; 
 #' min other_pct in all resamplings (other_pct_min); max other_pct in all
 #' resamplings (other_pct_max)
-#' 3) positive, negative calls at each cutoff ; label enrichment option:  
-#' \code{<outDir>/RR_changeNetSum_stats_denEnrichedNets.txt}: format same
-#' as the previous file. However, the denominator here is limited to
+#' 3) performance_denEnrichedNets: positive, negative calls at each cutoff 
+#' label enrichment option: format same as performance_denAllNets. 
+#' However, the denominator here is limited to
 #' patients present in networks that pass label enrichment
-#' 4) breakdown of performance for each of the resamplings, at each of the 
-#' cutoffs: <outDir>/resamplingPerf.Rdata: list of length 2, one for allNets and
-#' one for enrichedNets. The value is a matrix with (resamp * 7) columns and S rows,
-#' one row per score. The columns contain the followin information per resampling:
+#' 4) resamplingPerformance: breakdown of performance for each of the 
+#' resamplings, at each of the cutoffs. 
+#' This is a list of length 2, one for allNets and one for enrichedNets. 
+#' The value is a matrix with (resamp * 7) columns and S rows,
+#' one row per score. The columns contain the following information
+#' per resampling:
 #' 1) pred_total: total num patients of predClass
 #' 2) pred_OL: num of pred_total with a CNV in the selected net
 #' 3) pred_OL_pct: 2) divided by 1) (percent)
@@ -65,18 +66,17 @@
 #' data(cnv_netPass) 	# nets passing label enrichment
 #'
 #' d <- tempdir()
-#' RR_featureTally(cnv_patientNetCount,
+#' out <- RR_featureTally(cnv_patientNetCount,
 #' 		cnv_pheno,cnv_TTstatus,"case",cnv_netScores,
 #' 		outDir=d,enrichLabels=TRUE,enrichedNets=cnv_netPass,
 #' 		maxScore=30L)
+#' print(summary(out))
 RR_featureTally <- function(netmat,phenoDF,TT_STATUS,predClass,
 	pScore,outDir=tempdir(),enrichLabels=TRUE,
 	enrichedNets,maxScore=30L,
 	verbose=FALSE) {
 
 # tally pathway score across resamplings
-testMode <- FALSE # when true doesn't write files.
-
 pTally 			<- list()
 for (k in seq_len(length(TT_STATUS))) {
 	dat <- pScore[[k]]
@@ -94,9 +94,13 @@ pathDF[,2] <- as.integer(as.character(pathDF[,2]))
 pathDF <- pathDF[order(pathDF[,2],decreasing=TRUE),]
 
 tmpOut <- sprintf("%s/pathway_cumTally.txt",outDir)
-if (!testMode){
-write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, row=FALSE,quote=FALSE)
-}
+write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, 
+	row.names=FALSE,quote=FALSE)
+
+out <- list()
+tmp <- pathDF
+tmp[,1] <- sub("_cont.txt","",tmp[,1])
+out[["cumulativeFeatScores"]] <- tmp
 
 # now run test
 scoreColl <- seq_len(maxScore)
@@ -237,8 +241,9 @@ for (setScore in scoreColl){
 		predCurr_cl 	<- unique(predCurr_cl)
 		otherCurr_cl	<- unique(otherCurr_cl) 
 		if (verbose) {
-			messaget(sprintf("\tCLIQUE: # contributing: %i pred ; %i other",
-			length(predCurr_cl),length(otherCurr_cl)))
+			message(paste("\tLABEL ENRICHMENT: ",
+				sprintf("# contributing: %i pred ; %i other",
+			length(predCurr_cl),length(otherCurr_cl)),sep=""))
 		}
 	
 		predContr_cl[ctr]	<- paste(predCurr_cl,collapse=",")
@@ -264,7 +269,6 @@ for (setScore in scoreColl){
 		min(currmat_enriched_tr[,6]),max(currmat_enriched_tr[,6]))
 	}
 
-
 	ctr <- ctr+1
 } # end loop over score cutoffs
 
@@ -280,6 +284,8 @@ for (k in seq_len(length(resampPerf))) {
 	resampPerf[[k]] <- tmp
 }
 
+out[["resamplingPerformance"]] <- resampPerf
+
 save(resampPerf,file=sprintf("%s/resamplingPerf.Rdata",outDir))
 
 # add IDs of contributing samples
@@ -289,16 +295,13 @@ outdf <- cbind(outdf, CONTRIBUT_PRED=predContr,
 
 outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets.txt",
 				   outDir)
-if (!testMode){
-write.table(outdf,file=outFile,sep="\t",col.names=TRUE,row=FALSE,quote=FALSE)
-}
+write.table(outdf,file=outFile,sep="\t",
+	col.names=TRUE,row.names=FALSE,quote=FALSE)
+out[["performance_denAllNets"]] <- outdf
 
-outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets_train.txt",
-				   outDir)
-if (!testMode){
 write.table(outdf_train,file=outFile,sep="\t",
-			col.names=TRUE,row=FALSE,quote=FALSE)
-}
+		col.names=TRUE,row=FALSE,quote=FALSE)
+out[["performance_denAllNets_TrainingSamples"]] <- outdf_train
 
 if (enrichLabels) {
 	# add IDs of contributing samples
@@ -308,16 +311,10 @@ if (enrichLabels) {
 	
 	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",
 				   outDir)
-	if (!testMode){
-	write.table(outdf_enriched,file=outFile,sep="\t",
-		col.names=TRUE,row=FALSE,quote=FALSE)
-	}
-
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets_train.txt",
-				   outDir)
-	if (!testMode){
-	write.table(outdf_enriched_tr,file=outFile,sep="\t",
-		col.names=TRUE,row=FALSE,quote=FALSE)
-	}
+write.table(outdf_enriched,file=outFile,sep="\t",
+	col.names=TRUE,row=FALSE,quote=FALSE)
+out[["performance_denEnrichedNets"]] <- outdf_enriched
 }
+
+return(out)
 }

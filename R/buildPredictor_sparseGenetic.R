@@ -40,9 +40,49 @@
 #' gives out-of-memory error. This may happen if networks are denser than
 #' expected
 #' @param ... params for runFeatureSelection()
-#' @return No value. Side efect of writing feature scores and predictions to 
-#' `outDir`. Output format is that of running `RR_featureTally()`. Refer to 
-#' that function for the details of output files.
+#' @return (list) Predictor results
+#' 1) phenoDF (data.frame): subset of phenoDF provided as input, but limited
+#' to patients that have at least one event in the universe of possibilities
+#' e.g. if using pathway-level features, then this table excludes patients
+#' with zero CNVs in pathways
+#' 2) netmat (data.frame): Count of genetic events by patients (rows) in
+#' pathways (columns). Used as input to the feature selection algorithm
+#' 3) pathwayScores (list): pathway scores for each of the data splits. 
+#' Each value in the list is a data.frame containing pathway names and
+#' scores.
+#' 4) enrichedNets (list): This entry is only found if enrichLabels is set
+#' to TRUE. It contains the vector of features that passed label enrichment
+#' in each split of the data. 
+#' 5 - 9) Output of RR_featureTally:
+#' 5) cumulativeFeatScores: pathway name, cumulative score over 
+#' N-way data resampling.
+#' 6) performance_denAllNets: positive,negative calls at each cutoff: 
+#' network score cutoff (score); num networks at cutoff (numPathways) ; 
+#' total +, ground truth (pred_tot); + calls (pred_ol); 
+#' + calls as pct of total (pred_pct); total -, ground truth (other_tot) ; 
+#' - calls  (other_ol) ; - calls as pct of total (other_pct) ; ratio of 
+#' pred_pct and other_pct (rr) ; min. pred_pct in all resamplings 
+#' (pred_pct_min) ; max pred_pct in all resamplings (pred_pct_max) ; 
+#' min other_pct in all resamplings (other_pct_min); max other_pct in all
+#' resamplings (other_pct_max)
+#' 7) performance_denEnrichedNets: positive, negative calls at each cutoff 
+#' label enrichment option: format same as performance_denAllNets. 
+#' However, the denominator here is limited to
+#' patients present in networks that pass label enrichment
+#' 8) resamplingPerformance: breakdown of performance for each of the 
+#' resamplings, at each of the cutoffs. 
+#' This is a list of length 2, one for allNets and one for enrichedNets. 
+#' The value is a matrix with (resamp * 7) columns and S rows,
+#' one row per score. The columns contain the following information
+#' per resampling:
+#'	 1) pred_total: total num patients of predClass
+#'	 2) pred_OL: num of pred_total with a CNV in the selected net
+#'	 3) pred_OL_pct: 2) divided by 1) (percent)
+#'	 4) other_total: total num patients of other class(non-predClass)
+#'	 5) other_OL: num of other_total with CNV in selected net
+#'	 6) other_OL_pct: 5) divided by 4) (percent)
+#'	 7) relEnr: 6) divided by 3).
+#' 
 #' @importFrom reshape2 melt
 #' @importFrom utils write.table
 #' @export
@@ -54,7 +94,8 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	numCores=1L,FS_numCores=NULL,...) {
 
 	netDir <- sprintf("%s/networks_orig",outDir)
-	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,verbose=FALSE)
+	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
+		verbose=FALSE)
 
 	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
 	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE,verbose=FALSE)
@@ -63,7 +104,6 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	phenoDF	<- tmp[[2]] 
 
 	if (is.null(FS_numCores)) FS_numCores <- max(1,numCores-1)
-	
 	# split into testing and training - resampling mode
 	message("* Resampling train/test samples")
 	TT_STATUS 	<- splitTestTrain_resampling(phenoDF, nFold=numSplits,
@@ -72,7 +112,8 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	pheno_full	<- phenoDF
 	if (any(colnames(pheno_full)%in% "TT_STATUS")) {
 		message(paste("** Warning, found TT_STATUS column. ",
-			"netDx adds its own column so this one will be removed **",sep=""))
+			"netDx adds its own column so this one will be removed **",
+			sep=""))
 		pheno_full <- pheno_full[,-which(colnames(pheno_full)%in%"TT_STATUS")]
 	}
 
@@ -105,7 +146,8 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		message("Training only:")
 		trainNetDir <- sprintf("%s/networks",newOut)
 		tmp			<- updateNets(p_train,pheno_train, 
-							oldNetDir=netDir, newNetDir=trainNetDir,verbose=FALSE)
+							oldNetDir=netDir, newNetDir=trainNetDir,
+							verbose=FALSE)
 		p_train		<- tmp[[1]]
 		pheno_train	<- tmp[[2]]
 
@@ -168,19 +210,24 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		
 		pScore[[k]]	<- pathwayRank
 	}
-
 	phenoDF$TT_STATUS <- NULL
-	#outDat <- sprintf("%s/resampling_savedDat.Rdata",outDir)
 
+	# Measure performance after adding pathway tally across pplits
+	out2 <- RR_featureTally(netmat, phenoDF, TT_STATUS, predClass,pScore,
+			outDir,enrichLabels, enrichedNets,verbose=FALSE,
+			maxScore=numSplits*featScoreMax)
+
+	colnames(netmat) <- sub("_cont.txt","",colnames(netmat))
+	
 	out <- list(
 		netmat=netmat,
 		pheno=phenoDF,
 		TT_STATUS=TT_STATUS,
 		pathwayScores=pScore,
 		enrichedNets=enrichedNets)	
-	#save(netmat,phenoDF,TT_STATUS,predClass,pScore,outDir,enrichLabels,
-	#	 enrichedNets, file=outDat)
-# Measure performance based on pathway tally across pplits
-	RR_featureTally(netmat, phenoDF, TT_STATUS, predClass,pScore,
-			outDir,enrichLabels, enrichedNets,verbose=FALSE)
+	for (k in names(out2)) {
+		out[[k]] <- out2[[k]]
+	}
+
+return(out)
 }

@@ -109,7 +109,7 @@ Plot distribution of AUROC and AUPR, as well as ROC and precision-recall curves 
 # plot model performance
 predFiles <- unlist(lapply(all_rngs, function(x) 
 		paste(x, "predictionResults.txt", sep = "/")))
-predPerf <- plotPerf(inDir, predClasses=predClasses)
+predPerf <- plotPerf(predFiles, predClasses=predClasses)
 ```
 
 Get feature scores for all train/test splits

@@ -18,6 +18,11 @@
 #' @param phenoDF (data.frame) sample metadat. patient ID,STATUS
 #' @param cnv_GR (GRanges) genetic events. Must contain "ID" column mapping
 #' the event to a patient. ID must correspond to the ID column in phenoDF
+#' @param group_GRList (list) List of GRangesList indicating grouping 
+#' rules for CNVs.
+#' For example, in a pathway-based design, each key value would be a pathway
+#' name, and the value would be a RangesList containing coordinates of the
+#' member genes
 #' @param predClass (char) patient class to predict
 #' @param outDir (char) path to dir where results should be stored. 
 #' Results for resampling i are under \code{<outDir>/part<i>}, while
@@ -86,6 +91,48 @@
 #' @importFrom reshape2 melt
 #' @importFrom utils write.table
 #' @export
+#' @examples
+#' suppressMessages(require(GenomicRanges))
+#' suppressMessages(require(biomaRt)) # for fetching gene coordinates
+#' 
+#' # read CNV data
+#' phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+#' pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+#' colnames(pheno)[1] <- "ID"
+#' pheno <- pheno[!duplicated(pheno$ID),]
+#' 
+#' # create GRanges with patient CNVs
+#' cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
+#'                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
+#' 
+#' # get gene coordinates
+#' ensembl <- useMart("ENSEMBL_MART_ENSEMBL",
+#' 	dataset="hsapiens_gene_ensembl",
+#' 	host="may2009.archive.ensembl.org",
+#' 	path="/biomart/martservice",archive=FALSE)
+#' genes <- getBM(attributes=c("chromosome_name",
+#' 		"start_position",
+#' 		"end_position",
+#' 		"hgnc_symbol"),
+#' 	mart=ensembl)
+#' genes <- genes[which(genes[,4]!=""),]
+#' gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
+#'    name=genes[,4])
+#' 
+#' # create GRangesList of pathways
+#' pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
+#' pathwayList <- readPathways(pathFile)
+#' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
+#' 
+#' #### uncomment to run - takes 5 min
+#' #out <- buildPredictor_sparseGenetic(pheno, cnv_GR, "case",
+#' #                             path_GRList,outDir,
+#' #                             numSplits=3L, featScoreMax=3L,
+#' #                             enrichLabels=TRUE,numPermsEnrich=20L,
+#' #                             numCores=1L)
+#' #summary(out)
+#' #head(out$cumulativeFeatScores)
+#' 
 buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	group_GRList,outDir=tempdir(),
 	numSplits=3L, featScoreMax=10L,

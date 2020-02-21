@@ -32,6 +32,7 @@
 #' FALSE results in a cluttered network. However, applying this layout will
 #' organize nodes in each cluster into circles, which loses the c
 #' topology.
+#' @param hideNodeLabel (logical) 
 #' 
 #' @importFrom grDevices colorRampPalette
 #' @examples

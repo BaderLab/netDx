@@ -16,7 +16,8 @@ enrichLabelNets(netDir, pheno_DF, outDir, numReps = 50L, minEnr = -1,
 
 \item{outDir}{(char) path to dir where output/log files are written}
 
-\item{numReps}{(integer) Max num reps for shuffling class status. Adaptive permutation is
+\item{numReps}{(integer) Max num reps for shuffling class status. 
+Adaptive permutation is
 used so in practice, few networks would be evaluated to this extent}
 
 \item{minEnr}{(numeric from -1 to 1) Only include networks with ENR
@@ -47,7 +48,8 @@ this flag for debugging purposes only.}
 \item{...}{parameters for \code{countIntType_batch()}.}
 }
 \value{
-(data.frame) networks stats from clique-filtering, one record per network
+(data.frame) networks stats from clique-filtering, one record 
+per network
 }
 \description{
 Score networks based on their edge bias towards (+,+) interactions

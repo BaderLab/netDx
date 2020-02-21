@@ -26,9 +26,13 @@
 #' @examples
 #' inDir <- sprintf('%s/extdata/example_output',
 #'			path.package('netDx'))
-#' inFiles <- paste(inDir, sprintf("rng%i",1:3),"predictionResults.txt",
-#'	 sep="/")
-#' plotPerf(inFiles, predClasses = c('LumA','notLumA'))
+#' inFiles <- paste(inDir, sprintf("rng%i",seq_len(3),"predictionResults.txt",
+#'	 sep="/"))
+#' resList <- list()
+#' for (k in seq_len(length(inFiles))) {
+#' 	resList[[k]] <- read.delim(inFiles[k],sep="\t",header=TRUE,as.is=TRUE)
+#' }
+#' plotPerf(resList, predClasses = c('LumA','notLumA'))
 #' @import ROCR
 #' @import pracma
 #' @importFrom stats sd
@@ -67,7 +71,7 @@ plotPerf <- function(resList=NULL, inFiles, predClasses) {
 	}
     
    	mega <- list()
-	for (ctr  in 1:length(resList)) {
+	for (ctr  in seq_len(length(resList))) {
 		dat <- resList[[ctr]]
         out <- list()
         overall_acc <- numeric()

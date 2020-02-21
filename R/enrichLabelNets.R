@@ -17,7 +17,8 @@
 #' @param netDir (char) path to dir containing all networks
 #' @param pheno_DF (data.frame) for details see \code{getEnr()}
 #' @param outDir (char) path to dir where output/log files are written 
-#' @param numReps (integer) Max num reps for shuffling class status. Adaptive permutation is
+#' @param numReps (integer) Max num reps for shuffling class status. 
+#' Adaptive permutation is
 #' used so in practice, few networks would be evaluated to this extent
 #' @param minEnr (numeric from -1 to 1) Only include networks with ENR
 #'	value greater than this threshold. 
@@ -35,7 +36,8 @@
 #' permutation, for all networks. Warning: this is likely to be huge. Use
 #' this flag for debugging purposes only.
 #' @param ... parameters for \code{countIntType_batch()}. 
-#' @return (data.frame) networks stats from clique-filtering, one record per network
+#' @return (data.frame) networks stats from clique-filtering, one record 
+#' per network
 #' @examples
 #' data(npheno)
 #' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
@@ -172,7 +174,7 @@ out <- data.frame(NETWORK=basename(fList),
 
 write.table(out,
 	file=sprintf("%s/%s.stats.txt", outDir, outPref),
-	sep="\t",col=TRUE,row=FALSE,quote=FALSE)
+	sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
 
 if (getShufResults) {
 	out <- list(shufres=shuf_rat, res=out)

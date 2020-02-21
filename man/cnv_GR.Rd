@@ -5,7 +5,8 @@
 CNV locations for breast cancer (subset)
 }
 \description{
-Subset of CNV locations for TCGA breast tumour. Each range is associated with a patient (ID)
+Subset of CNV locations for TCGA breast tumour. Each range is 
+ associated with a patient (ID)
 }
 \usage{data(cnv_GR)}
 \source{

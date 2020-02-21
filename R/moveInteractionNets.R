@@ -1,4 +1,15 @@
-#' @export
+#' moves interaction networks when compiling database for sparse genetic
+#' workflow
+#'
+#' @param netDir (char) source directory
+#' @param outDir (char) target directory
+#' @param pheno (data.frame) contains patient ID and STATUS
+#' @param fileSfx (char) suffix to strip from network file names before
+#' registering in metadata tables
+#' @return No value. Side effect of moving interaction nets to target
+#' directory and creating network-related metadata files used to compile
+#' feature database
+#' @importFrom utils write.table
 moveInteractionNets <- function(netDir,outDir,pheno,fileSfx="_cont.txt") {
 netList <- dir(path=netDir,pattern=fileSfx)
 	netID <- data.frame(ID = seq_len(length(netList)),

@@ -14,7 +14,8 @@ countIntType(inFile, plusID, minusID)
 \item{minusID}{(char) vector of - nodes}
 }
 \value{
-(numeric of length 2) Number of (+,+) interactions, and non-(+,+) interactions
+(numeric of length 2) Number of (+,+) interactions, and 
+non-(+,+) interactions
 (i.e. (+,-) and (-,-) interactions)
 }
 \description{

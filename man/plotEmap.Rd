@@ -50,6 +50,8 @@ clusters lined up in rows. This setting is useful if setting this flag to
 FALSE results in a cluttered network. However, applying this layout will
 organize nodes in each cluster into circles, which loses the c
 topology.}
+
+\item{hideNodeLabel}{(logical)}
 }
 \value{
 No value. Side effect of plotting the EnrichmentMap in an open 

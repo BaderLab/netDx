@@ -179,7 +179,8 @@ message("* Computing real (+,+) (+,-)")
 #' @param inFile (char) path to interaction networks
 #' @param plusID (char) vector of + nodes
 #' @param minusID (char) vector of - nodes
-#' @return (numeric of length 2) Number of (+,+) interactions, and non-(+,+) interactions
+#' @return (numeric of length 2) Number of (+,+) interactions, and 
+#' non-(+,+) interactions
 #' (i.e. (+,-) and (-,-) interactions)
 #' @export
 #' @examples
@@ -239,6 +240,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 		cl <- makeCluster(2)
 		registerDoParallel(cl)
 	}
+
+	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
 		m <- bigmemory::attach.big.matrix(
 				sprintf("%s/tmp.desc",tmpDir))

@@ -300,7 +300,7 @@ write.table(outdf,file=outFile,sep="\t",
 out[["performance_denAllNets"]] <- outdf
 
 write.table(outdf_train,file=outFile,sep="\t",
-		col.names=TRUE,row=FALSE,quote=FALSE)
+		col.names=TRUE,row.names=FALSE,quote=FALSE)
 out[["performance_denAllNets_TrainingSamples"]] <- outdf_train
 
 if (enrichLabels) {
@@ -312,7 +312,7 @@ if (enrichLabels) {
 	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",
 				   outDir)
 write.table(outdf_enriched,file=outFile,sep="\t",
-	col.names=TRUE,row=FALSE,quote=FALSE)
+	col.names=TRUE,row.names=FALSE,quote=FALSE)
 out[["performance_denEnrichedNets"]] <- outdf_enriched
 }
 

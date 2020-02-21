@@ -24,7 +24,7 @@ physiologically relevant}
 
 \item{IDasName}{(boolean) Value for key in output list. 
 If TRUE, uses db name and ID as name (e.g.  KEGG:hsa04940)
-If FALSE, pathway name. If TRUE,}
+If FALSE, pathway name.}
 
 \item{verbose}{(logical) print detailed messages}
 
@@ -53,7 +53,7 @@ to assign the key name of the output list (see \code{useIDasName}
 argument).
 }
 \examples{
-pathFile <- getExamplePathways()
+pathFile <- fetchPathwayDefinitions()
 pathwayList    <- readPathways(pathFile)
 
 }

@@ -47,10 +47,11 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
             keep_max <- which.min(abs(cs - filter_WtSum))
             
             dat <- dat[seq_len(keep_max), ]
-            if (verbose) 
+            if (verbose) {
                 message(sprintf(paste("filter_WtSum = %1.1f; ",
 									"%i of %i networks left",sep=""),
 									filter_WtSum, nrow(dat), length(cs)))
+						}
             
             # put all Network names in pathwaytally. The ones that 
 						# are above threshold (Top pathways) get +1
@@ -63,9 +64,9 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
         }
     }
     out <- unlist(pathwayTally)
-    print(out)
     out <- sort(out, decreasing = TRUE)
-    out <- data.frame(name = names(out), score = as.integer(out))
+    out <- data.frame(name = names(out), score = as.integer(out),
+		stringsAsFactors=FALSE)
     out[, 2] <- as.integer(as.character(out[, 2]))
     
     out

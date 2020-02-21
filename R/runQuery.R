@@ -23,7 +23,7 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     qBase <- basename(queryFiles[[1]][1])
     logFile <- sprintf("%s/%s.log", resDir, qBase)
     queryStrings <- paste(queryFiles, collapse = " ")
-    
+
     args <- c("-d64", sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
     args <- c(args, "org.genemania.plugin.apps.QueryRunner")
     args <- c(args, "--data", dbPath, "--in", "flat", "--out", "flat")

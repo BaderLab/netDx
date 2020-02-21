@@ -1,0 +1,365 @@
+---
+title: "Build N-way classifier (N>2) from clinical and multi-omic data"
+author: "Shraddha Pai"
+package: netDx
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{02. Build three-way classifier (N-way; N>2) from multi-omic data}
+    %\VignetteEngine{knitr::knitr}
+    %\VignetteEncoding{UTF-8}
+---
+
+# TL;DR 
+This code block is not evaluated. Need a breakdown? Look at the following sections.
+```{r,eval=FALSE}
+suppressWarnings(suppressMessages(require(netDx)))
+suppressMessages(library(curatedTCGAData))
+
+brca <- suppressMessages(
+   curatedTCGAData("BRCA",
+               c("mRNAArray","RPPA*","Methylation_methyl27*"),
+	dry.run=FALSE))
+
+# prepare clinical variable - stage
+staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
+staget <- suppressWarnings(as.integer(staget))
+colData(brca)$STAGE <- staget
+
+# exclude normal, HER2 (small num samples)
+pam50 <- colData(brca)$PAM50.mRNA
+idx <- union(which(pam50 %in% c("Normal-like","HER2-enriched")), 
+	which(is.na(staget)))
+idx <- union(idx, which(is.na(pam50)))
+pID <- colData(brca)$patientID
+tokeep <- setdiff(pID, pID[idx])
+brca <- brca[,tokeep,]
+
+pam50 <- colData(brca)$PAM50.mRNA
+colData(brca)$pam_mod <- pam50
+
+# remove duplicate sample names
+smp <- sampleMap(brca)
+for (nm in names(brca)) {
+	samps <- smp[which(smp$assay==nm),]
+	notdup <- samps[which(!duplicated(samps$primary)),"colname"]
+	brca[[nm]] <- suppressMessages(brca[[nm]][,notdup])
+}
+
+# create ID and STATUS column for phenotype table
+pID <- colData(brca)$patientID
+colData(brca)$ID <- pID
+colData(brca)$STATUS <- gsub(" ","_",colData(brca)$pam_mod)
+
+# prepare grouping rules for feature design
+groupList <- list()
+
+# genes in mRNA data are grouped by pathways
+pathList <- readPathways(fetchPathwayDefinitions("January",2018))
+groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+# clinical data is not grouped; each variable is its own feature
+groupList[["clinical"]] <- list(
+      age="patient.age_at_initial_pathologic_diagnosis",
+	   stage="STAGE"
+)
+# for methylation generate one feature containing all probes
+# same for proteomics data
+tmp <- list(rownames(experiments(brca)[[2]]));
+names(tmp) <- names(brca)[2]
+groupList[[names(brca)[2]]] <- tmp
+
+tmp <- list(rownames(experiments(brca)[[3]]));
+names(tmp) <- names(brca)[3]
+groupList[[names(brca)[3]]] <- tmp
+
+
+# define the function to generate similarity networks
+# This will be passed to the buildPredictor() call using 
+# the makeNetsFunc parameter.
+makeNets <- function(dataList, groupList, netDir,...) {
+	netList <- c() # initialize before is.null() check
+	# correlation-based similarity for mRNA, RPPA and methylation data
+	# (Pearson correlation)
+	for (nm in setdiff(names(groupList),"clinical")) {
+	   # NOTE: the check for is.null() is important!
+		if (!is.null(groupList[[nm]])) {
+		netList <- makePSN_NamedMatrix(dataList[[nm]],
+		             rownames(dataList[[nm]]),
+                   groupList[[nm]],netDir,verbose=FALSE,
+		             writeProfiles=TRUE,...) 
+		}
+	}
+	
+	# make clinical nets (normalized difference)
+	netList2 <- c()
+	if (!is.null(groupList[["clinical"]])) {
+	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
+		rownames(dataList$clinical),
+		groupList[["clinical"]],netDir,
+		simMetric="custom",customFunc=normDiff, # custom function
+		writeProfiles=FALSE,
+		sparsify=TRUE,verbose=TRUE,...)
+	}
+	netList <- c(unlist(netList),unlist(netList2))
+	return(netList)
+}
+
+
+
+# run the predictor
+set.seed(42) # make results reproducible
+# location for intermediate work
+# set keepAllData to TRUE to not delete at the end of the 
+# predictor run.
+# This can be useful for debugging.
+outDir <- sprintf("%s/pred_output",tempdir()) 
+
+numSplits <- 2L
+out <- suppressMessages(
+   buildPredictor(dataList=brca,groupList=groupList,
+      makeNetFunc=makeNets,outDir=outDir,
+      numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
+	   numCores=1L)
+)
+
+# examine results
+summary(out)
+summary(out$Split1)
+
+# compute accuracy for each split and class
+numSplits <- 2
+st <- unique(colData(brca)$STATUS) 
+acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
+colnames(acc) <- st 
+for (k in 1:numSplits) { 
+	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
+	                 sprintf("%s_SCORE",st))]
+	for (m in 1:length(st)) {
+	   tmp2 <- subset(tmp, STATUS==st[m])
+	   acc[k,m] <- sum(tmp2$PRED==tmp2$STATUS)/nrow(tmp2)
+	}
+}
+print(round(acc*100,2))
+
+# examine confusion matrix
+res <- out$Split1$predictions
+print(table(res[,c("STATUS","PRED_CLASS")]))
+```
+
+# Introduction
+
+In this example, we will use clinical data and three types of 'omic data - gene expression, DNA methylation and proteomic data - to classify breast tumours as being one of three types: Luminal A, Luminal B, or Basal. This example is nearly identical to the one used to build a binary classifier. 
+
+We also use several strategies and definitions of similarity to create features: 
+
+ * Clinical variables: Each *variable* is its own feature (e.g. age); similarity is defined as *normalized difference*. 
+ * Gene expression: Features are defined at the level of ***pathways***; i.e. a feature groups genes corresponding to the pathway. Similarity is defined as pairwise *Pearson correlation*
+ * Proteomic and methylation data: Features are defined at the level of the entire *data layer*; a single feature is created for all of proteomic data, and the same for methylation. Similarity is defined by pairwise *Pearson correlation*
+
+# Setup
+Load the `netDx` package.
+
+```{r,eval=TRUE}
+suppressWarnings(suppressMessages(require(netDx)))
+```
+
+# Data 
+
+For this example we pull data from the The Cancer Genome Atlas through the BioConductor `curatedTCGAData` package. The fetch command automatically brings in a `MultiAssayExperiment` object. 
+```{r,eval=TRUE}
+suppressMessages(library(curatedTCGAData))
+```
+
+We use the `curatedTCGAData()` command to look at available assays in the breast cancer dataset. 
+```{r,eval=TRUE}
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
+```
+
+In this call we fetch only the gene expression, proteomic and methylation data; setting `dry.run=FALSE` initiates the fetching of the data.
+
+```{r,eval=TRUE}
+brca <- suppressMessages(
+   curatedTCGAData("BRCA",
+               c("mRNAArray","RPPA*","Methylation_methyl27*"),
+	dry.run=FALSE))
+```
+
+This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 
+
+```{r,eval=TRUE}
+# prepare clinical variable - stage
+staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
+staget <- suppressWarnings(as.integer(staget))
+colData(brca)$STAGE <- staget
+
+# exclude normal, HER2 (small num samples)
+pam50 <- colData(brca)$PAM50.mRNA
+idx <- union(which(pam50 %in% c("Normal-like","HER2-enriched")), 
+	which(is.na(staget)))
+idx <- union(idx, which(is.na(pam50)))
+pID <- colData(brca)$patientID
+tokeep <- setdiff(pID, pID[idx])
+brca <- brca[,tokeep,]
+
+pam50 <- colData(brca)$PAM50.mRNA
+colData(brca)$pam_mod <- pam50
+
+# remove duplicate names
+smp <- sampleMap(brca)
+for (nm in names(brca)) {
+	samps <- smp[which(smp$assay==nm),]
+	notdup <- samps[which(!duplicated(samps$primary)),"colname"]
+	brca[[nm]] <- suppressMessages(brca[[nm]][,notdup])
+}
+```
+
+The important thing is to create `ID` and `STATUS` columns in the sample metadata slot. netDx uses these to get the patient identifiers and labels, respectively.
+
+```{r,eval=TRUE}
+pID <- colData(brca)$patientID
+colData(brca)$ID <- pID
+colData(brca)$STATUS <- gsub(" ","_",colData(brca)$pam_mod)
+```
+
+# Rules to create features (patient similarity networks)
+
+```{r,eval=TRUE}
+groupList <- list()
+
+# genes in mRNA data are grouped by pathways
+pathList <- readPathways(fetchPathwayDefinitions("January",2018))
+groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+# clinical data is not grouped; each variable is its own feature
+groupList[["clinical"]] <- list(
+      age="patient.age_at_initial_pathologic_diagnosis",
+	   stage="STAGE"
+)
+# for methylation generate one feature containing all probes
+# same for proteomics data
+tmp <- list(rownames(experiments(brca)[[2]]));
+names(tmp) <- names(brca)[2]
+groupList[[names(brca)[2]]] <- tmp
+
+tmp <- list(rownames(experiments(brca)[[3]]));
+names(tmp) <- names(brca)[3]
+groupList[[names(brca)[3]]] <- tmp
+```
+
+## Define patient similarity for each network
+
+We provide `netDx` with a custom function to generate similarity networks (i.e. features). The first block tells netDx to generate correlation-based networks using everything but the clinical data. This is achieved by the call:
+```{r,eval=FALSE}
+makePSN_NamedMatrix(..., writeProfiles=TRUE,...)`
+```
+
+The second block makes a different call to `makePSN_NamedMatrix()` but this time, requesting the use of the normalized difference similarity metric. This is achieved by calling:
+```{r,eval=FALSE}
+   makePSN_NamedMatrix(,..., 
+                       simMetric="custom", customFunc=normDiff,
+                       writeProfiles=FALSE)
+```
+
+`normDiff` is a function provided in the `netDx` package, but the user may define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
+
+```{r,eval=TRUE}
+makeNets <- function(dataList, groupList, netDir,...) {
+	netList <- c() # initialize before is.null() check
+	# correlation-based similarity for mRNA, RPPA and methylation data
+	# (Pearson correlation)
+	for (nm in setdiff(names(groupList),"clinical")) {
+	   # NOTE: the check for is.null() is important!
+		if (!is.null(groupList[[nm]])) {
+		netList <- makePSN_NamedMatrix(dataList[[nm]],
+		             rownames(dataList[[nm]]),
+                   groupList[[nm]],netDir,verbose=FALSE,
+		             writeProfiles=TRUE,...) 
+		}
+	}
+	
+	# make clinical nets (normalized difference)
+	netList2 <- c()
+	if (!is.null(groupList[["clinical"]])) {
+	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
+		rownames(dataList$clinical),
+		groupList[["clinical"]],netDir,
+		simMetric="custom",customFunc=normDiff, # custom function
+		writeProfiles=FALSE,
+		sparsify=TRUE,verbose=TRUE,...)
+	}
+	netList <- c(unlist(netList),unlist(netList2))
+	return(netList)
+}
+
+```
+
+# Build predictor
+
+Finally we make the call to build the predictor. 
+ 
+```{r,eval=TRUE}
+set.seed(42) # make results reproducible
+
+# location for intermediate work
+# set keepAllData to TRUE to not delete at the end of the 
+# predictor run.
+# This can be useful for debugging.
+outDir <- sprintf("%s/pred_output",tempdir()) 
+
+numSplits <- 2L
+out <- suppressMessages(
+   buildPredictor(dataList=brca,groupList=groupList,
+      makeNetFunc=makeNets,outDir=outDir,
+      numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
+	   numCores=1L)
+)
+```
+
+# Examine output
+The results are stored in the list object returned by the `buildPredictor()` call.
+This list contains:
+
+* `inputNets`: all input networks that the model started with. 
+* `Split<i>`: a list with results for each train-test split
+  * `featureScores`: feature scores for each label (list with `g` entries, where `g` is number of patient labels). Each entry contains the feature selection scores for the corresponding label.
+  * `featureSelected`: vector of features that pass feature selection. List of length `g`, with one entry per label.
+  * `predictions`: real and predicted labels for test patients
+  * `accuracy`: percent accuracy of predictions
+
+```{r,eval=TRUE}
+summary(out)
+summary(out$Split1)
+```
+
+Compute accuracy for three-way classificationL
+
+```{r,eval=TRUE}
+# Average accuracy
+numSplits <- 2
+st <- unique(colData(brca)$STATUS) 
+acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
+colnames(acc) <- st 
+for (k in 1:numSplits) { 
+	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
+	                 sprintf("%s_SCORE",st))]
+	for (m in 1:length(st)) {
+	   tmp2 <- subset(tmp, STATUS==st[m])
+	   acc[k,m] <- sum(tmp2$PRED==tmp2$STATUS)/nrow(tmp2)
+	}
+}
+print(round(acc*100,2))
+```
+Also, examine the confusion matrix. We can see that the model perfectly classifies basal tumours, but performs poorly in distinguishing between the two types of luminal tumours. 
+
+```{r, eval=TRUE}
+res <- out$Split1$predictions
+print(table(res[,c("STATUS","PRED_CLASS")]))
+```
+
+# sessionInfo
+```{r,eval=TRUE}
+sessionInfo()
+```

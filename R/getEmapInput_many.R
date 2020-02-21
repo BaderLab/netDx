@@ -20,7 +20,7 @@
 #' @examples
 #' data(featScores)
 #' 
-#' pathwayList <- readPathways(getExamplePathways())
+#' pathwayList <- readPathways(fetchPathwayDefinitions())
 #' pathwayList <- pathwayList[seq_len(5)]
 #' 
 #' netInfoFile <- sprintf('%s/extdata/example_output/inputNets.txt',

@@ -5,7 +5,7 @@
 \title{Create GeneMANIA database}
 \usage{
 compileFeatures(netDir, outDir = tempdir(), simMetric = "pearson",
-  netSfx = "_cont.txt$", verbose = TRUE, numCores = 1L,
+  netSfx = "txt$", verbose = TRUE, numCores = 1L,
   P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L,
   altBaseDir = NULL, ...)
 }

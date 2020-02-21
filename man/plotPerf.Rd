@@ -4,14 +4,14 @@
 \alias{plotPerf}
 \title{Plots various measures of predictor performance for binary classifiers}
 \usage{
-plotPerf(inDir, predClasses)
+plotPerf(resList = NULL, inFiles, predClasses)
 }
 \arguments{
-\item{inDir}{(char) path to predictionResults.txt files.
-if inDir is a single char and not a vector of prediction files, the 
-expected directory structure is <inDir>/rng<X>/predictionResults.txt'.
-Otherwise inDir is assumed
-to be a vector, each with absolute paths to predictionResults.txt}
+\item{resList}{(list) list of prediction results. If provided, the method
+will ignore inDir}
+
+\item{inFiles}{(char) path to predictionResults.txt files.
+A vector, each with absolute paths to predictionResults.txt}
 
 \item{predClasses}{(char) vector of class names.}
 }
@@ -42,6 +42,12 @@ predictionResults.txt contains a (data.frame)
 }
 \examples{
 inDir <- sprintf('\%s/extdata/example_output',
-path.package('netDx'))
-plotPerf(inDir, predClasses = c('LumA','notLumA'))
+		path.package('netDx'))
+inFiles <- paste(inDir, sprintf("rng\%i",seq_len(3),"predictionResults.txt",
+ sep="/"))
+resList <- list()
+for (k in 1:length(inFiles)) {
+	resList[[k]] <- read.delim(inFiles[k],sep="\\t",header=TRUE,as.is=TRUE)
+}
+plotPerf(resList, predClasses = c('LumA','notLumA'))
 }

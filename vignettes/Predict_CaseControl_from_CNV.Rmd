@@ -18,7 +18,6 @@ suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
 suppressMessages(require(biomaRt)) # for fetching gene coordinates
 
-numCores	<- 8L # run feature selection in parallel
 
 outDir <- sprintf("%s/200129_threeWay",tempdir())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
@@ -62,7 +61,7 @@ out <- suppressMessages(
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
-                             numCores=8L)
+                             numCores=1L)
 )
 
 # plot ROC curve
@@ -125,7 +124,6 @@ suppressMessages(require(biomaRt)) # for fetching gene coordinates
 CNV coordinates are read in, and converted into a `GRanges` object. As always, the sample metadata table, here the `pheno` object, must have `ID` and `STATUS` columns.
 
 ```{r,eval=TRUE}
-numCores	<- 8L # run feature selection in parallel
 
 outDir <- sprintf("%s/200129_threeWay",tempdir())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
@@ -188,7 +186,7 @@ out <- suppressMessages(
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
-                             numCores=8L)
+                             numCores=1L)
 )
 ```
 

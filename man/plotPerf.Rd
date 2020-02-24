@@ -46,7 +46,7 @@ inDir <- sprintf('\%s/extdata/example_output',
 inFiles <- paste(inDir, sprintf("rng\%i",seq_len(3),"predictionResults.txt",
  sep="/"))
 resList <- list()
-for (k in 1:length(inFiles)) {
+for (k in seq_len(length(inFiles))) {
 	resList[[k]] <- read.delim(inFiles[k],sep="\\t",header=TRUE,as.is=TRUE)
 }
 plotPerf(resList, predClasses = c('LumA','notLumA'))

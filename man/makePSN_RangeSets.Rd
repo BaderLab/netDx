@@ -53,5 +53,7 @@ are related in a network N if they both overlap elements of set N.
 }
 \examples{
 data(pathway_GR,cnv_GR)
-netList <- makePSN_RangeSets(cnv_GR,pathway_GR,'.')
+### # example commented out to avoid build errors because of parallel
+### # execution. Uncomment to run.
+### netList <- makePSN_RangeSets(cnv_GR,pathway_GR,'.')
 }

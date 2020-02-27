@@ -93,7 +93,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
     }
     
     # process pathways in parallel
-    outFiles <- foreach(curSet = names(namedSets)) %dopar% {
+		`%myinfix%` <- ifelse(runSerially, `%do%`, `%dopar%`)
+    outFiles <- foreach(curSet = names(namedSets)) %myinfix% {
         if (verbose) 
             message(sprintf("%s: ", curSet))
         idx <- which(nm %in% namedSets[[curSet]])

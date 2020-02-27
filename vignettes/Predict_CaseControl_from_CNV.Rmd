@@ -61,7 +61,7 @@ out <- suppressMessages(
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
-                             numCores=1L)
+                             numCores=2L)
 )
 
 # plot ROC curve
@@ -94,7 +94,7 @@ print(out$cumulativeFeatScores)
 
 # Introduction 
 
-netDx natively handles missing data, making it suitable to build predictors with sparse genetic data such as somatic DNA mutations, frequently seen in cancer, and from DNA Copy Number Variations. This example demonstrates how to use netDx to build a predictor from sparse genetic data. Here we build a case/control classifier for Autism Spectrum Disorder (ASD) diagnosis, starting from rare cnvs. The data is from [Pinto et al. (2014) AJHG 94:677)(https://pubmed.ncbi.nlm.nih.gov/24768552-convergence-of-genes-and-cellular-pathways-dysregulated-in-autism-spectrum-disorders/) . 
+netDx natively handles missing data, making it suitable to build predictors with sparse genetic data such as somatic DNA mutations, frequently seen in cancer, and from DNA Copy Number Variations (CNV). This example demonstrates how to use netDx to build a predictor from sparse genetic data. Here we build a case/control classifier for Autism Spectrum Disorder (ASD) diagnosis, starting from rare CNVs. The data is from [Pinto et al. (2014) AJHG 94:677)(https://pubmed.ncbi.nlm.nih.gov/24768552-convergence-of-genes-and-cellular-pathways-dysregulated-in-autism-spectrum-disorders/) . 
 
 # Design and Adapting the Algorithm for Sparse Event Data
 In this design, we group CNVs by pathways. The logic behind the grouping is prior evidence showing that genetic events in diseases tend to converge on cellular processes of relevance to the pathophysiology of the disease. For example, see the Pinto et al. paper referenced in the previous section. 
@@ -186,7 +186,7 @@ out <- suppressMessages(
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
-                             numCores=1L)
+                             numCores=2L)
 )
 ```
 

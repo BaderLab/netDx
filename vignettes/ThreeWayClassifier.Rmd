@@ -226,6 +226,12 @@ colData(brca)$STATUS <- gsub(" ","_",colData(brca)$pam_mod)
 
 # Rules to create features (patient similarity networks)
 
+Our plan is to group gene expression data by pathways and clinical data by single variables. We will treat methylation and proteomic data each as a single feature, so each of those groups will contain the entire input table for those corresponding data types. 
+
+In the code below, we fetch pathway definitions for January 2018 from (http://download.baderlab.org/EM_Genesets) and group gene expression data by pathways. To keep the example short, we limit to only three pathways, but in practice you would use all pathways meeting a size criterion; e.g. those containing between 10 and 500 genes. 
+
+Grouping rules are accordingly created for the clinical, methylation and proteomic data. 
+
 ```{r,eval=TRUE}
 groupList <- list()
 

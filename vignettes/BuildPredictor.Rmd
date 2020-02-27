@@ -1,5 +1,5 @@
 ---
-title: "Building binary classifier from clinical and 'omic data"
+title: "Building binary classifier from clinical and 'omic data using pathway-level features"
 author: "Shraddha Pai"
 package: netDx
 date: "`r Sys.Date()`"
@@ -35,7 +35,7 @@ pID <- colData(brca)$patientID
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
 
-# remove duplicate asssays mapped to the same sample
+# remove duplicate assays mapped to the same sample
 smp <- sampleMap(brca)
 samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]

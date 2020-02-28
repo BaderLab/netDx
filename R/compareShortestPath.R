@@ -30,7 +30,7 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
     colnames(net) <- c("source", "target", "weight")
     
     if (verbose) {
-        message("Weight distribution:\n")
+        message("Weight distribution:")
         print(summary(net[, 3]))
     }
     
@@ -54,12 +54,12 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
     
     g <- igraph::graph_from_data_frame(net, vertices = pheno$ID)
     d_overall <- igraph::shortest.paths(g, algorithm = "dijkstra")
-    message(sprintf("Overall: %i nodes\n", length(pheno$ID)))
+    message(sprintf("Overall: %i nodes", length(pheno$ID)))
     tmp <- .getAvgD(d_overall)
     if (verbose) 
         message(sprintf("All-all shortest path = %2.3f (SD=%2.3f)", 
 					tmp[1], tmp[2]))
-    message(sprintf("(N=%i distances)\n", tmp[3]))
+    message(sprintf("(N=%i distances)", tmp[3]))
     
     cnames <- unique(pheno$GROUP)
     dset <- list()
@@ -67,7 +67,7 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
     for (curr_cl in cnames) {
         cl <- pheno$ID[which(pheno$GROUP %in% curr_cl)]
         if (verbose) 
-            message(sprintf("\n%s: N=%i nodes\n", curr_cl, length(cl)))
+            message(sprintf("\n%s: N=%i nodes", curr_cl, length(cl)))
         
         # subgraph with intra-cluster connections
 				tmp <- net[which(net[, 1] %in% cl & net[,2] %in% cl),] 
@@ -85,7 +85,7 @@ compareShortestPath <- function(net, pheno, plotDist = FALSE, verbose = TRUE) {
     
     # now repeat for all pairwise classes
     cpairs <- as.matrix(combinat::combn(cnames, 2))
-    message("Pairwise classes:\n")
+    message("Pairwise classes:")
     for (k in seq_len(ncol(cpairs))) {
         type1 <- pheno$ID[which(pheno$GROUP %in% cpairs[1, k])]
         type2 <- pheno$ID[which(pheno$GROUP %in% cpairs[2, k])]

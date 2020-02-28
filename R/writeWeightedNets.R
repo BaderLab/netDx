@@ -38,6 +38,7 @@
 #' 2) target patient (TARGET)
 #' 3) network name (NET_NAME)
 #' 4) weight similarity for the network (WT_SIM)
+#' @importFrom reshape2 melt
 #' @export
 writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 	filterEdgeWt=0,aggNetFunc="MAX",limitToTop=50L,
@@ -167,7 +168,6 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 	intColl[which(numInt < 1)] <- NA
 
 	# write average PSN
-	message("\nWriting aggregate PSN")
 	if (aggNetFunc=="MEAN") tmp <- intColl/numInt # take mean
 	else tmp <- intColl # max value is already in
 
@@ -188,7 +188,6 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 		}
 	
 	# now flatten matrix, remove bottom triangle, etc.,
-		require(reshape2)
 		if (is.infinite(limitToTop)) {
 			tmp[lower.tri(tmp,diag=TRUE)] <- NA # symmetric, remove dups
 		}

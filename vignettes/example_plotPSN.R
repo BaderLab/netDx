@@ -79,7 +79,7 @@ numSplits <- 3L
 out <- buildPredictor(
 	dataList=brca,groupList=groupList,
   makeNetFunc=makeNets,outDir=outDir,
-  numSplits=numSplits,featScoreMax=10L, featSelCutoff=9L,
+  numSplits=numSplits,featScoreMax=3L, featSelCutoff=2L,
 	numCores=1L)
 
 st <- unique(colData(brca)$STATUS)
@@ -107,15 +107,14 @@ for (k in 1:numSplits) {
 
 featScores2 <- lapply(featScores, getNetConsensus)
 featSelNet <- lapply(featScores2, function(x) {
-    callFeatSel(x, fsCutoff=10, fsPctPass=1)
+    callFeatSel(x, fsCutoff=3, fsPctPass=1)
 })
 print(featSelNet)
-browser()
 
-topPath <- gsub(".profile","",unique(unlist(featSelNet[["notLumA"]])))
+topPath <- gsub(".profile","",unique(unlist(featSelNet)))
 topPath <- gsub("_cont.txt","",topPath)
 
-# limit features to top ones
+# create groupList limited to top features
 g2 <- list();
 for (nm in names(groupList)) {
 	cur <- groupList[[nm]]
@@ -124,39 +123,7 @@ for (nm in names(groupList)) {
 	if (length(idx)>0) g2[[nm]] <- cur[idx]
 }
 
-netDir <- sprintf("%s/final",outDir)
-dir.create(netDir)
-dir.create(sprintf("%s/profiles",netDir))
-
-dat <- dataList2List(brca)
-pheno <- dat$pheno
-pheno_id <- setupFeatureDB(pheno,netDir)
-createPSN_MultiData(dataList=dat$assays,groupList=g2,
-			pheno=pheno_id,
-			netDir=netDir,customFunc=makeNets,numCores=1,
-			verbose=FALSE)
-convertProfileToNetworks(
-		netDir=sprintf("%s/profiles",netDir),
-		outDir=sprintf("%s/INTERACTIONS",netDir),
-)
-#### rename
-###networks <- read.delim(sprintf("%s/NETWORKS.txt",netDir),
-###	sep="\t",header=FALSE,as.is=TRUE)
-###networks <- networks[grep("profile$", networks[,2]),]
-###networks[,2] <- sub(".profile","",networks[,2])
-###
-###for (i in 1:nrow(networks)) {
-###	netid <- networks[i,1]
-###	file.rename(from=sprintf("%s/INTERACTIONS/%s.txt",netDir,networks[i,2]),
-###						to=sprintf("%s/INTERACTIONS/1.%i.txt",netDir,netid))
-###}
-
-###source("plotIntegratedPSN.R")
-###source("writeWeightedNets.R")
-###source("pruneNetByStrongest.R")
-###suppressMessages(require(igraph))
-###require(RColorBrewer)
-###require(RCy3)
-pheno_id <- pheno_id[,c("ID","STATUS")]
-plotIntegratedPSN("LuminalA",pheno=pheno_id,netDir,topX=0.2)
+psn <- plotIntegratedPSN(brca,groupList=g2,
+	aggFun="MEAN",topX=0.05,
+	numCores=1L,calcShortestPath=TRUE)
 

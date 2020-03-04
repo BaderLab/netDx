@@ -190,6 +190,7 @@ if (logging == "all") {
 	verbose_default <- FALSE
 	verbose_predict <- FALSE
 }
+browser()
 
 # Check input
 if (missing(dataList)) stop("dataList must be supplied.\n")
@@ -249,7 +250,7 @@ if (verbose_default){
 	message(sprintf("# classes = %i { %s }", length(subtypes),
 		paste(subtypes,collapse=",")))
 	message("Sample breakdown by class")
-	print(table(pheno_all$STATUS))
+	message(table(pheno_all$STATUS))
 	message(sprintf("%i train/test splits",numSplits))
 	message(sprintf("Feature selection cutoff = %i of %i",
 		featSelCutoff,featScoreMax))
@@ -389,8 +390,10 @@ for (rngNum in startAt:numSplits) {
 			pheno_subtype <- pheno
 			pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
 			trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
-			if (verbose_default) 
+browser()
+			if (verbose_default) {
 				print(table(pheno_subtype$STATUS,useNA="always"))
+}
 		
 			# Cross validation
 			resDir <- sprintf("%s/GM_results",pDir)

@@ -6,9 +6,10 @@
 \usage{
 plotIntegratedPatientNetwork(dataList, groupList, makeNetFunc,
   setName = "predictor", topX = 0.05, aggFun = "MAX",
-  calcShortestPath = FALSE, outDir = tempdir(), numCores = 1L,
-  nodeSize = 50L, edgeTransparency = 40L, nodeTransparency = 155L,
-  plotCytoscape = FALSE, verbose = FALSE, ...)
+  calcShortestPath = FALSE, showStats = FALSE, outDir = tempdir(),
+  numCores = 1L, nodeSize = 50L, edgeTransparency = 40L,
+  nodeTransparency = 155L, plotCytoscape = FALSE, verbose = FALSE,
+  ...)
 }
 \arguments{
 \item{dataList}{(MultiAssayExperiment) patient data & labels used as input}
@@ -28,8 +29,10 @@ e.g. topX=0.2 will keep 20\% top edges}
 \item{calcShortestPath}{(logical) if TRUE, computes weighted shortest path
 Unless you plan to analyse these separately from looking at the shortest 
 path violin plots or integrated PSN in Cytoscape, probably good to set to 
-FALSE.
-for all pairwise classes}
+FALSE.}
+
+\item{showStats}{(logical) if FALSE, suppresses shortest path-related 
+stats, such as one-sided WMW test for testing shorter intra-class distances}
 
 \item{outDir}{(char) path to directory for intermediate files. Useful for
 debugging.}

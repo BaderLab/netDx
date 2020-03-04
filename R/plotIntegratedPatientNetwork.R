@@ -29,7 +29,8 @@
 #' Unless you plan to analyse these separately from looking at the shortest 
 #' path violin plots or integrated PSN in Cytoscape, probably good to set to 
 #' FALSE.
-#' for all pairwise classes
+#' @param showStats (logical) if FALSE, suppresses shortest path-related 
+#' stats, such as one-sided WMW test for testing shorter intra-class distances
 #' @param nodeSize (integer) size of nodes in Cytoscape
 #' @param edgeTransparency (integer) Edge transparency. 
 #' Value between 0 and 255, with higher numbers leading to more opacity.
@@ -56,6 +57,7 @@
 #' @export
 plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
 	setName="predictor",topX=0.05, aggFun="MAX",calcShortestPath=FALSE,
+	showStats=FALSE,
 	outDir=tempdir(),numCores=1L,nodeSize=50L,edgeTransparency=40L,
 	nodeTransparency=155L,plotCytoscape=FALSE,
 	verbose=FALSE,...) {
@@ -110,7 +112,7 @@ aggNet <- aggNet[,1:3]
 # calculate shortest paths among and between classes
 if (calcShortestPath) {
 	x <- compareShortestPath(aggNet, 
-		pheno,verbose=TRUE,plotDist=TRUE)
+		pheno,verbose=showStats,plotDist=TRUE)
 
 	gp <- unique(pheno$GROUP)
 	oppName <- paste(gp[1],gp[2],sep="-")

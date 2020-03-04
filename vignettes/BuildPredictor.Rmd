@@ -372,7 +372,7 @@ outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
 out <- suppressMessages(buildPredictor(dataList=brca,groupList=groupList,
   makeNetFunc=makeNets,outDir=outDir,
   numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
-	numCores=1L))
+	numCores=1L,logging="none"))
 ```
 
 # Examine output
@@ -453,7 +453,6 @@ featSelNet <- lapply(featScores2, function(x) {
     callFeatSel(x, fsCutoff=1, fsPctPass=0)
 })
 print(head(featScores2[["LumA"]]))
-print(head(featScores2[["notLumA"]]))
 ```
 
 ## Visualize EnrichmentMap 
@@ -479,7 +478,8 @@ for (g in names(Emap_res)) {
     nodeAttrFiles[[g]] <- outFile
 
     outFile <- sprintf("%s/%s.gmt",outDir,g)
-    conn <- base::file(outFile,"w")
+    conn <- suppressWarnings(
+         suppressMessages(base::file(outFile,"w")))
     tmp <- Emap_res[[g]][["featureSets"]]
     gmtFiles[[g]] <- outFile
 
@@ -550,12 +550,14 @@ By setting `calcShortestPath=TRUE`, the function will also compute the pairwise 
 As with `plotEMap()`, this method must be run on a computer with Cytoscape installed and running. For the purposes of this example, `plotCytoscape` is set to `FALSE` and a screenshot of the resulting network is provided below. To plot in Cytoscape, set `plotCytoscape=TRUE`.
 
 ```{r,eval=TRUE}
-psn <- plotIntegratedPatientNetwork(brca,
+psn <- suppressMessages(
+   plotIntegratedPatientNetwork(brca,
   groupList=g2, makeNetFunc=makeNets,
   aggFun="MEAN",topX=0.10,
   numCores=1L,calcShortestPath=TRUE,
   showStats=FALSE,
   verbose=FALSE, plotCytoscape=FALSE)
+)
 ```
 
  ![Patient network after integrating features that scored 2 out of 2 in all train-test splits. For visualization only the top 10% strongest edges are shown. Nodes are patients, and edges are average distance across all features passing feature selection. Green indicates "LumA" status and orange indicates "nonLumA" status.](integratedPSN_MEAN_top0.10.png)

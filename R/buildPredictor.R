@@ -431,7 +431,7 @@ for (rngNum in startAt:numSplits) {
 
 		pTally <- pTally[idx,1]
 		pTally <- sub(".profile","",pTally)
-		pTally <- sub("_cont","",pTally)
+		pTally <- sub("_cont.txt","",pTally)
 
 		curList[["featureSelected"]][[g]] <- pTally
 

@@ -86,9 +86,6 @@ convertProfileToNetworks(
 
 predClasses <- unique(pheno$STATUS)
 colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
-message(sprintf("%i classes: { %s }", 
-	length(predClasses), paste(predClasses,
-	collapse=",")))
 
 # read patient and network identifiers
 pid		<- read.delim(sprintf("%s/GENES.txt",outDir),
@@ -122,19 +119,22 @@ if (calcShortestPath) {
 				sprintf("p%s-Opp",gp[1]),sprintf("p%s-Opp",gp[2]))
 	
 	# mean shortest path		
-	message("Shortest path averages &")
-	message("p-values (one-sided WMW)")
-	message("------------------------------------")
+	if (showStats) {
+		message("Shortest path averages &")
+		message("p-values (one-sided WMW)")
+		message("------------------------------------")
+	}
+
 	for (k in 1:length(x$all)) {
 		cur <- names(x$all)[k]
 		idx <- which(colnames(curDijk) %in% cur)
 		curDijk[1,idx] <- median(x$all[[k]])
-		message(sprintf("\t%s: Median = %1.2f ", cur,curDijk[1,idx]))
+		if (showStats) message(sprintf("\t%s: Median = %1.2f ", cur,curDijk[1,idx]))
 		if (cur %in% gp) {
 			tmp <- wilcox.test(x$all[[cur]],x$all[[oppName]],
 				alternative="less")$p.value
 			curDijk[4+k] <- tmp
-			message(sprintf(" p(<Opp) = %1.2e\n", curDijk[4+k]))
+			if (showStats) message(sprintf(" p(<Opp) = %1.2e\n", curDijk[4+k]))
 		}
 	}
 }

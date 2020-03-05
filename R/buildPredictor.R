@@ -190,7 +190,6 @@ if (logging == "all") {
 	verbose_default <- FALSE
 	verbose_predict <- FALSE
 }
-browser()
 
 # Check input
 if (missing(dataList)) stop("dataList must be supplied.\n")
@@ -390,7 +389,6 @@ for (rngNum in startAt:numSplits) {
 			pheno_subtype <- pheno
 			pheno_subtype$STATUS[which(!pheno_subtype$STATUS %in% g)] <- "nonpred"
 			trainPred <- pheno_subtype$ID[which(pheno_subtype$STATUS %in% g)]
-browser()
 			if (verbose_default) {
 				print(table(pheno_subtype$STATUS,useNA="always"))
 }

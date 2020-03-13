@@ -141,10 +141,14 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	numCores=1L,FS_numCores=NULL,...) {
 
 	netDir <- sprintf("%s/networks_orig",outDir)
+
+#message("making rangesets")
 	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
 		verbose=FALSE)
 
+#message("counting patients in net")
 	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
+#message("updating nets")
 	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE,verbose=FALSE)
 
 	netmat	<- tmp[[1]]

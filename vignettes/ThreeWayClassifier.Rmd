@@ -116,7 +116,7 @@ set.seed(42) # make results reproducible
 # This can be useful for debugging.
 outDir <- sprintf("%s/pred_output",tempdir()) 
 
-numSplits <- 2L
+numSplits <- 1L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,outDir=outDir,
@@ -129,7 +129,6 @@ summary(out)
 summary(out$Split1)
 
 # compute accuracy for each split and class
-numSplits <- 2
 st <- unique(colData(brca)$STATUS) 
 acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
 colnames(acc) <- st 
@@ -343,7 +342,6 @@ Compute accuracy for three-way classificationL
 
 ```{r,eval=TRUE}
 # Average accuracy
-numSplits <- 2
 st <- unique(colData(brca)$STATUS) 
 acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
 colnames(acc) <- st 

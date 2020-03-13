@@ -47,7 +47,8 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     if (!file.exists(netDir)) 
         dir.create(netDir)
     
-    TEST_MODE <- FALSE  # for debugging
+    TEST_MODE <-FALSE # for debugging
+	if (TEST_MODE) verbose <- TRUE
     
     # num patients per network
     netCountFile <- sprintf("%s/patient_count.txt", netDir)
@@ -76,13 +77,17 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     message(sprintf("\t%i unique patients, %i unique locus symbols\n", 
 				length(uq_patients), 
         length(uq_loci)))
-    pgMat <- big.matrix(0, nrow = length(uq_patients), 
-				ncol = length(uq_loci), type = "integer")
-    pgDesc <- describe(pgMat)
-    message("\n")
+
+		message("using bigmemory")
+	    pgMat <- big.matrix(nrow = length(uq_patients), 
+				ncol = length(uq_loci), type = "integer",
+				backingpath=tempdir(),
+				backingfile="pgmat.bk",
+				descriptorfile="pgmat.desc")
+	    pgDesc <- describe(pgMat)
     
-    cl <- makeCluster(numCores, outfile = "")
-    registerDoParallel(cl)
+    	cl <- makeCluster(numCores, outfile = "")
+    	registerDoParallel(cl)
     
     num <- length(uq_patients)
     ckSize <- 50
@@ -115,8 +120,9 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     
     # now group set-by-set
     message("* Writing networks\n")
+	`%myinfix%` <- ifelse(TEST_MODE, `%do%`, `%dopar%`)
     t0 <- Sys.time()
-    outFiles <- foreach(idx = seq_len(length(rangeSet))) %dopar% {
+    outFiles <- foreach(idx = seq_len(length(rangeSet))) %myinfix% {
         curP <- names(rangeSet)[idx]
         if (verbose) 
             message(sprintf("\t%s: ", curP))
@@ -138,12 +144,10 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
         pScore <- 1  # similarity score for default binary option
         outFile <- ""
         # pathway included in analysis
-        if (hit_p[idx] >= quorum) 
-            {
+        if (hit_p[idx] >= quorum) {
                 if (verbose) 
                   message(sprintf("\n\t\tlength=%i; score = %1.2f", 
 										length(rangeSet[[idx]]), pScore))
-                if (!TEST_MODE) {
                   x <- hit_pathway
                   inc_patients[x > 0] <- inc_patients[x > 0] + 1
 									tmp <- uq_patients[hit_pathway > 0]
@@ -156,7 +160,6 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
 										col.names = FALSE, 
                     row.names = FALSE, quote = FALSE)
                   outFile <- basename(outFile)
-                }
                 ## status <- 1;
             }  
         if (idx%%100 == 0) 
@@ -181,5 +184,4 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     outFiles <- outFiles[which(outFiles != "")]
     
     outFiles
-    
-}
+   } 

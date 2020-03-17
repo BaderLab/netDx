@@ -19,7 +19,7 @@
 #' @export
 #' @examples
 #' data(npheno)
-#' netDir <- sprintf('%s/extdata/example_nets',path.package('netDx'))
+#' netDir <- system.file("extdata","example_nets",package="netDx")
 #' netList <- dir(netDir,pattern='txt$')
 #' writeQueryBatchFile(netDir,netList, '~/tmp', npheno$ID)
 writeQueryBatchFile <- function(netDir, netList, outDir = tempdir(), idFile, 

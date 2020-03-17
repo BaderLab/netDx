@@ -25,7 +25,7 @@
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
 #' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
-#' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
+#' x <- countPatientsInNet(d,c("net1.txt","net2.txt"), pids)
 #' @export
 countPatientsInNet <- function(netDir, fList, ids) {
     

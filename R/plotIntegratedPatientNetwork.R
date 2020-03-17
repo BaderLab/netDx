@@ -19,6 +19,7 @@
 #' list of lists, where the outer list corresponds to assay (e.g. mRNA,
 #' clinical) and inner list to features to generate from that datatype.
 #' @param makeNetFunc (function) function to create features
+#' @param setName (char) name to assign the network in Cytoscape
 #' @param numCores (integer) number of cores for parallel processing
 #' @param topX (numeric between 0 and 1) fraction of strongest edges to keep
 #' e.g. topX=0.2 will keep 20\% top edges
@@ -60,7 +61,7 @@ plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
 	showStats=FALSE,
 	outDir=tempdir(),numCores=1L,nodeSize=50L,edgeTransparency=40L,
 	nodeTransparency=155L,plotCytoscape=FALSE,
-	verbose=FALSE,...) {
+	verbose=FALSE) {
 
 if (missing(dataList)) stop("dataList is missing.")
 

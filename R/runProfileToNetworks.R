@@ -5,6 +5,7 @@
 #' step needs to run to process profiles to networks. These are currently used
 #' for Pearson correlation-based networks and those using mutual information.
 #' @param netDir (char) directory with .profile files
+#' @param outDir (char) path to directory where interaction networks are to be printed
 #' @param simMetric (char) similarity measure to use in converting 
 #' profiles to interaction networks. 
 #' @param numCores (integer) number of cores for parallel processing 
@@ -13,6 +14,7 @@
 #' unit testing
 #' @param P2N_maxMissing (integer 5-100)
 #' @param JavaMemory (integer) Memory for GeneMANIA (in Gb)
+#' @param GM_jar (char) path to GeneMANIA jar file
 #' @param netSfx (char) pattern for finding network files in \code{netDir}.
 #' @param debugMode (logical) if TRUE runs profile generation in serial 
 #' rather than parallel, allowing debugging

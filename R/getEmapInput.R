@@ -23,15 +23,14 @@
 #' 2) featureSets: key-value pairs of selected feature sets (e.g. if pathway
 #' features are used, keys are pathway names, and values are member genes).
 #' @examples
-#' inDir <- sprintf('%s/extdata/example_output',path.package('netDx'))
+#' inDir <- system.file("extdata","example_output",package="netDx")
 #' outDir <- paste(tempdir(),'plots',sep='/')
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' featScores <- getFeatureScores(inDir,predClasses=c('LumA','notLumA'))
 #' gp <- names(featScores)[1]
 #' pathwayList <- readPathways(fetchPathwayDefinitions())
 #' pathwayList <- pathwayList[seq_len(5)]
-#' netInfoFile <- sprintf('%s/extdata/example_output/inputNets.txt',
-#'      path.package('netDx'))
+#' netInfoFile <- system.file("extdata","example_output/inputNets.txt",package="netDx")
 #' netInfo <- read.delim(netInfoFile,sep='\t',h=FALSE,as.is=TRUE)
 #' emap_input <- getEMapInput(featScores[[gp]],pathwayList,netInfo)
 #' summary(emap_input)

@@ -53,7 +53,7 @@ getGMjar_path <- function(verbose = FALSE) {
 #' or initial download is required 
 #' @export
 #' @examples 
-#' fetchPathwayDefinitions("January","2018")
+#' fetchPathwayDefinitions("January",2018)
 #' fetchPathwayDefinitions()
 fetchPathwayDefinitions <- function(month=NULL,year=NULL,verbose=FALSE){
 	if (is.null(month) || is.null(year)) {

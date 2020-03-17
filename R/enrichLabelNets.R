@@ -40,9 +40,9 @@
 #' per network
 #' @examples
 #' data(npheno)
-#' netDir <- sprintf("%s/extdata/example_nets",path.package("netDx"))
+#' netDir <- system.file("extdata","example_nets",package="netDx")
 #' x <- enrichLabelNets(netDir,npheno,".",predClass="case",netGrep="txt$",
-#' 	numReps=500)
+#' 	numReps=5)
 #' print(x)
 #' 
 #' @import doParallel 
@@ -95,12 +95,13 @@ shuf_rat	<- matrix(NA,nrow=length(fList),ncol=numReps)
 x0 <- system.time( 
 while ((length(to_run)>0) &  (currRep <=numReps)) {
 	shuf	<- sample(both,replace=FALSE) # shuffle case-control label
+#message(currRep)
 
 	# recompute pp and pm for each network
 	# this step is run in parallel
 	tmp		<- countIntType_batch(fList[to_run],
 				shuf[seq_len(n1)], shuf[(n1+1):n],tmpDir=tmpDir,
-				enrType=enrType,...)
+				enrType=enrType,numCores=numCores,...)
 	if (length(to_run)<2) tmp <- matrix(tmp,ncol=2)
 		
 	if (enrType=="binary"){

@@ -36,7 +36,7 @@
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
-#' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
+#' x <- countPatientsInNet(d,dir(d,pattern=c("net1.txt","net2.txt")), pids)
 #' getOR(x,pheno,"case",colnames(x)) # should give large RelEnr
 #' @export
 getOR <- function(pNetworks, pheno_DF, predClass, netFile ,verbose=TRUE) {
@@ -127,15 +127,15 @@ out
 #' 
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
+#' write.table(m1,file=sprintf("%s/net1.nettxt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
+#' write.table(m2,file=sprintf("%s/net2.nettxt",d),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
-#' x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
-#' getEnr(d,pheno,"case","txt$")
+#' x <- countPatientsInNet(d,dir(d,pattern=c("net1.nettxt","net2.nettxt")), pids)
+#' getEnr(d,pheno,"case","nettxt$")
 getEnr	<- function(netDir, pheno_DF,predClass,netGrep="_cont.txt$",
 	enrType="binary",...) {
 if (missing(predClass)) stop("predClass must be supplied.\n")
@@ -206,6 +206,7 @@ countIntType <- function(inFile, plusID, minusID) {
 #' @param minusID (char) IDs of - nodes
 #' @param tmpDir (char) path to dir where temporary files can be stored
 #' @param enrType (char) see getEnr.R
+#' @param numCores (integer) number of cores for parallel processing
 #' @import bigmemory
 #' @return (matrix) two columns, one row per network 
 #' If \code{enrType="binary"}, number of (+,+) and other interactions
@@ -224,26 +225,20 @@ countIntType <- function(inFile, plusID, minusID) {
 #' countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep="/"),
 #' 	c("P1","P2","P3"),c("P4","P5"))
 #' @export
-countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
-	   enrType="binary"){
+countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
+	   enrType="binary",numCores=1L){
 	bkFile <- sprintf("%s/tmp.bk",tmpDir)
 	if (file.exists(bkFile)) file.remove(bkFile)
 	out <- big.matrix(NA, nrow=length(inFiles),ncol=2,
 					  type="double",backingfile="tmp.bk",
 					  backingpath=tmpDir,
 					  descriptorfile="tmp.desc")
-	dop <- getDoParWorkers()
-	locReg <- FALSE
-	if (dop < 2) {
-		locReg <- TRUE
-		message("Registering parallel backend")
-		cl <- makeCluster(2)
-		registerDoParallel(cl)
-	}
+	cl <- makeCluster(numCores,outfile=sprintf("%s/shuffled_log.txt",tmpDir))
+	registerDoParallel(cl)
 
 	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
-		m <- bigmemory::attach.big.matrix(
+		m <-attach.big.matrix(
 				sprintf("%s/tmp.desc",tmpDir))
 		if (enrType == "binary")
 			m[k,]	<- countIntType(inFiles[k], plusID,minusID)
@@ -251,7 +246,7 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir="/tmp",
 			m[k,]	<- getCorrType(inFiles[k],plusID,minusID)
 	}
 
-	if (locReg) stopCluster(cl)
+	stopCluster(cl)
 	
 	out	<- as.matrix(out)
 	unlink(sprintf("%s/tmp.bk",tmpDir))

@@ -96,7 +96,7 @@
 #' suppressMessages(require(biomaRt)) # for fetching gene coordinates
 #' 
 #' # read CNV data
-#' phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+#' phenoFile <- system.file("extdata","AGP1_CNV.txt",package="netDx")
 #' pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 #' colnames(pheno)[1] <- "ID"
 #' pheno <- pheno[!duplicated(pheno$ID),]

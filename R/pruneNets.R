@@ -25,7 +25,7 @@
 #' \code{newDir}
 #' @examples
 #' data(npheno)
-#' netDir <- sprintf('%s/extdata/example_nets',path.package('netDx'))
+#' netDir <- system.file("extdata","example_nets",package='netDx')
 #' pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
 #'  netSfx='txt$')
 #' @export

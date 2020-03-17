@@ -28,7 +28,7 @@
 #' curatedTCGAData(diseaseCode='BRCA', assays='*',dru.run=TRUE)
 #' 
 #' # fetch mrna, mutation data
-#' brca <- curatedTCGAData('BRCA',c('mRNAArray','Mutation'),FALSE)
+#' brca <- curatedTCGAData('BRCA',c('mRNAArray'),FALSE)
 #' 
 #' # get subtype info
 #' pID <- colData(brca)$patientID

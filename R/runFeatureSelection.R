@@ -21,7 +21,7 @@
 #' @return No value. Side effect of generating feature scores.
 #' @examples
 #' data(MB.pheno)
-#' dbPath <- sprintf('%s/extdata/dbPath',path.package('netDx'))
+#' dbPath <- system.file("extdata","dbPath",package="netDx")
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% 'WNT')],
 #' 		'~/tmp',dbPath,103L)
 #' @export

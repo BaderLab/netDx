@@ -12,8 +12,7 @@
 #' @return No value. Side effect of plotting ROC and PR curves
 #' @importFrom graphics abline axis par points segments text title hist
 #' @examples
-#' inDir <- sprintf('%s/extdata/example_output', 
-#' 	path.package('netDx'))
+#' inDir <- system.file("extdata","example_output",package="netDx")
 #' all_rng <- list.files(path = inDir, pattern = 'rng.')
 #' fList <- sprintf('%s/%s/predictionResults.txt', inDir,all_rng)
 #' rocList <- list()

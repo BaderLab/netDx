@@ -1,9 +1,9 @@
 #' Write an integrated similarity network consisting of selected networks.
 #'
-#' @param patientID (data.frame) patient identifiers. Columns include
+#' @param patientIDs (data.frame) patient identifiers. Columns include
 #' internally-generated identifiers (GM_ID) and user-provided identifiers 
 #' (ID)
-#' @param netInfo (data.frame) network metadata. Columns include
+#' @param netIDs (data.frame) network metadata. Columns include
 #' internal network name (NET_ID), user-provided name (NETWORK).
 #' If a third optional column named "isBinary" is provided, and contains
 #' binary values (i.e. 1 and 0), that indicates that the network contains
@@ -95,7 +95,7 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 		message(sprintf("Got %i binary nets", length(binNets)))
 		for (i in binNets) {
 			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
-			ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+			ints <- read.delim(nf,sep="\t",header=F,as.is=T)
 			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
 												 		# harmless
 			if (nrow(ints)>=1) {
@@ -127,7 +127,7 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 	# aggregate nets - continuous-valued nets
 	for (i in contNets) { 
 		nf <- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
-		ints <- read.delim(nf,sep="\t",h=F,as.is=T)
+		ints <- read.delim(nf,sep="\t",header=F,as.is=T)
 		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)
 		if (verbose) {

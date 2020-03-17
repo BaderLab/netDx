@@ -9,7 +9,7 @@
 #' @return (data.frame) Feature name and score; includes features that occur
 #' at least once in \code{fList}.
 #' @examples
-#' netDir <- sprintf('%s/extdata/GM_NRANK',path.package('netDx'))
+#' netDir <- system.file("extdata","GM_NRANK",package="netDx")
 #' netFiles <- sprintf('%s/%s', netDir,dir(netDir,pattern='NRANK$'))
 #' pTally <- compileFeatureScores(netFiles,verbose=TRUE)
 #' print(head(pTally))

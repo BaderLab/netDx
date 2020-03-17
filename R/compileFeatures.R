@@ -169,7 +169,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     # Cleanup
     if (verbose) 
         message("\t * Cleanup")
-    GM_xml <- sprintf("%s/extdata/genemania.xml", path.package("netDx"))
+    GM_xml <- system.file("extdata","genemania.xml",package="netDx")
     file.copy(from = GM_xml, to = sprintf("%s/.", dataDir))
     
     setwd(curwd)

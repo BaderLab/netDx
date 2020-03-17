@@ -17,7 +17,7 @@
 #' scores across all train/test splits. Each score is the output of
 #' the inner fold of CV.
 #' @examples
-#' inDir <- sprintf('%s/extdata/example_output',path.package('netDx'))
+#' inDir <- system.file("extdata","example_output",package="netDx")
 #' netScores <- getFeatureScores(inDir, predClasses = c('LumA','notLumA'))
 #' @importFrom methods is
 #' @export

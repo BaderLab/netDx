@@ -11,9 +11,8 @@
 #' rankings (*PRANK) and feature weights (*NRANK)
 #' of results file
 #' @examples
-#' dbPath <- sprintf('%s/extdata/dbPath', path.package('netDx'))
-#' queryFile <- sprintf('%s/extdata/GM_query.txt',
-#'	path.package('netDx'))
+#' dbPath <- system.file("extdata","dbPath",package="netDx")
+#' queryFile <- system.file("extdata","GM_query.txt",package="netDx")
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
 runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 

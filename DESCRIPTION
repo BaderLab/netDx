@@ -1,6 +1,6 @@
 Package: netDx
 Title: Network-based patient classifier
-Version: 0.99.14
+Version: 0.99.15
 Authors@R: c(person("Shraddha", "Pai", 
 		email = "shraddha.pai@utoronto.ca", 
 		role = c("aut", "cre"),
@@ -17,7 +17,8 @@ Depends:
 Suggests: 
     curatedTCGAData,
     testthat,
-		knitr
+	knitr,
+	biomaRt
 Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer
 VignetteBuilder: knitr 
 Encoding: UTF-8
@@ -25,4 +26,4 @@ License: MIT + file LICENSE
 LazyData: false
 URL: http://netdx.org
 biocViews: Classification, BiomedicalInformatics, Network, SystemsBiology
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0

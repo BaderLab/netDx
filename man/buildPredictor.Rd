@@ -4,11 +4,25 @@
 \alias{buildPredictor}
 \title{Run nested cross-validation on data}
 \usage{
-buildPredictor(dataList, groupList, outDir = tempdir(), makeNetFunc,
-  featScoreMax = 10L, trainProp = 0.8, numSplits = 10L, numCores,
-  JavaMemory = 4L, featSelCutoff = 9L, keepAllData = FALSE,
-  startAt = 1L, preFilter = FALSE, impute = FALSE,
-  preFilterGroups = NULL, imputeGroups = NULL, logging = "default")
+buildPredictor(
+  dataList,
+  groupList,
+  outDir = tempdir(),
+  makeNetFunc,
+  featScoreMax = 10L,
+  trainProp = 0.8,
+  numSplits = 10L,
+  numCores,
+  JavaMemory = 4L,
+  featSelCutoff = 9L,
+  keepAllData = FALSE,
+  startAt = 1L,
+  preFilter = FALSE,
+  impute = FALSE,
+  preFilterGroups = NULL,
+  imputeGroups = NULL,
+  logging = "default"
+)
 }
 \arguments{
 \item{dataList}{(MultiAssayExperiment) sample metadata. Clinical data is 
@@ -124,7 +138,7 @@ library(MultiAssayExperiment)
 curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
 
 # fetch mrna, mutation data
-brca <- curatedTCGAData("BRCA",c("mRNAArray","Mutation"),FALSE)
+brca <- curatedTCGAData("BRCA",c("mRNAArray"),FALSE)
 
 # get subtype info
 pID <- colData(brca)$patientID
@@ -143,7 +157,7 @@ colData(brca)$STATUS <- pam50
 
 # keep only tumour samples
 idx <- union(which(pam50 == "Normal-like"), which(is.na(st2)))
-cat(sprintf("excluding \%i samples\\n", length(idx)))
+cat(sprintf("excluding \%i samples\n", length(idx)))
                                                                            
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
@@ -172,7 +186,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
                 netDir,verbose=FALSE,
                 writeProfiles=TRUE,...)
     netList <- unlist(netList)
-    cat(sprintf("Made \%i RNA pathway nets\\n", length(netList)))
+    cat(sprintf("Made \%i RNA pathway nets\n", length(netList)))
     }
 
     # make clinical nets,one net for each variable
@@ -186,9 +200,9 @@ makeNets <- function(dataList, groupList, netDir,...) {
         sparsify=TRUE,verbose=TRUE,...)
     }
     netList2 <- unlist(netList2)
-    cat(sprintf("Made \%i clinical nets\\n", length(netList2)))
+    cat(sprintf("Made \%i clinical nets\n", length(netList2)))
     netList <- c(netList,netList2)
-    cat(sprintf("Total of \%i nets\\n", length(netList)))
+    cat(sprintf("Total of \%i nets\n", length(netList)))
     return(netList)
 }
 

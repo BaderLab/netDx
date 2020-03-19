@@ -4,9 +4,15 @@
 \alias{sparsify2}
 \title{cleaner sparsification routine}
 \usage{
-sparsify2(W, outFile = sprintf("\%s/tmp.txt", tempdir()), cutoff = 0.3,
-  maxInt = 50, EDGE_MAX = 1000, includeAllNodes = TRUE,
-  verbose = TRUE)
+sparsify2(
+  W,
+  outFile = sprintf("\%s/tmp.txt", tempdir()),
+  cutoff = 0.3,
+  maxInt = 50,
+  EDGE_MAX = 1000,
+  includeAllNodes = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{W}{(matrix) similarity matrix}

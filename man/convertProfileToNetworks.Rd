@@ -4,13 +4,23 @@
 \alias{convertProfileToNetworks}
 \title{Convert profiles to interaction networks before integration}
 \usage{
-convertProfileToNetworks(netDir, outDir = tempdir(),
-  simMetric = "pearson", numCores = 1L, JavaMemory = 4L,
-  GM_jar = NULL, P2N_threshType = "off", P2N_maxMissing = 100,
-  netSfx = "txt$", debugMode = FALSE)
+convertProfileToNetworks(
+  netDir,
+  outDir = tempdir(),
+  simMetric = "pearson",
+  numCores = 1L,
+  JavaMemory = 4L,
+  GM_jar = NULL,
+  P2N_threshType = "off",
+  P2N_maxMissing = 100,
+  netSfx = "txt$",
+  debugMode = FALSE
+)
 }
 \arguments{
 \item{netDir}{(char) directory with .profile files}
+
+\item{outDir}{(char) path to directory where interaction networks are to be printed}
 
 \item{simMetric}{(char) similarity measure to use in converting 
 profiles to interaction networks.}
@@ -18,6 +28,8 @@ profiles to interaction networks.}
 \item{numCores}{(integer) number of cores for parallel processing}
 
 \item{JavaMemory}{(integer) Memory for GeneMANIA (in Gb)}
+
+\item{GM_jar}{(char) path to GeneMANIA jar file}
 
 \item{P2N_threshType}{(char) Most users shouldn't have to change this.
 ProfileToNetworkDriver's threshold option. One of 'off|auto'. 

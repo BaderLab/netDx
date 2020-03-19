@@ -4,9 +4,16 @@
 \alias{plotPerf_multi}
 \title{Plots a set of ROC/PR curves with average.}
 \usage{
-plotPerf_multi(inList, plotTitle = "performance", plotType = "ROC",
-  xlab = "TPR", ylab = "FPR", meanCol = "darkblue", xlim = c(0, 1),
-  ylim = c(0, 1))
+plotPerf_multi(
+  inList,
+  plotTitle = "performance",
+  plotType = "ROC",
+  xlab = "TPR",
+  ylab = "FPR",
+  meanCol = "darkblue",
+  xlim = c(0, 1),
+  ylim = c(0, 1)
+)
 }
 \arguments{
 \item{inList}{(list) ROCR::performance objects, one per iteration}
@@ -35,13 +42,12 @@ Plots a set of ROC/PR curves with average.
 Plots average curves with individual curves imposed.
 }
 \examples{
-inDir <- sprintf('\%s/extdata/example_output', 
-	path.package('netDx'))
+inDir <- system.file("extdata","example_output",package="netDx")
 all_rng <- list.files(path = inDir, pattern = 'rng.')
 fList <- sprintf('\%s/\%s/predictionResults.txt', inDir,all_rng)
 rocList <- list()
 for (k in seq_len(length(fList))) {
-  dat <- read.delim(fList[1],sep='\\t',h=TRUE,as.is=TRUE)
+  dat <- read.delim(fList[1],sep='\t',h=TRUE,as.is=TRUE)
   predClasses <- c('LumA', 'notLumA')
   pred_col1 <- sprintf('\%s_SCORE',predClasses[1])
   pred_col2 <- sprintf('\%s_SCORE',predClasses[2])

@@ -4,6 +4,9 @@
 \title{
 List of pathway-level feature selection scores
 }
+\description{
+List of pathway-level feature selection scores
+}
 \usage{data(cnv_netScores)}
 \examples{
 data(cnv_netScores)

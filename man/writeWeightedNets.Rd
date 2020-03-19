@@ -4,11 +4,30 @@
 \alias{writeWeightedNets}
 \title{Write an integrated similarity network consisting of selected networks.}
 \usage{
-writeWeightedNets(patientIDs, netIDs, netDir, keepNets, filterEdgeWt = 0,
-  aggNetFunc = "MAX", limitToTop = 50L, plotEdgeDensity = FALSE,
-  verbose = FALSE)
+writeWeightedNets(
+  patientIDs,
+  netIDs,
+  netDir,
+  keepNets,
+  filterEdgeWt = 0,
+  aggNetFunc = "MAX",
+  limitToTop = 50L,
+  plotEdgeDensity = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
+\item{patientIDs}{(data.frame) patient identifiers. Columns include
+internally-generated identifiers (GM_ID) and user-provided identifiers 
+(ID)}
+
+\item{netIDs}{(data.frame) network metadata. Columns include
+internal network name (NET_ID), user-provided name (NETWORK).
+If a third optional column named "isBinary" is provided, and contains
+binary values (i.e. 1 and 0), that indicates that the network contains
+only binary weights and an alternate similarity computation (PropBinary)
+will be used (see description).}
+
 \item{netDir}{(char) path to directory containing interaction networks.
 Note that these are networks where the node IDs have been recoded by 
 GeneMANIA (e.g. 1,2,3)}
@@ -34,17 +53,6 @@ Inf to list all connections.}
 per input net. Used to troubleshoot problems introduced by specific nets.}
 
 \item{verbose}{(logical) print messages if TRUE}
-
-\item{patientID}{(data.frame) patient identifiers. Columns include
-internally-generated identifiers (GM_ID) and user-provided identifiers 
-(ID)}
-
-\item{netInfo}{(data.frame) network metadata. Columns include
-internal network name (NET_ID), user-provided name (NETWORK).
-If a third optional column named "isBinary" is provided, and contains
-binary values (i.e. 1 and 0), that indicates that the network contains
-only binary weights and an alternate similarity computation (PropBinary)
-will be used (see description).}
 }
 \value{
 (list) 

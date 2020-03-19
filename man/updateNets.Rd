@@ -4,8 +4,15 @@
 \alias{updateNets}
 \title{Synchronize patient set in sample table and network table.}
 \usage{
-updateNets(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, newNetDir,
-  verbose = TRUE, ...)
+updateNets(
+  p_net,
+  pheno_DF,
+  writeNewNets = TRUE,
+  oldNetDir,
+  newNetDir,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{p_net}{(matrix) rows are patients, columns are networks.
@@ -48,7 +55,7 @@ sync.
 }
 \examples{
 data(npheno)
-netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netDir <- system.file("extdata","example_nets",package="netDx")
 netmat <- countPatientsInNet(netDir,dir(netDir,pattern='txt$'), npheno[,1])
 x <- updateNets(netmat, npheno,writeNewNets=FALSE)
 }

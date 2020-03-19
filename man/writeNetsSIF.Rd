@@ -4,8 +4,11 @@
 \alias{writeNetsSIF}
 \title{write patient networks in Cytoscape's .sif format}
 \usage{
-writeNetsSIF(netPath, outFile = sprintf("\%s/out.sif", tempdir()),
-  netSfx = "_cont.txt")
+writeNetsSIF(
+  netPath,
+  outFile = sprintf("\%s/out.sif", tempdir()),
+  netSfx = "_cont.txt"
+)
 }
 \arguments{
 \item{netPath}{(char): vector of path to network files; file suffix
@@ -30,7 +33,7 @@ sif format.
 This utility permits visualization of feature selected networks.
 }
 \examples{
-netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netDir <- system.file("extdata","example_nets",package="netDx")
 netFiles <- sprintf('\%s/\%s', netDir, dir(netDir,pattern='txt$'))
 writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 }

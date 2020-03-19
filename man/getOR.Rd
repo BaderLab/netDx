@@ -49,13 +49,13 @@ pheno <- data.frame(ID=pids,STATUS=c(rep("case",3),rep("control",2)))
 
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\\t",
+write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
-write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\\t",
+write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # compute enrichment
-x <- countPatientsInNet(d,dir(d,pattern='txt$'), pids)
+x <- countPatientsInNet(d,dir(d,pattern=c("net1.txt","net2.txt")), pids)
 getOR(x,pheno,"case",colnames(x)) # should give large RelEnr
 }

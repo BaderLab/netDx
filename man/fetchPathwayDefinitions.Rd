@@ -33,6 +33,6 @@ For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.
 }
 \examples{
 fetchPathwayDefinitions()
-fetchPathwayDefinitions("January","2018")
+fetchPathwayDefinitions("January",2018)
 fetchPathwayDefinitions()
 }

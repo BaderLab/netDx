@@ -42,7 +42,7 @@ we get a measure of individual classification accuracy across the different
 train/test splits.
 }
 \examples{
-inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
+inDir <- system.file("extdata","example_output",package="netDx")
 data(pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {

@@ -4,8 +4,14 @@
 \alias{runQuery}
 \title{Run a query}
 \usage{
-runQuery(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L,
-  numCores = 1L)
+runQuery(
+  dbPath,
+  queryFiles,
+  resDir,
+  verbose = TRUE,
+  JavaMemory = 6L,
+  numCores = 1L
+)
 }
 \arguments{
 \item{dbPath}{(char) path to directory with GeneMANIA generic database}
@@ -30,8 +36,7 @@ of results file
 Run a query
 }
 \examples{
-dbPath <- sprintf('\%s/extdata/dbPath', path.package('netDx'))
-queryFile <- sprintf('\%s/extdata/GM_query.txt',
-path.package('netDx'))
+dbPath <- system.file("extdata","dbPath",package="netDx")
+queryFile <- system.file("extdata","GM_query.txt",package="netDx")
 runQuery(dbPath, queryFile,tempdir())
 }

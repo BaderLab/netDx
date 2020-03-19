@@ -4,9 +4,16 @@
 \alias{getEMapInput}
 \title{write enrichment map for consensus nets}
 \usage{
-getEMapInput(featScores, namedSets, netInfo, pctPass = 0.7,
-  minScore = 1, maxScore = 10, trimFromName = c(".profile", "_cont"),
-  verbose = FALSE)
+getEMapInput(
+  featScores,
+  namedSets,
+  netInfo,
+  pctPass = 0.7,
+  minScore = 1,
+  maxScore = 10,
+  trimFromName = c(".profile", "_cont"),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{featScores}{(data.frame) network scores across rounds of cross
@@ -45,16 +52,15 @@ features are used, keys are pathway names, and values are member genes).
 write enrichment map for consensus nets
 }
 \examples{
-inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
+inDir <- system.file("extdata","example_output",package="netDx")
 outDir <- paste(tempdir(),'plots',sep='/')
 if (!file.exists(outDir)) dir.create(outDir)
 featScores <- getFeatureScores(inDir,predClasses=c('LumA','notLumA'))
 gp <- names(featScores)[1]
 pathwayList <- readPathways(fetchPathwayDefinitions())
 pathwayList <- pathwayList[seq_len(5)]
-netInfoFile <- sprintf('\%s/extdata/example_output/inputNets.txt',
-     path.package('netDx'))
-netInfo <- read.delim(netInfoFile,sep='\\t',h=FALSE,as.is=TRUE)
+netInfoFile <- system.file("extdata","example_output/inputNets.txt",package="netDx")
+netInfo <- read.delim(netInfoFile,sep='\t',h=FALSE,as.is=TRUE)
 emap_input <- getEMapInput(featScores[[gp]],pathwayList,netInfo)
 summary(emap_input)
 }

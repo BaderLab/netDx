@@ -34,6 +34,6 @@ these into a matrix for downstream analysis. See the section on
 'Output Files'
 }
 \examples{
-inDir <- sprintf('\%s/extdata/example_output',path.package('netDx'))
+inDir <- system.file("extdata","example_output",package="netDx")
 netScores <- getFeatureScores(inDir, predClasses = c('LumA','notLumA'))
 }

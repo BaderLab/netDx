@@ -4,10 +4,20 @@
 \alias{runFeatureSelection}
 \title{Run GeneMANIA cross-validation with a provided subset of networks}
 \usage{
-runFeatureSelection(trainID_pred, outDir, dbPath, numTrainSamps = NULL,
-  incNets = "all", orgName = "predictor", fileSfx = "CV",
-  verbose = FALSE, numCores = 2L, JavaMemory = 6L,
-  verbose_runQuery = FALSE, ...)
+runFeatureSelection(
+  trainID_pred,
+  outDir,
+  dbPath,
+  numTrainSamps = NULL,
+  incNets = "all",
+  orgName = "predictor",
+  fileSfx = "CV",
+  verbose = FALSE,
+  numCores = 2L,
+  JavaMemory = 6L,
+  verbose_runQuery = FALSE,
+  ...
+)
 }
 \arguments{
 \item{trainID_pred}{(char) vector with universe of predictor class
@@ -50,7 +60,7 @@ Creates query files, runs GM for 10-fold cross validation.
 }
 \examples{
 data(MB.pheno)
-dbPath <- sprintf('\%s/extdata/dbPath',path.package('netDx'))
+dbPath <- system.file("extdata","dbPath",package="netDx")
 runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS\%in\% 'WNT')],
 		'~/tmp',dbPath,103L)
 }

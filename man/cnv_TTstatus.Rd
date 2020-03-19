@@ -4,6 +4,9 @@
 \title{
 list of train/test statuses for CNV example
 }
+\description{
+list of train/test statuses for CNV example
+}
 \usage{data(cnv_TTstatus)}
 \examples{
 data(cnv_TTstatus)

@@ -4,8 +4,14 @@
 \alias{countIntType_batch}
 \title{Counts number of (+,+) and (+,-) interactions in a set of networks}
 \usage{
-countIntType_batch(inFiles, plusID, minusID, tmpDir = "/tmp",
-  enrType = "binary")
+countIntType_batch(
+  inFiles,
+  plusID,
+  minusID,
+  tmpDir = tempdir(),
+  enrType = "binary",
+  numCores = 1L
+)
 }
 \arguments{
 \item{inFiles}{(char) path to interaction networks to process}
@@ -17,6 +23,8 @@ countIntType_batch(inFiles, plusID, minusID, tmpDir = "/tmp",
 \item{tmpDir}{(char) path to dir where temporary files can be stored}
 
 \item{enrType}{(char) see getEnr.R}
+
+\item{numCores}{(integer) number of cores for parallel processing}
 }
 \value{
 (matrix) two columns, one row per network 
@@ -31,10 +39,10 @@ Counts number of (+,+) and (+,-) interactions in a set of networks
 d <- tempdir()
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\\t",
+write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
-write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\\t",
+write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep="/"),

@@ -4,10 +4,23 @@
 \alias{enrichLabelNets}
 \title{Score networks based on their edge bias towards (+,+) interactions}
 \usage{
-enrichLabelNets(netDir, pheno_DF, outDir, numReps = 50L, minEnr = -1,
-  outPref = "enrichLabelNets", verbose = TRUE, setSeed = 42L,
-  enrType = "binary", numCores = 1L, predClass, tmpDir = "/tmp",
-  netGrep = "_cont.txt$", getShufResults = FALSE, ...)
+enrichLabelNets(
+  netDir,
+  pheno_DF,
+  outDir,
+  numReps = 50L,
+  minEnr = -1,
+  outPref = "enrichLabelNets",
+  verbose = TRUE,
+  setSeed = 42L,
+  enrType = "binary",
+  numCores = 1L,
+  predClass,
+  tmpDir = "/tmp",
+  netGrep = "_cont.txt$",
+  getShufResults = FALSE,
+  ...
+)
 }
 \arguments{
 \item{netDir}{(char) path to dir containing all networks}
@@ -72,9 +85,9 @@ of case-control labels.
 }
 \examples{
 data(npheno)
-netDir <- sprintf("\%s/extdata/example_nets",path.package("netDx"))
+netDir <- system.file("extdata","example_nets",package="netDx")
 x <- enrichLabelNets(netDir,npheno,".",predClass="case",netGrep="txt$",
-	numReps=500)
+	numReps=5)
 print(x)
 
 }

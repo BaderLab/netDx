@@ -25,7 +25,7 @@ Counts the number of (+,+) and (+,-) interactions in a single network
 d <- tempdir()
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\\t",
+write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 countIntType(sprintf("\%s/net1.txt",d),c("P1","P2","P3"),

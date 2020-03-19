@@ -4,6 +4,9 @@
 \title{
 Binary matrix of patient occurrence in networks
 }
+\description{
+Binary matrix of patient occurrence in networks
+}
 \usage{data(cnv_patientNetCount)}
 \examples{
 data(cnv_patientNetCount)

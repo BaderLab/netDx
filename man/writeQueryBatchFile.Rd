@@ -4,9 +4,16 @@
 \alias{writeQueryBatchFile}
 \title{Write batch.txt file required to create GeneMANIA database}
 \usage{
-writeQueryBatchFile(netDir, netList, outDir = tempdir(), idFile,
-  orgName = "predictor", orgDesc = "my_predictor",
-  orgAlias = "my_predictor", taxID = 1339)
+writeQueryBatchFile(
+  netDir,
+  netList,
+  outDir = tempdir(),
+  idFile,
+  orgName = "predictor",
+  orgDesc = "my_predictor",
+  orgAlias = "my_predictor",
+  taxID = 1339
+)
 }
 \arguments{
 \item{netDir}{(char) path to dir with networks}
@@ -42,7 +49,7 @@ for feature selection.
 }
 \examples{
 data(npheno)
-netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netDir <- system.file("extdata","example_nets",package="netDx")
 netList <- dir(netDir,pattern='txt$')
 writeQueryBatchFile(netDir,netList, '~/tmp', npheno$ID)
 }

@@ -4,12 +4,23 @@
 \alias{plotIntegratedPatientNetwork}
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
-plotIntegratedPatientNetwork(dataList, groupList, makeNetFunc,
-  setName = "predictor", topX = 0.05, aggFun = "MAX",
-  calcShortestPath = FALSE, showStats = FALSE, outDir = tempdir(),
-  numCores = 1L, nodeSize = 50L, edgeTransparency = 40L,
-  nodeTransparency = 155L, plotCytoscape = FALSE, verbose = FALSE,
-  ...)
+plotIntegratedPatientNetwork(
+  dataList,
+  groupList,
+  makeNetFunc,
+  setName = "predictor",
+  topX = 0.05,
+  aggFun = "MAX",
+  calcShortestPath = FALSE,
+  showStats = FALSE,
+  outDir = tempdir(),
+  numCores = 1L,
+  nodeSize = 50L,
+  edgeTransparency = 40L,
+  nodeTransparency = 155L,
+  plotCytoscape = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{dataList}{(MultiAssayExperiment) patient data & labels used as input}
@@ -20,6 +31,8 @@ list of lists, where the outer list corresponds to assay (e.g. mRNA,
 clinical) and inner list to features to generate from that datatype.}
 
 \item{makeNetFunc}{(function) function to create features}
+
+\item{setName}{(char) name to assign the network in Cytoscape}
 
 \item{topX}{(numeric between 0 and 1) fraction of strongest edges to keep
 e.g. topX=0.2 will keep 20\% top edges}

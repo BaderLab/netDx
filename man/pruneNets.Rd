@@ -5,8 +5,14 @@
 \title{Prune interaction networks to keep only the networks and patients 
 requested}
 \usage{
-pruneNets(oldDir, newDir = tempdir(), filterNets = "*",
-  filterIDs = "*", netSfx = "_cont.txt$", verbose = TRUE)
+pruneNets(
+  oldDir,
+  newDir = tempdir(),
+  filterNets = "*",
+  filterIDs = "*",
+  netSfx = "_cont.txt$",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{oldDir}{(char) path to directory with original networks}
@@ -47,7 +53,7 @@ original networks that consist of eligible patients.
 }
 \examples{
 data(npheno)
-netDir <- sprintf('\%s/extdata/example_nets',path.package('netDx'))
+netDir <- system.file("extdata","example_nets",package='netDx')
 pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
  netSfx='txt$')
 }

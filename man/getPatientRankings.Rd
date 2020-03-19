@@ -4,8 +4,7 @@
 \alias{getPatientRankings}
 \title{Process GM PRANK files to get the ROC curve for the query}
 \usage{
-getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE,
-  verbose = FALSE)
+getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{pFile}{(char) path to PRANK file}
@@ -38,7 +37,7 @@ Process GM PRANK files to get the ROC curve for the query
 }
 \examples{
 data(pheno)
-prankFile <- paste(path.package('netDx'),
-'extdata/GM_PRANK/CV_1.query-results.report.txt.PRANK',sep='/')
+prankFile <- system.file("extdata","GM_PRANK/CV_1.query-results.report.txt.PRANK",
+	package="netDx")
 x <- getPatientRankings(prankFile, pheno, 'LumA')
 }

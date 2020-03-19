@@ -1,7 +1,7 @@
 # test utilities
 
 test_that("readPathways works", {
-	  x <- readPathways(getPathwayDefinitions("February",2020),
+	  x <- readPathways(fetchPathwayDefinitions("February",2020),
 			MIN_SIZE=10L, MAX_SIZE=200L)
 		ln <- unlist(lapply(x,length))
     expect_that(x,is_a("list"))

@@ -18,16 +18,17 @@ This code block is not evaluated. Need a breakdown? Look at the following sectio
 suppressWarnings(suppressMessages(require(netDx)))
 suppressMessages(library(curatedTCGAData))
 
+# fetch RNA, methylation and proteomic data for TCGA BRCA set
 brca <- suppressMessages(
    curatedTCGAData("BRCA",
                c("mRNAArray","RPPA*","Methylation_methyl27*"),
 	dry.run=FALSE))
 
+# process input variables
 # prepare clinical variable - stage
 staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
 staget <- suppressWarnings(as.integer(staget))
 colData(brca)$STAGE <- staget
-
 # exclude normal, HER2 (small num samples)
 pam50 <- colData(brca)$PAM50.mRNA
 idx <- union(which(pam50 %in% c("Normal-like","HER2-enriched")), 
@@ -36,11 +37,10 @@ idx <- union(idx, which(is.na(pam50)))
 pID <- colData(brca)$patientID
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
-
 pam50 <- colData(brca)$PAM50.mRNA
 colData(brca)$pam_mod <- pam50
 
-# remove duplicate sample names
+# remove duplicate names
 smp <- sampleMap(brca)
 for (nm in names(brca)) {
 	samps <- smp[which(smp$assay==nm),]
@@ -48,14 +48,13 @@ for (nm in names(brca)) {
 	brca[[nm]] <- suppressMessages(brca[[nm]][,notdup])
 }
 
-# create ID and STATUS column for phenotype table
+# colData must have ID and STATUS columns
 pID <- colData(brca)$patientID
 colData(brca)$ID <- pID
 colData(brca)$STATUS <- gsub(" ","_",colData(brca)$pam_mod)
 
-# prepare grouping rules for feature design
+# create grouping rules
 groupList <- list()
-
 # genes in mRNA data are grouped by pathways
 pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
@@ -74,10 +73,8 @@ tmp <- list(rownames(experiments(brca)[[3]]));
 names(tmp) <- names(brca)[3]
 groupList[[names(brca)[3]]] <- tmp
 
-
-# define the function to generate similarity networks
-# This will be passed to the buildPredictor() call using 
-# the makeNetsFunc parameter.
+# create function to tell netDx how to build features 
+# (PSN) from your data
 makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
 	# correlation-based similarity for mRNA, RPPA and methylation data
@@ -106,17 +103,13 @@ makeNets <- function(dataList, groupList, netDir,...) {
 	return(netList)
 }
 
-
-
-# run the predictor
+# run predictor 
 set.seed(42) # make results reproducible
-# location for intermediate work
-# set keepAllData to TRUE to not delete at the end of the 
-# predictor run.
-# This can be useful for debugging.
-outDir <- sprintf("%s/pred_output",tempdir()) 
-
-numSplits <- 1L
+outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
+# To see all messages, remove suppressMessages() 
+# and set logging="default".
+# To keep all intermediate data, set keepAllData=TRUE
+numSplits <- 2L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,outDir=outDir,
@@ -124,13 +117,9 @@ out <- suppressMessages(
 	   numCores=1L)
 )
 
-# examine results
-summary(out)
-summary(out$Split1)
-
-# compute accuracy for each split and class
+# collect results for accuracy
 st <- unique(colData(brca)$STATUS) 
-acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
+acc <- matrix(NA,ncol=length(st),nrow=numSplits)  # accuracy by class
 colnames(acc) <- st 
 for (k in 1:numSplits) { 
 	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
@@ -141,11 +130,15 @@ for (k in 1:numSplits) {
 	   acc[k,m] <- sum(tmp2$PRED==tmp2$STATUS)/nrow(tmp2)
 	}
 }
+
+# accuracy by class
 print(round(acc*100,2))
 
-# examine confusion matrix
+# confusion matrix
 res <- out$Split1$predictions
 print(table(res[,c("STATUS","PRED_CLASS")]))
+
+sessionInfo()
 ```
 
 # Introduction

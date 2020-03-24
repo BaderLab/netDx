@@ -13,6 +13,7 @@ cleanPathwayName <- function(curP) {
     pforfile <- gsub("\\)", "_", pforfile)
     pforfile <- gsub("&", "_", pforfile)
     pforfile <- gsub(";", "_", pforfile)
+    pforfile <- gsub(":", "_", pforfile)
     pforfile <- gsub("\\/", "_", pforfile)
     pforfile <- gsub("\\\xec", "X", pforfile)
     pforfile <- gsub("\\\xc2\\\xa0", "_", pforfile)

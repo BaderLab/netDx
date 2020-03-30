@@ -237,9 +237,11 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	curRand <- randString()
 
 	bkFile <- sprintf("%s.bk",curRand)
-	if (file.exists(bkFile)) file.remove(bkFile)
+	if (file.exists(sprintf("%s/%s",tmpDir,bkFile))) 
+		file.remove(sprintf("%s/%s",tmpDir,bkFile))
 	descFile <- sprintf("%s.desc",curRand)
-	if (file.exists(descFile)) file.remove(descFile)
+	if (file.exists(sprintf("%s/%s",tmpDir,descFile)))
+		file.remove(sprintf("%s/%s",tmpDir,descFile))
 
 	out <- big.matrix(NA, nrow=length(inFiles),ncol=2,
 					  type="double",
@@ -252,8 +254,7 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 
 	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
-		m <-attach.big.matrix(
-				sprintf("%s/tmp.desc",tmpDir))
+		m <-attach.big.matrix(sprintf("%s/%s",tmpDir,descFile))
 		if (enrType == "binary")
 			m[k,]	<- countIntType(inFiles[k], plusID,minusID)
 		else if (enrType == "corr")

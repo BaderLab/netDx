@@ -227,19 +227,34 @@ countIntType <- function(inFile, plusID, minusID) {
 #' @export
 countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	   enrType="binary",numCores=1L){
-	bkFile <- sprintf("%s/tmp.bk",tmpDir)
-	if (file.exists(bkFile)) file.remove(bkFile)
+
+	randString <- function(n = 1) {
+  	a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  	paste0(a, sprintf("%04d", 
+			sample(9999, n, TRUE)), 
+			sample(LETTERS, n, TRUE))
+	}
+	curRand <- randString()
+
+	bkFile <- sprintf("%s.bk",curRand)
+	if (file.exists(sprintf("%s/%s",tmpDir,bkFile))) 
+		file.remove(sprintf("%s/%s",tmpDir,bkFile))
+	descFile <- sprintf("%s.desc",curRand)
+	if (file.exists(sprintf("%s/%s",tmpDir,descFile)))
+		file.remove(sprintf("%s/%s",tmpDir,descFile))
+
 	out <- big.matrix(NA, nrow=length(inFiles),ncol=2,
-					  type="double",backingfile="tmp.bk",
+					  type="double",
+						backingfile=bkFile,
 					  backingpath=tmpDir,
-					  descriptorfile="tmp.desc")
+					  descriptorfile=descFile
+	)
 	cl <- makeCluster(numCores,outfile=sprintf("%s/shuffled_log.txt",tmpDir))
 	registerDoParallel(cl)
 
 	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
-		m <-attach.big.matrix(
-				sprintf("%s/tmp.desc",tmpDir))
+		m <-attach.big.matrix(sprintf("%s/%s",tmpDir,descFile))
 		if (enrType == "binary")
 			m[k,]	<- countIntType(inFiles[k], plusID,minusID)
 		else if (enrType == "corr")
@@ -249,7 +264,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	stopCluster(cl)
 	
 	out	<- as.matrix(out)
-	unlink(sprintf("%s/tmp.bk",tmpDir))
-	unlink(sprintf("%s/tmp.desc",tmpDir))
+	unlink(sprintf("%s/%s",tmpDir,bkFile))
+	unlink(sprintf("%s/%s",tmpDir,descFile))
+
 	return(out)
 }

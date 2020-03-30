@@ -227,12 +227,26 @@ countIntType <- function(inFile, plusID, minusID) {
 #' @export
 countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	   enrType="binary",numCores=1L){
-	bkFile <- sprintf("%s/tmp.bk",tmpDir)
+
+	randString <- function(n = 1) {
+  	a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  	paste0(a, sprintf("%04d", 
+			sample(9999, n, TRUE)), 
+			sample(LETTERS, n, TRUE))
+	}
+	curRand <- randString()
+
+	bkFile <- sprintf("%s.bk",curRand)
 	if (file.exists(bkFile)) file.remove(bkFile)
+	descFile <- sprintf("%s.desc",curRand)
+	if (file.exists(descFile)) file.remove(descFile)
+
 	out <- big.matrix(NA, nrow=length(inFiles),ncol=2,
-					  type="double",backingfile="tmp.bk",
+					  type="double",
+						backingfile=bkFile,
 					  backingpath=tmpDir,
-					  descriptorfile="tmp.desc")
+					  descriptorfile=descFile
+	)
 	cl <- makeCluster(numCores,outfile=sprintf("%s/shuffled_log.txt",tmpDir))
 	registerDoParallel(cl)
 
@@ -249,7 +263,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	stopCluster(cl)
 	
 	out	<- as.matrix(out)
-	unlink(sprintf("%s/tmp.bk",tmpDir))
-	unlink(sprintf("%s/tmp.desc",tmpDir))
+	unlink(sprintf("%s/%s",tmpDir,bkFile))
+	unlink(sprintf("%s/%s",tmpDir,descFile))
+
 	return(out)
 }

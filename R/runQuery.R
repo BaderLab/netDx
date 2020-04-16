@@ -41,7 +41,6 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     t0 <- Sys.time()
 	if (debugMode) {
 		message(sprintf("java %s",paste(args,collapse=" ")))
-browser()
     	system2("java", args, wait = TRUE)
 	} else {
     	system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)

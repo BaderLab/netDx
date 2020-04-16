@@ -16,6 +16,7 @@ runFeatureSelection(
   numCores = 2L,
   JavaMemory = 6L,
   verbose_runQuery = FALSE,
+  debugMode = FALSE,
   ...
 )
 }
@@ -46,6 +47,10 @@ The default value will likely never need to be changed.}
 \item{JavaMemory}{(integer) memory for GeneMANIA run, in Gb.}
 
 \item{verbose_runQuery}{(logical) print messages for runQuery()}
+
+\item{debugMode}{(logical) when TRUE runs jobs in serial instead of parallel and 
+prints verbose messages. Also prints system Java calls and prints all standard out
+and error output associated with these calls.}
 
 \item{...}{args for \code{makeQueries()}}
 }

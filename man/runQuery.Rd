@@ -10,7 +10,8 @@ runQuery(
   resDir,
   verbose = TRUE,
   JavaMemory = 6L,
-  numCores = 1L
+  numCores = 1L,
+  debugMode = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ runQuery(
 numCores*GMmemory will be used and distributed for all GM threads}
 
 \item{numCores}{(integer) number of CPU cores for parallel processing}
+
+\item{debugMode}{(logical) when TRUE runs jobs in serial instead of parallel and 
+prints verbose messages. Also prints system Java calls.}
 }
 \value{
 (char) path to GeneMANIA query result files with patient similarity

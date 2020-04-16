@@ -21,7 +21,8 @@ buildPredictor(
   impute = FALSE,
   preFilterGroups = NULL,
   imputeGroups = NULL,
-  logging = "default"
+  logging = "default",
+  debugMode = FALSE
 )
 }
 \arguments{
@@ -93,6 +94,10 @@ want imputed.}
 Options are: 1) none: turn off all messages; 2) all: greatest level of 
 detail (recommended for advanced users, or for debugging); 3) default: 
 print key details (useful setting for most users)}
+
+\item{debugMode}{(logical) when TRUE runs jobs in serial instead of parallel and 
+prints verbose messages. Also prints system Java calls and prints all standard out
+and error output associated with these calls.}
 }
 \value{
 symmetric matrix of size ncol(dat) (number of patients) containing

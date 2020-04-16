@@ -15,6 +15,7 @@ compileFeatures(
   P2N_maxMissing = 100,
   JavaMemory = 4L,
   altBaseDir = NULL,
+  debugMode = FALSE,
   ...
 )
 }
@@ -45,6 +46,10 @@ unit testing}
 
 \item{altBaseDir}{(char) Only use this if you're developing netDx. Used in
 unit tests}
+
+\item{debugMode}{(logical) when TRUE runs jobs in serial instead of parallel and 
+prints verbose messages. Also prints system Java calls and prints all standard out
+and error output associated with these calls.}
 
 \item{...}{params for \code{writeQueryBatchFile()}}
 }

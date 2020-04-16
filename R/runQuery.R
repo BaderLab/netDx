@@ -7,6 +7,10 @@
 #' @param JavaMemory (integer) Memory for GeneMANIA (in Gb) - a total of 
 #' numCores*GMmemory will be used and distributed for all GM threads
 #' @param numCores (integer) number of CPU cores for parallel processing
+#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
+#' prints verbose messages.
+#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
+#' prints verbose messages. Also prints system Java calls.
 #' @return (char) path to GeneMANIA query result files with patient similarity
 #' rankings (*PRANK) and feature weights (*NRANK)
 #' of results file
@@ -16,14 +20,14 @@
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
 runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 
-		JavaMemory = 6L, numCores = 1L) {
+		JavaMemory = 6L, numCores = 1L,debugMode=FALSE) {
     
     GM_jar <- getGMjar_path()
     qBase <- basename(queryFiles[[1]][1])
     logFile <- sprintf("%s/%s.log", resDir, qBase)
     queryStrings <- paste(queryFiles, collapse = " ")
 
-    args <- c("-d64", sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
+    args <- c(sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
     args <- c(args, "org.genemania.plugin.apps.QueryRunner")
     args <- c(args, "--data", dbPath, "--in", "flat", "--out", "flat")
     args <- c(args, "--threads", numCores, "--results", resDir, 
@@ -35,7 +39,13 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     # GeneMANIA side
     resFile <- sprintf("%s/%s-results.report.txt", resDir, qBase)
     t0 <- Sys.time()
-    system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)
+	if (debugMode) {
+		message(sprintf("java %s",paste(args,collapse=" ")))
+browser()
+    	system2("java", args, wait = TRUE)
+	} else {
+    	system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)
+	}
     if (verbose) 
         message(sprintf("QueryRunner time taken: %1.1f s", Sys.time() - t0))
     Sys.sleep(3)

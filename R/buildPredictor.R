@@ -62,6 +62,9 @@
 #' @param impute (logical) if TRUE applies imputation by median within CV
 #' @param imputeGroups (char) If impute set to TRUE, indicate which groups you 
 #' want imputed. 
+#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
+#' prints verbose messages. Also prints system Java calls and prints all standard out
+#' and error output associated with these calls.
 #' @param logging (char) level of detail with which messages are printed. 
 #' Options are: 1) none: turn off all messages; 2) all: greatest level of 
 #' detail (recommended for advanced users, or for debugging); 3) default: 
@@ -171,7 +174,8 @@
 buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
-	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default") { 
+	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default",
+	debugMode=FALSE) { 
 verbose_default <- TRUE
 verbose_runQuery <- FALSE	  # messages when running individual queries
 verbose_compileNets <- FALSE  # message when compiling PSN into database
@@ -376,7 +380,7 @@ for (rngNum in startAt:numSplits) {
 			verbose=verbose_makeFeatures)
 	if (verbose_default) message("** Compiling features")
 	dbDir <- compileFeatures(netDir,outDir, numCores=numCores, 
-			verbose=verbose_compileFS)
+			verbose=verbose_compileFS, debugMode=debugMode)
 	if (verbose_default) message("\n** Running feature selection")
 
 	curList[["featureScores"]] <- list()
@@ -400,7 +404,8 @@ for (rngNum in startAt:numSplits) {
 				outDir=resDir, dbPath=dbDir$dbDir, 
 				nrow(pheno_subtype),verbose=verbose_runFS, 
 				numCores=numCores, verbose_runQuery=TRUE, # verbose_runQuery,
-				featScoreMax=featScoreMax,JavaMemory=JavaMemory)
+				featScoreMax=featScoreMax,JavaMemory=JavaMemory,
+				debugMode=debugMode)
 	
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
@@ -487,7 +492,7 @@ for (rngNum in startAt:numSplits) {
 			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
 			filterSet=pTally,verbose=verbose_default)
 		dbDir <- compileFeatures(netDir,outDir=pDir,numCores=numCores,
-			verbose=verbose_compileNets)
+			verbose=verbose_compileNets,debugMode=debugMode)
 
 		# run query for this class
 		qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
@@ -496,7 +501,7 @@ for (rngNum in startAt:numSplits) {
 		if (verbose_default) message(sprintf("\t** %s: Compute similarity",g))
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
 			JavaMemory=JavaMemory, numCores=numCores,
-			verbose=verbose_runQuery)
+			verbose=verbose_runQuery,debugMode=debugMode)
 		predRes[[g]] <- getPatientRankings(sprintf("%s.PRANK",resFile),pheno,g)
 		} else {
 			predRes[[g]] <- NA

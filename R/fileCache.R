@@ -19,7 +19,8 @@
 #' @export
 getGMjar_path <- function(verbose = FALSE) {
     fileURL <- paste("http://download.baderlab.org/netDx/", 
-			"genemania-cytoscape-plugin-3.5.0.jar",sep = "")
+			"genemania-netdx-3.5.0b.jar",sep="")
+			#"genemania-cytoscape-plugin-3.5.0.jar",sep = "")
     
     bfc <- .get_cache()
     rid <- bfcquery(bfc, "GM_jar", "rname")$rid

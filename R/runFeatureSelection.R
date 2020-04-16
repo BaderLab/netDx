@@ -17,6 +17,9 @@
 #' @param numCores (logical) num parallel threads for cross-validation
 #' @param JavaMemory (integer) memory for GeneMANIA run, in Gb.
 #' @param verbose_runQuery (logical) print messages for runQuery()
+#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
+#' prints verbose messages. Also prints system Java calls and prints all standard out
+#' and error output associated with these calls.
 #' @param ... args for \code{makeQueries()}
 #' @return No value. Side effect of generating feature scores.
 #' @examples
@@ -28,7 +31,7 @@
 runFeatureSelection <- function(trainID_pred, outDir, dbPath, 
 		numTrainSamps = NULL, incNets = "all", orgName = "predictor", 
 		fileSfx = "CV", verbose = FALSE, numCores = 2L, 
-    JavaMemory = 6L, verbose_runQuery = FALSE, ...) {
+    JavaMemory = 6L, verbose_runQuery = FALSE, debugMode=FALSE, ...) {
     
     if (!file.exists(outDir)) 
         dir.create(outDir)
@@ -57,6 +60,6 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath,
     
     runQuery(dbPath, qFiles, outDir, JavaMemory = JavaMemory, 
 				verbose = verbose_runQuery, 
-        numCores = numCores)
+        numCores = numCores,debugMode=debugMode)
     
 }

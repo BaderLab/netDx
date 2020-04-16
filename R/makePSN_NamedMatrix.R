@@ -154,11 +154,9 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
                   message("done")
                 }
             }
-            # message('got here\n')
             oFile <- basename(outFile)
         }
         oFile
-        # message('out of loop\n')
     }
     stopCluster(cl)
     outFiles

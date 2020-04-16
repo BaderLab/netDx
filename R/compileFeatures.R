@@ -26,6 +26,9 @@
 #' @param JavaMemory (integer) Memory for GeneMANIA (in Gb)
 #' @param altBaseDir (char) Only use this if you're developing netDx. Used in
 #' unit tests
+#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
+#' prints verbose messages. Also prints system Java calls and prints all standard out
+#' and error output associated with these calls.
 #' @param ... params for \code{writeQueryBatchFile()}
 #' @return (list). 'dbDir': path to GeneMANIA database 
 #' 'netDir': path to directory with interaction networks. If profiles
@@ -62,7 +65,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 		simMetric = "pearson", 
 		netSfx = "txt$", verbose = TRUE, numCores = 1L, 
 		P2N_threshType = "off", P2N_maxMissing = 100, 
-    JavaMemory = 4L, altBaseDir = NULL, ...) {
+    JavaMemory = 4L, altBaseDir = NULL, debugMode=FALSE,...) {
     
     dataDir <- sprintf("%s/dataset", outDir)
     GM_jar <- getGMjar_path()
@@ -116,14 +119,22 @@ compileFeatures <- function(netDir, outDir = tempdir(),
         tmpsfx <- sub("\\$", "", netSfx)
         
         curProf <- ""
-        foreach(curProf = dir(path = profDir, pattern = "profile$")) %dopar% {
+		`%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
+        foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
             args2 <- c("-in", sprintf("%s/%s", profDir, curProf))
             args2 <- c(args2, "-out", sprintf("%s/%s", netOutDir, 
 								sub(".profile", ".txt", curProf)))
             args2 <- c(args2, "-syn", sprintf("%s/1.synonyms", netDir), 
 								"-keepAllTies", "-limitTies")
-            system2("java", args = c(args, args2), wait = TRUE, 
-				stdout = NULL)
+			if (debugMode) {
+				message("Making Java call")
+				tmp <- paste(c(args,args2),collapse=" ")
+				message(sprintf("java %s",tmp))
+            	system2("java", args = c(args, args2), wait = TRUE)
+			} else {
+            	system2("java", args = c(args, args2), wait = TRUE, 
+					stdout = NULL)
+			}
         }
         stopCluster(cl)
         netSfx = ".txt"
@@ -145,7 +156,13 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 			"exporter.Generic2LuceneExporter",sep=""))
     args <- c(args, sprintf("%s/db.cfg", netDir), netDir, 
 				sprintf("%s/colours.txt", netDir))
-    system2("java", args, wait = TRUE, stdout = NULL)
+	if (debugMode){ 
+		tmp <- paste(args,collapse=" ")
+		message(sprintf("java %s",tmp))
+    	system2("java", args, wait = TRUE)
+	} else {
+    	system2("java", args, wait = TRUE, stdout = NULL)
+	}
     
     olddir <- sprintf("%s/lucene_index", dataDir)
     flist <- list.files(olddir, recursive = TRUE)
@@ -159,12 +176,20 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     # Build GeneMANIA cache
     if (verbose) 
         message("\t* Build GeneMANIA cache")
+
     args <- c("-Xmx10G", "-cp", GM_jar, 
 				"org.genemania.engine.apps.CacheBuilder")
     args <- c(args, "-cachedir", "cache", "-indexDir", ".", 
 				"-networkDir", sprintf("%s/INTERACTIONS",netDir), 
 				"-log", sprintf("%s/test.log", netDir))
-    system2("java", args = args, stdout = NULL)
+
+	if (debugMode) {
+		tmp <- paste(args,collapse=" ")
+		message(sprintf("java %s", tmp))
+    	system2("java", args = args)
+	} else {
+    	system2("java", args = args, stdout = NULL)
+	}
     
     # Cleanup
     if (verbose) 

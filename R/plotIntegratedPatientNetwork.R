@@ -54,6 +54,7 @@
 #' 5) aggFun (char) function used to aggregate nets
 #' 6) outDir (char) value of outDir parameter
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom stats wilcox.test qexp density
 #' @import RCy3
 #' @export
 plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,

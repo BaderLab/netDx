@@ -18,9 +18,18 @@
 #' or initial download is required 
 #' @export
 getGMjar_path <- function(verbose = FALSE) {
-    fileURL <- paste("http://download.baderlab.org/netDx/", 
-			"genemania-netdx-3.5.0b.jar",sep="")
-			#"genemania-cytoscape-plugin-3.5.0.jar",sep = "")
+
+	java_ver <- suppressWarnings(system2("java", args="--version",stdout=TRUE,stderr=NULL))
+	if (any(grep(" 11",java_ver))) {
+		if (verbose) message("Java 11 detected")
+    	fileURL <- paste("http://download.baderlab.org/netDx/", 
+			"genemania-netdx-3.5.0b_java11.jar",sep="")
+	} else {
+		if (verbose) message("Java 8 detected")
+    	fileURL <- paste("http://download.baderlab.org/netDx/", 
+			"genemania-netdx-3.5.0_java8.jar",sep="")
+	}
+	
     
     bfc <- .get_cache()
     rid <- bfcquery(bfc, "GM_jar", "rname")$rid

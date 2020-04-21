@@ -22,15 +22,14 @@ getGMjar_path <- function(verbose = FALSE) {
 	java_ver <- suppressWarnings(system2("java", args="--version",stdout=TRUE,stderr=NULL))
 	if (any(grep(" 11",java_ver))) {
 		if (verbose) message("Java 11 detected")
-    	fileURL <- paste("http://download.baderlab.org/netDx/", 
-			"genemania-netdx-3.5.0b_java11.jar",sep="")
+    	fileURL <- paste("http://download.baderlab.org/netDx/java11/", 
+			"genemania-netdx.jar",sep="")
 	} else {
 		if (verbose) message("Java 8 detected")
-    	fileURL <- paste("http://download.baderlab.org/netDx/", 
-			"genemania-netdx-3.5.0_java8.jar",sep="")
+    	fileURL <- paste("http://download.baderlab.org/netDx/java8/", 
+			"genemania-netdx.jar",sep="")
 	}
 	
-    
     bfc <- .get_cache()
     rid <- bfcquery(bfc, "GM_jar", "rname")$rid
     if (!length(rid)) {

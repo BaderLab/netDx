@@ -27,7 +27,16 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     logFile <- sprintf("%s/%s.log", resDir, qBase)
     queryStrings <- paste(queryFiles, collapse = " ")
 
-    args <- c(sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
+	args <- c()
+	java_ver <- suppressWarnings(system2("java", args="--version",stdout=TRUE,stderr=NULL))
+	if (any(grep(" 11",java_ver))) {
+		if (verbose) message("Java 11 detected")
+	} else {
+		if (verbose) message("Java 8 detected")
+		args <- c(args,"-d64")
+	}
+
+    args <- c(args, sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
     args <- c(args, "org.genemania.plugin.apps.QueryRunner")
     args <- c(args, "--data", dbPath, "--in", "flat", "--out", "flat")
     args <- c(args, "--threads", numCores, "--results", resDir, 

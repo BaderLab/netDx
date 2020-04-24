@@ -139,6 +139,34 @@ compileFeatures <- function(netDir, outDir = tempdir(),
         stopCluster(cl)
         netSfx = ".txt"
         netList2 <- dir(path = netOutDir, pattern = netSfx)
+				msg2 <- paste("This problem usually occurs because of a failed",
+							"Java call. Try upgrading to Java 11. If that doesn't",
+							"work, contact shraddha.pai@utoronto.ca with a copy",
+							"of the complete log file after running buildPredict()",
+							"with debugMode=TRUE",sep="\n")
+
+				if (length(netList2)<length(netList)) {
+				  warnings(paste("",
+						"---------------------------------",
+						"One or more profiles did not successfully convert to PSNs!",
+						"This usually happens because of the underlying call to a",
+						"Java library failed. Upgrading to Java 11 usually fixes",
+						"this problem. If not, please send a copy of the detailed",
+						"error message from the call below to",
+						"shraddha.pai@utoronto.ca","",sep="\n")
+					)
+					
+					curProf <- dir(profDir,"profile$")[1]
+	        args2 <- c("-in", sprintf("%s/%s", profDir, curProf))
+	        args2 <- c(args2, "-out", sprintf("%s/%s", netOutDir, 
+						sub(".profile", ".txt", curProf)))
+	        args2 <- c(args2, "-syn", sprintf("%s/1.synonyms", netDir), 
+						"-keepAllTies", "-limitTies")
+					tmp <- paste(c(args,args2),collapse=" ")
+					print(sprintf("java %s",tmp))
+	            	system2("java", args = c(args, args2), wait = TRUE)
+					stop("Stopping netDx now. See error message above.")
+			 }
         
         if (verbose) 
             message(sprintf("Got %i networks from %i profiles", 

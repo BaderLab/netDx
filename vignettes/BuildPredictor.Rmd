@@ -92,14 +92,13 @@ set.seed(42) # make results reproducible
 outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
 # To see all messages, remove suppressMessages() and set logging="default".
 # To keep all intermediate data, set keepAllData=TRUE
-out <- suppressMessages(
-   buildPredictor(
+out <- buildPredictor(
       dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,outDir=outDir,
       numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
       numCores=1L,logging="none",
-      keepAllData=FALSE
-   ))
+      keepAllData=FALSE,debugMode=TRUE
+   )
 
 # collect results
 numSplits <- 2

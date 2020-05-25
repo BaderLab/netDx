@@ -16,7 +16,6 @@ vignette: >
 ```{r,eval=FALSE}
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
-suppressMessages(require(biomaRt)) # for fetching gene coordinates
 
 # read patient CNVs
 phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
@@ -36,17 +35,21 @@ pathFile <- fetchPathwayDefinitions(
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18
-ensembl <- suppressMessages(suppressWarnings(
-   useMart("ENSEMBL_MART_ENSEMBL",
-	dataset="hsapiens_gene_ensembl",
-	host="may2009.archive.ensembl.org",
-	path="/biomart/martservice",archive=FALSE)
-))
-genes <- getBM(attributes=c("chromosome_name",
-		"start_position",
-		"end_position",
-		"hgnc_symbol"),
-	mart=ensembl)
+require(BiocFileCache)
+geneURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/refGene.hg18.bed",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+geneFile <- bfcrpath(bfc,rids=rid)
+genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],
 		IRanges(genes[,2],genes[,3]),
@@ -125,7 +128,6 @@ For a given cutoff for features, a patient is called a "case" if they have a gen
 ```{r,eval=TRUE}
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
-suppressMessages(require(biomaRt)) # for fetching gene coordinates
 ```
 
 # Data
@@ -153,8 +155,7 @@ pheno <- pheno[!duplicated(pheno$ID),]
 
 The `fetchPathwayDefinitions()` function downloads pathway definitions from `baderlab.org` 
 but users may provide custom `.gmt` files as well. In the example below, gene coordinates
-for the hg18 genome build are also automatically fetched from BioMart, using the
-`biomaRt` package, and converted to a `GRanges` object. The function 
+for the hg18 genome build are automatically fetched from a remote location, and converted to a `GRanges` object. The function 
 `mapNamedRangesToSets()` is used to group this `GRanges` object into pathway-level sets.
 
 
@@ -163,17 +164,21 @@ pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18
-ensembl <- suppressMessages(suppressWarnings(
-   useMart("ENSEMBL_MART_ENSEMBL",
-	dataset="hsapiens_gene_ensembl",
-	host="may2009.archive.ensembl.org",
-	path="/biomart/martservice",archive=FALSE)
-))
-genes <- getBM(attributes=c("chromosome_name",
-		"start_position",
-		"end_position",
-		"hgnc_symbol"),
-	mart=ensembl)
+require(BiocFileCache)
+geneURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/refGene.hg18.bed",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+geneFile <- bfcrpath(bfc,rids=rid)
+genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])

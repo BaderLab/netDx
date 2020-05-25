@@ -15,10 +15,9 @@ Description: netDx is a general-purpose algorithm to build a patient classifier 
 Depends:
     R (>= 3.6)
 Suggests: 
-    curatedTCGAData,
-    testthat,
-	knitr,
-	biomaRt
+  curatedTCGAData,
+  testthat,
+	knitr
 Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer
 VignetteBuilder: knitr 
 Encoding: UTF-8

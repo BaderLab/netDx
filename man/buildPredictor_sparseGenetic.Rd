@@ -134,7 +134,7 @@ evaluating the predictor.
 }
 \examples{
 suppressMessages(require(GenomicRanges))
-suppressMessages(require(biomaRt)) # for fetching gene coordinates
+suppressMessages(require(BiocFileCache))
 
 # read CNV data
 phenoFile <- system.file("extdata","AGP1_CNV.txt",package="netDx")
@@ -147,15 +147,20 @@ cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 
 # get gene coordinates
-ensembl <- useMart("ENSEMBL_MART_ENSEMBL",
-	dataset="hsapiens_gene_ensembl",
-	host="may2009.archive.ensembl.org",
-	path="/biomart/martservice",archive=FALSE)
-genes <- getBM(attributes=c("chromosome_name",
-		"start_position",
-		"end_position",
-		"hgnc_symbol"),
-	mart=ensembl)
+geneURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/refGene.hg18.bed",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+geneFile <- bfcrpath(bfc,rids=rid)
+genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])

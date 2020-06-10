@@ -1,6 +1,6 @@
 Package: netDx
 Title: Network-based patient classifier
-Version: 1.0.1
+Version: 1.1.1
 Authors@R: c(person("Shraddha", "Pai", 
 		email = "shraddha.pai@utoronto.ca", 
 		role = c("aut", "cre"),

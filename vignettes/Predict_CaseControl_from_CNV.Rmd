@@ -16,49 +16,45 @@ vignette: >
 ```{r,eval=FALSE}
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
-suppressMessages(require(biomaRt)) # for fetching gene coordinates
-
 # read patient CNVs
 phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 # sample metadata table must have ID and STATUS columns
 colnames(pheno)[1] <- "ID"
-
 # create GRanges object. 
 # Must have ID and LOCUS_NAMES in metadata
 cnv_GR    <- GRanges(pheno$seqnames,
 		IRanges(pheno$start,pheno$end),
 		ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
-
 pathFile <- fetchPathwayDefinitions(
 	"February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
-
 # get gene coordinates, use hg18
-ensembl <- suppressMessages(suppressWarnings(
-   useMart("ENSEMBL_MART_ENSEMBL",
-	dataset="hsapiens_gene_ensembl",
-	host="may2009.archive.ensembl.org",
-	path="/biomart/martservice",archive=FALSE)
-))
-genes <- getBM(attributes=c("chromosome_name",
-		"start_position",
-		"end_position",
-		"hgnc_symbol"),
-	mart=ensembl)
+require(BiocFileCache)
+geneURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/refGene.hg18.bed",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+geneFile <- bfcrpath(bfc,rids=rid)
+genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],
 		IRanges(genes[,2],genes[,3]),
    	name=genes[,4]
 )
-
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
-
 outDir <- sprintf("%s/200129_threeWay",tempdir())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
-
 predictClass	<- "case"
 out <- suppressMessages(
    buildPredictor_sparseGenetic(
@@ -68,7 +64,6 @@ out <- suppressMessages(
       enrichLabels=TRUE,numPermsEnrich=20L,
       numCores=2L)
 )
-
 # plot ROC curve. Note that the denominator only includes
 # patients with events in networks that are label-enriched
 dat	<- out$performance_denEnrichedNets
@@ -79,7 +74,6 @@ plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
 	main="ROC curve - Patients in label-enriched pathways")
 points(dat$other_pct,dat$pred_pct,
 	  col="red",type="o",pch=16,cex=1.3,lwd=2)
-
 # calculate AUROC and AUPR
 tmp <- data.frame(	
 	score=dat$score,
@@ -88,12 +82,10 @@ tmp <- data.frame(
 	tn=dat$other_tot - dat$other_ol,
 	# fn: "+" that were not called 
 	fn=dat$pred_tot - dat$pred_ol) 
-
 stats <- netDx::perfCalc(tmp)
 tmp <- stats$stats
 message(sprintf("PRAUC = %1.2f\n", stats$prauc))
 message(sprintf("ROCAUC = %1.2f\n", stats$auc))
-
 # examine pathway-level scores; these are 
 # cumulative across the splits - here, each of three
 # splits has a max feature score of three, so
@@ -125,7 +117,6 @@ For a given cutoff for features, a patient is called a "case" if they have a gen
 ```{r,eval=TRUE}
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
-suppressMessages(require(biomaRt)) # for fetching gene coordinates
 ```
 
 # Data
@@ -133,17 +124,14 @@ suppressMessages(require(biomaRt)) # for fetching gene coordinates
 CNV coordinates are read in, and converted into a `GRanges` object. As always, the sample metadata table, here the `pheno` object, must have `ID` and `STATUS` columns.
 
 ```{r,eval=TRUE}
-
 outDir <- sprintf("%s/200129_threeWay",tempdir())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
-
 cat("* Setting up sample metadata\n")
 phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 colnames(pheno)[1] <- "ID"
 head(pheno)
-
 cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
@@ -153,27 +141,29 @@ pheno <- pheno[!duplicated(pheno$ID),]
 
 The `fetchPathwayDefinitions()` function downloads pathway definitions from `baderlab.org` 
 but users may provide custom `.gmt` files as well. In the example below, gene coordinates
-for the hg18 genome build are also automatically fetched from BioMart, using the
-`biomaRt` package, and converted to a `GRanges` object. The function 
+for the hg18 genome build are automatically fetched from a remote location, and converted to a `GRanges` object. The function 
 `mapNamedRangesToSets()` is used to group this `GRanges` object into pathway-level sets.
 
 
 ```{r,eval=TRUE}
 pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
-
 # get gene coordinates, use hg18
-ensembl <- suppressMessages(suppressWarnings(
-   useMart("ENSEMBL_MART_ENSEMBL",
-	dataset="hsapiens_gene_ensembl",
-	host="may2009.archive.ensembl.org",
-	path="/biomart/martservice",archive=FALSE)
-))
-genes <- getBM(attributes=c("chromosome_name",
-		"start_position",
-		"end_position",
-		"hgnc_symbol"),
-	mart=ensembl)
+require(BiocFileCache)
+geneURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/refGene.hg18.bed",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+geneFile <- bfcrpath(bfc,rids=rid)
+genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])
@@ -230,7 +220,6 @@ tmp <- data.frame(
 	tn=dat$other_tot - dat$other_ol,
 	# fn: "+" that were not called 
 	fn=dat$pred_tot - dat$pred_ol) 
-
 stats <- netDx::perfCalc(tmp)
 tmp <- stats$stats
 message(sprintf("PRAUC = %1.2f\n", stats$prauc))

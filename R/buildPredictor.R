@@ -202,6 +202,8 @@ if (length(groupList)<1) stop("groupList must be of length 1+\n")
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
 nm1 <-setdiff(names(groupList),"clinical") 
+if (!is(dataList,"MultiAssayExperiment"))
+	stop("dataList must be a MultiAssayExperiment")
 names_nomatch <- any(!nm1 %in% names(dataList))
 if (!is(groupList,"list") || not_list || names_nomatch ) {
 	msg <- c("groupList must be a list of lists.",
@@ -209,8 +211,11 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
   " of networks for this group.")
 	stop(paste(msg,sep=""))
 }
-if (!is(dataList,"MultiAssayExperiment"))
-	stop("dataList must be a MultiAssayExperiment")
+
+if (outDir != normalizePath(outDir)) {
+	stop("outDir should be an absolute path, not relative.")
+}
+
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")

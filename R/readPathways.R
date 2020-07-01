@@ -42,13 +42,13 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L,
     oldLocale <- Sys.getlocale("LC_ALL")
     Sys.setlocale("LC_ALL", "C")
     out <- list()
+    srcList <- list()
     # read list of master pathways
     if (verbose) 
         message("---------------------------------------\n")
     if (verbose) 
         message(sprintf("File: %s\n\n", basename(fname)))
     f <- file(fname, "r")
-    # TODO: deal with duplicate pathway names
     
     # pName <- list()
     ctr <- 0
@@ -65,19 +65,19 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L,
             # message('\n\n% symbol not found in pathway name')
             s[1] <- s[1]
         } else {
-            
             src <- substr(s[1], pPos[1] + 1, pPos[2] - 1)
             src_id <- substr(s[1], pPos[2] + 1, nchar(s[1]))
             if (IDasName) 
-                s[1] <- paste(src, src_id, sep = ":") 
-						else 
-								s[1] <- substr(s[1], 1, pPos[1] - 1)
+			s[1] <- paste(src, src_id, sep = ":") 
+		else 
+			s[1] <- substr(s[1], 1, pPos[1] - 1)
         }
         if (!EXCLUDE_KEGG || (src != "KEGG")) {
             idx <- which(s == "")  # remove trailing blank rows.
             if (any(idx)) 
                 s <- s[-idx]
             out[[s[1]]] <- s[3:length(s)]
+	    srcList[[s[1]]] <- src
             # pName[[s[1]]] <- s[2] # stores pathway source - prob not needed
         }
         ctr <- ctr + 1
@@ -92,13 +92,21 @@ readPathways <- function(fname, MIN_SIZE = 10L, MAX_SIZE = 200L,
     }
     ln <- unlist(lapply(out, length))
     idx <- which(ln < MIN_SIZE | ln >= MAX_SIZE)
-    out[idx] <- NULL
+    if (any(idx)) {
+    	out[idx] <- NULL
+    	srcList[idx] <- NULL
+    }
     # pName[idx] <- NULL
     if (verbose) 
         message(sprintf("\t  => %i pathways excluded\n\t  => %i left", 
 						length(idx), length(out)))
     # clean pathway names
     nm <- suppressMessages(suppressWarnings(cleanPathwayName(names(out))))
+    idx <- which(duplicated(nm))
+    if (any(idx)) {
+	    message("Resolving duplicate pathway names by appending source...")
+	  nm[idx] <- sprintf("%s_%s", nm[idx], srcList[[idx]])
+	   }
     if (getOrigNames) {
         pnames <- cbind(names(out), nm)
         names(out) <- nm

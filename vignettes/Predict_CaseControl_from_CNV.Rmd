@@ -18,7 +18,8 @@ suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
 
 # read patient CNVs
-phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
+	sep=.Platform$file.sep)
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 # sample metadata table must have ID and STATUS columns
 colnames(pheno)[1] <- "ID"
@@ -59,7 +60,7 @@ gene_GR     <- GRanges(genes[,1],
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
-outDir <- sprintf("%s/200129_threeWay",tempdir())
+outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
 
 predictClass	<- "case"
@@ -136,12 +137,13 @@ CNV coordinates are read in, and converted into a `GRanges` object. As always, t
 
 ```{r,eval=TRUE}
 
-outDir <- sprintf("%s/200129_threeWay",tempdir())
+outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
 
 cat("* Setting up sample metadata\n")
-phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
+	sep=.Platform$file.sep)
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 colnames(pheno)[1] <- "ID"
 head(pheno)

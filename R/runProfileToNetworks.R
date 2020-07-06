@@ -28,7 +28,7 @@ convertProfileToNetworks <- function(netDir,outDir=tempdir(),
 if (is.null(GM_jar)) GM_jar <- getGMjar_path()
 
 cl <- makeCluster(numCores, 
-	outfile = sprintf("%s/P2N_log.txt", netDir))
+	outfile = paste(netDir, "P2N_log.txt",sep=.Platform$file.sep))
 registerDoParallel(cl)
 
 if (simMetric == "pearson") {
@@ -53,10 +53,11 @@ curProf <- ""
 `%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
 foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
 	if (debugMode) print(curProf)
-	args2 <- c("-in", sprintf("%s/%s", profDir, curProf))
-	args2 <- c(args2, "-out", sprintf("%s/%s", outDir, 
-		sub(".profile", ".txt", curProf)))
-	args2 <- c(args2, "-syn", sprintf("%s/../1.synonyms", netDir), 
+	args2 <- c("-in", paste(profDir, curProf,sep=.Platform$file.sep))
+	args2 <- c(args2, "-out", paste(outDir, 
+		sub(".profile", ".txt", curProf),sep=.Platform$file.sep))
+	args2 <- c(args2, "-syn", 
+		paste(netDir,"..","1.synonyms",sep=.Platform$file.sep),
 		"-keepAllTies", "-limitTies")
 
 	if (debugMode) stdout <- "" else stdout <- NULL

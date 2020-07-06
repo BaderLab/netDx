@@ -50,14 +50,14 @@
 #'					writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
-#' tmpDir <- tempdir(); netDir <- sprintf('%s/nets',tmpDir)
+#' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",sep=.Platform$file.sep)
 #' dir.create(netDir,recursive=TRUE)
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
 #' netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
 #'     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
 #' 
-#' outDir <- sprintf('%s/dbdir',tmpDir); dir.create(outDir)
+#' outDir <- paste(tmpDir,'dbdir',sep=.Platform$file.sep); dir.create(outDir)
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
 #' @export
@@ -67,7 +67,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 		P2N_threshType = "off", P2N_maxMissing = 100, 
     JavaMemory = 4L, altBaseDir = NULL, debugMode=FALSE,...) {
     
-    dataDir <- sprintf("%s/dataset", outDir)
+    dataDir <- paste(outDir,"dataset",sep=.Platform$file.sep)
     GM_jar <- getGMjar_path()
     
     if (P2N_maxMissing < 5) 
@@ -81,15 +81,15 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     curwd <- getwd()
     setwd(netDir)
     
-    netList1 <- dir(path = sprintf("%s/profiles", netDir), 
+    netList1 <- dir(path = paste(netDir,"profiles",sep=.Platform$file.sep),
 				pattern = "profile$")
-    netList2 <- dir(path = sprintf("%s/INTERACTIONS", netDir), 
+    netList2 <- dir(path = paste(netDir,"INTERACTIONS",sep=.Platform$file.sep),
 				pattern = netSfx)
     netList <- c(netList1, netList2)
     
     if (verbose) 
         message(sprintf("Got %i networks", length(netList)))
-    idFile <- sprintf("%s/ids.txt", outDir)
+    idFile <- paste(outDir,"ids.txt", sep=.Platform$file.sep)
     writeQueryBatchFile(netDir, netList, netDir, idFile, ...)
     
     if (length(netList1) > 0) {
@@ -97,7 +97,8 @@ compileFeatures <- function(netDir, outDir = tempdir(),
             message("\t* Converting profiles to interaction networks")
         
         cl <- makeCluster(numCores, 
-			outfile = sprintf("%s/P2N_log.txt", netDir))
+			outfile = paste(netDir,"P2N_log.txt",
+			sep=.Platform$file.sep))
         registerDoParallel(cl)
         
         if (simMetric == "pearson") {
@@ -114,22 +115,24 @@ compileFeatures <- function(netDir, outDir = tempdir(),
         args <- c(args, c("-threshold", P2N_threshType, 
 							"-maxmissing", 
 							sprintf("%1.1f", P2N_maxMissing)))
-        profDir <- sprintf("%s/profiles", netDir)
-        netOutDir <- sprintf("%s/INTERACTIONS", netDir)
+        profDir <- paste(netDir,"profiles",sep=.Platform$file.sep)
+        netOutDir <- paste(netDir,"INTERACTIONS",sep=.Platform$file.sep)
         tmpsfx <- sub("\\$", "", netSfx)
         
         curProf <- ""
 		`%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
         foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
-            args2 <- c("-in", sprintf("%s/%s", profDir, curProf))
-            args2 <- c(args2, "-out", sprintf("%s/%s", netOutDir, 
-								sub(".profile", ".txt", curProf)))
-            args2 <- c(args2, "-syn", sprintf("%s/1.synonyms", netDir), 
-								"-keepAllTies", "-limitTies")
-			if (debugMode) {
-				message("Making Java call")
-				tmp <- paste(c(args,args2),collapse=" ")
-				message(sprintf("java %s",tmp))
+            args2 <- c("-in", paste(profDir,curProf,sep=.Platform$file.sep))
+            args2 <- c(args2, "-out", 
+		paste(netOutDir,sub(".profile", ".txt", curProf),
+			sep=.Platform$file.sep))
+            args2 <- c(args2, "-syn", 
+		paste(netDir,"1.synonyms",sep=.Platform$file.sep),
+			"-keepAllTies", "-limitTies")
+	if (debugMode) {
+		message("Making Java call")
+		tmp <- paste(c(args,args2),collapse=" ")
+		message(sprintf("java %s",tmp))
             	system2("java", args = c(args, args2), wait = TRUE)
 			} else {
             	system2("java", args = c(args, args2), wait = TRUE, 
@@ -157,20 +160,22 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 					)
 					
 					curProf <- dir(profDir,"profile$")[1]
-	        args2 <- c("-in", sprintf("%s/%s", profDir, curProf))
-	        args2 <- c(args2, "-out", sprintf("%s/%s", netOutDir, 
-						sub(".profile", ".txt", curProf)))
-	        args2 <- c(args2, "-syn", sprintf("%s/1.synonyms", netDir), 
-						"-keepAllTies", "-limitTies")
-					tmp <- paste(c(args,args2),collapse=" ")
-					print(sprintf("java %s",tmp))
-	            	system2("java", args = c(args, args2), wait = TRUE)
-					stop("Stopping netDx now. See error message above.")
-			 }
+	        args2 <- c("-in", paste(profDir, curProf,sep=.Platform$file.sep))
+	        args2 <- c(args2, "-out", paste(netOutDir, 
+				sub(".profile", ".txt", curProf),
+				sep=.Platform$file.sep))
+	        args2 <- c(args2, "-syn", 
+			paste(netDir,"1.synonyms",sep=.Platform$file.sep),
+				"-keepAllTies", "-limitTies")
+		tmp <- paste(c(args,args2),collapse=" ")
+		print(sprintf("java %s",tmp))
+	       	system2("java", args = c(args, args2), wait = TRUE)
+		stop("Stopping netDx now. See error message above.")
+	 }
         
         if (verbose) 
             message(sprintf("Got %i networks from %i profiles", 
-								length(netList2), length(netList)))
+		length(netList2), length(netList)))
         netList <- netList2
         rm(netOutDir, netList2)
     }
@@ -182,23 +187,23 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     args <- c("-Xmx10G", "-cp", GM_jar)
     args <- c(args, paste("org.genemania.mediator.lucene.",
 			"exporter.Generic2LuceneExporter",sep=""))
-    args <- c(args, sprintf("%s/db.cfg", netDir), netDir, 
-				sprintf("%s/colours.txt", netDir))
+    args <- c(args, paste(netDir,"db.cfg",sep=.Platform$file.sep), netDir, 
+		paste(netDir,"colours.txt",sep=.Platform$file.sep))
 	if (debugMode){ 
 		tmp <- paste(args,collapse=" ")
 		message(sprintf("java %s",tmp))
-    	system2("java", args, wait = TRUE)
+    		system2("java", args, wait = TRUE)
 	} else {
-    	system2("java", args, wait = TRUE, stdout = NULL)
+    		system2("java", args, wait = TRUE, stdout = NULL)
 	}
     
-    olddir <- sprintf("%s/lucene_index", dataDir)
+    olddir <- paste(dataDir,"lucene_index", sep=.Platform$file.sep)
     flist <- list.files(olddir, recursive = TRUE)
     dirs <- list.dirs(olddir, recursive = TRUE, full.names = FALSE)
     dirs <- setdiff(dirs, "")
-    for (d in dirs) dir.create(paste(dataDir, d, sep = "/"))
-    file.copy(from = paste(olddir, flist, sep = "/"), 
-							to = paste(dataDir, flist,sep = "/"))
+    for (d in dirs) dir.create(paste(dataDir, d, sep = .Platform$file.sep))
+    file.copy(from = paste(olddir, flist, sep = .Platform$file.sep), 
+	to = paste(dataDir, flist,sep =.Platform$file.sep))
     unlink(olddir)
     
     # Build GeneMANIA cache
@@ -208,10 +213,11 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     args <- c("-Xmx10G", "-cp", GM_jar, 
 				"org.genemania.engine.apps.CacheBuilder")
     args <- c(args, "-cachedir", "cache", "-indexDir", ".", 
-				"-networkDir", sprintf("%s/INTERACTIONS",netDir), 
-				"-log", sprintf("%s/test.log", netDir))
-
-	if (debugMode) {
+				"-networkDir", 
+			paste(netDir,"INTERACTIONS",sep=.Platform$file.sep), 
+				"-log", 
+			paste(netDir,"test.log",sep=.Platform$file.sep))
+  if (debugMode) {
 		tmp <- paste(args,collapse=" ")
 		message(sprintf("java %s", tmp))
     	system2("java", args = args)
@@ -223,7 +229,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     if (verbose) 
         message("\t * Cleanup")
     GM_xml <- system.file("extdata","genemania.xml",package="netDx")
-    file.copy(from = GM_xml, to = sprintf("%s/.", dataDir))
+    file.copy(from = GM_xml, to = paste(dataDir,".",sep=.Platform$file.sep))
     
     setwd(curwd)
     return(list(dbDir = dataDir, netDir = netDir))

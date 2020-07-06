@@ -26,7 +26,7 @@
 #' @examples
 #' data(npheno)
 #' netDir <- system.file("extdata","example_nets",package='netDx')
-#' pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
+#' pruneNets(netDir,tempdir(),filterIDs=npheno[seq_len(10),],
 #'  netSfx='txt$')
 #' @export
 pruneNets <- function(oldDir, newDir=tempdir(), 
@@ -51,8 +51,8 @@ pruneNets <- function(oldDir, newDir=tempdir(),
             # keep all patients
             message("* Including all patients\n")
             for (f in filterNets) {
-                oldf <- sprintf("%s/%s", oldDir, f)
-                newf <- sprintf("%s/%s", newDir, f)
+                oldf <- paste(oldDir,f,sep=.Platform$file.sep)
+                newf <- paste(newDir,f,sep=.Platform$file.sep)
                 file.copy(oldf, newf)
             }
         }
@@ -60,16 +60,16 @@ pruneNets <- function(oldDir, newDir=tempdir(),
         if (verbose) 
             message(sprintf("Limiting to %i patients\n", length(filterIDs)))
         for (f in filterNets) {
-            dat <- read.delim(sprintf("%s/%s", oldDir, f), sep = "\t", 
-								header = FALSE, as.is = TRUE)
+            dat <- read.delim(paste(oldDir,f),sep=.Platform$file.sep), sep = "\t", 
+		header = FALSE, as.is = TRUE)
             
             # both nodes of edge should be eligible
             idx <- intersect(which(dat[, 1] %in% filterIDs), 
-								which(dat[, 2] %in% filterIDs))
+		which(dat[, 2] %in% filterIDs))
             
-            write.table(dat[idx, ], file = sprintf("%s/%s", newDir, f), 
-								sep = "\t", col.names = FALSE, row.names = FALSE, 
-								quote = FALSE)
+            write.table(dat[idx, ], file = paste(netDir,f,sep=.Platform$file.sep),
+		sep = "\t", col.names = FALSE, row.names = FALSE, 
+		quote = FALSE)
         }
     }
 }

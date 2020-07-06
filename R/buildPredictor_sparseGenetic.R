@@ -258,7 +258,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
-			sep="/")
+			sep=.Platform$file.sep)
 		pathwayRank	<- compileFeatureScores(nrankFiles,
 			filter_WtSum=filter_WtSum,verbose=FALSE)
 		write.table(pathwayRank,file=sprintf("%s/pathwayScore.txt",resDir),

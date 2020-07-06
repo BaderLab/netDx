@@ -41,13 +41,15 @@
 #' data(featScores)
 #' pathwayList <- readPathways(fetchPathwayDefinitions())
 #' pathwayList <- pathwayList[seq_len(5)]
-#' netInfoFile <- system.file("extdata","example_output/inputNets.txt",package="netDx")
-#' netTypes <- read.delim(netInfoFile,sep='\t',h=FALSE,as.is=TRUE)
-#' outDir <- paste(tempdir(),'plots',sep='/')
+#' netInfoFile <- system.file("extdata",
+#' 	paste("example_output","inputNets.txt",sep=.Platform$file.sep),
+#'		package="netDx")
+#' netTypes <- read.delim(netInfoFile,sep='\t',header=FALSE,as.is=TRUE)
+#' outDir <- paste(tempdir(),'plots',sep=.Platform$file.sep)
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' EMap_input <- getEMapInput_many(featScores,pathwayList,
 #'      netTypes,outDir=outDir)
-#' outDir <- paste(getwd(),'plots',sep='/')
+#' outDir <- paste(getwd(),'plots',sep=.Platform$file.sep)
 #' if (!file.exists(outDir)) dir.create(outDir)
 #' gmtFile <- EMap_input[[1]][1]
 #' nodeAttrFile <- EMap_input[[1]][2]

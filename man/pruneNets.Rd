@@ -54,6 +54,6 @@ original networks that consist of eligible patients.
 \examples{
 data(npheno)
 netDir <- system.file("extdata","example_nets",package='netDx')
-pruneNets(netDir,'~/tmp',filterIDs=npheno[seq_len(10),],
+pruneNets(netDir,tempdir(),filterIDs=npheno[seq_len(10),],
  netSfx='txt$')
 }

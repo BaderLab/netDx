@@ -51,9 +51,9 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
 	if (TEST_MODE) verbose <- TRUE
     
     # num patients per network
-    netCountFile <- sprintf("%s/patient_count.txt", netDir)
+    netCountFile <- paste(netDir,"patient_count.txt",sep=.Platform$file.sep)
     # IDs of patients with 1+ interaction in set of networks
-    incPatientFile <- sprintf("%s/inc_patients.txt", netDir)
+    incPatientFile <- paste(netDir,"inc_patients.txt",sep=.Platform$file.sep) 
     
     uq_loci <- unique(unlist(lapply(rangeSet, function(x) {
         x$name
@@ -66,7 +66,7 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     # LOCUS_NAMES not provided? Compute these
     if (!"LOCUS_NAMES" %in% names(elementMetadata(gr))) {
         message(paste("\tLOCUS_NAMES column not provided; computing ", 
-						"overlap of patients\t\twith regions", 
+	"overlap of patients\t\twith regions", 
             sep = ""))
         gr <- getRegionOL(gr, rangeSet)
     }
@@ -78,7 +78,11 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
 				length(uq_patients), 
         length(uq_loci)))
 
-		message("using bigmemory")
+	bkFile <- paste(tempdir(),"pgmat.bk",sep=.Platform$file.sep)
+	descFile <- paste(tempdir(),"pgmat.desc",sep=.Platform$file.sep)
+	if (file.exists(bkFile)) unlink(bkFile)
+	if (file.exists(descFile)) unlink(descFile)
+
 	    pgMat <- big.matrix(nrow = length(uq_patients), 
 				ncol = length(uq_loci), type = "integer",
 				backingpath=tempdir(),
@@ -147,18 +151,19 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
         if (hit_p[idx] >= quorum) {
                 if (verbose) 
                   message(sprintf("\n\t\tlength=%i; score = %1.2f", 
-										length(rangeSet[[idx]]), pScore))
+		length(rangeSet[[idx]]), pScore))
                   x <- hit_pathway
                   inc_patients[x > 0] <- inc_patients[x > 0] + 1
-									tmp <- uq_patients[hit_pathway > 0]
+		tmp <- uq_patients[hit_pathway > 0]
                   pat_pairs <- t(combinat::combn(tmp, 2))
                   pat_pairs <- cbind(pat_pairs, pScore)
                   
                   # write network for pathway
-                  outFile <- sprintf("%s/%s_cont.txt", netDir, curP)
+                  outFile <- paste(netDir,sprintf("%s_cont.txt",curP),
+			sep=.Platform$file.sep)
                   write.table(pat_pairs, file = outFile, sep = "\t", 
-										col.names = FALSE, 
-                    row.names = FALSE, quote = FALSE)
+			col.names = FALSE, 
+                	row.names = FALSE, quote = FALSE)
                   outFile <- basename(outFile)
                 ## status <- 1;
             }  
@@ -180,6 +185,8 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
     t1 <- Sys.time()
     print(t1 - t0)
     stopCluster(cl)
+	if (file.exists(bkFile)) unlink(bkFile)
+	if (file.exists(descFile)) unlink(descFile)
     outFiles <- unlist(outFiles)
     outFiles <- outFiles[which(outFiles != "")]
     

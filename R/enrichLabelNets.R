@@ -50,7 +50,7 @@
 #' @export
 enrichLabelNets <- function(netDir,pheno_DF,outDir,numReps=50L,
 	minEnr=-1,outPref="enrichLabelNets",verbose=TRUE,setSeed=42L,
-	enrType="binary",numCores=1L,predClass,tmpDir="/tmp",
+	enrType="binary",numCores=1L,predClass,tmpDir=tempdir(),
 	netGrep="_cont.txt$",getShufResults=FALSE,...) {
 		
 today	<- format(Sys.Date(),"%y%m%d")
@@ -174,7 +174,7 @@ out <- data.frame(NETWORK=basename(fList),
 	Z=orig_z,pctl=orig_pct,Q=qval)
 
 write.table(out,
-	file=sprintf("%s/%s.stats.txt", outDir, outPref),
+	file=paste(outDir,sprintf("%s.stats.txt",outPref),sep=.Platform$file.sep),
 	sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
 
 if (getShufResults) {
@@ -182,5 +182,6 @@ if (getShufResults) {
 } else {
 	return(out)
 }
+message("about to leave enrich nets")
 
 }

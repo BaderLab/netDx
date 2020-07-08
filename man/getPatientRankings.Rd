@@ -37,7 +37,8 @@ Process GM PRANK files to get the ROC curve for the query
 }
 \examples{
 data(pheno)
-prankFile <- system.file("extdata","GM_PRANK/CV_1.query-results.report.txt.PRANK",
+prankFile <- system.file("extdata",
+paste("GM_PRANK","CV_1.query-results.report.txt.PRANK",sep=.Platform$file.sep),
 	package="netDx")
 x <- getPatientRankings(prankFile, pheno, 'LumA')
 }

@@ -21,12 +21,12 @@
 #' data(npheno)
 #' netDir <- system.file("extdata","example_nets",package="netDx")
 #' netList <- dir(netDir,pattern='txt$')
-#' writeQueryBatchFile(netDir,netList, '~/tmp', npheno$ID)
+#' writeQueryBatchFile(netDir,netList, tempdir(), npheno$ID)
 writeQueryBatchFile <- function(netDir, netList, outDir = tempdir(), idFile, 
 		orgName = "predictor", 
     orgDesc = "my_predictor", orgAlias = "my_predictor", taxID = 1339) {
     
-    outF <- sprintf("%s/batch.txt", outDir)
+    outF <- paste(outDir,"batch.txt",sep=.Platform$file.sep)
     fileConn <- file(outF, "w")
     
     # organism info

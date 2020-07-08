@@ -78,7 +78,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
             "set writeProfiles=FALSE", sep = ""))
     }
     
-    cl <- makeCluster(numCores, outfile = sprintf("%s/makePSN_log.txt", outDir))
+    cl <- makeCluster(numCores, outfile = paste(outDir,"makePSN_log.txt", sep=.Platform$file.sep))
     if (!runSerially) {
         registerDoParallel(cl)
     } else {
@@ -87,7 +87,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
     
     if (simMetric == "pearson") {
         message(paste("Pearson similarity chosen - ", 
-						"enforcing min. 5 patients per net.", 
+		"enforcing min. 5 patients per net.", 
             sep = ""))
         minMembers <- 5
     }
@@ -105,21 +105,23 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
         # has sufficient connections to make network
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
-                outFile <- sprintf("%s/%s.profile", outDir, curSet)
+                outFile <- paste(outDir,sprintf("%s.profile",curSet),
+			sep=.Platform$file.sep)
                 write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
-									sep = "\t", 
+			sep = "\t", 
                   col.names = FALSE, row.names = TRUE, quote = FALSE)
             } else {
-                outFile <- sprintf("%s/%s_cont.txt", outDir, curSet)
+                outFile <- paste(outDir,sprintf("%s_cont.txt", curSet),
+			sep=.Platform$file.sep)
                 message(sprintf("computing sim for %s", curSet))
                 sim <- getSimilarity(xpr[idx, , drop = FALSE], 
-									type = simMetric, 
+			type = simMetric, 
                   ...)
                 if (is.null(sim)) {
                   stop(sprintf(paste("makePSN_NamedMatrix:%s: ", 
-										"similarity matrix is empty (NULL).\n", 
-                    "Check that there isn't a mistake in the ", 
-										"input data or similarity method of choice.\n", 
+		"similarity matrix is empty (NULL).\n", 
+                "Check that there isn't a mistake in the ", 
+		"input data or similarity method of choice.\n", 
                     sep = ""), curSet))
                 }
                 pat_pairs <- sim
@@ -148,8 +150,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
                   }
                 } else {
                   write.table(pat_pairs, file = outFile, sep = "\t", 
-										col.names = FALSE, 
-                    row.names = FALSE, quote = FALSE)
+			col.names = FALSE, 
+                	row.names = FALSE, quote = FALSE)
                   print(basename(outFile))
                   message("done")
                 }

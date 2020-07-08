@@ -70,9 +70,8 @@ dat <- dataList2List(dataList)
 pheno <- dat$pheno[,c("ID","STATUS")]
 
 if (!file.exists(outDir)) dir.create(outDir)
-if (!file.exists(sprintf("%s/profiles",outDir))){
-	dir.create(sprintf("%s/profiles",outDir))
-}
+profDir <- paste(outDir,"profiles",sep=.Platform$file.sep)
+if (!file.exists(profDir)) dir.create(profDir)
 
 # create input networks
 pheno_id <- setupFeatureDB(pheno,outDir)
@@ -82,25 +81,25 @@ createPSN_MultiData(dataList=dat$assays,groupList=groupList,
 			netDir=outDir,customFunc=makeNetFunc,numCores=numCores,
 			verbose=FALSE)
 convertProfileToNetworks(
-		netDir=sprintf("%s/profiles",outDir),
-		outDir=sprintf("%s/INTERACTIONS",outDir),
+		netDir=profDir,
+		outDir=paste(outDir,"INTERACTIONS",sep=.Platform$file.sep)
 )
 
 predClasses <- unique(pheno$STATUS)
 colnames(pheno)[which(colnames(pheno)=="STATUS")] <- "GROUP"
 
 # read patient and network identifiers
-pid		<- read.delim(sprintf("%s/GENES.txt",outDir),
-	,sep="\t",header=FALSE,as.is=TRUE)[,1:2]
+pid		<- read.delim(paste(outDir,"GENES.txt",sep=.Platform$file.sep),
+	sep="\t",header=FALSE,as.is=TRUE)[,1:2]
 colnames(pid)[1:2] <- c("GM_ID","ID")
-netid	<- read.delim(sprintf("%s/NETWORKS.txt",outDir),
+netid	<- read.delim(paste(outDir,"NETWORKS.txt",sep=.Platform$file.sep),
 	sep="\t",header=FALSE,as.is=TRUE)
 	colnames(netid)[1:2] <- c("NET_ID", "NETWORK")
 
 # aggregate
 message("* Computing aggregate net")
 out <- writeWeightedNets(pid,
-	netIDs=netid,netDir=sprintf("%s/INTERACTIONS",outDir),
+	netIDs=netid,netDir=paste(outDir,"INTERACTIONS",sep=.Platform$file.sep),
 	filterEdgeWt=0,limitToTop=Inf,
 	plotEdgeDensity=FALSE,
 	aggNetFunc=aggFun,verbose=FALSE)

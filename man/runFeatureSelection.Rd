@@ -67,5 +67,5 @@ Creates query files, runs GM for 10-fold cross validation.
 data(MB.pheno)
 dbPath <- system.file("extdata","dbPath",package="netDx")
 runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS\%in\% 'WNT')],
-		'~/tmp',dbPath,103L)
+		tempdir(),dbPath,103L)
 }

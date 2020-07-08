@@ -16,6 +16,7 @@ vignette: >
 ```{r,eval=FALSE}
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
+
 # read patient CNVs
 phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
 	sep=.Platform$file.sep)

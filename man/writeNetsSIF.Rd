@@ -6,7 +6,7 @@
 \usage{
 writeNetsSIF(
   netPath,
-  outFile = sprintf("\%s/out.sif", tempdir()),
+  outFile = paste(tempdir(), "out.sif", sep = .Platform$file.sep),
   netSfx = "_cont.txt"
 )
 }
@@ -34,6 +34,7 @@ This utility permits visualization of feature selected networks.
 }
 \examples{
 netDir <- system.file("extdata","example_nets",package="netDx")
-netFiles <- sprintf('\%s/\%s', netDir, dir(netDir,pattern='txt$'))
+netFiles <- paste(netDir,dir(netDir,pattern='txt$'),
+sep=.Platform$file.sep)
 writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 }

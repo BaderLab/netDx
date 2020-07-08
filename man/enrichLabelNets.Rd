@@ -16,7 +16,7 @@ enrichLabelNets(
   enrType = "binary",
   numCores = 1L,
   predClass,
-  tmpDir = "/tmp",
+  tmpDir = tempdir(),
   netGrep = "_cont.txt$",
   getShufResults = FALSE,
   ...

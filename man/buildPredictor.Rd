@@ -214,6 +214,6 @@ makeNets <- function(dataList, groupList, netDir,...) {
 # takes 10 minutes to run
 #out <- buildPredictor(dataList=brca,groupList=groupList,
 #   makeNetFunc=makeNets, ### custom network creation function
-#   outDir=sprintf("\%s/pred_output",tempdir()), ## absolute path
+#   outDir=paste(tempdir(),"pred_output",sep=.Platform$file.sep), ## absolute path
 #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 }

@@ -169,7 +169,7 @@
 #' # takes 10 minutes to run
 #' #out <- buildPredictor(dataList=brca,groupList=groupList,
 #' #   makeNetFunc=makeNets, ### custom network creation function
-#' #   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
+#' #   outDir=paste(tempdir(),"pred_output",sep=.Platform$file.sep), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
@@ -211,6 +211,11 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
 }
 if (!is(dataList,"MultiAssayExperiment"))
 	stop("dataList must be a MultiAssayExperiment")
+
+if (outDir != normalizePath(outDir)) {
+	stop("outDir should be an absolute path, not relative.")
+}
+
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
@@ -291,11 +296,11 @@ for (rngNum in startAt:numSplits) {
 	message(sprintf("Train/test split # %i", rngNum))
 	message(sprintf("-------------------------------"))
 	}
-	outDir <- sprintf("%s/rng%i",megaDir,rngNum)
+	outDir <- paste(megaDir,sprintf("rng%i",rngNum),sep=.Platform$file.sep)
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
-								verbose=verbose_default)
+		verbose=verbose_default)
 	pheno <- pheno_all[which(pheno_all$TT_STATUS %in% "TRAIN"),]
 
 	dats_train <- lapply(dataList, function(x) 
@@ -369,9 +374,11 @@ for (rngNum in startAt:numSplits) {
 		}
 	}
 
-	netDir <- sprintf("%s/tmp",outDir)
+	netDir <- paste(outDir,"tmp",sep=.Platform$file.sep)
 	dir.create(netDir)
+message("about to setup featuredb")
 	pheno_id <- setupFeatureDB(pheno,netDir)
+message("done setting up feature db")
 
 	if (verbose_default) message("** Creating features")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
@@ -386,7 +393,7 @@ for (rngNum in startAt:numSplits) {
 	curList[["featureScores"]] <- list()
 
 	for (g in subtypes) {
-	    pDir <- sprintf("%s/%s",outDir,g)
+	    pDir <- paste(outDir,g,sep=.Platform$file.sep)
 	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE);
 			dir.create(pDir)
 			if (verbose_default) message(sprintf("\tClass: %s",g))
@@ -398,7 +405,7 @@ for (rngNum in startAt:numSplits) {
 }
 		
 			# Cross validation
-			resDir <- sprintf("%s/GM_results",pDir)
+			resDir <- paste(pDir,"GM_results",sep=.Platform$file.sep)
 			message(sprintf("\tScoring features"))
 			runFeatureSelection(trainPred, 
 				outDir=resDir, dbPath=dbDir$dbDir, 
@@ -410,9 +417,12 @@ for (rngNum in startAt:numSplits) {
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
 			if (verbose_default) message("\tCompiling feature scores")
-			pTally <- compileFeatureScores(paste(resDir,nrank,sep="/"),
+			pTally <- compileFeatureScores(paste(resDir,nrank,
+					sep=.Platform$file.sep),
 				verbose=verbose_compileFS)
-			tallyFile <- sprintf("%s/%s_pathway_CV_score.txt",resDir,g)
+			tallyFile <- paste(resDir,
+				sprintf("%s_pathway_CV_score.txt",g),
+				sep=.Platform$file.sep)
 			write.table(pTally,file=tallyFile,sep="\t",
 				col.names=TRUE,row.names=FALSE,
 				quote=FALSE)
@@ -428,9 +438,11 @@ for (rngNum in startAt:numSplits) {
 	curList[["featureSelected"]] <- list()
 	for (g in subtypes) {
 		if (verbose_default) message(sprintf("%s",g))
-		pDir <- sprintf("%s/%s",outDir,g)
+		pDir <- paste(outDir,g,sep=.Platform$file.sep)
 		pTally <- read.delim(
-			sprintf("%s/GM_results/%s_pathway_CV_score.txt",pDir,g),
+			paste(pDir,"GM_results",
+				sprintf("%s_pathway_CV_score.txt",g),
+				sep=.Platform$file.sep),
 			sep="\t",header=TRUE,as.is=TRUE)
 		idx <- which(pTally[,2]>=featSelCutoff)
 
@@ -442,14 +454,15 @@ for (rngNum in startAt:numSplits) {
 
 		if (verbose_default)
 			message(sprintf("\t%i feature(s) selected",length(pTally)))
-		netDir <- sprintf("%s/networks",pDir)
+		netDir <- paste(pDir,"networks",sep=.Platform$file.sep)
 
 		dats_tmp <- list()
 		for (nm in names(dataList)) {
 			passed <- rownames(dats_train[[nm]])
 			tmp <- dataList[[nm]]
 			# only variables passing prefiltering should be used to make PSN
-			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),,drop=FALSE] 
+			dats_tmp[[nm]] <- tmp[which(rownames(tmp) %in% passed),,
+				drop=FALSE] 
 		}		
 
 		# ------
@@ -484,7 +497,7 @@ for (rngNum in startAt:numSplits) {
 
 		if (verbose_default) message(sprintf("\tCreate & compile features",g))
 		if (length(pTally)>=1) {
-		netDir <- sprintf("%s/tmp",pDir)
+		netDir <- paste(pDir,"tmp",sep=.Platform$file.sep)
 		dir.create(netDir)
 		pheno_id <- setupFeatureDB(pheno,netDir)
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
@@ -496,7 +509,7 @@ for (rngNum in startAt:numSplits) {
 
 		# run query for this class
 		qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
-		qFile <- sprintf("%s/%s_query",pDir,g)
+		qFile <- paste(pDir,sprintf("%s_query",g),sep=.Platform$file.sep)
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		if (verbose_default) message(sprintf("\t** %s: Compute similarity",g))
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
@@ -519,8 +532,8 @@ for (rngNum in startAt:numSplits) {
 		predClass <- predictPatientLabels(predRes,
 			verbose=verbose_predict)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
-		outFile <- sprintf("%s/predictionResults.txt",outDir)
-		
+		outFile <- paste(outDir,"predictionResults.txt",
+			sep=.Platform$file.sep)
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		if (verbose_default)
 			message(sprintf("Split %i: ACCURACY (N=%i test) = %2.1f%%",

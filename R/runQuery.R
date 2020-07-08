@@ -24,11 +24,12 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     
     GM_jar <- getGMjar_path()
     qBase <- basename(queryFiles[[1]][1])
-    logFile <- sprintf("%s/%s.log", resDir, qBase)
+    logFile <- paste(resDir,sprintf("%s.log",qBase))
     queryStrings <- paste(queryFiles, collapse = " ")
 
 	args <- c()
-	java_ver <- suppressWarnings(system2("java", args="--version",stdout=TRUE,stderr=NULL))
+	java_ver <- suppressWarnings(system2("java", 
+		args="--version",stdout=TRUE,stderr=NULL))
 	if (any(grep(" 11",java_ver))) {
 		if (verbose) message("Java 11 detected")
 	} else {
@@ -46,7 +47,8 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     # file is not actually created - is already split in PRANK and 
 		# NRANK segments on
     # GeneMANIA side
-    resFile <- sprintf("%s/%s-results.report.txt", resDir, qBase)
+    resFile <- paste(resDir,sprintf("%s-results.report.txt",qBase),
+		sep=.Platform$file.sep)
     t0 <- Sys.time()
 	if (debugMode) {
 		message(sprintf("java %s",paste(args,collapse=" ")))

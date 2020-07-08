@@ -20,7 +20,7 @@
 #' 			writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
-#' tmpDir <- tempdir(); netDir <- sprintf('%s/nets',tmpDir)
+#' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",sep=.Platform$file.sep)
 #' dir.create(netDir,recursive=TRUE)
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)

@@ -29,10 +29,10 @@
 #' 
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
+#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
+#' write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
@@ -127,10 +127,10 @@ out
 #' 
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=sprintf("%s/net1.nettxt",d),sep="\t",
+#' write.table(m1,file=paste(d,"net1.nettxt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=sprintf("%s/net2.nettxt",d),sep="\t",
+#' write.table(m2,file=paste(d,"net2.nettxt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
@@ -141,7 +141,7 @@ getEnr	<- function(netDir, pheno_DF,predClass,netGrep="_cont.txt$",
 if (missing(predClass)) stop("predClass must be supplied.\n")
 
 fList	<- dir(path=netDir,pattern=netGrep)
-fList	<- paste(netDir,fList,sep="/")
+fList	<- paste(netDir,fList,sep=.Platform$file.sep)
 message(sprintf("Got %i networks", length(fList)))
 
 # get + and - IDs
@@ -187,10 +187,11 @@ message("* Computing real (+,+) (+,-)")
 #' d <- tempdir()
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
+#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),
+#'	sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
-#' countIntType(sprintf("%s/net1.txt",d),c("P1","P2","P3"),
+#' countIntType(paste(d,"net1.txt",sep=.Platform$file.sep),c("P1","P2","P3"),
 #'	c("P4","P5"))
 countIntType <- function(inFile, plusID, minusID) { 
 	dat <- read.delim(inFile,sep="\t",header=FALSE,as.is=TRUE)
@@ -216,13 +217,13 @@ countIntType <- function(inFile, plusID, minusID) {
 #' d <- tempdir()
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=sprintf("%s/net1.txt",d),sep="\t",
+#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=sprintf("%s/net2.txt",d),sep="\t",
+#' write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' 
-#' countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep="/"),
+#' countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=.Platform$file.sep),
 #' 	c("P1","P2","P3"),c("P4","P5"))
 #' @export
 countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
@@ -237,11 +238,11 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	curRand <- randString()
 
 	bkFile <- sprintf("%s.bk",curRand)
-	if (file.exists(sprintf("%s/%s",tmpDir,bkFile))) 
-		file.remove(sprintf("%s/%s",tmpDir,bkFile))
 	descFile <- sprintf("%s.desc",curRand)
-	if (file.exists(sprintf("%s/%s",tmpDir,descFile)))
-		file.remove(sprintf("%s/%s",tmpDir,descFile))
+	bkFull <- paste(tmpDir,bkFile,sep=.Platform$file.sep)
+	descFull <- paste(tmpDir,descFile,sep=.Platform$file.sep)
+	if (file.exists(bkFull)) file.remove(bkFull)
+	if (file.exists(descFull)) file.remove(descFull)
 
 	out <- big.matrix(NA, nrow=length(inFiles),ncol=2,
 					  type="double",
@@ -249,12 +250,13 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 					  backingpath=tmpDir,
 					  descriptorfile=descFile
 	)
-	cl <- makeCluster(numCores,outfile=sprintf("%s/shuffled_log.txt",tmpDir))
+	cl <- makeCluster(numCores,
+		outfile=paste(tmpDir,"shuffled_log.txt",sep=.Platform$file.sep))
 	registerDoParallel(cl)
 
 	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
-		m <-attach.big.matrix(sprintf("%s/%s",tmpDir,descFile))
+		m <-attach.big.matrix(paste(tmpDir,descFile,sep=.Platform$file.sep))
 		if (enrType == "binary")
 			m[k,]	<- countIntType(inFiles[k], plusID,minusID)
 		else if (enrType == "corr")
@@ -264,8 +266,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	stopCluster(cl)
 	
 	out	<- as.matrix(out)
-	unlink(sprintf("%s/%s",tmpDir,bkFile))
-	unlink(sprintf("%s/%s",tmpDir,descFile))
+	unlink(bkFull)
+	unlink(descFull)
 
 	return(out)
 }

@@ -93,7 +93,7 @@ pathDF <- data.frame(PATHWAY_NAME=names(pTally),SCORE=unlist(pTally))
 pathDF[,2] <- as.integer(as.character(pathDF[,2]))
 pathDF <- pathDF[order(pathDF[,2],decreasing=TRUE),]
 
-tmpOut <- sprintf("%s/pathway_cumTally.txt",outDir)
+tmpOut <- paste(outDir,"pathway_cumTally.txt",sep=.Platform$file.sep)
 write.table(pathDF, file=tmpOut,sep="\t",col.names=TRUE, 
 	row.names=FALSE,quote=FALSE)
 
@@ -286,15 +286,15 @@ for (k in seq_len(length(resampPerf))) {
 
 out[["resamplingPerformance"]] <- resampPerf
 
-save(resampPerf,file=sprintf("%s/resamplingPerf.Rdata",outDir))
+save(resampPerf,file=paste(outDir,"resamplingPerf.Rdata",sep=.Platform$file.sep))
 
 # add IDs of contributing samples
 outdf <- data.frame(outdf)
 outdf <- cbind(outdf, CONTRIBUT_PRED=predContr,
 			   CONTRIBUT_OTHER=otherContr)
 
-outFile <- sprintf("%s/RR_changeNetSum_stats_denAllNets.txt",
-				   outDir)
+outFile <- paste(outDir,"RR_changeNetSum_stats_denAllNets.txt",
+	sep=.Platform$file.sep)
 write.table(outdf,file=outFile,sep="\t",
 	col.names=TRUE,row.names=FALSE,quote=FALSE)
 out[["performance_denAllNets"]] <- outdf
@@ -309,8 +309,8 @@ if (enrichLabels) {
 	outdf_enriched <- cbind(outdf_enriched, CONTRIBUT_PRED=predContr_cl,
 			   CONTRIBUT_OTHER=otherContr_cl)
 	
-	outFile <- sprintf("%s/RR_changeNetSum_stats_denEnrichedNets.txt",
-				   outDir)
+	outFile <- paste(outDir,"RR_changeNetSum_stats_denEnrichedNets.txt",
+		sep=.Platform$file.sep)
 write.table(outdf_enriched,file=outFile,sep="\t",
 	col.names=TRUE,row.names=FALSE,quote=FALSE)
 out[["performance_denEnrichedNets"]] <- outdf_enriched

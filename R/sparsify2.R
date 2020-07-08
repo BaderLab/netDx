@@ -22,7 +22,7 @@
 #' data(xpr); 
 #' sparsify2(cor(xpr))
 #' @export
-sparsify2 <- function(W, outFile = sprintf("%s/tmp.txt",tempdir()),
+sparsify2 <- function(W, outFile = paste(tempdir(),"tmp.txt",sep=.Platform$file.sep),
 		cutoff = 0.3, maxInt = 50, 
 		EDGE_MAX = 1000,includeAllNodes = TRUE, verbose = TRUE) {
     

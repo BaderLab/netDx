@@ -94,7 +94,7 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 		binNets <- which(nets[,"isBinary"]>0)
 		message(sprintf("Got %i binary nets", length(binNets)))
 		for (i in binNets) {
-			nf<- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
+			nf<- sprintf(netDir,nets$NET_ID[i],sep=.Platform$file.sep)
 			ints <- read.delim(nf,sep="\t",header=F,as.is=T)
 			ints <- subset(ints, ints[,3]>=filterEdgeWt) # probably never needed but
 												 		# harmless
@@ -104,7 +104,7 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 				intColl[midx] <- intColl[midx] + ints[,3] # increase tally for pairs
 														# with shared events
 				numInt[midx] <- 1 # count all binary nets exactly once, as we will 
-								# create a single measure for them all.
+				# create a single measure for them all.
 			}
 		}
 
@@ -126,7 +126,7 @@ writeWeightedNets <- function(patientIDs,netIDs,netDir,keepNets,
 
 	# aggregate nets - continuous-valued nets
 	for (i in contNets) { 
-		nf <- sprintf("%s/1.%s.txt", netDir,nets$NET_ID[i])
+		nf <- paste(netDir,sprintf("1.%s.txt", nets$NET_ID[i]),sep=.Platform$file.sep)
 		ints <- read.delim(nf,sep="\t",header=F,as.is=T)
 		oldcount <- nrow(ints)
 		ints <- subset(ints, ints[,3]>=filterEdgeWt)

@@ -26,7 +26,7 @@
 #' data(MB.pheno)
 #' dbPath <- system.file("extdata","dbPath",package="netDx")
 #' runFeatureSelection(MB.pheno$ID[which(MB.pheno$STATUS%in% 'WNT')],
-#' 		'~/tmp',dbPath,103L)
+#' 		tempdir(),dbPath,103L)
 #' @export
 runFeatureSelection <- function(trainID_pred, outDir, dbPath, 
 		numTrainSamps = NULL, incNets = "all", orgName = "predictor", 
@@ -43,8 +43,8 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath,
     
     # write query files
     for (m in seq_len(length(qSamps))) {
-        qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
-        
+        qFile <- paste(outDir,sprintf("%s_%i.query", fileSfx, m),
+		sep=.Platform$file.sep)
         if (is.null(numTrainSamps)) {
             numTrainSamps = 5
             message("Memory saver option: using 5 training samples for CV")
@@ -54,7 +54,8 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath,
     }
     qFiles <- list()
     for (m in seq_len(length(qSamps))) {
-        qFile <- sprintf("%s/%s_%i.query", outDir, fileSfx, m)
+        qFile <- paste(outDir,sprintf("%s_%i.query", fileSfx, m),
+		sep=.Platform$file.sep)
         qFiles <- append(qFiles, qFile)
     }
     

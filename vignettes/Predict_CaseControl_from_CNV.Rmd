@@ -17,7 +17,8 @@ vignette: >
 suppressMessages(require(netDx))
 suppressMessages(require(GenomicRanges))
 # read patient CNVs
-phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
+	sep=.Platform$file.sep)
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 # sample metadata table must have ID and STATUS columns
 colnames(pheno)[1] <- "ID"
@@ -53,7 +54,8 @@ gene_GR     <- GRanges(genes[,1],
 )
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
-outDir <- sprintf("%s/200129_threeWay",tempdir())
+
+outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
 predictClass	<- "case"
 out <- suppressMessages(
@@ -124,11 +126,13 @@ suppressMessages(require(GenomicRanges))
 CNV coordinates are read in, and converted into a `GRanges` object. As always, the sample metadata table, here the `pheno` object, must have `ID` and `STATUS` columns.
 
 ```{r,eval=TRUE}
-outDir <- sprintf("%s/200129_threeWay",tempdir())
+
+outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
 cat("* Setting up sample metadata\n")
-phenoFile <- sprintf("%s/extdata/AGP1_CNV.txt",path.package("netDx"))
+phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
+	sep=.Platform$file.sep)
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 colnames(pheno)[1] <- "ID"
 head(pheno)
@@ -181,7 +185,7 @@ the user does not provide a custom similarity function in this application; curr
 
 ```{r,eval=TRUE}
 predictClass	<- "case"
-out <- suppressMessages(
+out <- suppressMessages( 
    buildPredictor_sparseGenetic(pheno, cnv_GR, predictClass,
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,

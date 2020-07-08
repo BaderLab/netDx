@@ -145,15 +145,15 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
 
-	netDir <- sprintf("%s/networks_orig",outDir)
+	netDir <- paste(outDir,"networks_orig",sep=.Platform$file.sep)
 
-#message("making rangesets")
+message("making rangesets")
 	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
 		verbose=FALSE)
 
-#message("counting patients in net")
+message("counting patients in net")
 	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
-#message("updating nets")
+message("updating nets")
 	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE,verbose=FALSE)
 
 	netmat	<- tmp[[1]]
@@ -185,11 +185,12 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		message("----------------------------------------")
 		print(table(pheno[,c("STATUS","TT_STATUS")]))
 	
-		newOut <- sprintf("%s/part%i",outDir,k)
+		newOut <- paste(outDir,sprintf("part%i",k),
+			sep=.Platform$file.sep)
 		dir.create(newOut)
 
 		# write patient status for this round. 
-		outF <- sprintf("%s/TT_STATUS.txt",newOut)
+		outF <- paste(newOut,"TT_STATUS.txt",sep=.Platform$file.sep)
 		write.table(pheno,file=outF,sep="\t",col.names=TRUE,
 			row.names=FALSE,quote=FALSE)
 	
@@ -200,17 +201,17 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		
 		# update nets
 		message("Training only:")
-		trainNetDir <- sprintf("%s/networks",newOut)
-		tmp			<- updateNets(p_train,pheno_train, 
-							oldNetDir=netDir, newNetDir=trainNetDir,
-							verbose=FALSE)
+		trainNetDir <- paste(newOut,"networks",sep=.Platform$file.sep)
+		tmp	<- updateNets(p_train,pheno_train, 
+				oldNetDir=netDir, newNetDir=trainNetDir,
+				verbose=FALSE)
 		p_train		<- tmp[[1]]
 		pheno_train	<- tmp[[2]]
 
 		# label enrichment
 		if (enrichLabels) {
 			message("Running label enrichment")
-			tmpDir <- sprintf("%s/tmp",outDir)
+			tmpDir <- paste(outDir,"tmp",sep=.Platform$file.sep)
 			if (!file.exists(tmpDir)) dir.create(tmpDir)
 			netInfo <- enrichLabelNets(trainNetDir,pheno_train,newOut,
 				predClass=predClass,numReps=numPermsEnrich,
@@ -223,10 +224,11 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 				which(colnames(p_train) %in% rownames(netInfo))]
 		
 			# update nets after enrichment
-			trainNetDir <- sprintf("%s/networksEnriched",newOut)
-			tmp			<- updateNets(p_train, pheno_train,
-							oldNetDir=netDir, 
-							newNetDir=trainNetDir,verbose=FALSE)
+			trainNetDir <- paste(newOut,"networksEnriched",
+				sep=.Platform$file.sep)
+			tmp	<- updateNets(p_train, pheno_train,
+				oldNetDir=netDir, 
+				newNetDir=trainNetDir,verbose=FALSE)
 			p_train		<- tmp[[1]]
 			pheno_train	<- tmp[[2]]
 
@@ -235,7 +237,8 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 
 		pheno_train <- setupFeatureDB(pheno_train,trainNetDir)
 		moveInteractionNets(netDir=trainNetDir,
-				outDir=sprintf("%s/INTERACTIONS",trainNetDir),
+				outDir=paste(trainNetDir,"INTERACTIONS",
+					sep=.Platform$file.sep),
 				pheno=pheno_train)
 		
 		# create networks for cross-validation
@@ -244,8 +247,8 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		# we query for training samples of the predictor class
 		trainPred <- pheno_train$ID[
 			which(pheno_train$STATUS %in% predClass)]
-		resDir    <- sprintf("%s/GM_results",newOut)
-		dbPath     <- sprintf("%s/dataset",newOut)
+		resDir  <- paste(newOut,"GM_results",sep=.Platform$file.sep)
+		dbPath  <- paste(newOut,"dataset",sep=.Platform$file.sep)
 		t0 <- Sys.time()
 		runFeatureSelection(trainID_pred=trainPred, 
 				outDir=resDir, dbPath=dbPath, 
@@ -258,10 +261,12 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 		
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
-			sep="/")
+			sep=.Platform$file.sep)
 		pathwayRank	<- compileFeatureScores(nrankFiles,
 			filter_WtSum=filter_WtSum,verbose=FALSE)
-		write.table(pathwayRank,file=sprintf("%s/pathwayScore.txt",resDir),
+		write.table(pathwayRank,
+			file=paste(resDir,"pathwayScore.txt",
+				sep=.Platform$file.sep),
 			col.names=TRUE,row.names=FALSE,quote=FALSE)
 		
 		pScore[[k]]	<- pathwayRank

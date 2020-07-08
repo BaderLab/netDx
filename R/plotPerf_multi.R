@@ -14,10 +14,10 @@
 #' @examples
 #' inDir <- system.file("extdata","example_output",package="netDx")
 #' all_rng <- list.files(path = inDir, pattern = 'rng.')
-#' fList <- sprintf('%s/%s/predictionResults.txt', inDir,all_rng)
+#' fList <- paste(inDir,all_rng,'predictionResults.txt',sep=.Platform$file.sep)
 #' rocList <- list()
 #' for (k in seq_len(length(fList))) {
-#'   dat <- read.delim(fList[1],sep='\t',h=TRUE,as.is=TRUE)
+#'   dat <- read.delim(fList[1],sep='\t',header=TRUE,as.is=TRUE)
 #'   predClasses <- c('LumA', 'notLumA')
 #'   pred_col1 <- sprintf('%s_SCORE',predClasses[1])
 #'   pred_col2 <- sprintf('%s_SCORE',predClasses[2])

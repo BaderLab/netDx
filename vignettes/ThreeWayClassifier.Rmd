@@ -105,7 +105,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 
 # run predictor 
 set.seed(42) # make results reproducible
-outDir <- sprintf("%s/pred_output",tempdir()) # location for intermediate work
+outDir <- paste(tempdir(),"pred_output",sep=.Platform$file.sep)
 # To see all messages, remove suppressMessages() 
 # and set logging="default".
 # To keep all intermediate data, set keepAllData=TRUE
@@ -304,7 +304,7 @@ set.seed(42) # make results reproducible
 # set keepAllData to TRUE to not delete at the end of the 
 # predictor run.
 # This can be useful for debugging.
-outDir <- sprintf("%s/pred_output",tempdir()) 
+outDir <- paste(tempdir(),"pred_output",sep=.Platform$file.sep)
 
 numSplits <- 2L
 out <- suppressMessages(

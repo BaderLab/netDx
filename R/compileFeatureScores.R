@@ -27,8 +27,8 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
         tmp <- basename(fName)
         
         try(
-					dat <- read.delim(fName, sep = "\t", header = TRUE, 
-						as.is = TRUE, skip = 1),silent = TRUE)
+		dat <- read.delim(fName, sep = "\t", header = TRUE, 
+		as.is = TRUE, skip = 1),silent = TRUE)
         ctr <- ctr + 1
         
         if (!inherits(dat, "try-error")) {
@@ -39,7 +39,7 @@ compileFeatureScores <- function(fList, filter_WtSum = 100, verbose = FALSE) {
             }
             
             # actually - it should already be sorted in decreasing 
-						# order if we don't reverse
+		# order if we don't reverse
             # it above - but let's sort anyway
             dat <- dat[order(dat$Weight, decreasing = TRUE), ]
             

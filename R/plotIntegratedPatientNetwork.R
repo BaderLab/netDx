@@ -71,7 +71,7 @@ pheno <- dat$pheno[,c("ID","STATUS")]
 
 if (!file.exists(outDir)) dir.create(outDir)
 profDir <- paste(outDir,"profiles",sep=.Platform$file.sep)
-if (!file.exists(profDir) dir.create(profDir)
+if (!file.exists(profDir)) dir.create(profDir)
 
 # create input networks
 pheno_id <- setupFeatureDB(pheno,outDir)

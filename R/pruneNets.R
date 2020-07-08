@@ -60,14 +60,15 @@ pruneNets <- function(oldDir, newDir=tempdir(),
         if (verbose) 
             message(sprintf("Limiting to %i patients\n", length(filterIDs)))
         for (f in filterNets) {
-            dat <- read.delim(paste(oldDir,f),sep=.Platform$file.sep), sep = "\t", 
+            dat <- read.delim(paste(oldDir,f,sep=.Platform$file.sep), 
+		sep = "\t", 
 		header = FALSE, as.is = TRUE)
             
             # both nodes of edge should be eligible
             idx <- intersect(which(dat[, 1] %in% filterIDs), 
 		which(dat[, 2] %in% filterIDs))
             
-            write.table(dat[idx, ], file = paste(netDir,f,sep=.Platform$file.sep),
+            write.table(dat[idx, ], file = paste(newDir,f,sep=.Platform$file.sep),
 		sep = "\t", col.names = FALSE, row.names = FALSE, 
 		quote = FALSE)
         }

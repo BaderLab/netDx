@@ -38,7 +38,8 @@
 #' NA
 #' @examples
 #' data(xpr,pheno)
-#' pathwayList <- list(pathA=rownames(xpr)[1:10],pathB=rownames(xpr)[21:50])
+#' pathwayList <- list(pathA=rownames(xpr)[1:10],
+#'	pathB=rownames(xpr)[21:50])
 #' 
 #' dataList <- list(rna=xpr)  #only one layer type
 #' groupList <- list(rna=pathwayList) # group genes by pathways
@@ -50,14 +51,16 @@
 #'					writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
-#' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",sep=.Platform$file.sep)
+#' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
+#'	sep=.Platform$file.sep)
 #' dir.create(netDir,recursive=TRUE)
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
 #' netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
 #'     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
 #' 
-#' outDir <- paste(tmpDir,'dbdir',sep=.Platform$file.sep); dir.create(outDir)
+#' outDir <- paste(tmpDir,'dbdir',sep=.Platform$file.sep); 
+#'	dir.create(outDir)
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
 #' @export

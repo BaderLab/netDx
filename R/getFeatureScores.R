@@ -34,14 +34,15 @@ getFeatureScores <- function(inDir, predClasses, getFullCons = TRUE) {
         if (is(inDir, "character")) {
             message("\tSingle directory provided, retrieving CV score files\n")
             rngDirs <- dir(path = inDir, pattern = "^rng")
-            fList <- sprintf("%s/%s/%s/GM_results/%s_pathway_CV_score.txt", 
-								inDir, rngDirs, gp, gp)
+            fList <- paste(inDir,rngDirs,gp,"GM_results",
+			sprintf("%s_pathway_CV_score.txt",gp),
+			sep=.Platform$file.sep) 
         } else {
             message("\tList of filenames provided\n")
             fList <- inDir[[gp]]
         }
         
-        message(sprintf("Got %i iterations\n", length(fList)))
+        message(sprintf("Got %i iterations", length(fList)))
         netColl <- list()
         
         for (scoreFile in fList) {

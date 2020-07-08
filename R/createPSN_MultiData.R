@@ -154,39 +154,44 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(),
         name2 = netList, 0, 1, stringsAsFactors = TRUE)
     
     # move network files
+	fsep=.Platform$file.sep
     prof <- grep(".profile$", netList)
     if (length(prof) > 0) {
         prof <- netList[prof]
-        dir.create(sprintf("%s/profiles", netDir))
+        dir.create(paste(netDir,"profiles",sep=fsep))
         for (p in prof) {
-            file.rename(from = sprintf("%s/%s", netDir, p), 
-							to = sprintf("%s/profiles/1.%i.profile", 
-                netDir, netID$ID[which(netID$name == p)]))
+            file.rename(from = paste(netDir, p,sep=fsep), 
+			to = paste(netDir,"profiles",
+				sprintf("1.%i.profile", 
+				netID$ID[which(netID$name == p)]),
+				sep=fsep))
         }
     }
-    dir.create(sprintf("%s/INTERACTIONS", netDir))
+
+    dir.create(paste(netDir,"INTERACTIONS",sep=fsep))
     cont <- grep("_cont.txt$", netList)
     if (length(cont) > 0) {
         cont <- netList[cont]
         for (p in cont) {
-            file.rename(from = sprintf("%s/%s", netDir, p), 
-							to = sprintf("%s/INTERACTIONS/1.%i.txt", 
-                netDir, netID$ID[which(netID$name == p)]))
+            file.rename(from = paste(netDir,p,sep=fsep),
+		to = paste(netDir,"INTERACTIONS",
+			sprintf("1.%i.txt",netID$ID[which(netID$name == p)]),
+			sep=fsep))
         }
     }
     
     # write NETWORKS.txt
-    write.table(netID, file = sprintf("%s/NETWORKS.txt", netDir), 
-				sep = "\t", col.names = FALSE, 
+    write.table(netID, file = paste(netDir,"NETWORKS.txt",sep=fsep), 
+	sep = "\t", col.names = FALSE, 
         row.names = FALSE, quote = FALSE)
     
     # write NETWORK_GROUPS.txt
-    con <- file(sprintf("%s/NETWORK_GROUPS.txt", netDir), "w")
+    con <- file(paste(netDir,"NETWORK_GROUPS.txt", sep=fsep), "w")
     write(paste(1, "dummy_group", "geneset_1", "dummy_group", 1, sep = "\t"),
 		file = con)
     close(con)
     
-    con <- file(sprintf("%s/NETWORK_METADATA.txt", netDir), "w")
+    con <- file(paste(netDir,"NETWORK_METADATA.txt",sep=fsep), "w")
     tmp <- paste(netID$ID, "", "", "", "", "", "", "", 
 				"", "", 0, "", "", 0, "", 
         "", "", "", "", sep = "\t")

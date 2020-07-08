@@ -169,7 +169,7 @@
 #' # takes 10 minutes to run
 #' #out <- buildPredictor(dataList=brca,groupList=groupList,
 #' #   makeNetFunc=makeNets, ### custom network creation function
-#' #   outDir=sprintf("%s/pred_output",tempdir()), ## absolute path
+#' #   outDir=paste(tempdir(),"pred_output",sep=.Platform$file.sep), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
@@ -297,7 +297,7 @@ for (rngNum in startAt:numSplits) {
 	message(sprintf("Train/test split # %i", rngNum))
 	message(sprintf("-------------------------------"))
 	}
-	outDir <- paste(megaDir,printF("rng%i",rngNum),sep=.Platform$file.sep)
+	outDir <- paste(megaDir,sprintf("rng%i",rngNum),sep=.Platform$file.sep)
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
@@ -377,7 +377,9 @@ for (rngNum in startAt:numSplits) {
 
 	netDir <- paste(outDir,"tmp",sep=.Platform$file.sep)
 	dir.create(netDir)
+message("about to setup featuredb")
 	pheno_id <- setupFeatureDB(pheno,netDir)
+message("done setting up feature db")
 
 	if (verbose_default) message("** Creating features")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
@@ -419,7 +421,7 @@ for (rngNum in startAt:numSplits) {
 			pTally <- compileFeatureScores(paste(resDir,nrank,
 					sep=.Platform$file.sep),
 				verbose=verbose_compileFS)
-			tallyFile <- sprintf(resDir,
+			tallyFile <- paste(resDir,
 				sprintf("%s_pathway_CV_score.txt",g),
 				sep=.Platform$file.sep)
 			write.table(pTally,file=tallyFile,sep="\t",

@@ -251,7 +251,7 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 					  descriptorfile=descFile
 	)
 	cl <- makeCluster(numCores,
-		outfile=paste(tmpDir,"shuffled_log.txt",.Platform$file.sep))
+		outfile=paste(tmpDir,"shuffled_log.txt",sep=.Platform$file.sep))
 	registerDoParallel(cl)
 
 	k <- 0
@@ -266,8 +266,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 	stopCluster(cl)
 	
 	out	<- as.matrix(out)
-	unlink(paste(tmpDir,bkFile,sep=.Platform$file.sep))
-	unlink(paste(tmpDir,descFile,sep=.Platform$file.sep))
+	unlink(bkFull)
+	unlink(descFull)
 
 	return(out)
 }

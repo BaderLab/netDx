@@ -14,13 +14,17 @@
 #' @return No value. Side effect of writing all networks to \code{outFile}
 #' @examples
 #' netDir <- system.file("extdata","example_nets",package="netDx")
-#' netFiles <- sprintf('%s/%s', netDir, dir(netDir,pattern='txt$'))
+#' netFiles <- paste(netDir,dir(netDir,pattern='txt$'),
+#'	sep=.Platform$file.sep)
 #' writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 #' @export
-writeNetsSIF <- function(netPath, outFile=sprintf("%s/out.sif",tempdir()),
+writeNetsSIF <- function(netPath, 
+	outFile=paste(tempdir(),"out.sif",sep=.Platform$file.sep),
 	netSfx = "_cont.txt") {
-    
-    system2(sprintf("cat /dev/null > %s", outFile))
+    if (.Platform$OS.type=="unix") {
+	if (file.exists(outFile)) unlink(outFile)
+	file.create(outFile)
+    } 
     for (n in netPath) {
         netName <- sub(netSfx, "", basename(n))
         message(sprintf("%s\n", netName))

@@ -39,12 +39,12 @@ Counts number of (+,+) and (+,-) interactions in a set of networks
 d <- tempdir()
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=sprintf("\%s/net1.txt",d),sep="\t",
+write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
-write.table(m2,file=sprintf("\%s/net2.txt",d),sep="\t",
+write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
-countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep="/"),
+countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=.Platform$file.sep),
 	c("P1","P2","P3"),c("P4","P5"))
 }

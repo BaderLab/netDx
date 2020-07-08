@@ -51,5 +51,5 @@ for feature selection.
 data(npheno)
 netDir <- system.file("extdata","example_nets",package="netDx")
 netList <- dir(netDir,pattern='txt$')
-writeQueryBatchFile(netDir,netList, '~/tmp', npheno$ID)
+writeQueryBatchFile(netDir,netList, tempdir(), npheno$ID)
 }

@@ -6,7 +6,7 @@
 \usage{
 sparsify2(
   W,
-  outFile = sprintf("\%s/tmp.txt", tempdir()),
+  outFile = paste(tempdir(), "tmp.txt", sep = .Platform$file.sep),
   cutoff = 0.3,
   maxInt = 50,
   EDGE_MAX = 1000,

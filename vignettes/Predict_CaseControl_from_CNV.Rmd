@@ -198,7 +198,7 @@ the user does not provide a custom similarity function in this application; curr
 
 ```{r,eval=TRUE}
 predictClass	<- "case"
-out <- suppressMessages(
+out <- suppressMessages( 
    buildPredictor_sparseGenetic(pheno, cnv_GR, predictClass,
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,

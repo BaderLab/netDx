@@ -212,8 +212,10 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
 	stop(paste(msg,sep=""))
 }
 
+if (!is(dataList,"MultiAssayExperiment"))
+	stop("dataList must be a MultiAssayExperiment")
+
 if (outDir != normalizePath(outDir)) {
-	browser()
 	stop("outDir should be an absolute path, not relative.")
 }
 

@@ -47,6 +47,6 @@ data(pheno)
 all_rngs <- list.dirs(inDir, recursive = FALSE)
 all_pred_files <- unlist(lapply(all_rngs, function(x) {
     paste(x, 'predictionResults.txt', 
-	sep = .Platform$file.sep)}))
+	sep = getFileSep())}))
 pred_mat <- getPatientPredictions(all_pred_files, pheno)
 }

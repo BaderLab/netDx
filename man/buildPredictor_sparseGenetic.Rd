@@ -4,23 +4,11 @@
 \alias{buildPredictor_sparseGenetic}
 \title{Performs feature selection using multiple resamplings of the data}
 \usage{
-buildPredictor_sparseGenetic(
-  phenoDF,
-  cnv_GR,
-  predClass,
-  group_GRList,
-  outDir = tempdir(),
-  numSplits = 3L,
-  featScoreMax = 10L,
-  filter_WtSum = 100L,
-  enrichLabels = TRUE,
-  enrichPthresh = 0.07,
-  numPermsEnrich = 2500L,
-  minEnr = -1,
-  numCores = 1L,
-  FS_numCores = NULL,
-  ...
-)
+buildPredictor_sparseGenetic(phenoDF, cnv_GR, predClass, group_GRList,
+  outDir = tempdir(), numSplits = 3L, featScoreMax = 10L,
+  filter_WtSum = 100L, enrichLabels = TRUE, enrichPthresh = 0.07,
+  numPermsEnrich = 2500L, minEnr = -1, numCores = 1L,
+  FS_numCores = NULL, ...)
 }
 \arguments{
 \item{phenoDF}{(data.frame) sample metadat. patient ID,STATUS}
@@ -138,7 +126,7 @@ suppressMessages(require(BiocFileCache))
 
 # read CNV data
 phenoFile <- system.file("extdata","AGP1_CNV.txt",package="netDx")
-pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+pheno   <- read.delim(phenoFile,sep="\\t",header=TRUE,as.is=TRUE)
 colnames(pheno)[1] <- "ID"
 pheno <- pheno[!duplicated(pheno$ID),]
 
@@ -160,7 +148,7 @@ if (!isFALSE(bfcneedsupdate(bfc, rid))){
 	bfcdownload(bfc, rid,ask=FALSE)
 }
 geneFile <- bfcrpath(bfc,rids=rid)
-genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
+genes <- read.delim(geneFile,sep="\\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
    name=genes[,4])

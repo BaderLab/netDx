@@ -43,10 +43,10 @@ predictionResults.txt contains a (data.frame)
 \examples{
 inDir <- system.file("extdata","example_output",package='netDx')
 inFiles <- paste(rep(inDir,3), sprintf("rng\%i",seq_len(3)),"predictionResults.txt",
- sep=.Platform$file.sep)
+ sep=getFileSep())
 resList <- list()
 for (k in seq_len(length(inFiles))) {
-	resList[[k]] <- read.delim(inFiles[k],sep="\t",header=TRUE,as.is=TRUE)
+	resList[[k]] <- read.delim(inFiles[k],sep="\\t",header=TRUE,as.is=TRUE)
 }
 plotPerf(resList, predClasses = c('LumA','notLumA'))
 }

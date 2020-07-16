@@ -4,7 +4,8 @@
 \alias{splitTestTrain_resampling}
 \title{Assign train/test labels over several resamplings of the data.}
 \usage{
-splitTestTrain_resampling(pheno_DF, nFold = 3L, predClass, verbose = FALSE)
+splitTestTrain_resampling(pheno_DF, nFold = 3L, predClass,
+  verbose = FALSE)
 }
 \arguments{
 \item{pheno_DF}{(data.frame) table with patient ID and status.

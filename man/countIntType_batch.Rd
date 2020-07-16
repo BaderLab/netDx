@@ -4,14 +4,8 @@
 \alias{countIntType_batch}
 \title{Counts number of (+,+) and (+,-) interactions in a set of networks}
 \usage{
-countIntType_batch(
-  inFiles,
-  plusID,
-  minusID,
-  tmpDir = tempdir(),
-  enrType = "binary",
-  numCores = 1L
-)
+countIntType_batch(inFiles, plusID, minusID, tmpDir = tempdir(),
+  enrType = "binary", numCores = 1L)
 }
 \arguments{
 \item{inFiles}{(char) path to interaction networks to process}
@@ -39,12 +33,12 @@ Counts number of (+,+) and (+,-) interactions in a set of networks
 d <- tempdir()
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
+write.table(m1,file=paste(d,"net1.txt",sep=getFileSep()),sep="\\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
-write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
+write.table(m2,file=paste(d,"net2.txt",sep=getFileSep()),sep="\\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
-countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=.Platform$file.sep),
+countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=getFileSep()),
 	c("P1","P2","P3"),c("P4","P5"))
 }

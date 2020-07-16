@@ -21,11 +21,11 @@
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),
 #' 	byrow=FALSE,ncol=3)
 #' write.table(m1,
-#'	file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
+#'	file=paste(d,"net1.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
 #' write.table(m2,
-#'	file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
+#'	file=paste(d,"net2.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' x <- countPatientsInNet(d,c("net1.txt","net2.txt"), pids)
 #' @export
@@ -37,7 +37,7 @@ countPatientsInNet <- function(netDir, fList, ids) {
     
     ctr <- 1
     for (f in fList) {
-        dat <- read.delim(paste(netDir,f,sep=.Platform$file.sep),
+        dat <- read.delim(paste(netDir,f,sep=getFileSep()),
 		sep = "\t", header = FALSE, as.is = TRUE)
         memb <- c(dat[, 1], dat[, 2])  # patients in this network
         outmat[which(ids %in% memb), ctr] <- 1

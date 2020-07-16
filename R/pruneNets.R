@@ -51,8 +51,8 @@ pruneNets <- function(oldDir, newDir=tempdir(),
             # keep all patients
             message("* Including all patients\n")
             for (f in filterNets) {
-                oldf <- paste(oldDir,f,sep=.Platform$file.sep)
-                newf <- paste(newDir,f,sep=.Platform$file.sep)
+                oldf <- paste(oldDir,f,sep=getFileSep())
+                newf <- paste(newDir,f,sep=getFileSep())
                 file.copy(oldf, newf)
             }
         }
@@ -60,7 +60,7 @@ pruneNets <- function(oldDir, newDir=tempdir(),
         if (verbose) 
             message(sprintf("Limiting to %i patients\n", length(filterIDs)))
         for (f in filterNets) {
-            dat <- read.delim(paste(oldDir,f,sep=.Platform$file.sep), 
+            dat <- read.delim(paste(oldDir,f,sep=getFileSep()), 
 		sep = "\t", 
 		header = FALSE, as.is = TRUE)
             
@@ -68,7 +68,7 @@ pruneNets <- function(oldDir, newDir=tempdir(),
             idx <- intersect(which(dat[, 1] %in% filterIDs), 
 		which(dat[, 2] %in% filterIDs))
             
-            write.table(dat[idx, ], file = paste(newDir,f,sep=.Platform$file.sep),
+            write.table(dat[idx, ], file = paste(newDir,f,sep=getFileSep()),
 		sep = "\t", col.names = FALSE, row.names = FALSE, 
 		quote = FALSE)
         }

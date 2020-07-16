@@ -26,7 +26,7 @@ writeQueryBatchFile <- function(netDir, netList, outDir = tempdir(), idFile,
 		orgName = "predictor", 
     orgDesc = "my_predictor", orgAlias = "my_predictor", taxID = 1339) {
     
-    outF <- paste(outDir,"batch.txt",sep=.Platform$file.sep)
+    outF <- paste(outDir,"batch.txt",sep=getFileSep())
     fileConn <- file(outF, "w")
     
     # organism info

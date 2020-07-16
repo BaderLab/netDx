@@ -7,7 +7,7 @@
 #' @importFrom rappdirs user_cache_dir
 .get_cache <- function() {
     cache <- rappdirs::user_cache_dir(appname = "netDx")
-    BiocFileCache::BiocFileCache(cache)
+    BiocFileCache::BiocFileCache(cache,ask=FALSE)
 }
 
 #' download and update GeneMANIA jar file 
@@ -19,9 +19,11 @@
 #' @export
 getGMjar_path <- function(verbose = FALSE) {
 
-	java_ver <- suppressWarnings(system2("java", args="--version",stdout=TRUE,stderr=NULL))
-	if (any(grep(" 11",java_ver))) {
-		if (verbose) message("Java 11 detected")
+	java_ver <- suppressWarnings(
+		system2("java", args="--version",stdout=TRUE,stderr=NULL)
+	)
+	if (any(grep(" 11",java_ver)) || any(grep(" 13",java_ver)) || any(grep(" 14",java_ver))) {
+		if (verbose) message("Java 11/13/14 detected")
     	fileURL <- paste("http://download.baderlab.org/netDx/java11/", 
 			"genemania-netdx.jar",sep="")
 	} else {
@@ -31,14 +33,23 @@ getGMjar_path <- function(verbose = FALSE) {
 	}
 	
     bfc <- .get_cache()
-    rid <- bfcquery(bfc, "GM_jar", "rname")$rid
+    rid_rec <- bfcquery(bfc, "GM_jar", "rname")
+    rid <- rid_rec$rid
+	urlChanged <- FALSE
     if (!length(rid)) {
         if (verbose) 
             message("Downloading GeneMANIA jar file (only required once)")
         rid <- names(bfcadd(bfc, "GM_jar", fileURL))
-    }
-    if (!isFALSE(bfcneedsupdate(bfc, rid))) 
-        bfcdownload(bfc, rid)
+    } else {
+		urlChanged <- rid_rec$fpath != fileURL
+	}
+	if (urlChanged) {
+		message("File path changed. Updating...")
+		bfcupdate(bfc, rid, fpath=fileURL, ask=FALSE)
+	}
+    if (!isFALSE(bfcneedsupdate(bfc, rid))){
+		bfcdownload(bfc, rid,ask=FALSE)
+	}
     
     bfcrpath(bfc, rids = rid)
 }

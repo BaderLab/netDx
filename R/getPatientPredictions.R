@@ -30,7 +30,7 @@
 #' all_rngs <- list.dirs(inDir, recursive = FALSE)
 #' all_pred_files <- unlist(lapply(all_rngs, function(x) {
 #'     paste(x, 'predictionResults.txt', 
-#'		sep = .Platform$file.sep)}))
+#'		sep = getFileSep())}))
 #' pred_mat <- getPatientPredictions(all_pred_files, pheno)
 #' @import ggplot2
 #' @export
@@ -41,7 +41,7 @@ getPatientPredictions <- function(predFiles, pheno, plotAccuracy = FALSE) {
         all_rngs <- all_rngs[grep("rng", all_rngs)]
         predFiles <- unlist(lapply(all_rngs, function(x) {
             paste(x, "predictionResults.txt", 
-		sep = .Platform$file.sep)
+		sep = getFileSep())
         }))
     } else {
         message("predFiles is of length > 1. Assuming filenames provided\n")

@@ -174,7 +174,7 @@ out <- data.frame(NETWORK=basename(fList),
 	Z=orig_z,pctl=orig_pct,Q=qval)
 
 write.table(out,
-	file=paste(outDir,sprintf("%s.stats.txt",outPref),sep=.Platform$file.sep),
+	file=paste(outDir,sprintf("%s.stats.txt",outPref),sep=getFileSep()),
 	sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
 
 if (getShufResults) {

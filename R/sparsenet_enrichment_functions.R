@@ -29,10 +29,10 @@
 #' 
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m1,file=paste(d,"net1.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m2,file=paste(d,"net2.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
@@ -127,10 +127,10 @@ out
 #' 
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=paste(d,"net1.nettxt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m1,file=paste(d,"net1.nettxt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=paste(d,"net2.nettxt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m2,file=paste(d,"net2.nettxt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
 #' # compute enrichment
@@ -141,7 +141,7 @@ getEnr	<- function(netDir, pheno_DF,predClass,netGrep="_cont.txt$",
 if (missing(predClass)) stop("predClass must be supplied.\n")
 
 fList	<- dir(path=netDir,pattern=netGrep)
-fList	<- paste(netDir,fList,sep=.Platform$file.sep)
+fList	<- paste(netDir,fList,sep=getFileSep())
 message(sprintf("Got %i networks", length(fList)))
 
 # get + and - IDs
@@ -187,11 +187,11 @@ message("* Computing real (+,+) (+,-)")
 #' d <- tempdir()
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),
+#' write.table(m1,file=paste(d,"net1.txt",sep=getFileSep()),
 #'	sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #'
-#' countIntType(paste(d,"net1.txt",sep=.Platform$file.sep),c("P1","P2","P3"),
+#' countIntType(paste(d,"net1.txt",sep=getFileSep()),c("P1","P2","P3"),
 #'	c("P4","P5"))
 countIntType <- function(inFile, plusID, minusID) { 
 	dat <- read.delim(inFile,sep="\t",header=FALSE,as.is=TRUE)
@@ -217,13 +217,13 @@ countIntType <- function(inFile, plusID, minusID) {
 #' d <- tempdir()
 #' # write PSN
 #' m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-#' write.table(m1,file=paste(d,"net1.txt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m1,file=paste(d,"net1.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' m2 <- matrix(c("P3","P4",1),nrow=1)
-#' write.table(m2,file=paste(d,"net2.txt",sep=.Platform$file.sep),sep="\t",
+#' write.table(m2,file=paste(d,"net2.txt",sep=getFileSep()),sep="\t",
 #'	col.names=FALSE,row.names=FALSE,quote=FALSE)
 #' 
-#' countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=.Platform$file.sep),
+#' countIntType_batch(paste(d,c("net1.txt","net2.txt"),sep=getFileSep()),
 #' 	c("P1","P2","P3"),c("P4","P5"))
 #' @export
 countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
@@ -239,8 +239,8 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 
 	bkFile <- sprintf("%s.bk",curRand)
 	descFile <- sprintf("%s.desc",curRand)
-	bkFull <- paste(tmpDir,bkFile,sep=.Platform$file.sep)
-	descFull <- paste(tmpDir,descFile,sep=.Platform$file.sep)
+	bkFull <- paste(tmpDir,bkFile,sep=getFileSep())
+	descFull <- paste(tmpDir,descFile,sep=getFileSep())
 	if (file.exists(bkFull)) file.remove(bkFull)
 	if (file.exists(descFull)) file.remove(descFull)
 
@@ -251,12 +251,12 @@ countIntType_batch <- function(inFiles,plusID, minusID,tmpDir=tempdir(),
 					  descriptorfile=descFile
 	)
 	cl <- makeCluster(numCores,
-		outfile=paste(tmpDir,"shuffled_log.txt",sep=.Platform$file.sep))
+		outfile=paste(tmpDir,"shuffled_log.txt",sep=getFileSep()))
 	registerDoParallel(cl)
 
 	k <- 0
 	foreach (k=seq_len(length(inFiles))) %dopar% {
-		m <-attach.big.matrix(paste(tmpDir,descFile,sep=.Platform$file.sep))
+		m <-attach.big.matrix(paste(tmpDir,descFile,sep=getFileSep()))
 		if (enrType == "binary")
 			m[k,]	<- countIntType(inFiles[k], plusID,minusID)
 		else if (enrType == "corr")

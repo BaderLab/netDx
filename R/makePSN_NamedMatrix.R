@@ -78,7 +78,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
             "set writeProfiles=FALSE", sep = ""))
     }
     
-    cl <- makeCluster(numCores, outfile = paste(outDir,"makePSN_log.txt", sep=.Platform$file.sep))
+    cl <- makeCluster(numCores, outfile = paste(outDir,"makePSN_log.txt", sep=getFileSep()))
     if (!runSerially) {
         registerDoParallel(cl)
     } else {
@@ -106,13 +106,13 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
                 outFile <- paste(outDir,sprintf("%s.profile",curSet),
-			sep=.Platform$file.sep)
+			sep=getFileSep())
                 write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
 			sep = "\t", 
                   col.names = FALSE, row.names = TRUE, quote = FALSE)
             } else {
                 outFile <- paste(outDir,sprintf("%s_cont.txt", curSet),
-			sep=.Platform$file.sep)
+			sep=getFileSep())
                 message(sprintf("computing sim for %s", curSet))
                 sim <- getSimilarity(xpr[idx, , drop = FALSE], 
 			type = simMetric, 

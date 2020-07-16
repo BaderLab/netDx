@@ -169,7 +169,7 @@
 #' # takes 10 minutes to run
 #' #out <- buildPredictor(dataList=brca,groupList=groupList,
 #' #   makeNetFunc=makeNets, ### custom network creation function
-#' #   outDir=paste(tempdir(),"pred_output",sep=.Platform$file.sep), ## absolute path
+#' #   outDir=paste(tempdir(),"pred_output",sep=getFileSep()), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
@@ -202,6 +202,8 @@ if (length(groupList)<1) stop("groupList must be of length 1+\n")
 tmp <- unlist(lapply(groupList,class))
 not_list <- sum(tmp == "list")<length(tmp)
 nm1 <-setdiff(names(groupList),"clinical") 
+if (!is(dataList,"MultiAssayExperiment"))
+	stop("dataList must be a MultiAssayExperiment")
 names_nomatch <- any(!nm1 %in% names(dataList))
 if (!is(groupList,"list") || not_list || names_nomatch ) {
 	msg <- c("groupList must be a list of lists.",
@@ -209,10 +211,9 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
   " of networks for this group.")
 	stop(paste(msg,sep=""))
 }
-if (!is(dataList,"MultiAssayExperiment"))
-	stop("dataList must be a MultiAssayExperiment")
 
 if (outDir != normalizePath(outDir)) {
+	browser()
 	stop("outDir should be an absolute path, not relative.")
 }
 
@@ -296,7 +297,7 @@ for (rngNum in startAt:numSplits) {
 	message(sprintf("Train/test split # %i", rngNum))
 	message(sprintf("-------------------------------"))
 	}
-	outDir <- paste(megaDir,sprintf("rng%i",rngNum),sep=.Platform$file.sep)
+	outDir <- paste(megaDir,sprintf("rng%i",rngNum),sep=getFileSep())
 	dir.create(outDir)
 
 	pheno_all$TT_STATUS <- splitTestTrain(pheno_all,pctT=trainProp,
@@ -374,11 +375,9 @@ for (rngNum in startAt:numSplits) {
 		}
 	}
 
-	netDir <- paste(outDir,"tmp",sep=.Platform$file.sep)
+	netDir <- paste(outDir,"tmp",sep=getFileSep())
 	dir.create(netDir)
-message("about to setup featuredb")
 	pheno_id <- setupFeatureDB(pheno,netDir)
-message("done setting up feature db")
 
 	if (verbose_default) message("** Creating features")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
@@ -393,7 +392,7 @@ message("done setting up feature db")
 	curList[["featureScores"]] <- list()
 
 	for (g in subtypes) {
-	    pDir <- paste(outDir,g,sep=.Platform$file.sep)
+	    pDir <- paste(outDir,g,sep=getFileSep())
 	    if (file.exists(pDir)) unlink(pDir,recursive=TRUE);
 			dir.create(pDir)
 			if (verbose_default) message(sprintf("\tClass: %s",g))
@@ -405,7 +404,7 @@ message("done setting up feature db")
 }
 		
 			# Cross validation
-			resDir <- paste(pDir,"GM_results",sep=.Platform$file.sep)
+			resDir <- paste(pDir,"GM_results",sep=getFileSep())
 			message(sprintf("\tScoring features"))
 			runFeatureSelection(trainPred, 
 				outDir=resDir, dbPath=dbDir$dbDir, 
@@ -418,11 +417,11 @@ message("done setting up feature db")
 			nrank <- dir(path=resDir,pattern="NRANK$")
 			if (verbose_default) message("\tCompiling feature scores")
 			pTally <- compileFeatureScores(paste(resDir,nrank,
-					sep=.Platform$file.sep),
+					sep=getFileSep()),
 				verbose=verbose_compileFS)
 			tallyFile <- paste(resDir,
 				sprintf("%s_pathway_CV_score.txt",g),
-				sep=.Platform$file.sep)
+				sep=getFileSep())
 			write.table(pTally,file=tallyFile,sep="\t",
 				col.names=TRUE,row.names=FALSE,
 				quote=FALSE)
@@ -438,11 +437,11 @@ message("done setting up feature db")
 	curList[["featureSelected"]] <- list()
 	for (g in subtypes) {
 		if (verbose_default) message(sprintf("%s",g))
-		pDir <- paste(outDir,g,sep=.Platform$file.sep)
+		pDir <- paste(outDir,g,sep=getFileSep())
 		pTally <- read.delim(
 			paste(pDir,"GM_results",
 				sprintf("%s_pathway_CV_score.txt",g),
-				sep=.Platform$file.sep),
+				sep=getFileSep()),
 			sep="\t",header=TRUE,as.is=TRUE)
 		idx <- which(pTally[,2]>=featSelCutoff)
 
@@ -454,7 +453,7 @@ message("done setting up feature db")
 
 		if (verbose_default)
 			message(sprintf("\t%i feature(s) selected",length(pTally)))
-		netDir <- paste(pDir,"networks",sep=.Platform$file.sep)
+		netDir <- paste(pDir,"networks",sep=getFileSep())
 
 		dats_tmp <- list()
 		for (nm in names(dataList)) {
@@ -497,7 +496,7 @@ message("done setting up feature db")
 
 		if (verbose_default) message(sprintf("\tCreate & compile features",g))
 		if (length(pTally)>=1) {
-		netDir <- paste(pDir,"tmp",sep=.Platform$file.sep)
+		netDir <- paste(pDir,"tmp",sep=getFileSep())
 		dir.create(netDir)
 		pheno_id <- setupFeatureDB(pheno,netDir)
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
@@ -509,7 +508,7 @@ message("done setting up feature db")
 
 		# run query for this class
 		qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS%in%"TRAIN")]
-		qFile <- paste(pDir,sprintf("%s_query",g),sep=.Platform$file.sep)
+		qFile <- paste(pDir,sprintf("%s_query",g),sep=getFileSep())
 		writeQueryFile(qSamps,"all",nrow(pheno),qFile)
 		if (verbose_default) message(sprintf("\t** %s: Compute similarity",g))
 		resFile <- runQuery(dbDir$dbDir,qFile,resDir=pDir,
@@ -533,7 +532,7 @@ message("done setting up feature db")
 			verbose=verbose_predict)
 		out <- merge(x=pheno_all,y=predClass,by="ID")
 		outFile <- paste(outDir,"predictionResults.txt",
-			sep=.Platform$file.sep)
+			sep=getFileSep())
 		acc <- sum(out$STATUS==out$PRED_CLASS)/nrow(out)
 		if (verbose_default)
 			message(sprintf("Split %i: ACCURACY (N=%i test) = %2.1f%%",

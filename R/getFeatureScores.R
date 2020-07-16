@@ -36,7 +36,7 @@ getFeatureScores <- function(inDir, predClasses, getFullCons = TRUE) {
             rngDirs <- dir(path = inDir, pattern = "^rng")
             fList <- paste(inDir,rngDirs,gp,"GM_results",
 			sprintf("%s_pathway_CV_score.txt",gp),
-			sep=.Platform$file.sep) 
+			sep=getFileSep()) 
         } else {
             message("\tList of filenames provided\n")
             fList <- inDir[[gp]]

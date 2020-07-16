@@ -15,11 +15,11 @@
 #' @examples
 #' netDir <- system.file("extdata","example_nets",package="netDx")
 #' netFiles <- paste(netDir,dir(netDir,pattern='txt$'),
-#'	sep=.Platform$file.sep)
+#'	sep=getFileSep())
 #' writeNetsSIF(netFiles,'merged.sif',netSfx='.txt')
 #' @export
 writeNetsSIF <- function(netPath, 
-	outFile=paste(tempdir(),"out.sif",sep=.Platform$file.sep),
+	outFile=paste(tempdir(),"out.sif",sep=getFileSep()),
 	netSfx = "_cont.txt") {
     if (.Platform$OS.type=="unix") {
 	if (file.exists(outFile)) unlink(outFile)

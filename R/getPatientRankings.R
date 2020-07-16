@@ -23,7 +23,7 @@
 #' @examples
 #' data(pheno)
 #' prankFile <- system.file("extdata",
-#'	paste("GM_PRANK","CV_1.query-results.report.txt.PRANK",sep=.Platform$file.sep),
+#'	paste("GM_PRANK","CV_1.query-results.report.txt.PRANK",sep=getFileSep()),
 #' 	package="netDx")
 #' x <- getPatientRankings(prankFile, pheno, 'LumA')
 getPatientRankings <- function(pFile, pheno_DF, predClass, plotIt = FALSE, 

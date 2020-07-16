@@ -44,7 +44,7 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath,
     # write query files
     for (m in seq_len(length(qSamps))) {
         qFile <- paste(outDir,sprintf("%s_%i.query", fileSfx, m),
-		sep=.Platform$file.sep)
+		sep=getFileSep())
         if (is.null(numTrainSamps)) {
             numTrainSamps = 5
             message("Memory saver option: using 5 training samples for CV")
@@ -55,7 +55,7 @@ runFeatureSelection <- function(trainID_pred, outDir, dbPath,
     qFiles <- list()
     for (m in seq_len(length(qSamps))) {
         qFile <- paste(outDir,sprintf("%s_%i.query", fileSfx, m),
-		sep=.Platform$file.sep)
+		sep=getFileSep())
         qFiles <- append(qFiles, qFile)
     }
     

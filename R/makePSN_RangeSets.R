@@ -51,9 +51,9 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
 	if (TEST_MODE) verbose <- TRUE
     
     # num patients per network
-    netCountFile <- paste(netDir,"patient_count.txt",sep=.Platform$file.sep)
+    netCountFile <- paste(netDir,"patient_count.txt",sep=getFileSep())
     # IDs of patients with 1+ interaction in set of networks
-    incPatientFile <- paste(netDir,"inc_patients.txt",sep=.Platform$file.sep) 
+    incPatientFile <- paste(netDir,"inc_patients.txt",sep=getFileSep()) 
     
     uq_loci <- unique(unlist(lapply(rangeSet, function(x) {
         x$name
@@ -78,8 +78,8 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
 				length(uq_patients), 
         length(uq_loci)))
 
-	bkFile <- paste(tempdir(),"pgmat.bk",sep=.Platform$file.sep)
-	descFile <- paste(tempdir(),"pgmat.desc",sep=.Platform$file.sep)
+	bkFile <- paste(tempdir(),"pgmat.bk",sep=getFileSep())
+	descFile <- paste(tempdir(),"pgmat.desc",sep=getFileSep())
 	if (file.exists(bkFile)) unlink(bkFile)
 	if (file.exists(descFile)) unlink(descFile)
 
@@ -160,7 +160,7 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
                   
                   # write network for pathway
                   outFile <- paste(netDir,sprintf("%s_cont.txt",curP),
-			sep=.Platform$file.sep)
+			sep=getFileSep())
                   write.table(pat_pairs, file = outFile, sep = "\t", 
 			col.names = FALSE, 
                 	row.names = FALSE, quote = FALSE)

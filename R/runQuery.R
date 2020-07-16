@@ -48,7 +48,7 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
 		# NRANK segments on
     # GeneMANIA side
     resFile <- paste(resDir,sprintf("%s-results.report.txt",qBase),
-		sep=.Platform$file.sep)
+		sep=getFileSep())
     t0 <- Sys.time()
 	if (debugMode) {
 		message(sprintf("java %s",paste(args,collapse=" ")))

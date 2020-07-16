@@ -145,7 +145,7 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
 
-	netDir <- paste(outDir,"networks_orig",sep=.Platform$file.sep)
+	netDir <- paste(outDir,"networks_orig",sep=getFileSep())
 
 message("making rangesets")
 	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
@@ -186,11 +186,11 @@ message("updating nets")
 		print(table(pheno[,c("STATUS","TT_STATUS")]))
 	
 		newOut <- paste(outDir,sprintf("part%i",k),
-			sep=.Platform$file.sep)
+			sep=getFileSep())
 		dir.create(newOut)
 
 		# write patient status for this round. 
-		outF <- paste(newOut,"TT_STATUS.txt",sep=.Platform$file.sep)
+		outF <- paste(newOut,"TT_STATUS.txt",sep=getFileSep())
 		write.table(pheno,file=outF,sep="\t",col.names=TRUE,
 			row.names=FALSE,quote=FALSE)
 	
@@ -201,7 +201,7 @@ message("updating nets")
 		
 		# update nets
 		message("Training only:")
-		trainNetDir <- paste(newOut,"networks",sep=.Platform$file.sep)
+		trainNetDir <- paste(newOut,"networks",sep=getFileSep())
 		tmp	<- updateNets(p_train,pheno_train, 
 				oldNetDir=netDir, newNetDir=trainNetDir,
 				verbose=FALSE)
@@ -211,7 +211,7 @@ message("updating nets")
 		# label enrichment
 		if (enrichLabels) {
 			message("Running label enrichment")
-			tmpDir <- paste(outDir,"tmp",sep=.Platform$file.sep)
+			tmpDir <- paste(outDir,"tmp",sep=getFileSep())
 			if (!file.exists(tmpDir)) dir.create(tmpDir)
 			netInfo <- enrichLabelNets(trainNetDir,pheno_train,newOut,
 				predClass=predClass,numReps=numPermsEnrich,
@@ -225,7 +225,7 @@ message("updating nets")
 		
 			# update nets after enrichment
 			trainNetDir <- paste(newOut,"networksEnriched",
-				sep=.Platform$file.sep)
+				sep=getFileSep())
 			tmp	<- updateNets(p_train, pheno_train,
 				oldNetDir=netDir, 
 				newNetDir=trainNetDir,verbose=FALSE)
@@ -238,7 +238,7 @@ message("updating nets")
 		pheno_train <- setupFeatureDB(pheno_train,trainNetDir)
 		moveInteractionNets(netDir=trainNetDir,
 				outDir=paste(trainNetDir,"INTERACTIONS",
-					sep=.Platform$file.sep),
+					sep=getFileSep()),
 				pheno=pheno_train)
 		
 		# create networks for cross-validation
@@ -247,8 +247,8 @@ message("updating nets")
 		# we query for training samples of the predictor class
 		trainPred <- pheno_train$ID[
 			which(pheno_train$STATUS %in% predClass)]
-		resDir  <- paste(newOut,"GM_results",sep=.Platform$file.sep)
-		dbPath  <- paste(newOut,"dataset",sep=.Platform$file.sep)
+		resDir  <- paste(newOut,"GM_results",sep=getFileSep())
+		dbPath  <- paste(newOut,"dataset",sep=getFileSep())
 		t0 <- Sys.time()
 		runFeatureSelection(trainID_pred=trainPred, 
 				outDir=resDir, dbPath=dbPath, 
@@ -261,12 +261,12 @@ message("updating nets")
 		
 		# collect results
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
-			sep=.Platform$file.sep)
+			sep=getFileSep())
 		pathwayRank	<- compileFeatureScores(nrankFiles,
 			filter_WtSum=filter_WtSum,verbose=FALSE)
 		write.table(pathwayRank,
 			file=paste(resDir,"pathwayScore.txt",
-				sep=.Platform$file.sep),
+				sep=getFileSep()),
 			col.names=TRUE,row.names=FALSE,quote=FALSE)
 		
 		pScore[[k]]	<- pathwayRank

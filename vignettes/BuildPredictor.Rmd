@@ -89,7 +89,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 
 # run predictor 
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),"pred_output",sep=.Platform$file.sep)
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
 # To see all messages, remove suppressMessages() and set logging="default".
 # To keep all intermediate data, set keepAllData=TRUE
 out <- buildPredictor(
@@ -140,12 +140,12 @@ gmtFiles <- list()
 nodeAttrFiles <- list()
 
 for (g in names(Emap_res)) {
-    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=.Platform$file.sep)
+    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=getFileSep())
     write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
         sep="\t",col=TRUE,row=FALSE,quote=FALSE)
     nodeAttrFiles[[g]] <- outFile
 
-    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=.Platform$file.sep)
+    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=getFileSep())
     conn <- suppressWarnings(
          suppressMessages(base::file(outFile,"w")))
     tmp <- Emap_res[[g]][["featureSets"]]
@@ -400,7 +400,7 @@ These are unrealistically low values set so the example will run fast. In practi
  
 ```{r,eval=TRUE}
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),"pred_output",sep=.Platform$file.sep)
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
 # set keepAllData=TRUE to not delete at the end of the predictor run.
 # This can be useful for debugging.
 out <- suppressMessages(
@@ -511,12 +511,12 @@ gmtFiles <- list()
 nodeAttrFiles <- list()
 
 for (g in names(Emap_res)) {
-    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=.Platform$file.sep)
+    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=getFileSep())
     write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
         sep="\t",col=TRUE,row=FALSE,quote=FALSE)
     nodeAttrFiles[[g]] <- outFile
 
-    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=.Platform$file.sep)
+    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=getFileSep())
     conn <- suppressWarnings(
          suppressMessages(base::file(outFile,"w")))
     tmp <- Emap_res[[g]][["featureSets"]]

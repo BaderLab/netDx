@@ -4,20 +4,10 @@
 \alias{compileFeatures}
 \title{Create GeneMANIA database}
 \usage{
-compileFeatures(
-  netDir,
-  outDir = tempdir(),
-  simMetric = "pearson",
-  netSfx = "txt$",
-  verbose = TRUE,
-  numCores = 1L,
-  P2N_threshType = "off",
-  P2N_maxMissing = 100,
-  JavaMemory = 4L,
-  altBaseDir = NULL,
-  debugMode = FALSE,
-  ...
-)
+compileFeatures(netDir, outDir = tempdir(), simMetric = "pearson",
+  netSfx = "txt$", verbose = TRUE, numCores = 1L,
+  P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L,
+  altBaseDir = NULL, debugMode = FALSE, ...)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -91,14 +81,14 @@ makeNets <- function(dataList, groupList, netDir,...) {
     unlist(netList)
 }
 tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
-sep=.Platform$file.sep)
+sep=getFileSep())
 dir.create(netDir,recursive=TRUE)
 
 pheno_id <- setupFeatureDB(pheno,netDir)
 netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
 
-outDir <- paste(tmpDir,'dbdir',sep=.Platform$file.sep); 
+outDir <- paste(tmpDir,'dbdir',sep=getFileSep()); 
 dir.create(outDir)
 dbDir <- compileFeatures(netDir,outDir)
 }

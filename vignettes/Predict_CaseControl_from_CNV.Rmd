@@ -19,19 +19,22 @@ suppressMessages(require(GenomicRanges))
 
 # read patient CNVs
 phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
-	sep=.Platform$file.sep)
+	sep=getFileSep())
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 # sample metadata table must have ID and STATUS columns
 colnames(pheno)[1] <- "ID"
+
 # create GRanges object. 
 # Must have ID and LOCUS_NAMES in metadata
 cnv_GR    <- GRanges(pheno$seqnames,
 		IRanges(pheno$start,pheno$end),
 		ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
+
 pathFile <- fetchPathwayDefinitions(
 	"February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
+
 # get gene coordinates, use hg18
 require(BiocFileCache)
 geneURL <- paste("http://download.baderlab.org/netDx/",
@@ -53,11 +56,13 @@ gene_GR     <- GRanges(genes[,1],
 		IRanges(genes[,2],genes[,3]),
    	name=genes[,4]
 )
+
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
-outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
+outDir <- paste(tempdir(),"ASD",sep=getFileSep())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
+
 predictClass	<- "case"
 out <- suppressMessages(
    buildPredictor_sparseGenetic(
@@ -67,6 +72,7 @@ out <- suppressMessages(
       enrichLabels=TRUE,numPermsEnrich=20L,
       numCores=2L)
 )
+
 # plot ROC curve. Note that the denominator only includes
 # patients with events in networks that are label-enriched
 dat	<- out$performance_denEnrichedNets
@@ -77,6 +83,7 @@ plot(0,0,type="n",xlim=c(0,100),ylim=c(0,100),
 	main="ROC curve - Patients in label-enriched pathways")
 points(dat$other_pct,dat$pred_pct,
 	  col="red",type="o",pch=16,cex=1.3,lwd=2)
+
 # calculate AUROC and AUPR
 tmp <- data.frame(	
 	score=dat$score,
@@ -85,10 +92,12 @@ tmp <- data.frame(
 	tn=dat$other_tot - dat$other_ol,
 	# fn: "+" that were not called 
 	fn=dat$pred_tot - dat$pred_ol) 
+
 stats <- netDx::perfCalc(tmp)
 tmp <- stats$stats
 message(sprintf("PRAUC = %1.2f\n", stats$prauc))
 message(sprintf("ROCAUC = %1.2f\n", stats$auc))
+
 # examine pathway-level scores; these are 
 # cumulative across the splits - here, each of three
 # splits has a max feature score of three, so
@@ -128,15 +137,17 @@ CNV coordinates are read in, and converted into a `GRanges` object. As always, t
 
 ```{r,eval=TRUE}
 
-outDir <- paste(tempdir(),"ASD",sep=.Platform$file.sep)
+outDir <- paste(tempdir(),"ASD",sep=getFileSep())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
+
 cat("* Setting up sample metadata\n")
 phenoFile <- paste(path.package("netDx"), "extdata", "AGP1_CNV.txt", 
-	sep=.Platform$file.sep)
+	sep=getFileSep())
 pheno   <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 colnames(pheno)[1] <- "ID"
 head(pheno)
+
 cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 pheno <- pheno[!duplicated(pheno$ID),]
@@ -153,6 +164,7 @@ for the hg18 genome build are automatically fetched from a remote location, and 
 ```{r,eval=TRUE}
 pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
+
 # get gene coordinates, use hg18
 require(BiocFileCache)
 geneURL <- paste("http://download.baderlab.org/netDx/",
@@ -186,13 +198,12 @@ the user does not provide a custom similarity function in this application; curr
 
 ```{r,eval=TRUE}
 predictClass	<- "case"
-out <- suppressMessages( 
+out <- 
    buildPredictor_sparseGenetic(pheno, cnv_GR, predictClass,
                              path_GRList,outDir,
                              numSplits=3L, featScoreMax=3L,
                              enrichLabels=TRUE,numPermsEnrich=20L,
                              numCores=2L)
-)
 ```
 
 # Plot results
@@ -225,6 +236,7 @@ tmp <- data.frame(
 	tn=dat$other_tot - dat$other_ol,
 	# fn: "+" that were not called 
 	fn=dat$pred_tot - dat$pred_ol) 
+
 stats <- netDx::perfCalc(tmp)
 tmp <- stats$stats
 message(sprintf("PRAUC = %1.2f\n", stats$prauc))

@@ -52,14 +52,14 @@
 #'     unlist(netList)
 #' }
 #' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
-#'	sep=.Platform$file.sep)
+#'	sep=getFileSep())
 #' dir.create(netDir,recursive=TRUE)
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
 #' netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
 #'     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
 #' 
-#' outDir <- paste(tmpDir,'dbdir',sep=.Platform$file.sep); 
+#' outDir <- paste(tmpDir,'dbdir',sep=getFileSep()); 
 #'	dir.create(outDir)
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
@@ -70,7 +70,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 		P2N_threshType = "off", P2N_maxMissing = 100, 
     JavaMemory = 4L, altBaseDir = NULL, debugMode=FALSE,...) {
     
-    dataDir <- paste(outDir,"dataset",sep=.Platform$file.sep)
+    dataDir <- paste(outDir,"dataset",sep=getFileSep())
     GM_jar <- getGMjar_path()
     
     if (P2N_maxMissing < 5) 
@@ -84,15 +84,15 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     curwd <- getwd()
     setwd(netDir)
     
-    netList1 <- dir(path = paste(netDir,"profiles",sep=.Platform$file.sep),
+    netList1 <- dir(path = paste(netDir,"profiles",sep=getFileSep()),
 				pattern = "profile$")
-    netList2 <- dir(path = paste(netDir,"INTERACTIONS",sep=.Platform$file.sep),
+    netList2 <- dir(path = paste(netDir,"INTERACTIONS",sep=getFileSep()),
 				pattern = netSfx)
     netList <- c(netList1, netList2)
     
     if (verbose) 
         message(sprintf("Got %i networks", length(netList)))
-    idFile <- paste(outDir,"ids.txt", sep=.Platform$file.sep)
+    idFile <- paste(outDir,"ids.txt", sep=getFileSep())
     writeQueryBatchFile(netDir, netList, netDir, idFile, ...)
     
     if (length(netList1) > 0) {
@@ -101,7 +101,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
         
         cl <- makeCluster(numCores, 
 			outfile = paste(netDir,"P2N_log.txt",
-			sep=.Platform$file.sep))
+			sep=getFileSep()))
         registerDoParallel(cl)
         
         if (simMetric == "pearson") {
@@ -118,19 +118,19 @@ compileFeatures <- function(netDir, outDir = tempdir(),
         args <- c(args, c("-threshold", P2N_threshType, 
 							"-maxmissing", 
 							sprintf("%1.1f", P2N_maxMissing)))
-        profDir <- paste(netDir,"profiles",sep=.Platform$file.sep)
-        netOutDir <- paste(netDir,"INTERACTIONS",sep=.Platform$file.sep)
+        profDir <- paste(netDir,"profiles",sep=getFileSep())
+        netOutDir <- paste(netDir,"INTERACTIONS",sep=getFileSep())
         tmpsfx <- sub("\\$", "", netSfx)
         
         curProf <- ""
 		`%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
         foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
-            args2 <- c("-in", paste(profDir,curProf,sep=.Platform$file.sep))
+            args2 <- c("-in", paste(profDir,curProf,sep=getFileSep()))
             args2 <- c(args2, "-out", 
 		paste(netOutDir,sub(".profile", ".txt", curProf),
-			sep=.Platform$file.sep))
+			sep=getFileSep()))
             args2 <- c(args2, "-syn", 
-		paste(netDir,"1.synonyms",sep=.Platform$file.sep),
+		paste(netDir,"1.synonyms",sep=getFileSep()),
 			"-keepAllTies", "-limitTies")
 	if (debugMode) {
 		message("Making Java call")
@@ -163,12 +163,12 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 					)
 					
 					curProf <- dir(profDir,"profile$")[1]
-	        args2 <- c("-in", paste(profDir, curProf,sep=.Platform$file.sep))
+	        args2 <- c("-in", paste(profDir, curProf,sep=getFileSep()))
 	        args2 <- c(args2, "-out", paste(netOutDir, 
 				sub(".profile", ".txt", curProf),
-				sep=.Platform$file.sep))
+				sep=getFileSep()))
 	        args2 <- c(args2, "-syn", 
-			paste(netDir,"1.synonyms",sep=.Platform$file.sep),
+			paste(netDir,"1.synonyms",sep=getFileSep()),
 				"-keepAllTies", "-limitTies")
 		tmp <- paste(c(args,args2),collapse=" ")
 		print(sprintf("java %s",tmp))
@@ -190,8 +190,8 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     args <- c("-Xmx10G", "-cp", GM_jar)
     args <- c(args, paste("org.genemania.mediator.lucene.",
 			"exporter.Generic2LuceneExporter",sep=""))
-    args <- c(args, paste(netDir,"db.cfg",sep=.Platform$file.sep), netDir, 
-		paste(netDir,"colours.txt",sep=.Platform$file.sep))
+    args <- c(args, paste(netDir,"db.cfg",sep=getFileSep()), netDir, 
+		paste(netDir,"colours.txt",sep=getFileSep()))
 	if (debugMode){ 
 		tmp <- paste(args,collapse=" ")
 		message(sprintf("java %s",tmp))
@@ -200,13 +200,13 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     		system2("java", args, wait = TRUE, stdout = NULL)
 	}
     
-    olddir <- paste(dataDir,"lucene_index", sep=.Platform$file.sep)
+    olddir <- paste(dataDir,"lucene_index", sep=getFileSep())
     flist <- list.files(olddir, recursive = TRUE)
     dirs <- list.dirs(olddir, recursive = TRUE, full.names = FALSE)
     dirs <- setdiff(dirs, "")
-    for (d in dirs) dir.create(paste(dataDir, d, sep = .Platform$file.sep))
-    file.copy(from = paste(olddir, flist, sep = .Platform$file.sep), 
-	to = paste(dataDir, flist,sep =.Platform$file.sep))
+    for (d in dirs) dir.create(paste(dataDir, d, sep = getFileSep()))
+    file.copy(from = paste(olddir, flist, sep = getFileSep()), 
+	to = paste(dataDir, flist,sep =getFileSep()))
     unlink(olddir)
     
     # Build GeneMANIA cache
@@ -217,9 +217,9 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 				"org.genemania.engine.apps.CacheBuilder")
     args <- c(args, "-cachedir", "cache", "-indexDir", ".", 
 				"-networkDir", 
-			paste(netDir,"INTERACTIONS",sep=.Platform$file.sep), 
+			paste(netDir,"INTERACTIONS",sep=getFileSep()), 
 				"-log", 
-			paste(netDir,"test.log",sep=.Platform$file.sep))
+			paste(netDir,"test.log",sep=getFileSep()))
   if (debugMode) {
 		tmp <- paste(args,collapse=" ")
 		message(sprintf("java %s", tmp))
@@ -232,7 +232,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     if (verbose) 
         message("\t * Cleanup")
     GM_xml <- system.file("extdata","genemania.xml",package="netDx")
-    file.copy(from = GM_xml, to = paste(dataDir,".",sep=.Platform$file.sep))
+    file.copy(from = GM_xml, to = paste(dataDir,".",sep=getFileSep()))
     
     setwd(curwd)
     return(list(dbDir = dataDir, netDir = netDir))

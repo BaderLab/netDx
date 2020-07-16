@@ -14,7 +14,7 @@
 #' @examples
 #' inDir <- system.file("extdata","example_output",package="netDx")
 #' all_rng <- list.files(path = inDir, pattern = 'rng.')
-#' fList <- paste(inDir,all_rng,'predictionResults.txt',sep=.Platform$file.sep)
+#' fList <- paste(inDir,all_rng,'predictionResults.txt',sep=getFileSep())
 #' rocList <- list()
 #' for (k in seq_len(length(fList))) {
 #'   dat <- read.delim(fList[1],sep='\t',header=TRUE,as.is=TRUE)

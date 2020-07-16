@@ -4,17 +4,9 @@
 \alias{writeWeightedNets}
 \title{Write an integrated similarity network consisting of selected networks.}
 \usage{
-writeWeightedNets(
-  patientIDs,
-  netIDs,
-  netDir,
-  keepNets,
-  filterEdgeWt = 0,
-  aggNetFunc = "MAX",
-  limitToTop = 50L,
-  plotEdgeDensity = FALSE,
-  verbose = FALSE
-)
+writeWeightedNets(patientIDs, netIDs, netDir, keepNets, filterEdgeWt = 0,
+  aggNetFunc = "MAX", limitToTop = 50L, plotEdgeDensity = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{patientIDs}{(data.frame) patient identifiers. Columns include

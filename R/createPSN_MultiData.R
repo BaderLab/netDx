@@ -154,7 +154,7 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(),
         name2 = netList, 0, 1, stringsAsFactors = TRUE)
     
     # move network files
-	fsep=.Platform$file.sep
+	fsep=getFileSep()
     prof <- grep(".profile$", netList)
     if (length(prof) > 0) {
         prof <- netList[prof]

@@ -4,23 +4,11 @@
 \alias{plotIntegratedPatientNetwork}
 \title{Visualize integrated patient similarity network based on selected features}
 \usage{
-plotIntegratedPatientNetwork(
-  dataList,
-  groupList,
-  makeNetFunc,
-  setName = "predictor",
-  topX = 0.05,
-  aggFun = "MAX",
-  calcShortestPath = FALSE,
-  showStats = FALSE,
-  outDir = tempdir(),
-  numCores = 1L,
-  nodeSize = 50L,
-  edgeTransparency = 40L,
-  nodeTransparency = 155L,
-  plotCytoscape = FALSE,
-  verbose = FALSE
-)
+plotIntegratedPatientNetwork(dataList, groupList, makeNetFunc,
+  setName = "predictor", topX = 0.05, aggFun = "MAX",
+  calcShortestPath = FALSE, showStats = FALSE, outDir = tempdir(),
+  numCores = 1L, nodeSize = 50L, edgeTransparency = 40L,
+  nodeTransparency = 155L, plotCytoscape = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{dataList}{(MultiAssayExperiment) patient data & labels used as input}

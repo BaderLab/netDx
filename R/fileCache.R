@@ -35,12 +35,14 @@ getGMjar_path <- function(verbose = FALSE) {
     bfc <- .get_cache()
     rid_rec <- bfcquery(bfc, "GM_jar", "rname")
     rid <- rid_rec$rid
+	urlChanged <- FALSE
     if (!length(rid)) {
         if (verbose) 
             message("Downloading GeneMANIA jar file (only required once)")
         rid <- names(bfcadd(bfc, "GM_jar", fileURL))
-    }
-	urlChanged <- rid_rec$fpath != fileURL
+    } else {
+		urlChanged <- rid_rec$fpath != fileURL
+	}
 	if (urlChanged) {
 		message("File path changed. Updating...")
 		bfcupdate(bfc, rid, fpath=fileURL, ask=FALSE)

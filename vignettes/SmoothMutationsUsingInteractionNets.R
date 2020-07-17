@@ -2,6 +2,8 @@
 #Set working directory----
 set.seed(8)
 
+numCores <- 8L
+
 #Load libraries----
 #library("data.table")
 #library("matrixStats")
@@ -16,7 +18,6 @@ require(MultiAssayExperiment)
 #Input
 #nets_path="input/nets_l.rda"
 #datasets_path="input/datasets.rda"
-#pathway_list="input/Human_AllPathways_March_01_2020_symbol.gmt"
 #Output
 outDir <- "/output"
 
@@ -60,9 +61,9 @@ if (length(noData)>0) {
 
 message("* Running label prop")
 require(doParallel)
-cl <- makeCluster(no_cores)
+cl <- makeCluster(numCores)
 registerDoParallel(cl)
-prop_net <- prop_m(geno,cancerNets,cl,no_cores=no_cores)
+prop_net <- prop_m(geno,cancerNets,cl,no_cores=numCores)
 stopCluster(cl)
 
 #Set the name of the project and future resulting directory
@@ -70,7 +71,7 @@ stopCluster(cl)
 genoP <- discr_prop_l(prop_net,geno,"OV_CancerNets")
 
 #Setup to build the predictor
-pathwayList <- readPathways(pathway_list,MIN_SIZE=5L,MAX_SIZE=300L)
+pathwayList <- readPathways(fetchPathwayDefinitions("January",2018))
 exprdat <- SummarizedExperiment(genoP, colData=pheno)
 objList <- list(genetic=exprdat)
 
@@ -134,7 +135,7 @@ makeMutNets <- function(g,pList,oDir,numC) {
 buildPredictor(dataList=dataList,groupList=groupList,
   makeNetFunc=makeNets, ### custom network creation function
   outDir=outDir, ## absolute path
-  numCores=no_cores, numSplits=2L
+  numCores=numCores, numSplits=2L,debugMode=TRUE
 )
 
 # plot results.

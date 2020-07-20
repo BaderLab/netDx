@@ -1,35 +1,24 @@
-
-#Set working directory----
+# Set global enviroment variables ----
 set.seed(8)
+numCores <- 10L
+numSplits <- 30L
 
-numCores <- 8L
-
-#Load libraries----
-#library("data.table")
-#library("matrixStats")
-#library("plyr")
-#library("doParallel")
-#library("parallel")
-#library("scater")
+# Load libraries ----
 library("netDx")
-require(MultiAssayExperiment)
+require("MultiAssayExperiment")
 
-#Set input and output paths ----
-#Input
-#nets_path="input/nets_l.rda"
-#datasets_path="input/datasets.rda"
-#Output
-outDir <- "/output"
-
-#Load data
-#load(nets_path)
-#load(datasets_path)
-
-
-# describe dataset here.
-# These are data from XXXX, XXX samples [cite paper].
-
-# describe data type - binary matrix, with rows corresponding to genes
+# Set and load input data ----
+# Ovarian serous cystadenocarcinoma (OV) data from Broad Institute TCGA Genome 
+# Data Analysis Center (2016): 
+# Firehose 2016_01_28 run. Broad Institute of MIT and Harvard. 
+# doi:10.7908/C11G0KM9
+# Data are rapresented in a binary matrix of genes as rows and 
+# patients as columns
+# Patients are divided in two classes based on their last follow up declared 
+# status (172 deceased patients; 191 living)
+# A gene is set to 1 for a patient if has a somatic mutation (
+# single nucleotide polymorphism as well as di/tri/oligo-nucleotide 
+# polymorphism) or indel 
 genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
 	sep=getFileSep())
 geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
@@ -48,7 +37,7 @@ netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
 	sep=getFileSep())
 cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
 
-# remove genes not in network, from geno
+# remove genes from geno matrix that are not in network
 message("* Excluding genes not present in interaction nets")
 noData <- setdiff(rownames(geno),rownames(cancerNets))
 if (length(noData)>0) {
@@ -56,19 +45,18 @@ if (length(noData)>0) {
 		" genes not present in cancer nets; excluding",sep=""))
 	geno <- geno[-which(rownames(geno) %in% noData),]
 }
-#geno <- complete_m(geno,cancerNets)
-
 
 message("* Running label prop")
 require(doParallel)
+# Start the node clusters for parallel propagation
 cl <- makeCluster(numCores)
 registerDoParallel(cl)
-prop_net <- prop_m(geno,cancerNets,cl,no_cores=numCores)
+prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
 stopCluster(cl)
 
 #Set the name of the project and future resulting directory
 #Apply binarization
-genoP <- discr_prop_l(prop_net,geno,"OV_CancerNets")
+genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
 
 #Setup to build the predictor
 pathwayList <- readPathways(fetchPathwayDefinitions("January",2018))
@@ -132,12 +120,45 @@ makeMutNets <- function(g,pList,oDir,numC) {
 }
 
 #Run the predictor as usual
-buildPredictor(dataList=dataList,groupList=groupList,
+out=buildPredictor(dataList=dataList,groupList=groupList,
   makeNetFunc=makeNets, ### custom network creation function
   outDir=outDir, ## absolute path
-  numCores=numCores, numSplits=2L,debugMode=TRUE
+  numCores=numCores, numSplits=numSplits, debugMode=TRUE
 )
 
-# plot results.
-# Show the ROC curve as in the breast cancer example
-# Show top-scoring features
+#Derive the performances
+st <- unique(colData(dataList)$STATUS)
+acc <- c()         # accuracy
+predList <- list() # prediction tables
+
+featScores <- list() # feature scores per class
+for (cur in unique(st)) featScores[[cur]] <- list()
+
+for (k in 1:numSplits) { 
+    pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+    # predictions table
+    tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
+                     sprintf("%s_SCORE",st))]
+    predList[[k]] <- tmp 
+    # accuracy
+    acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
+    # feature scores
+    for (cur in unique(st)) {
+       tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
+       colnames(tmp) <- c("PATHWAY_NAME","SCORE")
+       featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
+    }
+}
+
+#Plot the performances
+predPerf <- plotPerf(predList, predClasses=st)
+
+#Get top features and their score for deceased patient class
+featScores2 <- lapply(featScores, getNetConsensus)
+summary(featScores2)
+
+featSelNet <- lapply(featScores2, function(x) {
+    callFeatSel(x, fsCutoff=1, fsPctPass=0)
+})
+print(head(featScores2[["deceased"]]))
+

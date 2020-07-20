@@ -34,12 +34,46 @@
 #' @param no_cores (numeric) number of cores used to create the cluster object
 #' @return (data.frame) continuous matrix of patient profiles in which each gene
 #'   has the final propagation score
-#' @examples
 #' @importFrom netSmooth netSmooth
-#' @import scater
+#' @rawNamespace import(scater, except = plotHeatmap)
 #' @import clusterExperiment
-#' @export 
-prop_m <- function(mat,net,cl,no_cores){
+#' @examples 
+#'   set.seed(8)
+#'   numCores <- 8L
+#'   library("netDx")
+#'   require("MultiAssayExperiment")
+#'   outDir <- "/output"
+#'   out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
+#'   out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
+#'   out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
+#'   genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
+#'   sep=getFileSep())
+#'   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+#'   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
+#'   sep=getFileSep())
+#'   pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+#'   colnames(geno) <- gsub("-",".",colnames(geno))
+#'   pheno$ID <- gsub("-",".",pheno$ID)
+#'   rownames(pheno) <- pheno$ID
+#'   netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
+#'   sep=getFileSep())
+#'   cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+#'   message("* Excluding genes not present in interaction nets")
+#'   noData <- setdiff(rownames(geno),rownames(cancerNets))
+#'   if (length(noData)>0) {
+#'   	message(paste(length(noData), 
+#'   		" genes not present in cancer nets; excluding",sep=""))
+#'   	geno <- geno[-which(rownames(geno) %in% noData),]
+#'   }
+#'   
+#'   message("* Running label prop")
+#'   require(doParallel)
+#'   cl <- makeCluster(numCores)
+#'   registerDoParallel(cl)
+#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
+#'   stopCluster(cl)
+#' @export
+smoothMutations_LabelProp <- function(mat,net,cl,no_cores){
 	if (class(mat) == "data.frame") mat <- as.matrix(mat)
 	if (class(net) == "data.frame") net <- as.matrix(net)
   #Split the matrix into sections, each one will be processed by one core
@@ -78,22 +112,47 @@ prop_m <- function(mat,net,cl,no_cores){
 #' one.
 #' @return (data.frame) binary somatic mutation matrix which sparsity has been 
 #' decreased
-#' @examples
-#' load(nets_path)
-#' load(datasets_path)
-#' geno=geno_l[[1]]
-#' net=nets_l[[1]]$net_adj
-#' geno=complete_m(geno,net)
-#' cl <- makeCluster(no_cores)
-#' registerDoParallel(cl)
-#' prop_net=prop_m(geno,net,cl,no_cores=no_cores)
-#' stopCluster(cl)
-#' genoP=discr_prop_l(prop_net,geno,"project_title")
+#' @examples 
+#'   set.seed(8)
+#'   numCores <- 8L
+#'   library("netDx")
+#'   require("MultiAssayExperiment")
+#'   outDir <- "/output"
+#'   out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
+#'   out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
+#'   out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
+#'   genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
+#'   sep=getFileSep())
+#'   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+#'   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
+#'   sep=getFileSep())
+#'   pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+#'   colnames(geno) <- gsub("-",".",colnames(geno))
+#'   pheno$ID <- gsub("-",".",pheno$ID)
+#'   rownames(pheno) <- pheno$ID
+#'   netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
+#'   sep=getFileSep())
+#'   cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+#'   message("* Excluding genes not present in interaction nets")
+#'   noData <- setdiff(rownames(geno),rownames(cancerNets))
+#'   if (length(noData)>0) {
+#'   	message(paste(length(noData), 
+#'   		" genes not present in cancer nets; excluding",sep=""))
+#'   	geno <- geno[-which(rownames(geno) %in% noData),]
+#'   }
+#'   
+#'   message("* Running label prop")
+#'   require(doParallel)
+#'   cl <- makeCluster(numCores)
+#'   registerDoParallel(cl)
+#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
+#'   stopCluster(cl)
+#'   genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
 #' @export
-discr_prop_l <- function(m_prop,m_bin,name_dataset){
+thresholdSmoothedMutations <- function(m_prop,m_bin,name_dataset){
   m_prop=apply(-m_prop,2,rank)
   n_muts=colSums(m_bin)
-  n_topXmuts=c(3)
+  n_topXmuts=c(5)
   
   m_props_l=list()
   for(k_top in 1:length(n_topXmuts)){
@@ -113,5 +172,3 @@ discr_prop_l <- function(m_prop,m_bin,name_dataset){
     return(m_prop)
   }
 }
-
-

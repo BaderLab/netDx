@@ -55,7 +55,6 @@ prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
 stopCluster(cl)
 
 #Set the name of the project and future resulting directory
-#Apply binarization
 genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
 
 #Setup to build the predictor

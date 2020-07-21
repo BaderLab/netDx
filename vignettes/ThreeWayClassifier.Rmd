@@ -112,7 +112,8 @@ outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
 numSplits <- 2L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
 	   numCores=1L)
 )
@@ -304,12 +305,13 @@ set.seed(42) # make results reproducible
 # set keepAllData to TRUE to not delete at the end of the 
 # predictor run.
 # This can be useful for debugging.
-outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep()) # use absolute path
 
 numSplits <- 2L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
 	   numCores=1L)
 )

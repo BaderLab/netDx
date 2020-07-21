@@ -40,6 +40,7 @@ suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
 genoFile <- paste(path.package("netDx"),"extdata",
                   "OV_mutSmooth_geno.txt",
 	sep=getFileSep())
+print(genoFile)
 geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
 
 phenoFile <- paste(path.package("netDx"),"extdata",
@@ -69,17 +70,9 @@ head(cancerNets)
 Genes not present in the interaction network are excluded.
 [LUCA PLS TRY RUNNING WITHOUT THIS CONDITION. WHY THROW OUT GOOD DATA?]
 
-```{r,eval=TRUE}
-noData <- setdiff(rownames(geno),rownames(cancerNets))
-if (length(noData)>0) {
-	message(paste(length(noData), 
-		" genes not present in cancer nets; excluding",sep=""))
-	geno <- geno[-which(rownames(geno) %in% noData),]
-}
-```
 
 Use `smoothMutations_LabelProp()` to run label propagation over the mutation matrix, thereby smoothing it.
-The result of using this strategy on a patient’s binary somatic mutation profile is a non-sparse network-smoothed profile in which the state of each gene is a continuous value which reflects its network proximity to the original mutations.
+The result of using this strategy on a patient?s binary somatic mutation profile is a non-sparse network-smoothed profile in which the state of each gene is a continuous value which reflects its network proximity to the original mutations.
 
 ```{r,eval=TRUE}
 message("* Running label prop")
@@ -194,7 +187,8 @@ outDir <- tempdir()
 out <- buildPredictor(dataList=dataList,groupList=groupList,
   makeNetFunc=makeNets, ### custom network creation function
   outDir=outDir, ## absolute path
-  numCores=10L, numSplits=2L, debugMode=TRUE
+  numCores=1L, featScoreMax=2L, featSelCutoff=1L,
+  numSplits=2L, debugMode=TRUE
 )
 ```
 

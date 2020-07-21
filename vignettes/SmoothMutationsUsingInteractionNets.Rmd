@@ -109,6 +109,8 @@ For more details on the individual steps below, see the first vignette related t
 pathwayList <- readPathways(
    fetchPathwayDefinitions("January",2018)
    )
+# limit num pathways to speed example
+pathwayList <- pathwayList[sample(1:length(pathwayList),100,replace=FALSE)]
 exprdat <- SummarizedExperiment(genoP, colData=pheno)
 objList <- list(genetic=exprdat)
 ```
@@ -188,7 +190,7 @@ out <- buildPredictor(dataList=dataList,groupList=groupList,
   makeNetFunc=makeNets, ### custom network creation function
   outDir=outDir, ## absolute path
   numCores=1L, featScoreMax=2L, featSelCutoff=1L,
-  numSplits=2L, debugMode=TRUE
+  numSplits=2L
 )
 ```
 
@@ -196,7 +198,7 @@ out <- buildPredictor(dataList=dataList,groupList=groupList,
 
 This code collects different components of model output to examine the results. 
 
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 numSplits <- 2
 st <- unique(colData(dataList)$STATUS)
 acc <- c()         # accuracy
@@ -223,12 +225,12 @@ for (k in 1:numSplits) {
 ```
 
 Plot the AUROC and AUPR curves:
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 predPerf <- plotPerf(predList, predClasses=st)
 ```
 
 Examine features with the highest scores. Here, these are pathways with somatic mutations that best predict vital status:
-```{r,eval=TRUE}
+```{r,eval=FALSE}
 featScores2 <- lapply(featScores, getNetConsensus)
 summary(featScores2)
 

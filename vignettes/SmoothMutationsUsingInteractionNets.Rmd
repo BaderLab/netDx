@@ -64,7 +64,7 @@ netFile <- paste(path.package("netDx"),"extdata",
                  "CancerNets.txt",
 	sep=getFileSep())
 cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-head(cancerNets)
+head(cancerNets[,1:5])
 ```
 
 Genes not present in the interaction network are excluded.
@@ -184,21 +184,22 @@ dataList <- MultiAssayExperiment(objList,pheno)
 The predictor call is essentially the same as with other simpler designs:
 
 ```{r,eval=TRUE}
-outDir <- tempdir()
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
 #Run the predictor as usual
-out <- buildPredictor(dataList=dataList,groupList=groupList,
-  makeNetFunc=makeNets, ### custom network creation function
-  outDir=outDir, ## absolute path
-  numCores=1L, featScoreMax=2L, featSelCutoff=1L,
-  numSplits=2L
-)
+out <- suppressMessages(
+	buildPredictor(dataList=dataList,groupList=groupList,
+	  makeNetFunc=makeNets, ### custom network creation function
+	  outDir=outDir, ## absolute path
+	  numCores=1L, featScoreMax=2L, featSelCutoff=1L,
+	  numSplits=2L,logging="none"
+))
 ```
 
 # Examine output
 
 This code collects different components of model output to examine the results. 
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 numSplits <- 2
 st <- unique(colData(dataList)$STATUS)
 acc <- c()         # accuracy
@@ -225,12 +226,12 @@ for (k in 1:numSplits) {
 ```
 
 Plot the AUROC and AUPR curves:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 predPerf <- plotPerf(predList, predClasses=st)
 ```
 
 Examine features with the highest scores. Here, these are pathways with somatic mutations that best predict vital status:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 featScores2 <- lapply(featScores, getNetConsensus)
 summary(featScores2)
 

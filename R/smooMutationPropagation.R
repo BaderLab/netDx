@@ -149,10 +149,9 @@ smoothMutations_LabelProp <- function(mat,net,cl,no_cores){
 #'   stopCluster(cl)
 #'   genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
 #' @export
-thresholdSmoothedMutations <- function(m_prop,m_bin,name_dataset){
+thresholdSmoothedMutations <- function(m_prop,m_bin,name_dataset,n_topXmuts=c(10)){
   m_prop=apply(-m_prop,2,rank)
   n_muts=colSums(m_bin)
-  n_topXmuts=c(5)
   
   m_props_l=list()
   for(k_top in 1:length(n_topXmuts)){

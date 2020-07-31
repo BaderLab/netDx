@@ -16,7 +16,7 @@ vignette: >
 This code block is not evaluated. Need a breakdown? Look at the following sections.
 ```{r,eval=FALSE}
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressWarnings(suppressMessages(library(curatedTCGAData)))
 
 # fetch data remotely
 brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
@@ -40,7 +40,7 @@ brca <- brca[,tokeep,]
 
 smp <- sampleMap(brca)
 samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-# remove duplicate asssays mapped to the same sample
+# remove duplicate assays mapped to the same sample
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
 brca[[1]] <- suppressMessages(brca[[1]][,notdup])
 
@@ -266,7 +266,7 @@ pID <- colData(brca)$patientID
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
 
-# remove duplicate asssays mapped to the same sample
+# remove duplicate assays mapped to the same sample
 smp <- sampleMap(brca)
 samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
@@ -298,7 +298,7 @@ netDx requires that this function take some generic parameters as input. These i
 ## dataList
 Here the BRCA data is already provided to us as a `MultiAssayExperiment` object:
 
-```
+```{r,eval=TRUE}
 summary(brca)
 ```
 
@@ -471,7 +471,7 @@ print(acc)
 
 Create a ROC curve, a precision-recall curve, and plot average AUROC and AUPR:
 
-```{r,eval=TRUE}
+```{r,eval=TRUE,fig.width=8,fig.height=10}
 predPerf <- plotPerf(predList, predClasses=st)
 ```
 

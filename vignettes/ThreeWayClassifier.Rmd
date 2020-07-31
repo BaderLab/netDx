@@ -16,7 +16,7 @@ vignette: >
 This code block is not evaluated. Need a breakdown? Look at the following sections.
 ```{r,eval=FALSE}
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressWarnings(suppressMessages(library(curatedTCGAData)))
 
 # fetch RNA, methylation and proteomic data for TCGA BRCA set
 brca <- suppressMessages(

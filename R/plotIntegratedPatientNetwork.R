@@ -107,9 +107,12 @@ out <- writeWeightedNets(pid,
 aggNet <- out$aggNet
 aggNet <- aggNet[,1:3]
 
+distNet <- aggNet
+distNet[,3] <- 1-distNet[,3] 
+
 # calculate shortest paths among and between classes
 if (calcShortestPath) {
-	x <- compareShortestPath(aggNet, 
+	x <- compareShortestPath(distNet, 
 		pheno,verbose=showStats,plotDist=TRUE)
 
 	gp <- unique(pheno$GROUP)
@@ -140,13 +143,13 @@ if (calcShortestPath) {
 	}
 }
 message("")
-aggNet[,3] <- 1-aggNet[,3]  # convert similarity to dissimilarity
-aggNet <- aggNet[,1:3]
 
 # create a pruned network for visualization
 message("* Prune network")
-colnames(aggNet) <- c("source","target","weight")
-aggNet_pruned <- pruneNetByStrongest(aggNet,pheno$ID, topX=topX)
+colnames(distNet) <- c("source","target","weight")
+distNet_pruned <- pruneNetByStrongest(distNet,pheno$ID, topX=topX)
+aggNet_pruned <- distNet_pruned
+aggNet_pruned[,3] <- 1-distNet_pruned[,3]
 
 # plot in Cytoscape
 if (plotCytoscape) {
@@ -185,7 +188,7 @@ if (plotCytoscape) {
 	setVisualStyle(styleName)
 	out <- list(
 		patientSimNetwork_unpruned=aggNet,
-		patientDistNetwork_pruned=aggNet_pruned,
+		patientDistNetwork_pruned=distNet_pruned,
 		colLegend=colLegend,
 		topX=topX,
 		aggFun=aggFun,

@@ -26,28 +26,28 @@
 #'   a random walk with restart propagation algorithm which resolution is set to
 #'   0.2 for giving high values only to the close neighbours of the a priori
 #'   nodes.
-#' @param mat (data.frame) sparse matrix of patient profiles. Rownames
-#'   are unique genes. Colnames are unique patients. A cell is a numeric value.
-#' @param net (data.frame) adjancy matrix format of a network
-#' @param cl (SOCKcluster) cluster object created with makeCluster function 
-#' from parallel
-#' @param no_cores (numeric) number of cores used to create the cluster object
-#' @return (data.frame) continuous matrix of patient profiles in which each gene
+#' @param mat (data.frame) Sparse matrix of binarized patient profiles, with
+#'	rownames being unique patients and columns, unique genes. Entry [i,j] is
+#' 	set to 1 if patient j has a mutation in gene i.
+#' @param net (data.frame) Interaction network provided as an adjacency
+#' matrix (i.e. symmetric)
+#' @param numCores (integer) Number of cores for parallel processing
+#' @return (data.frame) Continuous matrix of patient profiles in which each gene
 #'   has the final propagation score
 #' @importFrom netSmooth netSmooth
 #' @rawNamespace import(scater, except = plotHeatmap)
 #' @import clusterExperiment
+#' @import doParallel
 #' @examples 
 #'   set.seed(8)
 #'   numCores <- 8L
 #'   library("netDx")
 #'   require("MultiAssayExperiment")
 #'   outDir <- "/output"
-#'   out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
-#'   out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
-#'   out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
-#'   genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
-#'   sep=getFileSep())
+#'   genoFile <- paste(	path.package("netDx"),
+#'											"extdata",
+#'											"TGCT_mutSmooth_geno.txt",
+#'   										sep=getFileSep())
 #'   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
 #'   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
 #'   sep=getFileSep())
@@ -68,26 +68,34 @@
 #'   
 #'   message("* Running label prop")
 #'   require(doParallel)
-#'   cl <- makeCluster(numCores)
-#'   registerDoParallel(cl)
-#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
-#'   stopCluster(cl)
+#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,
+#'									numCores=1L)
 #' @export
-smoothMutations_LabelProp <- function(mat,net,cl,no_cores){
+smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 	if (class(mat) == "data.frame") mat <- as.matrix(mat)
 	if (class(net) == "data.frame") net <- as.matrix(net)
   #Split the matrix into sections, each one will be processed by one core
-  inds <- split(seq_len(ncol(mat)), sort(rep_len(seq_len(no_cores), ncol(mat))))
+  inds <- split(seq_len(ncol(mat)), 
+		sort(rep_len(seq_len(numCores), 
+		ncol(mat))))
+
   res.l <- list()
+
   #Apply parallelized propagation
+	cl <- makeCluster(numCores)
+	registerDoParallel(cl)
+
   res.l <- foreach(k = 1:length(inds),
 	.packages=c("netSmooth","scater","clusterExperiment")) %dopar% {
     nS.res=netSmooth(mat[,inds[[k]]], net , alpha=0.2, verbose = 'auto', 
 		normalizeAdjMatrix = c("columns")) 
     return(nS.res)
   }
+	stopCluster(cl)
+
   #Merge the results
-  nS.res=do.call(cbind, res.l)
+  nS.res <- do.call(cbind, res.l)
+
   #Return the final propagated matrix
   return(nS.res)
 }

@@ -5,21 +5,20 @@
 \title{This function applies the random walk with restart propagation algorithm to a
 matrix of patients profiles}
 \usage{
-smoothMutations_LabelProp(mat, net, cl, no_cores)
+smoothMutations_LabelProp(mat, net, numCores = 1L)
 }
 \arguments{
-\item{mat}{(data.frame) sparse matrix of patient profiles. Rownames
-are unique genes. Colnames are unique patients. A cell is a numeric value.}
+\item{mat}{(data.frame) Sparse matrix of binarized patient profiles, with
+rownames being unique patients and columns, unique genes. Entry [i,j] is
+    set to 1 if patient j has a mutation in gene i.}
 
-\item{net}{(data.frame) adjancy matrix format of a network}
+\item{net}{(data.frame) Interaction network provided as an adjacency
+matrix (i.e. symmetric)}
 
-\item{cl}{(SOCKcluster) cluster object created with makeCluster function 
-from parallel}
-
-\item{no_cores}{(numeric) number of cores used to create the cluster object}
+\item{numCores}{(integer) Number of cores for parallel processing}
 }
 \value{
-(data.frame) continuous matrix of patient profiles in which each gene
+(data.frame) Continuous matrix of patient profiles in which each gene
   has the final propagation score
 }
 \description{
@@ -57,11 +56,10 @@ A network is an undirected graph G defined by a set of nodes
   library("netDx")
   require("MultiAssayExperiment")
   outDir <- "/output"
-  out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
-  out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
-  out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
-  genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
-  sep=getFileSep())
+  genoFile <- paste(	path.package("netDx"),
+										"extdata",
+										"TGCT_mutSmooth_geno.txt",
+  										sep=getFileSep())
   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
   sep=getFileSep())
@@ -82,8 +80,6 @@ A network is an undirected graph G defined by a set of nodes
   
   message("* Running label prop")
   require(doParallel)
-  cl <- makeCluster(numCores)
-  registerDoParallel(cl)
-  prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
-  stopCluster(cl)
+  prop_net <- smoothMutations_LabelProp(geno,cancerNets,
+								numCores=1L)
 }

@@ -22,7 +22,7 @@ This code block is not evaluated. Need a breakdown? Look at the following sectio
 
 In this example, we classify Testicular Germ Cell Tumors (TGCT) by pathologic stage of the tumor. We first reduce sparsity by using prior knowledge of a gene interaction network. Conceptually, the logic is that if a patient has a mutation in a given gene, the mutation indirectly impacts interacting genes. The indirect mutation is inferred by label propagation over a gene-gene interaction network. The resulting smoothed network is then used for downstream applications. Hofree et al. showed that indirect mutations inferred by such smoothing improved patient clustering in 4 types of cancer.
 
-This workflow is identical to that of using unsmoothed somatic mutations (see vignette 3: XXXXX); the only difference is an additional step to smooth binary mutations.
+This workflow is identical to that of using unsmoothed somatic mutations (see vignette 3); the only difference is an additional step to smooth binary mutations.
 
 # Setup
 
@@ -39,18 +39,14 @@ Both the patient mutation profiles and the associated pathologic stage of their 
 genoFile <- paste(path.package("netDx"),"extdata",
                   "TGCT_mutSmooth_geno.txt",
 	sep=getFileSep())
-print(genoFile)
 geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
 
 phenoFile <- paste(path.package("netDx"),"extdata",
                    "TGCT_mutSmooth_pheno.txt",
                    sep=getFileSep())
 pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
-```
-
-We apply minor modification to finish the matrix with sample names and clinical information:
-```{r,eval=TRUE}
 rownames(pheno) <- pheno$ID
+
 table(pheno$STATUS)
 ```
 
@@ -69,14 +65,9 @@ Use `smoothMutations_LabelProp()` to run label propagation over the mutation mat
 The result of using this strategy on a patient?s binary somatic mutation profile is a non-sparse network-smoothed profile in which the state of each gene is a continuous value which reflects its network proximity to the original mutations.
 
 ```{r,eval=TRUE}
-message("* Running label prop")
 require(doParallel)
 # Start the node clusters for parallel propagation
-cl <- makeCluster(2L)
-registerDoParallel(cl)
-prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,
-                                      no_cores=2L)
-stopCluster(cl)
+prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
 ```
 
 Finally, binarize the smoothed matrix.
@@ -85,8 +76,6 @@ This step ensures that genes which got a low propagation value are not used.
 More a gene is distant from the original mutations, more its propagation value is low and more is
 considered unreliable and not involved from them.
 ```{r,eval=TRUE}
-#Set the name of the project and future resulting directory
-#Apply binarization
 genoP <- thresholdSmoothedMutations(
    prop_net,geno,"TGCT_CancerNets",c(20)
    )
@@ -103,8 +92,6 @@ For more details on the individual steps below, see the first vignette related t
 pathwayList <- readPathways(
    fetchPathwayDefinitions("January",2018)
    )
-# limit num pathways to speed example
-# pathwayList <- pathwayList[sample(1:length(pathwayList),100,replace=FALSE)]
 exprdat <- SummarizedExperiment(genoP, colData=pheno)
 objList <- list(genetic=exprdat)
 ```
@@ -120,9 +107,6 @@ makeNets <- function(dataList,groupList,netDir,numCores,...) {
 		groupList[["genetic"]],
 		netDir,numC=numCores)
   }
-  cat(sprintf("\t%i genetic-pathway nets\n", length(netList)))
-  cat(sprintf("Total of %i nets\n", length(netList)))
-  
   return(netList)
 }
 
@@ -168,10 +152,7 @@ Finally, we compile all the data into a `MultiAssayExperiment` object and as bef
 ```{r,eval=TRUE}
 exprdat <- SummarizedExperiment(genoP, colData=pheno)
 objList <- list(genetic=exprdat)
-
-groupList <- list()
-groupList[["genetic"]] <- pathwayList #names for groupList and objList now match
-
+groupList <- list(genetic=pathwayList)
 dataList <- MultiAssayExperiment(objList,pheno)
 ```
 
@@ -182,7 +163,7 @@ outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
 #Run the predictor as usual
 out <- suppressMessages(
 	buildPredictor(dataList=dataList,groupList=groupList,
-	  makeNetFunc=makeNets, ### custom network creation function
+	  makeNetFunc=makeNets, ## custom similarity
 	  outDir=outDir, ## absolute path
 	  numCores=1L, featScoreMax=2L, featSelCutoff=2L,
 	  numSplits=2L,logging="none"
@@ -221,7 +202,7 @@ for (k in 1:numSplits) {
 ```
 
 Plot the AUROC and AUPR curves:
-```{r,eval=TRUE}
+```{r,eval=TRUE,fig.width=10,fig.height=12}
 predPerf <- plotPerf(predList, predClasses=st)
 ```
 

@@ -5,7 +5,7 @@
 \title{Apply discretization to the matrix resulted from the propagation on the
 sparse patient matrix}
 \usage{
-thresholdSmoothedMutations(m_prop, m_bin, name_dataset)
+thresholdSmoothedMutations(m_prop, m_bin, name_dataset, n_topXmuts = c(10))
 }
 \arguments{
 \item{m_bin}{(data.frame) binary somatic mutation sparse matrix. Rownames

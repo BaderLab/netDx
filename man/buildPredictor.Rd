@@ -43,8 +43,8 @@ So keys(groupList[["rna"]]) would have pathway names, generating one PSN
 per pathways, and values(groupList[["rna"]]) would be genes that would be
 grouped for the corresponding pathwayList.}
 
-\item{outDir}{(char) directory where results will be stored. If this 
-directory exists, its contents will be overwritten}
+\item{outDir}{(char) directory where results will be stored. If this
+directory exists, its contents will be overwritten. Must be absolute path}
 
 \item{makeNetFunc}{(function) user-defined function for creating the set
 of input PSN provided to netDx. See createPSN_MultiData()::customFunc.}

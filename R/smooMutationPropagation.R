@@ -39,37 +39,22 @@
 #' @import clusterExperiment
 #' @import doParallel
 #' @examples 
-#'   set.seed(8)
-#'   numCores <- 8L
-#'   library("netDx")
-#'   require("MultiAssayExperiment")
-#'   outDir <- "/output"
-#'   genoFile <- paste(	path.package("netDx"),
-#'											"extdata",
-#'											"TGCT_mutSmooth_geno.txt",
-#'   										sep=getFileSep())
-#'   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
-#'   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
-#'   sep=getFileSep())
-#'   pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
-#'   colnames(geno) <- gsub("-",".",colnames(geno))
-#'   pheno$ID <- gsub("-",".",pheno$ID)
-#'   rownames(pheno) <- pheno$ID
-#'   netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
-#'   sep=getFileSep())
-#'   cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-#'   message("* Excluding genes not present in interaction nets")
-#'   noData <- setdiff(rownames(geno),rownames(cancerNets))
-#'   if (length(noData)>0) {
-#'   	message(paste(length(noData), 
-#'   		" genes not present in cancer nets; excluding",sep=""))
-#'   	geno <- geno[-which(rownames(geno) %in% noData),]
-#'   }
-#'   
-#'   message("* Running label prop")
-#'   require(doParallel)
-#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,
-#'									numCores=1L)
+#' suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+#' require(doParallel)
+#' 
+#' # load mutation and phenotype data
+#' genoFile <- system.file("extdata","TGCT_mutSmooth_geno.txt",package="netDx")
+#' geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+#' phenoFile <- system.file("extdata", "TGCT_mutSmooth_pheno.txt",
+#'				package="netDx")
+#' pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+#' rownames(pheno) <- pheno$ID
+#' 
+#' # load interaction nets to smooth over
+#' netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+#' cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+#' # smooth mutations
+#' prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
 #' @export
 smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 	if (class(mat) == "data.frame") mat <- as.matrix(mat)
@@ -112,70 +97,60 @@ smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 #'   the gene is involved in the patient condition and expression/mutation
 #'   profile. On the contrary, genes which got either a medium or a low value
 #'   are not trustable.
-#' @param m_profiles (data.frame) continous matrix of patient profiles resulted 
-#' from applying the network-based propagation algorithm on a binary somatic 
-#' mutation sparse matrix.
-#' @param m_bin (data.frame) binary somatic mutation sparse matrix. Rownames
-#'   are unique genes. Colnames are unique patients. A cell contains a zero or a 
-#' one.
+#' @param smoothedMutProfile (data.frame) continous matrix of patient profiles 
+#' resulting from applying :.,$ s/network-based propagation algorithm 
+#' (smoothMutations_LabelProp()) on a binary somatic mutation sparse matrix.
+#' @param unsmoothedMutProfile (data.frame) binary somatic mutation sparse 
+#' matrix. Rownames are unique genes. Colnames are unique patients. A cell 
+#' contains a zero or a one.
+#' @param nameDataset (char) for titles on plot
+#' @param n_topXmuts (numeric between 0 and 1) percent of top mutations
+#' to keep. This function converts these to 1.0 when binarizing, so they
+#' remain in the thresholded output matrix; other mutations are set to zero.
 #' @return (data.frame) binary somatic mutation matrix which sparsity has been 
 #' decreased
 #' @examples 
-#'   set.seed(8)
-#'   numCores <- 8L
-#'   library("netDx")
-#'   require("MultiAssayExperiment")
-#'   outDir <- "/output"
-#'   out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
-#'   out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
-#'   out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
-#'   genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
-#'   sep=getFileSep())
-#'   geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
-#'   phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
-#'   sep=getFileSep())
-#'   pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
-#'   colnames(geno) <- gsub("-",".",colnames(geno))
-#'   pheno$ID <- gsub("-",".",pheno$ID)
-#'   rownames(pheno) <- pheno$ID
-#'   netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
-#'   sep=getFileSep())
-#'   cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-#'   message("* Excluding genes not present in interaction nets")
-#'   noData <- setdiff(rownames(geno),rownames(cancerNets))
-#'   if (length(noData)>0) {
-#'   	message(paste(length(noData), 
-#'   		" genes not present in cancer nets; excluding",sep=""))
-#'   	geno <- geno[-which(rownames(geno) %in% noData),]
-#'   }
-#'   
-#'   message("* Running label prop")
-#'   require(doParallel)
-#'   cl <- makeCluster(numCores)
-#'   registerDoParallel(cl)
-#'   prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
-#'   stopCluster(cl)
-#'   genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
-#' @export
-thresholdSmoothedMutations <- function(m_prop,m_bin,name_dataset,n_topXmuts=c(10)){
-  m_prop=apply(-m_prop,2,rank)
-  n_muts=colSums(m_bin)
+#' suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+#' require(doParallel)
+#' 
+#' # load mutation and phenotype data
+#' genoFile <- system.file("extdata","TGCT_mutSmooth_geno.txt",package="netDx")
+#' geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+#' phenoFile <- system.file("extdata", "TGCT_mutSmooth_pheno.txt",
+#'				package="netDx")
+#' pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+#' rownames(pheno) <- pheno$ID
+#' 
+#' # load interaction nets to smooth over
+#' netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+#' cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+#' # smooth mutations
+#' prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
+#' genoP <- thresholdSmoothedMutations(
+#'    prop_net,geno,"TGCT_CancerNets",c(20)
+#'   )
+#' @export 
+thresholdSmoothedMutations <- function(smoothedMutProfile,
+		unsmoothedMutProfile,
+		nameDataset,n_topXmuts=c(10)){
+  smoothedMutProfile=apply(-smoothedMutProfile,2,rank)
+  n_muts=colSums(unsmoothedMutProfile)
   
-  m_props_l=list()
+  smoothedMutProfiles_l=list()
   for(k_top in 1:length(n_topXmuts)){
-    name_prop=paste(name_dataset,"_x",n_topXmuts[k_top],sep="")
+    name_prop=paste(nameDataset,"_x",n_topXmuts[k_top],sep="")
     n_new_muts=n_muts*n_topXmuts[k_top]
     for(i_col in 1:length(n_new_muts)){
-      m_prop[m_prop[,i_col]<=n_new_muts[i_col],i_col]=1
-      m_prop[m_prop[,i_col]>n_new_muts[i_col],i_col]=0
+      smoothedMutProfile[smoothedMutProfile[,i_col]<=n_new_muts[i_col],i_col]=1
+      smoothedMutProfile[smoothedMutProfile[,i_col]>n_new_muts[i_col],i_col]=0
     }
-    m_props_l[[name_prop]]=m_prop
+    smoothedMutProfiles_l[[name_prop]]=smoothedMutProfile
   }
   
-  if(length(m_props_l)!=1){
-    return(m_props_l)
+  if(length(smoothedMutProfiles_l)!=1){
+    return(smoothedMutProfiles_l)
   }
-  if(length(m_props_l)==1){
-    return(m_prop)
+  if(length(smoothedMutProfiles_l)==1){
+    return(smoothedMutProfile)
   }
 }

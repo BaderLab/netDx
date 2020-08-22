@@ -9,7 +9,8 @@ plotIntegratedPatientNetwork(
   groupList,
   makeNetFunc,
   setName = "predictor",
-  topX = 0.05,
+  prune_pctX = 0.05,
+  prune_useTop = TRUE,
   aggFun = "MAX",
   calcShortestPath = FALSE,
   showStats = FALSE,
@@ -34,8 +35,14 @@ clinical) and inner list to features to generate from that datatype.}
 
 \item{setName}{(char) name to assign the network in Cytoscape}
 
-\item{topX}{(numeric between 0 and 1) fraction of strongest edges to keep
-e.g. topX=0.2 will keep 20\% top edges}
+\item{prune_pctX}{(numeric between 0 and 1) fraction of most/least 
+edges to keep when pruning the integrated PSN for visualization.
+Must be used in conjunction with useTop=TRUE/FALSE
+e.g. Setting pctX=0.2 and useTop=TRUE will keep 20\% top edges}
+
+\item{prune_useTop}{(logical) when pruning integrated PSN for visualization,
+determines whether to keep strongest edges (useTop=TRUE) or weakest edges
+(useTop=FALSE)}
 
 \item{aggFun}{(char) function to aggregate edges from different PSN}
 
@@ -75,8 +82,6 @@ so that more similar nodes have smaller edge weights
 3) colLegend (data.frame): legend for the patient network
 plotted in Cytoscape. Columns are node labels (STATUS) and
 colours (colour)
-4) topX (numeric) value of topX parameter
-5) aggFun (char) function used to aggregate nets
 6) outDir (char) value of outDir parameter
 }
 \description{

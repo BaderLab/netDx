@@ -1,0 +1,224 @@
+---
+title: "De-sparsifying patient mutations by smoothing over gene interaction networks"
+author: "Luca Giudice, Shraddha Pai"
+package: netDx
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{04. De-sparsifying patient mutations by smoothing over gene interaction networks}.
+    %\VignetteEngine{knitr::knitr}
+    %\VignetteEncoding{UTF-8}
+---
+
+# TL;DR
+This code block is not evaluated. Need a breakdown? Look at the following sections.
+```{r,eval=TRUE}
+
+```
+
+# Introduction
+
+In this example, we classify Testicular Germ Cell Tumors (TGCT) by pathologic stage of the tumor. We first reduce sparsity by using prior knowledge of a gene interaction network. Conceptually, the logic is that if a patient has a mutation in a given gene, the mutation indirectly impacts interacting genes. The indirect mutation is inferred by label propagation over a gene-gene interaction network. The resulting smoothed network is then used for downstream applications. Hofree et al. showed that indirect mutations inferred by such smoothing improved patient clustering in 4 types of cancer.
+
+This workflow is identical to that of using unsmoothed somatic mutations (see vignette 3); the only difference is an additional step to smooth binary mutations.
+
+# Setup
+
+```{r,eval=TRUE}
+set.seed(8)
+suppressWarnings(suppressMessages(require(netDx)))
+suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+```
+
+# Data 
+Both the patient mutation profiles and the associated pathologic stage of their tumor are downloaded from TCGA with the curatedTCGAData R package. Mutations are represented as a binary matrix with rows corresponding to genes and columns to patients; entry [`i`,`j`] is set to one if gene `i` has a somatic mutation at gene level SNV detected with the algorithm MutSig2CV, while zero otherwise.
+
+```{r,eval=TRUE}
+genoFile <- paste(system.file("extdata",package="netDx"),
+		"TGCT_mutSmooth_geno.txt",sep=getFileSep())
+geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+
+phenoFile <- paste(system.file("extdata",package="netDx"),
+		"TGCT_mutSmooth_pheno.txt",sep=getFileSep())
+
+pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+rownames(pheno) <- pheno$ID
+
+table(pheno$STATUS)
+```
+
+# Smooth mutations over a gene interaction network
+Load the gene-gene interaction network, downloaded from the NBS python implementation of Huang JK and Ideker T doi:10.1093/bioinformatics/bty186:
+This network is a compact cancer reference network (CRN) that contains only high-confidence interactions specific to cancer. Huang JK et al. showed that the CRN effectively clusters tumor samples of patients distinguishing them by tumor type and time of survival. 
+```{r,eval=TRUE}
+netFile <- paste(system.file("extdata",package="netDx"),
+		"CancerNets.txt",sep=getFileSep())
+cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+head(cancerNets[,1:5])
+```
+
+Use `smoothMutations_LabelProp()` to run label propagation over the mutation matrix, thereby smoothing it.
+The result of using this strategy on a patient?s binary somatic mutation profile is a non-sparse network-smoothed profile in which the state of each gene is a continuous value which reflects its network proximity to the original mutations.
+
+```{r,eval=TRUE}
+require(doParallel)
+# Start the node clusters for parallel propagation
+smoothedMutations <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
+```
+
+Finally, binarize the smoothed matrix.
+Only the genes which got a high propagation value are set to one, the others are set to zero.
+This step ensures that genes which got a low propagation value are not used.
+More a gene is distant from the original mutations, more its propagation value is low and more is
+considered unreliable and not involved from them.
+```{r,eval=TRUE}
+lessSparseMut <- thresholdSmoothedMutations(
+   smoothedMutations,geno,"TGCT_CancerNets",c(20)
+   )
+```
+
+# Create pathway-level features with binary patient similarity
+
+Smoothed mutations are now grouped at the level of biological pathways. As with other examples, pathways are downloaded from a compilation of curated pathway databases (`.gmt` format). Thereafter, we define pathway-level patient similarity to be binary; i.e. if two patients share a mutation in genes from the same pathway, their mutual similarity is one; else it is zero.
+
+For more details on the individual steps below, see the first vignette related to building a binary predictor.
+
+```{r,eval=TRUE}
+#Setup to build the predictor
+pathwayList <- readPathways(
+   fetchPathwayDefinitions("January",2018)
+   )
+exprdat <- SummarizedExperiment(lessSparseMut, colData=pheno)
+objList <- list(genetic=exprdat)
+```
+
+Now we define functions for patient similarity:
+```{r, eval=TRUE}
+makeNets <- function(dataList,groupList,netDir,numCores,...) {
+  netList <- c(); netList2 <- c()
+  
+  # create genetic nets
+  if (!is.null(groupList[["genetic"]])) {
+	netList <- makeMutNets(dataList[["genetic"]],
+		groupList[["genetic"]],
+		netDir,numC=numCores)
+  }
+  return(netList)
+}
+
+# g geno matrix, genes by patients (columns) - binary
+# pList list of genesets
+# outDir - dir where nets are to be written
+makeMutNets <- function(g,pList,oDir,numC) {
+  g <- t(g) # transpose to have genes as columns
+  cl	<- makeCluster(numC)
+  registerDoParallel(cl)
+  
+  numPat <- c()
+  netList <- foreach(k=1:length(pList)) %do% {
+    idx <- which(colnames(g) %in% pList[[k]])
+    
+    if (length(idx)>0) {
+      has_mut <- rowSums(g[,idx,drop=FALSE])
+      has_mutp <- names(has_mut)[which(has_mut>0)]
+      
+      if (length(has_mutp)>=6) {
+        ##cat(sprintf("%s: %i patients\n", names(pList)[k],
+        ##            length(has_mutp)))
+        #numPat <- c(numPat, length(has_mutp))
+        pat_pairs <- t(combinat::combn(has_mutp,2));
+        pat_pairs <- cbind(pat_pairs,1);
+        outFile <- sprintf("%s/%s_cont.txt",oDir,names(pList)[k])
+        write.table(pat_pairs, file=outFile,sep="\t",
+                    col=FALSE,row=FALSE,quote=FALSE)
+        basename(outFile)
+      } else NULL
+    } else {
+      NULL
+    }
+  }
+  stopCluster(cl)
+  unlist(netList)
+}
+```
+
+# Build predictor
+Finally, we compile all the data into a `MultiAssayExperiment` object and as before, run the predictor. 
+
+```{r,eval=TRUE}
+exprdat <- SummarizedExperiment(lessSparseMut, colData=pheno)
+objList <- list(genetic=exprdat)
+groupList <- list(genetic=pathwayList)
+dataList <- MultiAssayExperiment(objList,pheno)
+```
+
+The predictor call is essentially the same as with other simpler designs:
+
+```{r,eval=TRUE}
+outDir <- paste(tempdir(),randAlphanumString(),"pred_output",sep=getFileSep())
+if (!file.exists(outDir)) unlink(outDir,recursive=TRUE)
+
+#Run the predictor as usual
+out <- suppressMessages(
+	buildPredictor(dataList=dataList,groupList=groupList,
+	  makeNetFunc=makeNets, ## custom similarity
+	  outDir=outDir, ## absolute path
+	  numCores=1L, featScoreMax=2L, featSelCutoff=2L,
+	  numSplits=2L,logging="none"
+))
+```
+
+# Examine output
+
+This code collects different components of model output to examine the results. 
+
+```{r,eval=TRUE}
+numSplits <- 2L
+st <- unique(colData(dataList)$STATUS)
+acc <- c()         # accuracy
+predList <- list() # prediction tables
+
+featScores <- list() # feature scores per class
+for (cur in unique(st)) featScores[[cur]] <- list()
+
+for (k in 1:numSplits) { 
+	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+	# predictions table
+	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
+	                 sprintf("%s_SCORE",st))]
+	predList[[k]] <- tmp 
+	# accuracy
+	acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
+	# feature scores
+	for (cur in unique(st)) {
+	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
+	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
+	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
+	}
+}
+
+```
+
+Plot the AUROC and AUPR curves:
+```{r,eval=TRUE,fig.width=10,fig.height=12}
+predPerf <- plotPerf(predList, predClasses=st)
+```
+
+Examine features with the highest scores. Here, these are pathways with somatic mutations that best predict vital status:
+```{r,eval=TRUE}
+featScores2 <- lapply(featScores, getNetConsensus)
+summary(featScores2)
+
+featSelNet <- lapply(featScores2, function(x) {
+    callFeatSel(x, fsCutoff=1, fsPctPass=0)
+})
+print(head(featScores2[["LATE"]]))
+```
+
+# Session Info
+
+```{r,eval=TRUE}
+sessionInfo()
+```

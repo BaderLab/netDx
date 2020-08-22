@@ -227,7 +227,7 @@ if (file.exists(megaDir)) {
 	  sprintf("You provided: %s", outDir),
 		sep="\n"))
 } else {
-	dir.create(megaDir)
+	dir.create(megaDir,recursive=TRUE)
 }
 
 # set aside for testing within each split

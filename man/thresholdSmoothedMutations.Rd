@@ -5,16 +5,27 @@
 \title{Apply discretization to the matrix resulted from the propagation on the
 sparse patient matrix}
 \usage{
-thresholdSmoothedMutations(m_prop, m_bin, name_dataset, n_topXmuts = c(10))
+thresholdSmoothedMutations(
+  smoothedMutProfile,
+  unsmoothedMutProfile,
+  nameDataset,
+  n_topXmuts = c(10)
+)
 }
 \arguments{
-\item{m_bin}{(data.frame) binary somatic mutation sparse matrix. Rownames
-  are unique genes. Colnames are unique patients. A cell contains a zero or a 
-one.}
+\item{smoothedMutProfile}{(data.frame) continous matrix of patient profiles 
+resulting from applying :.,$ s/network-based propagation algorithm 
+(smoothMutations_LabelProp()) on a binary somatic mutation sparse matrix.}
 
-\item{m_profiles}{(data.frame) continous matrix of patient profiles resulted 
-from applying the network-based propagation algorithm on a binary somatic 
-mutation sparse matrix.}
+\item{unsmoothedMutProfile}{(data.frame) binary somatic mutation sparse 
+matrix. Rownames are unique genes. Colnames are unique patients. A cell 
+contains a zero or a one.}
+
+\item{nameDataset}{(char) for titles on plot}
+
+\item{n_topXmuts}{(numeric between 0 and 1) percent of top mutations
+to keep. This function converts these to 1.0 when binarizing, so they
+remain in the thresholded output matrix; other mutations are set to zero.}
 }
 \value{
 (data.frame) binary somatic mutation matrix which sparsity has been 
@@ -36,39 +47,23 @@ This function is included in the netDx use case which involves
   are not trustable.
 }
 \examples{
-  set.seed(8)
-  numCores <- 8L
-  library("netDx")
-  require("MultiAssayExperiment")
-  outDir <- "/output"
-  out_plot_perf <- paste(outDir,"plot_performances.png",sep=getFileSep())
-  out_features_table <- paste(outDir,"OV_features_table.csv",sep=getFileSep())
-  out_res_rda <- paste(outDir,"OV_results.rda",sep=getFileSep())
-  genoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_geno.txt",
-  sep=getFileSep())
-  geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
-  phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
-  sep=getFileSep())
-  pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
-  colnames(geno) <- gsub("-",".",colnames(geno))
-  pheno$ID <- gsub("-",".",pheno$ID)
-  rownames(pheno) <- pheno$ID
-  netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
-  sep=getFileSep())
-  cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-  message("* Excluding genes not present in interaction nets")
-  noData <- setdiff(rownames(geno),rownames(cancerNets))
-  if (length(noData)>0) {
-  	message(paste(length(noData), 
-  		" genes not present in cancer nets; excluding",sep=""))
-  	geno <- geno[-which(rownames(geno) \%in\% noData),]
-  }
-  
-  message("* Running label prop")
-  require(doParallel)
-  cl <- makeCluster(numCores)
-  registerDoParallel(cl)
-  prop_net <- smoothMutations_LabelProp(geno,cancerNets,cl,no_cores=numCores)
-  stopCluster(cl)
-  genoP <- thresholdSmoothedMutations(prop_net,geno,"OV_CancerNets")
+suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+require(doParallel)
+
+# load mutation and phenotype data
+genoFile <- system.file("extdata","TGCT_mutSmooth_geno.txt",package="netDx")
+geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+phenoFile <- system.file("extdata", "TGCT_mutSmooth_pheno.txt",
+			package="netDx")
+pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+rownames(pheno) <- pheno$ID
+
+# load interaction nets to smooth over
+netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+# smooth mutations
+prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
+genoP <- thresholdSmoothedMutations(
+   prop_net,geno,"TGCT_CancerNets",c(20)
+  )
 }

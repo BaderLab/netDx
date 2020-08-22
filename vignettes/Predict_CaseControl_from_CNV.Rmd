@@ -60,7 +60,8 @@ gene_GR     <- GRanges(genes[,1],
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
-outDir <- paste(tempdir(),"ASD",sep=getFileSep()) ## absolute path
+outDir <- paste(tempdir(),randAlphanumString(),
+	"ASD",sep=getFileSep()) ## absolute path
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
 
 message("Getting java version for debugging")
@@ -143,7 +144,8 @@ CNV coordinates are read in, and converted into a `GRanges` object. As always, t
 
 ```{r,eval=TRUE}
 
-outDir <- paste(tempdir(),"ASD",sep=getFileSep()) ## must be absolute path
+outDir <- paste(tempdir(),randAlphanumString(),
+	"ASD",sep=getFileSep()) ## must be absolute path
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
 

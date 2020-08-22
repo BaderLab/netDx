@@ -51,35 +51,20 @@ A network is an undirected graph G defined by a set of nodes
   nodes.
 }
 \examples{
-  set.seed(8)
-  numCores <- 8L
-  library("netDx")
-  require("MultiAssayExperiment")
-  outDir <- "/output"
-  genoFile <- paste(	path.package("netDx"),
-										"extdata",
-										"TGCT_mutSmooth_geno.txt",
-  										sep=getFileSep())
-  geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
-  phenoFile <- paste(path.package("netDx"),"extdata","OV_mutSmooth_pheno.txt",
-  sep=getFileSep())
-  pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
-  colnames(geno) <- gsub("-",".",colnames(geno))
-  pheno$ID <- gsub("-",".",pheno$ID)
-  rownames(pheno) <- pheno$ID
-  netFile <- paste(path.package("netDx"),"extdata","CancerNets.txt",
-  sep=getFileSep())
-  cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-  message("* Excluding genes not present in interaction nets")
-  noData <- setdiff(rownames(geno),rownames(cancerNets))
-  if (length(noData)>0) {
-  	message(paste(length(noData), 
-  		" genes not present in cancer nets; excluding",sep=""))
-  	geno <- geno[-which(rownames(geno) \%in\% noData),]
-  }
-  
-  message("* Running label prop")
-  require(doParallel)
-  prop_net <- smoothMutations_LabelProp(geno,cancerNets,
-								numCores=1L)
+suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+require(doParallel)
+
+# load mutation and phenotype data
+genoFile <- system.file("extdata","TGCT_mutSmooth_geno.txt",package="netDx")
+geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+phenoFile <- system.file("extdata", "TGCT_mutSmooth_pheno.txt",
+			package="netDx")
+pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+rownames(pheno) <- pheno$ID
+
+# load interaction nets to smooth over
+netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+# smooth mutations
+prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
 }

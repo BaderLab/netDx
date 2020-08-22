@@ -145,6 +145,12 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
 
+if (file.exists(outDir)) {
+	stop("outDir exists. Please specify another output directory.")
+}
+dir.create(outDir,recursive=TRUE)
+
+
 	netDir <- paste(outDir,"networks_orig",sep=getFileSep())
 
 message("making rangesets")

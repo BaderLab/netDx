@@ -193,7 +193,8 @@ psn <- suppressMessages(
   verbose=FALSE, plotCytoscape=FALSE)
 )
 
-sessionInfo()
+# Visualize integrated patient similarity network as a tSNE plot
+tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
 ```
 
 # Introduction

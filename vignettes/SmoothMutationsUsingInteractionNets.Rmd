@@ -29,11 +29,29 @@ phenoFile <- paste(system.file("extdata",package="netDx"),
 pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 rownames(pheno) <- pheno$ID
 
-# read interaction networks to smooth over
-netFile <- paste(system.file("extdata",package="netDx"),
-		"CancerNets.txt",sep=getFileSep())
+# download example nets from remote location for vignette
+require(BiocFileCache)
+netFileURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/CancerNets.txt",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "CancerNets", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "CancerNets", netFileURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", netFileURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+netFile <- bfcrpath(bfc,rids=rid)
 cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
-head(cancerNets[,1:5])
 
 require(doParallel)
 # use label propagation to infer indirect mutations
@@ -191,8 +209,28 @@ table(pheno$STATUS)
 Load the gene-gene interaction network, downloaded from the NBS python implementation of Huang JK and Ideker T doi:10.1093/bioinformatics/bty186:
 This network is a compact cancer reference network (CRN) that contains only high-confidence interactions specific to cancer. Huang JK et al. showed that the CRN effectively clusters tumor samples of patients distinguishing them by tumor type and time of survival. 
 ```{r,eval=TRUE}
-netFile <- paste(system.file("extdata",package="netDx"),
-		"CancerNets.txt",sep=getFileSep())
+# download example nets from remote location for vignette
+require(BiocFileCache)
+netFileURL <- paste("http://download.baderlab.org/netDx/",
+	"supporting_data/CancerNets.txt",sep="")
+cache <- rappdirs::user_cache_dir(appname = "netDx")
+bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+rid_rec <- bfcquery(bfc, "CancerNets", "rname")
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "CancerNets", netFileURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+rid <- rid_rec$rid
+if (!length(rid)) {
+	rid <- names(bfcadd(bfc, "hg18_genes", netFileURL))
+}
+if (!isFALSE(bfcneedsupdate(bfc, rid))){
+	bfcdownload(bfc, rid,ask=FALSE)
+}
+netFile <- bfcrpath(bfc,rids=rid)
 cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
 head(cancerNets[,1:5])
 ```

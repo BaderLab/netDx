@@ -606,7 +606,7 @@ psn <- suppressMessages(
 
  ![Patient network after integrating features that scored 2 out of 2 in all train-test splits. For visualization only the top 10% strongest edges are shown. Nodes are patients, and edges are average distance across all features passing feature selection. Green indicates "LumA" status and orange indicates "nonLumA" status.](integratedPSN_MEAN_top0.10.png)
 
-The integrated PSN can also be visualized as a tSNE:
+The integrated PSN can also be visualized as a tSNE plot:
 ```{r,fig.width=8,fig.height=8}
 tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
 summary(tsne)

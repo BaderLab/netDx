@@ -4,10 +4,23 @@
 \alias{enrichLabelNets}
 \title{Score networks based on their edge bias towards (+,+) interactions}
 \usage{
-enrichLabelNets(netDir, pheno_DF, outDir, numReps = 50L, minEnr = -1,
-  outPref = "enrichLabelNets", verbose = TRUE, setSeed = 42L,
-  enrType = "binary", numCores = 1L, predClass, tmpDir = tempdir(),
-  netGrep = "_cont.txt$", getShufResults = FALSE, ...)
+enrichLabelNets(
+  netDir,
+  pheno_DF,
+  outDir,
+  numReps = 50L,
+  minEnr = -1,
+  outPref = "enrichLabelNets",
+  verbose = TRUE,
+  setSeed = 42L,
+  enrType = "binary",
+  numCores = 1L,
+  predClass,
+  tmpDir = tempdir(),
+  netGrep = "_cont.txt$",
+  getShufResults = FALSE,
+  ...
+)
 }
 \arguments{
 \item{netDir}{(char) path to dir containing all networks}

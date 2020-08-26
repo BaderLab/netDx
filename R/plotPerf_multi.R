@@ -47,7 +47,8 @@ plotPerf_multi <- function(inList, plotTitle = "performance",
     
     plot(0, 0, type = "n", bty = "n", las = 1, xlim = xlim, ylim = ylim, 
 				xlab = xlab, 
-        ylab = ylab, main = plotTitle, cex.axis = 1.3)
+        ylab = ylab, main = plotTitle, cex.axis = 1.8,
+				cex.lab=1.6)
     out <- list()
     
     is_empty <- 0

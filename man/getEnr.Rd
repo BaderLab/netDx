@@ -4,8 +4,14 @@
 \alias{getEnr}
 \title{Get ENR for all networks in a specified directory}
 \usage{
-getEnr(netDir, pheno_DF, predClass, netGrep = "_cont.txt$",
-  enrType = "binary", ...)
+getEnr(
+  netDir,
+  pheno_DF,
+  predClass,
+  netGrep = "_cont.txt$",
+  enrType = "binary",
+  ...
+)
 }
 \arguments{
 \item{netDir}{(char) directory containing interaction networks}
@@ -60,10 +66,10 @@ pheno <- data.frame(ID=pids,STATUS=c(rep("case",3),rep("control",2)))
 
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
-write.table(m1,file=paste(d,"net1.nettxt",sep=getFileSep()),sep="\\t",
+write.table(m1,file=paste(d,"net1.nettxt",sep=getFileSep()),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 m2 <- matrix(c("P3","P4",1),nrow=1)
-write.table(m2,file=paste(d,"net2.nettxt",sep=getFileSep()),sep="\\t",
+write.table(m2,file=paste(d,"net2.nettxt",sep=getFileSep()),sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 # compute enrichment

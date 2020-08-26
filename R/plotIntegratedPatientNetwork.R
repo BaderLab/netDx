@@ -21,8 +21,13 @@
 #' @param makeNetFunc (function) function to create features
 #' @param setName (char) name to assign the network in Cytoscape
 #' @param numCores (integer) number of cores for parallel processing
-#' @param topX (numeric between 0 and 1) fraction of strongest edges to keep
-#' e.g. topX=0.2 will keep 20\% top edges
+#' @param prune_pctX (numeric between 0 and 1) fraction of most/least 
+#' edges to keep when pruning the integrated PSN for visualization.
+#' Must be used in conjunction with useTop=TRUE/FALSE
+#' e.g. Setting pctX=0.2 and useTop=TRUE will keep 20\% top edges
+#' @param prune_useTop (logical) when pruning integrated PSN for visualization,
+#' determines whether to keep strongest edges (useTop=TRUE) or weakest edges
+#' (useTop=FALSE)
 #' @param aggFun (char) function to aggregate edges from different PSN
 #' @param outDir (char) path to directory for intermediate files. Useful for
 #' debugging.
@@ -50,15 +55,14 @@
 #' 3) colLegend (data.frame): legend for the patient network
 #' plotted in Cytoscape. Columns are node labels (STATUS) and
 #' colours (colour)
-#' 4) topX (numeric) value of topX parameter
-#' 5) aggFun (char) function used to aggregate nets
 #' 6) outDir (char) value of outDir parameter
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom stats wilcox.test qexp density
 #' @import RCy3
 #' @export
 plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
-	setName="predictor",topX=0.05, aggFun="MAX",calcShortestPath=FALSE,
+	setName="predictor",prune_pctX=0.05, prune_useTop=TRUE,
+	 aggFun="MAX",calcShortestPath=FALSE,
 	showStats=FALSE,
 	outDir=tempdir(),numCores=1L,nodeSize=50L,edgeTransparency=40L,
 	nodeTransparency=155L,plotCytoscape=FALSE,
@@ -107,9 +111,12 @@ out <- writeWeightedNets(pid,
 aggNet <- out$aggNet
 aggNet <- aggNet[,1:3]
 
+distNet <- aggNet
+distNet[,3] <- 1-distNet[,3] 
+
 # calculate shortest paths among and between classes
 if (calcShortestPath) {
-	x <- compareShortestPath(aggNet, 
+	x <- compareShortestPath(distNet, 
 		pheno,verbose=showStats,plotDist=TRUE)
 
 	gp <- unique(pheno$GROUP)
@@ -140,13 +147,15 @@ if (calcShortestPath) {
 	}
 }
 message("")
-aggNet[,3] <- 1-aggNet[,3]  # convert similarity to dissimilarity
-aggNet <- aggNet[,1:3]
 
 # create a pruned network for visualization
 message("* Prune network")
 colnames(aggNet) <- c("source","target","weight")
-aggNet_pruned <- pruneNetByStrongest(aggNet,pheno$ID, topX=topX)
+aggNet_pruned <- pruneNet_pctX(
+	aggNet,pheno$ID, pctX=prune_pctX,useTop=prune_useTop
+)
+#aggNet_pruned <- distNet_pruned
+#aggNet_pruned[,3] <- 1-distNet_pruned[,3]
 
 # plot in Cytoscape
 if (plotCytoscape) {
@@ -154,9 +163,10 @@ if (plotCytoscape) {
 	colnames(pheno)[which(colnames(pheno)=="ID")] <- "id"
 	colnames(aggNet_pruned) <- c("source","target","weight")
 	# layout network in Cytoscape
+	if (prune_useTop) { topTxt <- "top" } else { topTxt <- "bottom" }
 	createNetworkFromDataFrames(
 		nodes=pheno, edges=aggNet_pruned,
-		title=sprintf("%s_%s_top%1.2f",setName,aggFun,topX),
+		title=sprintf("%s_%s_%s%1.2f",setName,aggFun,topTxt,prune_pctX),
 		collName=setName
 	)
 	
@@ -185,10 +195,8 @@ if (plotCytoscape) {
 	setVisualStyle(styleName)
 	out <- list(
 		patientSimNetwork_unpruned=aggNet,
-		patientDistNetwork_pruned=aggNet_pruned,
+		patientSimNetwork_pruned=aggNet_pruned,
 		colLegend=colLegend,
-		topX=topX,
-		aggFun=aggFun,
 		outDir=outDir
 	)
 } else {
@@ -197,7 +205,6 @@ if (plotCytoscape) {
 	out <- list(
 		patientSimNetwork_unpruned=aggNet,
 		patientDistNetwork_pruned=aggNet_pruned,
-		topX=topX,
 		aggFun=aggFun,
 		outDir=outDir
 	)

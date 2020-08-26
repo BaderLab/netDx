@@ -5,9 +5,18 @@
 \title{Computes positive and negative calls upon changing stringency of 
 feature selected networks (binary networks only)}
 \usage{
-RR_featureTally(netmat, phenoDF, TT_STATUS, predClass, pScore,
-  outDir = tempdir(), enrichLabels = TRUE, enrichedNets,
-  maxScore = 30L, verbose = FALSE)
+RR_featureTally(
+  netmat,
+  phenoDF,
+  TT_STATUS,
+  predClass,
+  pScore,
+  outDir = tempdir(),
+  enrichLabels = TRUE,
+  enrichedNets,
+  maxScore = 30L,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{netmat}{(matrix) output of countPatientsInNet. Should contain

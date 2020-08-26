@@ -51,7 +51,27 @@
 #' rownames(pheno) <- pheno$ID
 #' 
 #' # load interaction nets to smooth over
-#' netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+#' require(BiocFileCache)
+#' netFileURL <- paste("http://download.baderlab.org/netDx/",
+#' 	"supporting_data/CancerNets.txt",sep="")
+#' cache <- rappdirs::user_cache_dir(appname = "netDx")
+#' bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+#' rid_rec <- bfcquery(bfc, "CancerNets", "rname")
+#' rid <- rid_rec$rid
+#' if (!length(rid)) {
+#' 	rid <- names(bfcadd(bfc, "CancerNets", netFileURL))
+#' }
+#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
+#' 	bfcdownload(bfc, rid,ask=FALSE)
+#' }
+#' rid <- rid_rec$rid
+#' if (!length(rid)) {
+#' 	rid <- names(bfcadd(bfc, "hg18_genes", netFileURL))
+#' }
+#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
+#' 	bfcdownload(bfc, rid,ask=FALSE)
+#' }
+#' netFile <- bfcrpath(bfc,rids=rid)
 #' cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
 #' # smooth mutations
 #' prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
@@ -122,7 +142,27 @@ smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 #' rownames(pheno) <- pheno$ID
 #' 
 #' # load interaction nets to smooth over
-#' netFile <- system.file("extdata","CancerNets.txt",package="netDx")
+#' require(BiocFileCache)
+#' netFileURL <- paste("http://download.baderlab.org/netDx/",
+#' 	"supporting_data/CancerNets.txt",sep="")
+#' cache <- rappdirs::user_cache_dir(appname = "netDx")
+#' bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
+#' rid_rec <- bfcquery(bfc, "CancerNets", "rname")
+#' rid <- rid_rec$rid
+#' if (!length(rid)) {
+#' 	rid <- names(bfcadd(bfc, "CancerNets", netFileURL))
+#' }
+#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
+#' 	bfcdownload(bfc, rid,ask=FALSE)
+#' }
+#' rid <- rid_rec$rid
+#' if (!length(rid)) {
+#' 	rid <- names(bfcadd(bfc, "hg18_genes", netFileURL))
+#' }
+#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
+#' 	bfcdownload(bfc, rid,ask=FALSE)
+#' }
+#' netFile <- bfcrpath(bfc,rids=rid)
 #' cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
 #' # smooth mutations
 #' prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)

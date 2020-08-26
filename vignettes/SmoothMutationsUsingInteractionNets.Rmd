@@ -14,7 +14,145 @@ vignette: >
 
 # TL;DR
 This code block is not evaluated. Need a breakdown? Look at the following sections.
-```{r,eval=TRUE}
+```{r,eval=FALSE}
+set.seed(8) # make reproducible
+suppressWarnings(suppressMessages(require(netDx)))
+suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
+
+# read geno/pheno files
+genoFile <- paste(system.file("extdata",package="netDx"),
+		"TGCT_mutSmooth_geno.txt",sep=getFileSep())
+geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
+
+phenoFile <- paste(system.file("extdata",package="netDx"),
+		"TGCT_mutSmooth_pheno.txt",sep=getFileSep())
+pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
+rownames(pheno) <- pheno$ID
+
+# read interaction networks to smooth over
+netFile <- paste(system.file("extdata",package="netDx"),
+		"CancerNets.txt",sep=getFileSep())
+cancerNets <- read.delim(netFile,sep="\t",header=T,as.is=T)
+head(cancerNets[,1:5])
+
+require(doParallel)
+# use label propagation to infer indirect mutations
+# This step converts sparse binary mutation network into continuous-valued
+# network.
+smoothedMutations <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
+
+# keep strongest inferred mutations, setting the rest to zero.
+# This step binarizes the resulting matrix.
+lessSparseMut <- thresholdSmoothedMutations(
+   smoothedMutations,geno,"TGCT_CancerNets",c(20)
+   )
+
+# Create pathway-level features
+pathwayList <- readPathways(
+   fetchPathwayDefinitions("January",2018)
+   )
+exprdat <- SummarizedExperiment(lessSparseMut, colData=pheno)
+objList <- list(genetic=exprdat)
+
+
+# Define function for patient similarity
+makeNets <- function(dataList,groupList,netDir,numCores,...) {
+  netList <- c(); netList2 <- c()
+  
+  # create genetic nets
+  if (!is.null(groupList[["genetic"]])) {
+	netList <- makeMutNets(dataList[["genetic"]],
+		groupList[["genetic"]],
+		netDir,numC=numCores)
+  }
+  return(netList)
+}
+
+# g geno matrix, genes by patients (columns) - binary
+# pList list of genesets
+# outDir - dir where nets are to be written
+makeMutNets <- function(g,pList,oDir,numC) {
+  g <- t(g) # transpose to have genes as columns
+  cl	<- makeCluster(numC)
+  registerDoParallel(cl)
+  
+  numPat <- c()
+  netList <- foreach(k=1:length(pList)) %do% {
+    idx <- which(colnames(g) %in% pList[[k]])
+    
+    if (length(idx)>0) {
+      has_mut <- rowSums(g[,idx,drop=FALSE])
+      has_mutp <- names(has_mut)[which(has_mut>0)]
+      
+      if (length(has_mutp)>=6) {
+        ##cat(sprintf("%s: %i patients\n", names(pList)[k],
+        ##            length(has_mutp)))
+        #numPat <- c(numPat, length(has_mutp))
+        pat_pairs <- t(combinat::combn(has_mutp,2));
+        pat_pairs <- cbind(pat_pairs,1);
+        outFile <- sprintf("%s/%s_cont.txt",oDir,names(pList)[k])
+        write.table(pat_pairs, file=outFile,sep="\t",
+                    col=FALSE,row=FALSE,quote=FALSE)
+        basename(outFile)
+      } else NULL
+    } else {
+      NULL
+    }
+  }
+  stopCluster(cl)
+  unlist(netList)
+}
+
+# format input data
+exprdat <- SummarizedExperiment(lessSparseMut, colData=pheno)
+objList <- list(genetic=exprdat)
+groupList <- list(genetic=pathwayList)
+dataList <- MultiAssayExperiment(objList,pheno)
+
+outDir <- paste(tempdir(),randAlphanumString(),"pred_output",sep=getFileSep())
+if (!file.exists(outDir)) unlink(outDir,recursive=TRUE)
+
+# run predictor
+out <- suppressMessages(
+	buildPredictor(dataList=dataList,groupList=groupList,
+	  makeNetFunc=makeNets, ## custom similarity
+	  outDir=outDir, ## absolute path
+	  numCores=1L, featScoreMax=2L, featSelCutoff=2L,
+	  numSplits=2L,logging="none"
+))
+
+# collect results
+numSplits <- 2L
+st <- unique(colData(dataList)$STATUS)
+acc <- c()         # accuracy
+predList <- list() # prediction tables
+featScores <- list() # feature scores per class
+for (cur in unique(st)) featScores[[cur]] <- list()
+
+for (k in 1:numSplits) { 
+	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
+	# predictions table
+	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
+	                 sprintf("%s_SCORE",st))]
+	predList[[k]] <- tmp 
+	# accuracy
+	acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
+	# feature scores
+	for (cur in unique(st)) {
+	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
+	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
+	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
+	}
+}
+
+# plot performance
+predPerf <- plotPerf(predList, predClasses=st)
+# collect feature score across splits
+featScores2 <- lapply(featScores, getNetConsensus)
+# find features that consistently perform well (score 1+ in any splits)
+featSelNet <- lapply(featScores2, function(x) {
+    callFeatSel(x, fsCutoff=1, fsPctPass=0)
+})
 
 ```
 
@@ -160,7 +298,6 @@ The predictor call is essentially the same as with other simpler designs:
 outDir <- paste(tempdir(),randAlphanumString(),"pred_output",sep=getFileSep())
 if (!file.exists(outDir)) unlink(outDir,recursive=TRUE)
 
-#Run the predictor as usual
 out <- suppressMessages(
 	buildPredictor(dataList=dataList,groupList=groupList,
 	  makeNetFunc=makeNets, ## custom similarity

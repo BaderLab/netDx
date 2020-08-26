@@ -151,7 +151,9 @@ message("")
 # create a pruned network for visualization
 message("* Prune network")
 colnames(aggNet) <- c("source","target","weight")
-aggNet_pruned <- pruneNet(aggNet,pheno$ID, pctX=prune_pctX,useTop=prune_useTop)
+aggNet_pruned <- pruneNet_pctX(
+	aggNet,pheno$ID, pctX=prune_pctX,useTop=prune_useTop
+)
 #aggNet_pruned <- distNet_pruned
 #aggNet_pruned[,3] <- 1-distNet_pruned[,3]
 

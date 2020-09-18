@@ -110,15 +110,7 @@
 #' 	"supporting_data/refGene.hg18.bed",sep="")
 #' cache <- rappdirs::user_cache_dir(appname = "netDx")
 #' bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
-#' rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
-#' rid <- rid_rec$rid
-#' if (!length(rid)) {
-#' 	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
-#' }
-#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
-#' 	bfcdownload(bfc, rid,ask=FALSE)
-#' }
-#' geneFile <- bfcrpath(bfc,rids=rid)
+#' geneFile <- bfcrpath(bfc,geneURL)
 #' genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 #' genes <- genes[which(genes[,4]!=""),]
 #' gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),

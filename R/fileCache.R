@@ -33,25 +33,7 @@ getGMjar_path <- function(verbose = FALSE) {
 	}
 	
     bfc <- .get_cache()
-    rid_rec <- bfcquery(bfc, "GM_jar", "rname")
-    rid <- rid_rec$rid
-	urlChanged <- FALSE
-    if (!length(rid)) {
-        if (verbose) 
-            message("Downloading GeneMANIA jar file (only required once)")
-        rid <- names(bfcadd(bfc, "GM_jar", fileURL))
-    } else {
-		urlChanged <- rid_rec$fpath != fileURL
-	}
-	if (urlChanged) {
-		message("File path changed. Updating...")
-		bfcupdate(bfc, rid, fpath=fileURL, ask=FALSE)
-	}
-    if (!isFALSE(bfcneedsupdate(bfc, rid))){
-		bfcdownload(bfc, rid,ask=FALSE)
-	}
-    
-    bfcrpath(bfc, rids = rid)
+    bfcrpath(bfc, fileURL)
 }
 
 #' fetch pathway definitions from downloads.baderlab.org
@@ -88,18 +70,5 @@ fetchPathwayDefinitions <- function(month=NULL,year=NULL,verbose=FALSE){
 
 	message(sprintf("Fetching %s",pathwayURL))
     bfc <- .get_cache()
-	cache_name <- sprintf("%s_Pathways",pdate)
-    rid <- bfcquery(bfc, cache_name,  "rname")$rid
-    if (!length(rid)) {
-        if (verbose) 
-            message(paste("Downloading example pathway definitions (only ", 
-								"required once)", 
-                sep = ""))
-        rid <- names(bfcadd(bfc, cache_name, pathwayURL))
-    }
-
-    if (!isFALSE(bfcneedsupdate(bfc, rid))) 
-        bfcdownload(bfc, rid)
-    
-    bfcrpath(bfc, rids = rid)
+    bfcrpath(bfc, pathwayURL)
 }

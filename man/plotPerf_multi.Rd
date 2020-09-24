@@ -4,16 +4,9 @@
 \alias{plotPerf_multi}
 \title{Plots a set of ROC/PR curves with average.}
 \usage{
-plotPerf_multi(
-  inList,
-  plotTitle = "performance",
-  plotType = "ROC",
-  xlab = "TPR",
-  ylab = "FPR",
-  meanCol = "darkblue",
-  xlim = c(0, 1),
-  ylim = c(0, 1)
-)
+plotPerf_multi(inList, plotTitle = "performance", plotType = "ROC",
+  xlab = "TPR", ylab = "FPR", meanCol = "darkblue", xlim = c(0, 1),
+  ylim = c(0, 1))
 }
 \arguments{
 \item{inList}{(list) ROCR::performance objects, one per iteration}
@@ -47,7 +40,7 @@ all_rng <- list.files(path = inDir, pattern = 'rng.')
 fList <- paste(inDir,all_rng,'predictionResults.txt',sep=getFileSep())
 rocList <- list()
 for (k in seq_len(length(fList))) {
-  dat <- read.delim(fList[1],sep='\t',header=TRUE,as.is=TRUE)
+  dat <- read.delim(fList[1],sep='\\t',header=TRUE,as.is=TRUE)
   predClasses <- c('LumA', 'notLumA')
   pred_col1 <- sprintf('\%s_SCORE',predClasses[1])
   pred_col2 <- sprintf('\%s_SCORE',predClasses[2])

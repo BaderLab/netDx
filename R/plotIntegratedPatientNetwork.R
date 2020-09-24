@@ -210,6 +210,5 @@ if (plotCytoscape) {
 	)
 }
 
-
 return(out)
 }

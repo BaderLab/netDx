@@ -8,8 +8,6 @@
 #' numCores*GMmemory will be used and distributed for all GM threads
 #' @param numCores (integer) number of CPU cores for parallel processing
 #' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
-#' prints verbose messages.
-#' @param debugMode (logical) when TRUE runs jobs in serial instead of parallel and 
 #' prints verbose messages. Also prints system Java calls.
 #' @return (char) path to GeneMANIA query result files with patient similarity
 #' rankings (*PRANK) and feature weights (*NRANK)

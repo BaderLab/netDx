@@ -75,6 +75,8 @@ smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 	cl <- makeCluster(numCores)
 	registerDoParallel(cl)
 
+	# to address the "no visible binding for global variable" error
+	k <- NULL
   res.l <- foreach(k = 1:length(inds),
 	.packages=c("netSmooth","scater","clusterExperiment")) %dopar% {
     nS.res=netSmooth(mat[,inds[[k]]], net , alpha=0.2, verbose = 'auto', 

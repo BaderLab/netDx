@@ -70,8 +70,8 @@ out <- buildPredictor_sparseGenetic(
       path_GRList,
 		outDir=outDir, ## absolute path
       numSplits=3L, featScoreMax=3L,
-      enrichLabels=TRUE,numPermsEnrich=20L,
-      numCores=2L,debugMode=TRUE)
+      enrichLabels=TRUE,numPermsEnrich=3L,
+      numCores=2L)
 
 # plot ROC curve. Note that the denominator only includes
 # patients with events in networks that are label-enriched
@@ -197,7 +197,7 @@ out <-
                              path_GRList,
                              outDir=outDir, ## absolute path
                              numSplits=3L, featScoreMax=3L,
-                             enrichLabels=TRUE,numPermsEnrich=20L,
+                             enrichLabels=TRUE,numPermsEnrich=3L,
                              numCores=2L)
 ```
 

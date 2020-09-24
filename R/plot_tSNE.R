@@ -26,6 +26,9 @@ if (all.equal(pheno$ID[idx],samps)!=TRUE) {
 }
 st <- pheno$STATUS[idx]
 
+# to eliminate the "no visible binding for global variable" problem
+y <- status <- NULL
+
 message("* Plotting")
 colnames(dat) <- c("x","y")
 dat <- as.data.frame(dat,stringsAsFactors=TRUE)

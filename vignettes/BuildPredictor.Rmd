@@ -407,8 +407,7 @@ outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 # set keepAllData=TRUE to not delete at the end of the predictor run.
 # This can be useful for debugging.
-out <- suppressMessages(
-   buildPredictor(
+out <- buildPredictor(
       dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,
       outDir=outDir, ## netDx requires absolute path
@@ -416,7 +415,6 @@ out <- suppressMessages(
       featSelCutoff=1L,
       numCores=1L,
       logging="none")
-   )
 ```
 
 # Examine output

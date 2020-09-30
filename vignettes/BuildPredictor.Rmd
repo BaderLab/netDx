@@ -409,7 +409,7 @@ out <- suppressMessages(
       makeNetFunc=makeNets,outDir=outDir,
       numSplits=2L,featScoreMax=2L,
       featSelCutoff=1L,
-      numCores=1L,
+      numCores=1L,debugMode=TRUE,
       logging="none")
    )
 ```

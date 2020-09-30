@@ -413,7 +413,7 @@ out <- buildPredictor(
       outDir=outDir, ## netDx requires absolute path
       numSplits=2L,featScoreMax=2L,
       featSelCutoff=1L,
-      numCores=1L,
+      numCores=1L,debugMode=TRUE,
       logging="none")
 ```
 

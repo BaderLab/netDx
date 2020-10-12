@@ -16,7 +16,7 @@ vignette: >
 This code block is not evaluated. Need a breakdown? Look at the following sections.
 ```{r,eval=FALSE}
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressWarnings(suppressMessages(library(curatedTCGAData)))
 
 # fetch RNA, methylation and proteomic data for TCGA BRCA set
 brca <- suppressMessages(
@@ -105,14 +105,15 @@ makeNets <- function(dataList, groupList, netDir,...) {
 
 # run predictor 
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
+outDir <- paste(tempdir(),randAlphanumString(),"pred_output",sep=getFileSep())
 # To see all messages, remove suppressMessages() 
 # and set logging="default".
 # To keep all intermediate data, set keepAllData=TRUE
 numSplits <- 2L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
 	   numCores=1L)
 )
@@ -304,12 +305,12 @@ set.seed(42) # make results reproducible
 # set keepAllData to TRUE to not delete at the end of the 
 # predictor run.
 # This can be useful for debugging.
-outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
-
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep()) # use absolute path
 numSplits <- 2L
 out <- suppressMessages(
    buildPredictor(dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
 	   numCores=1L)
 )

@@ -13,7 +13,7 @@
 #' @importFrom igraph edge_attr
 #' @importFrom igraph E
 #' @export
-pruneNet <- function(net,vertices, pctX=0.1, useTop=TRUE) {
+pruneNet_pctX <- function(net,vertices, pctX=0.1, useTop=TRUE) {
 	g <- igraph::graph_from_data_frame(net,vertices=vertices)
 	wt <- sort(E(g)$weight, decreasing=TRUE)
 

@@ -1,2 +1,10 @@
+
+netDx 1.1.4
+==================
+Changes:
+* New functionality to smooth mutations over interaction, starting from sparse
+somatic mutations
+* BiocFileCache usage update
+
 Changes in version 0.99.0 (2019-11-11)
 + Submitted to Bioconductor

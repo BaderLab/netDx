@@ -7,6 +7,7 @@ Authors@R: c(person("Shraddha", "Pai",
 	  comment = c(ORCID = "0000-0002-1048-581X")), 
 	person("Philipp","Weber",role="aut"),
 	person("Ahmad","Shah", role="aut"),
+	person("Luca","Giudice",role="aut"),
 	person("Shirley","Hui",role="aut"),
 	person("Ruth","Isserlin",role="aut"),
 	person("Luca","Giudice",role="aut"),
@@ -17,13 +18,15 @@ Depends:
     R (>= 3.6)
 Suggests: 
   curatedTCGAData,
+	TCGAutils,
+	rmarkdown,
   testthat,
 	knitr
-Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer
+Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer, scater, netSmooth, clusterExperiment,Rtsne
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: MIT + file LICENSE
 LazyData: false
 URL: http://netdx.org
 biocViews: Classification, BiomedicalInformatics, Network, SystemsBiology
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

@@ -36,20 +36,13 @@ pathFile <- fetchPathwayDefinitions(
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18
+# cache for faster local access
 require(BiocFileCache)
 geneURL <- paste("http://download.baderlab.org/netDx/",
 	"supporting_data/refGene.hg18.bed",sep="")
 cache <- rappdirs::user_cache_dir(appname = "netDx")
 bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
-rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
-rid <- rid_rec$rid
-if (!length(rid)) {
-	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
-}
-if (!isFALSE(bfcneedsupdate(bfc, rid))){
-	bfcdownload(bfc, rid,ask=FALSE)
-}
-geneFile <- bfcrpath(bfc,rids=rid)
+geneFile <- bfcrpath(bfc,geneURL)
 genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],
@@ -60,18 +53,25 @@ gene_GR     <- GRanges(genes[,1],
 # create GRangesList of pathway ranges
 path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 
-outDir <- paste(tempdir(),"ASD",sep=getFileSep())
+outDir <- paste(tempdir(),randAlphanumString(),
+	"ASD",sep=getFileSep()) ## absolute path
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); dir.create(outDir)
 
+message("Getting java version for debugging")
+	java_ver <- suppressWarnings(
+		system2("java", args="--version",stdout=TRUE,stderr=NULL)
+	)
+print(java_ver)
+message("***")
+
 predictClass	<- "case"
-out <- suppressMessages(
-   buildPredictor_sparseGenetic(
+out <- buildPredictor_sparseGenetic(
 			pheno, cnv_GR, predictClass,
-      path_GRList,outDir,
+      path_GRList,
+		outDir=outDir, ## absolute path
       numSplits=3L, featScoreMax=3L,
-      enrichLabels=TRUE,numPermsEnrich=20L,
+      enrichLabels=TRUE,numPermsEnrich=3L,
       numCores=2L)
-)
 
 # plot ROC curve. Note that the denominator only includes
 # patients with events in networks that are label-enriched
@@ -137,7 +137,8 @@ CNV coordinates are read in, and converted into a `GRanges` object. As always, t
 
 ```{r,eval=TRUE}
 
-outDir <- paste(tempdir(),"ASD",sep=getFileSep())
+outDir <- paste(tempdir(),randAlphanumString(),
+	"ASD",sep=getFileSep()) ## must be absolute path
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE); 
 dir.create(outDir)
 
@@ -166,20 +167,13 @@ pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18
+# cache for faster local access
 require(BiocFileCache)
 geneURL <- paste("http://download.baderlab.org/netDx/",
 	"supporting_data/refGene.hg18.bed",sep="")
 cache <- rappdirs::user_cache_dir(appname = "netDx")
 bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
-rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
-rid <- rid_rec$rid
-if (!length(rid)) {
-	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
-}
-if (!isFALSE(bfcneedsupdate(bfc, rid))){
-	bfcdownload(bfc, rid,ask=FALSE)
-}
-geneFile <- bfcrpath(bfc,rids=rid)
+geneFile <- bfcrpath(bfc,geneURL)
 genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 genes <- genes[which(genes[,4]!=""),]
 gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
@@ -200,9 +194,10 @@ the user does not provide a custom similarity function in this application; curr
 predictClass	<- "case"
 out <- 
    buildPredictor_sparseGenetic(pheno, cnv_GR, predictClass,
-                             path_GRList,outDir,
+                             path_GRList,
+                             outDir=outDir, ## absolute path
                              numSplits=3L, featScoreMax=3L,
-                             enrichLabels=TRUE,numPermsEnrich=20L,
+                             enrichLabels=TRUE,numPermsEnrich=3L,
                              numCores=2L)
 ```
 

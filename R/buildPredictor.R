@@ -31,8 +31,8 @@
 #' grouped for the corresponding pathwayList.
 #' @param makeNetFunc (function) user-defined function for creating the set
 #' of input PSN provided to netDx. See createPSN_MultiData()::customFunc.
-#' @param outDir (char) directory where results will be stored. If this 
-#' directory exists, its contents will be overwritten
+#' @param outDir (char) directory where results will be stored. If this
+#' directory exists, its contents will be overwritten. Must be absolute path
 #' @param trainProp (numeric 0 to 1) Percent samples to use for training
 #' @param featScoreMax (integer) number of CV folds in inner loop
 #' @param numSplits (integer) number of train/blind test splits 
@@ -95,7 +95,7 @@
 #'
 #' library(curatedTCGAData)
 #' library(MultiAssayExperiment)
-#' curatedTCGAData(diseaseCode="BRCA", assays="*",dru.run=TRUE)
+#' curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 #' 
 #' # fetch mrna, mutation data
 #' brca <- curatedTCGAData("BRCA",c("mRNAArray"),FALSE)
@@ -176,6 +176,7 @@ buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
 	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default",
 	debugMode=FALSE) { 
+
 verbose_default <- TRUE
 verbose_runQuery <- FALSE	  # messages when running individual queries
 verbose_compileNets <- FALSE  # message when compiling PSN into database
@@ -215,18 +216,19 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
 if (!is(dataList,"MultiAssayExperiment"))
 	stop("dataList must be a MultiAssayExperiment")
 
-if (outDir != normalizePath(outDir)) {
-	browser()
-	stop("outDir should be an absolute path, not relative.")
-}
-
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
 
 megaDir <- outDir
-if (file.exists(megaDir)) unlink(megaDir,recursive=TRUE)
-dir.create(megaDir)
+if (file.exists(megaDir)) {
+ 	stop(paste("outDir seems to already exist!",
+		"Please provide a new directory, as its contents will be overwritten",
+	  sprintf("You provided: %s", outDir),
+		sep="\n"))
+} else {
+	dir.create(megaDir,recursive=TRUE)
+}
 
 # set aside for testing within each split
 pheno_all <- colData(dataList)

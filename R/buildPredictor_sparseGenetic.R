@@ -110,15 +110,7 @@
 #' 	"supporting_data/refGene.hg18.bed",sep="")
 #' cache <- rappdirs::user_cache_dir(appname = "netDx")
 #' bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
-#' rid_rec <- bfcquery(bfc, "hg18_genes", "rname")
-#' rid <- rid_rec$rid
-#' if (!length(rid)) {
-#' 	rid <- names(bfcadd(bfc, "hg18_genes", geneURL))
-#' }
-#' if (!isFALSE(bfcneedsupdate(bfc, rid))){
-#' 	bfcdownload(bfc, rid,ask=FALSE)
-#' }
-#' geneFile <- bfcrpath(bfc,rids=rid)
+#' geneFile <- bfcrpath(bfc,geneURL)
 #' genes <- read.delim(geneFile,sep="\t",header=FALSE,as.is=TRUE)
 #' genes <- genes[which(genes[,4]!=""),]
 #' gene_GR     <- GRanges(genes[,1],IRanges(genes[,2],genes[,3]),
@@ -144,6 +136,12 @@ buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
 	filter_WtSum=100L,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,
 	numCores=1L,FS_numCores=NULL,...) {
+
+if (file.exists(outDir)) {
+	stop("outDir exists. Please specify another output directory.")
+}
+dir.create(outDir,recursive=TRUE)
+
 
 	netDir <- paste(outDir,"networks_orig",sep=getFileSep())
 

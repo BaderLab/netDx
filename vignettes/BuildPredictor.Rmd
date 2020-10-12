@@ -16,7 +16,7 @@ vignette: >
 This code block is not evaluated. Need a breakdown? Look at the following sections.
 ```{r,eval=FALSE}
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressWarnings(suppressMessages(library(curatedTCGAData)))
 
 # fetch data remotely
 brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
@@ -40,7 +40,7 @@ brca <- brca[,tokeep,]
 
 smp <- sampleMap(brca)
 samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-# remove duplicate asssays mapped to the same sample
+# remove duplicate assays mapped to the same sample
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
 brca[[1]] <- suppressMessages(brca[[1]][,notdup])
 
@@ -89,12 +89,14 @@ makeNets <- function(dataList, groupList, netDir,...) {
 
 # run predictor 
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
+outDir <- paste(tempdir(),randAlphanumString(),
+	"pred_output",sep=getFileSep())
 # To see all messages, remove suppressMessages() and set logging="default".
 # To keep all intermediate data, set keepAllData=TRUE
 out <- buildPredictor(
       dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
       numCores=1L,logging="none",
       keepAllData=FALSE,debugMode=TRUE
@@ -185,13 +187,14 @@ for (nm in names(groupList)) {
 psn <- suppressMessages(
    plotIntegratedPatientNetwork(brca,
   groupList=g2, makeNetFunc=makeNets,
-  aggFun="MEAN",topX=0.10,
+  aggFun="MEAN",prune_X=0.30,prune_useTop=TRUE,
   numCores=1L,calcShortestPath=TRUE,
   showStats=FALSE,
   verbose=FALSE, plotCytoscape=FALSE)
 )
 
-sessionInfo()
+# Visualize integrated patient similarity network as a tSNE plot
+tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
 ```
 
 # Introduction
@@ -265,7 +268,7 @@ pID <- colData(brca)$patientID
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
 
-# remove duplicate asssays mapped to the same sample
+# remove duplicate assays mapped to the same sample
 smp <- sampleMap(brca)
 samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
 notdup <- samps[which(!duplicated(samps$primary)),"colname"]
@@ -297,7 +300,7 @@ netDx requires that this function take some generic parameters as input. These i
 ## dataList
 Here the BRCA data is already provided to us as a `MultiAssayExperiment` object:
 
-```
+```{r,eval=TRUE}
 summary(brca)
 ```
 
@@ -400,18 +403,18 @@ These are unrealistically low values set so the example will run fast. In practi
  
 ```{r,eval=TRUE}
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),"pred_output",sep=getFileSep())
+outDir <- paste(tempdir(),randAlphanumString(),
+	"pred_output",sep=getFileSep())
 # set keepAllData=TRUE to not delete at the end of the predictor run.
 # This can be useful for debugging.
-out <- suppressMessages(
-   buildPredictor(
+out <- buildPredictor(
       dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,outDir=outDir,
+      makeNetFunc=makeNets,
+      outDir=outDir, ## netDx requires absolute path
       numSplits=2L,featScoreMax=2L,
       featSelCutoff=1L,
       numCores=1L,debugMode=TRUE,
       logging="none")
-   )
 ```
 
 # Examine output
@@ -469,7 +472,7 @@ print(acc)
 
 Create a ROC curve, a precision-recall curve, and plot average AUROC and AUPR:
 
-```{r,eval=TRUE}
+```{r,eval=TRUE,fig.width=8,fig.height=10}
 predPerf <- plotPerf(predList, predClasses=st)
 ```
 
@@ -590,18 +593,23 @@ As with `plotEMap()`, this method must be run on a computer with Cytoscape insta
 
 ```{r,eval=TRUE}
 psn <- suppressMessages(
-   plotIntegratedPatientNetwork(
-      brca,
-      groupList=g2, 
-      makeNetFunc=makeNets,
-      aggFun="MEAN",topX=0.10,
-      numCores=1L,calcShortestPath=TRUE,
-      showStats=FALSE,
-      verbose=FALSE, plotCytoscape=FALSE)
+   plotIntegratedPatientNetwork(brca,
+  groupList=g2, makeNetFunc=makeNets,
+  aggFun="MEAN",prune_pctX=0.30,prune_useTop=TRUE,
+  numCores=1L,calcShortestPath=TRUE,
+  showStats=FALSE,
+  verbose=FALSE, plotCytoscape=FALSE)
 )
 ```
 
  ![Patient network after integrating features that scored 2 out of 2 in all train-test splits. For visualization only the top 10% strongest edges are shown. Nodes are patients, and edges are average distance across all features passing feature selection. Green indicates "LumA" status and orange indicates "nonLumA" status.](integratedPSN_MEAN_top0.10.png)
+
+The integrated PSN can also be visualized as a tSNE plot:
+```{r,fig.width=8,fig.height=8}
+tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
+summary(tsne)
+class(tsne)
+```
  
 # sessionInfo
 ```{r}

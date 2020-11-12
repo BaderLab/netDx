@@ -3,3 +3,6 @@
 # provides the JDK for 32-bit windows:
 # https://www.oracle.com/java/technologies/javase-jdk14-downloads.html
 # UnsupportedPlatforms: win32
+# Unsupported on Windows per maintainer request until package gets
+# switched to rJava.
+#UnsupportedPlatforms: win

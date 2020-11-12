@@ -15,8 +15,8 @@
 #' @param outDir (char) path to dir in which GeneMANIA database is created. 
 #' The database will be under \code{outDir/dataset}.
 #' @param simMetric (char) similarity measure to use in converting 
-#' profiles to interaction networks. 
 #' @param netSfx (char) pattern for finding network files in \code{netDir}.
+#' profiles to interaction networks. 
 #' @param verbose (logical) print messages
 #' @param numCores (integer) num cores for parallel processing
 #' @param P2N_threshType (char) Most users shouldn't have to change this.
@@ -89,6 +89,16 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     netList2 <- dir(path = paste(netDir,"INTERACTIONS",sep=getFileSep()),
 				pattern = netSfx)
     netList <- c(netList1, netList2)
+
+   tryCatch({
+        .jcheck(silent=FALSE)
+    },error=function(ex){
+        .jinit()
+        .jaddClassPath(getGMjar_path())
+    })
+    x <- getGMjar_path()
+    if (!x %in% .jclassPath()) .jaddClassPath(x)
+    jObj <- .jnew("org.genemania.engine.core.evaluation.ProfileToNetworkDriver")    
     
     if (verbose) 
         message(sprintf("Got %i networks", length(netList)))
@@ -110,11 +120,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
             corType <- "MUTUAL_INFORMATION"
         }
         
-        args <- c(sprintf("-Xmx%iG", JavaMemory), "-cp", GM_jar)
-        args <- c(args, 
-					paste("org.genemania.engine.core.",
-					"evaluation.ProfileToNetworkDriver",sep=""))
-        args <- c(args, c("-proftype", "continuous", "-cor", corType))
+        args <- c("-proftype", "continuous", "-cor", corType)
         args <- c(args, c("-threshold", P2N_threshType, 
 							"-maxmissing", 
 							sprintf("%1.1f", P2N_maxMissing)))
@@ -132,15 +138,16 @@ compileFeatures <- function(netDir, outDir = tempdir(),
             args2 <- c(args2, "-syn", 
 		paste(netDir,"1.synonyms",sep=getFileSep()),
 			"-keepAllTies", "-limitTies")
-	if (debugMode) {
-		message("Making Java call")
-		tmp <- paste(c(args,args2),collapse=" ")
-		message(sprintf("java %s",tmp))
-            	system2("java", args = c(args, args2), wait = TRUE)
-			} else {
-            	system2("java", args = c(args, args2), wait = TRUE, 
-					stdout = NULL)
-			}
+
+    
+      tryCatch({
+        .jcheck(silent=FALSE)
+    },error=function(ex){
+        .jinit()
+        .jaddClassPath(getGMjar_path())
+    })
+    jObj <- .jnew("org.genemania.engine.core.evaluation.ProfileToNetworkDriver")
+	.jcall(jObj,"V",method="main",c(args,args2))
         }
         stopCluster(cl)
         netSfx = ".txt"
@@ -171,11 +178,9 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 			paste(netDir,"1.synonyms",sep=getFileSep()),
 				"-keepAllTies", "-limitTies")
 		tmp <- paste(c(args,args2),collapse=" ")
-		print(sprintf("java %s",tmp))
-	       	system2("java", args = c(args, args2), wait = TRUE)
+        .jcall(jObj,"V",method="main",c(args,args2))       
 		stop("Stopping netDx now. See error message above.")
-	 }
-        
+	 }  
         if (verbose) 
             message(sprintf("Got %i networks from %i profiles", 
 		length(netList2), length(netList)))
@@ -190,15 +195,21 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     args <- c("-Xmx10G", "-cp", GM_jar)
     args <- c(args, paste("org.genemania.mediator.lucene.",
 			"exporter.Generic2LuceneExporter",sep=""))
-    args <- c(args, paste(netDir,"db.cfg",sep=getFileSep()), netDir, 
-		paste(netDir,"colours.txt",sep=getFileSep()))
-	if (debugMode){ 
-		tmp <- paste(args,collapse=" ")
-		message(sprintf("java %s",tmp))
-    		system2("java", args, wait = TRUE)
-	} else {
-    		system2("java", args, wait = TRUE, stdout = NULL)
-	}
+
+     args <- c(args, 
+        paste(netDir,"db.cfg",sep=getFileSep()), 
+        netDir, # base path
+	 	paste(netDir,"colours.txt",sep=getFileSep()),
+        "none", # profile - set null value per code
+        paste(dataDir,"lucene_index",sep=getFileSep())) # need this for .jcall because absolute path
+      tryCatch({
+        .jcheck(silent=FALSE)
+    },error=function(ex){
+        .jinit()
+        .jaddClassPath(getGMjar_path())
+    })
+     jObj3 <- .jnew(args[4],check=TRUE)
+     .jcall(jObj3,"V",method="main",args[-(1:4)])
     
     olddir <- paste(dataDir,"lucene_index", sep=getFileSep())
     flist <- list.files(olddir, recursive = TRUE)
@@ -213,20 +224,21 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     if (verbose) 
         message("\t* Build GeneMANIA cache")
 
-    args <- c("-Xmx10G", "-cp", GM_jar, 
-				"org.genemania.engine.apps.CacheBuilder")
-    args <- c(args, "-cachedir", "cache", "-indexDir", ".", 
-				"-networkDir", 
+    args <- c('-cachedir', paste(getwd(),'cache',sep=getFileSep()),
+                 '-indexDir', getwd(), 
+				'-networkDir', 
 			paste(netDir,"INTERACTIONS",sep=getFileSep()), 
-				"-log", 
+				"-log",             
 			paste(netDir,"test.log",sep=getFileSep()))
-  if (debugMode) {
-		tmp <- paste(args,collapse=" ")
-		message(sprintf("java %s", tmp))
-    	system2("java", args = args)
-	} else {
-    	system2("java", args = args, stdout = NULL)
-	}
+
+    tryCatch({
+        .jcheck(silent=FALSE)
+    },error=function(ex){
+        .jinit()
+        .jaddClassPath(getGMjar_path())
+    })
+    jObj2 <- .jnew("org.genemania.engine.apps.CacheBuilder")
+    .jcall(jObj2,"V",method="main",args)
     
     # Cleanup
     if (verbose) 

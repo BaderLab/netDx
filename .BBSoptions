@@ -2,4 +2,4 @@
 # it requires the Java JDK. However it seems that Oracle no longer
 # provides the JDK for 32-bit windows:
 # https://www.oracle.com/java/technologies/javase-jdk14-downloads.html
-UnsupportedPlatforms: win32
+# UnsupportedPlatforms: win32

@@ -17,6 +17,7 @@
 #' queryFile <- system.file("extdata","GM_query.txt",package="netDx")
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
+#' @importFrom rJava .jinit .jcheck .jaddClassPath .jcall .jnew
 runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 
 		JavaMemory = 6L, numCores = 1L,debugMode=FALSE) {
     
@@ -48,12 +49,16 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     resFile <- paste(resDir,sprintf("%s-results.report.txt",qBase),
 		sep=getFileSep())
     t0 <- Sys.time()
-	if (debugMode) {
-		message(sprintf("java %s",paste(args,collapse=" ")))
-    	system2("java", args, wait = TRUE)
-	} else {
-    	system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)
-	}
+	jObj <- .jnew("org.genemania.plugin.apps.QueryRunner")
+	.jcall(jObj,"V",method="main",args[-(1:4)])
+
+	# if (debugMode) {
+	# 	message(sprintf("java %s",paste(args,collapse=" ")))
+	# 	browser()
+    # 	system2("java", args, wait = TRUE)
+	# } else {
+    # 	system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)
+	# }
     if (verbose) 
         message(sprintf("QueryRunner time taken: %1.1f s", Sys.time() - t0))
     Sys.sleep(3)

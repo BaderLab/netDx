@@ -4,9 +4,15 @@
 \alias{sparsify3}
 \title{cleaner sparsification routine - faster, matrix-based version}
 \usage{
-sparsify3(W, outFile = sprintf("\%s/tmp.txt", tempdir()), cutoff = 0.3,
-  maxInt = 50, EDGE_MAX = Inf, includeAllNodes = TRUE,
-  verbose = TRUE)
+sparsify3(
+  W,
+  outFile = sprintf("\%s/tmp.txt", tempdir()),
+  cutoff = 0.3,
+  maxInt = 50,
+  EDGE_MAX = Inf,
+  includeAllNodes = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{W}{(matrix) similarity matrix}

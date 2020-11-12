@@ -1,6 +1,6 @@
 Package: netDx
 Title: Network-based patient classifier
-Version: 1.1.4
+Version: 1.1.5
 Authors@R: c(person("Shraddha", "Pai", 
 		email = "shraddha.pai@utoronto.ca", 
 		role = c("aut", "cre"),
@@ -21,7 +21,7 @@ Suggests:
 	rmarkdown,
   testthat,
 	knitr
-Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer, scater, netSmooth, clusterExperiment,Rtsne
+Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer, scater, netSmooth, clusterExperiment,Rtsne, rJava
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: MIT + file LICENSE

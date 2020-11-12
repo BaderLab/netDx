@@ -17,7 +17,7 @@
 #' queryFile <- system.file("extdata","GM_query.txt",package="netDx")
 #' runQuery(dbPath, queryFile,tempdir())
 #' @export
-#' @importFrom rJava .jinit .jcheck .jaddClassPath .jcall .jnew
+#' @importFrom rJava .jinit .jcheck .jaddClassPath .jcall .jnew .jclassPath
 runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE, 
 		JavaMemory = 6L, numCores = 1L,debugMode=FALSE) {
     

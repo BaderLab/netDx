@@ -24,8 +24,11 @@ getGMjar_path <- function(verbose = FALSE) {
     },error=function(ex){
         .jinit()
 	})
-	java_ver <- .jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
+	java_ver <- .jcall("java/lang/System", "S", 
+		"getProperty", "java.runtime.version")
 	message(sprintf("Java version: %s", java_ver))
+	dpos <- unlist(gregexpr("\\.",java_ver)[[1]])
+ 	java_ver <- substr(java_ver, 1, dpos[2]-1)
 
 	if (any(grep("11",java_ver)) || any(grep("12",java_ver)) || any(grep("13",java_ver)) || any(grep("14",java_ver))) {
 		if (verbose) message("Java 11+ detected")

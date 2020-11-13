@@ -26,41 +26,43 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     logFile <- paste(resDir,sprintf("%s.log",qBase))
     queryStrings <- paste(queryFiles, collapse = " ")
 
-	args <- c()
-	java_ver <- suppressWarnings(system2("java", 
-		args="--version",stdout=TRUE,stderr=NULL))
-	if (any(grep(" 11",java_ver))) {
-		if (verbose) message("Java 11 detected")
-	} else {
-		if (verbose) message("Java 8 detected")
-		args <- c(args,"-d64")
-	}
-
-    args <- c(args, sprintf("-Xmx%iG", JavaMemory * numCores), "-cp", GM_jar)
-    args <- c(args, "org.genemania.plugin.apps.QueryRunner")
-    args <- c(args, "--data", dbPath, "--in", "flat", "--out", "flat")
-    args <- c(args, "--threads", numCores, "--results", resDir, 
-			unlist(queryFiles))
+  java_ver <- .jcall("java/lang/System", "S",
+    "getProperty", "java.runtime.version")
+ dpos <- unlist(gregexpr("\\.",java_ver)[[1]])
+ java_ver <- substr(java_ver, 1, dpos[2]-1)
+  args <- c()
+  if (any(grep("11",java_ver)) || any(grep("12",java_ver)) || any(grep("13",java_ver)) || any(grep("14",java_ver))) {
+  } else {
+    args <- c(args,"-d64")
+  }
+    args <- c(args, "--data", dbPath, "--in", 
+	"flat", "--out", "flat")
+    args <- c(args, "--threads", numCores, 
+	"--results", resDir, 
+	unlist(queryFiles))
     args <- c(args, "--netdx-flag", "true")  #,'2>1','/dev/null')
     
     # file is not actually created - is already split in PRANK and 
-		# NRANK segments on
+	# NRANK segments on
     # GeneMANIA side
-    resFile <- paste(resDir,sprintf("%s-results.report.txt",qBase),
-		sep=getFileSep())
+    resFile <- paste(resDir,
+	sprintf("%s-results.report.txt",qBase),
+	sep=getFileSep())
     t0 <- Sys.time()
-	jObj <- .jnew("org.genemania.plugin.apps.QueryRunner")
-	.jcall(jObj,"V",method="main",args[-(1:4)])
+	x <- getGMjar_path()
+   tryCatch({
+        .jcheck(silent=FALSE)
+    },error=function(ex){
+        .jinit()
+        .jaddClassPath(x)
+    })
+    if (!x %in% .jclassPath()) .jaddClassPath(x)
+  jObj <- .jnew("org.genemania.plugin.apps.QueryRunner")
+  .jcall(jObj,"V",method="main",args)
 
-	# if (debugMode) {
-	# 	message(sprintf("java %s",paste(args,collapse=" ")))
-	# 	browser()
-    # 	system2("java", args, wait = TRUE)
-	# } else {
-    # 	system2("java", args, wait = TRUE, stdout = NULL, stderr = NULL)
-	# }
     if (verbose) 
-        message(sprintf("QueryRunner time taken: %1.1f s", Sys.time() - t0))
+        message(sprintf("QueryRunner time taken: %1.1f s", 
+	Sys.time() - t0))
     Sys.sleep(3)
     return(resFile)
 }

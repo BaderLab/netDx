@@ -30,12 +30,7 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
     "getProperty", "java.runtime.version")
  dpos <- unlist(gregexpr("\\.",java_ver)[[1]])
  java_ver <- substr(java_ver, 1, dpos[2]-1)
-  args <- c()
-  if (any(grep("11",java_ver)) || any(grep("12",java_ver)) || any(grep("13",java_ver)) || any(grep("14",java_ver))) {
-  } else {
-    args <- c(args,"-d64")
-  }
-    args <- c(args, "--data", dbPath, "--in", 
+    args <- c("--data", dbPath, "--in", 
 	"flat", "--out", "flat")
     args <- c(args, "--threads", numCores, 
 	"--results", resDir, 

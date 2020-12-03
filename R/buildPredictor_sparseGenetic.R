@@ -141,16 +141,14 @@ if (file.exists(outDir)) {
 	stop("outDir exists. Please specify another output directory.")
 }
 dir.create(outDir,recursive=TRUE)
-
-
-	netDir <- paste(outDir,"networks_orig",sep=getFileSep())
+netDir <- paste(outDir,"networks_orig",sep=getFileSep())
 
 message("making rangesets")
-	netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
-		verbose=FALSE)
+netList <- makePSN_RangeSets(cnv_GR, group_GRList,netDir,
+	verbose=FALSE)
 
 message("counting patients in net")
-	p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
+p 	<- countPatientsInNet(netDir,netList, phenoDF$ID)
 message("updating nets")
 	tmp	<- updateNets(p,phenoDF,writeNewNets=FALSE,verbose=FALSE)
 
@@ -238,9 +236,15 @@ message("updating nets")
 				outDir=paste(trainNetDir,"INTERACTIONS",
 					sep=getFileSep()),
 				pheno=pheno_train)
+	# Check: need to replace commas used as decimal separators, into periods
+	tmp <- dir(path=sprintf("%s/INTERACTIONS",trainNetDir),pattern="txt$")[1]
+	tmp <- sprintf("%s/INTERACTIONS/%s",trainNetDir,tmp)
+ 	if (sum(grepl(pattern=",",readLines(tmp,n=1))>0)) { # detect comma
+		replacePattern(path=sprintf("%s/INTERACTIONS",trainNetDir))
+	}
 		
 		# create networks for cross-validation
-		x <- compileFeatures(trainNetDir,newOut,verbose=FALSE)
+	x <- compileFeatures(trainNetDir,newOut,verbose=FALSE)
 		
 		# we query for training samples of the predictor class
 		trainPred <- pheno_train$ID[
@@ -256,10 +260,16 @@ message("updating nets")
 		t1 <- Sys.time()
 		message("Score features for this train/test split")
 		print(t1-t0)
-		
+
 		# collect results
+	tmp <- dir(path=resDir,pattern="RANK$")[1]
+	tmp <- sprintf("%s/%s",resDir,tmp)
+ 	if (sum(grepl(pattern=",",readLines(tmp,n=6))>0)) { # detect comma
+		replacePattern(path=resDir,fileType="RANK$")
+	}
 		nrankFiles	<- paste(resDir,dir(path=resDir,pattern="NRANK$"),
 			sep=getFileSep())
+
 		pathwayRank	<- compileFeatureScores(nrankFiles,
 			filter_WtSum=filter_WtSum,verbose=FALSE)
 		write.table(pathwayRank,

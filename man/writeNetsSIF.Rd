@@ -4,11 +4,8 @@
 \alias{writeNetsSIF}
 \title{write patient networks in Cytoscape's .sif format}
 \usage{
-writeNetsSIF(
-  netPath,
-  outFile = paste(tempdir(), "out.sif", sep = getFileSep()),
-  netSfx = "_cont.txt"
-)
+writeNetsSIF(netPath, outFile = paste(tempdir(), "out.sif", sep =
+  getFileSep()), netSfx = "_cont.txt")
 }
 \arguments{
 \item{netPath}{(char): vector of path to network files; file suffix

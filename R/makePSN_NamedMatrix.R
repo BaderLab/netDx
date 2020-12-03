@@ -106,23 +106,22 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
                 outFile <- paste(outDir,sprintf("%s.profile",curSet),
-			            sep=getFileSep())
+					sep=getFileSep())
                 write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
-			            sep = "\t", dec=".",
-                  col.names = FALSE, row.names = TRUE, 
-                  quote = FALSE)
+				sep = "\t",dec=".",
+                  col.names = FALSE, row.names = TRUE, quote = FALSE)
             } else {
                 outFile <- paste(outDir,sprintf("%s_cont.txt", curSet),
-			            sep=getFileSep())
+			sep=getFileSep())
                 message(sprintf("computing sim for %s", curSet))
                 sim <- getSimilarity(xpr[idx, , drop = FALSE], 
-			            type = simMetric, 
+			type = simMetric, 
                   ...)
                 if (is.null(sim)) {
                   stop(sprintf(paste("makePSN_NamedMatrix:%s: ", 
-		                "similarity matrix is empty (NULL).\n", 
-                    "Check that there isn't a mistake in the ", 
-		                "input data or similarity method of choice.\n", 
+		"similarity matrix is empty (NULL).\n", 
+                "Check that there isn't a mistake in the ", 
+		"input data or similarity method of choice.\n", 
                     sep = ""), curSet))
                 }
                 pat_pairs <- sim

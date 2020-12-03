@@ -4,7 +4,6 @@
 #' 
 #' @return BiocFileCache object associated with netDx
 #' @import BiocFileCache
-#' @importFrom rJava .jinit .jcheck .jaddClassPath .jcall .jnew
 #' @importFrom rappdirs user_cache_dir
 .get_cache <- function() {
     cache <- rappdirs::user_cache_dir(appname = "netDx")
@@ -19,18 +18,11 @@
 #' or initial download is required 
 #' @export
 getGMjar_path <- function(verbose = FALSE) {
-	 tryCatch({
-        .jcheck(silent=FALSE)
-    },error=function(ex){
-        .jinit()
-	})
-	java_ver <- .jcall("java/lang/System", "S", 
-		"getProperty", "java.runtime.version")
-	message(sprintf("Java version: %s", java_ver))
-	dpos <- unlist(gregexpr("\\.",java_ver)[[1]])
- 	java_ver <- substr(java_ver, 1, dpos[2]-1)
 
-	if (any(grep("11",java_ver)) || any(grep("12",java_ver)) || any(grep("13",java_ver)) || any(grep("14",java_ver))) {
+	java_ver <- suppressWarnings(
+		system2("java", args="--version",stdout=TRUE,stderr=NULL)
+	)
+	if (any(grep(" 11",java_ver)) || any(grep(" 12",java_ver)) || any(grep(" 13",java_ver)) || any(grep(" 14",java_ver))) {
 		if (verbose) message("Java 11+ detected")
     	fileURL <- paste("http://download.baderlab.org/netDx/java11/", 
 			"genemania-netdx.jar",sep="")
@@ -41,19 +33,7 @@ getGMjar_path <- function(verbose = FALSE) {
 	}
 	
     bfc <- .get_cache()
-    x <- bfcrpath(bfc, fileURL)
-
-	
-	tryCatch({
-		.jcheck(silent=TRUE)
-	}, error=function(ex){
-		.jinit()
-		.jaddClassPath(x)
-	},finally={
-	})
-	if (x %in% .jclassPath()) .jaddClassPath(x)
-
-	return(x)
+    bfcrpath(bfc, fileURL)
 }
 
 #' fetch pathway definitions from downloads.baderlab.org

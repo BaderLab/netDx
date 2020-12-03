@@ -4,15 +4,8 @@
 \alias{updateNets}
 \title{Synchronize patient set in sample table and network table.}
 \usage{
-updateNets(
-  p_net,
-  pheno_DF,
-  writeNewNets = TRUE,
-  oldNetDir,
-  newNetDir,
-  verbose = TRUE,
-  ...
-)
+updateNets(p_net, pheno_DF, writeNewNets = TRUE, oldNetDir, newNetDir,
+  verbose = TRUE, ...)
 }
 \arguments{
 \item{p_net}{(matrix) rows are patients, columns are networks.

@@ -160,10 +160,10 @@ makePSN_RangeSets <- function(gr, rangeSet, netDir = tempdir(),
                   
                   # write network for pathway
                   outFile <- paste(netDir,sprintf("%s_cont.txt",curP),
-						sep=getFileSep())
+			sep=getFileSep())
                   write.table(pat_pairs, file = outFile, sep = "\t", 
-					col.names = FALSE, row.names = FALSE, 
-					dec=".",quote = FALSE)
+			col.names = FALSE, 
+                	row.names = FALSE, quote = FALSE)
                   outFile <- basename(outFile)
                 ## status <- 1;
             }  

@@ -4,15 +4,8 @@
 \alias{runQuery}
 \title{Run a query}
 \usage{
-runQuery(
-  dbPath,
-  queryFiles,
-  resDir,
-  verbose = TRUE,
-  JavaMemory = 6L,
-  numCores = 1L,
-  debugMode = FALSE
-)
+runQuery(dbPath, queryFiles, resDir, verbose = TRUE, JavaMemory = 6L,
+  numCores = 1L, debugMode = FALSE)
 }
 \arguments{
 \item{dbPath}{(char) path to directory with GeneMANIA generic database}

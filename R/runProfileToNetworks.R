@@ -64,6 +64,12 @@ foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
 	system2("java", args = c(args, args2), wait = TRUE, 
 		stdout = stdout)
 }
+
+	tmp <- dir(path=outDir,pattern="txt$")[1]
+	tmp <- sprintf("%s/%s",outDir,tmp)
+ 	if (sum(grepl(pattern=",",readLines(tmp,n=1))>0)) { # detect comma
+		replacePattern(path=outDir,fileType="txt$")
+	}
 stopCluster(cl)
 
 }

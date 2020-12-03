@@ -5,8 +5,14 @@
 \title{Prune interaction networks to keep only the networks and patients 
 requested}
 \usage{
-pruneNets(oldDir, newDir = tempdir(), filterNets = "*",
-  filterIDs = "*", netSfx = "_cont.txt$", verbose = TRUE)
+pruneNets(
+  oldDir,
+  newDir = tempdir(),
+  filterNets = "*",
+  filterIDs = "*",
+  netSfx = "_cont.txt$",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{oldDir}{(char) path to directory with original networks}

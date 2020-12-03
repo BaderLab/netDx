@@ -4,8 +4,7 @@
 \alias{getPatientRankings}
 \title{Process GM PRANK files to get the ROC curve for the query}
 \usage{
-getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE,
-  verbose = FALSE)
+getPatientRankings(pFile, pheno_DF, predClass, plotIt = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{pFile}{(char) path to PRANK file}

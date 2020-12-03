@@ -5,8 +5,12 @@
 \title{Apply discretization to the matrix resulted from the propagation on the
 sparse patient matrix}
 \usage{
-thresholdSmoothedMutations(smoothedMutProfile, unsmoothedMutProfile,
-  nameDataset, n_topXmuts = c(10))
+thresholdSmoothedMutations(
+  smoothedMutProfile,
+  unsmoothedMutProfile,
+  nameDataset,
+  n_topXmuts = c(10)
+)
 }
 \arguments{
 \item{smoothedMutProfile}{(data.frame) continous matrix of patient profiles 
@@ -48,10 +52,10 @@ require(doParallel)
 
 # load mutation and phenotype data
 genoFile <- system.file("extdata","TGCT_mutSmooth_geno.txt",package="netDx")
-geno <- read.delim(genoFile,sep="\\t",header=TRUE,as.is=TRUE)
+geno <- read.delim(genoFile,sep="\t",header=TRUE,as.is=TRUE)
 phenoFile <- system.file("extdata", "TGCT_mutSmooth_pheno.txt",
 			package="netDx")
-pheno <- read.delim(phenoFile,sep="\\t",header=TRUE,as.is=TRUE)
+pheno <- read.delim(phenoFile,sep="\t",header=TRUE,as.is=TRUE)
 rownames(pheno) <- pheno$ID
 
 # load interaction nets to smooth over
@@ -61,7 +65,7 @@ netFileURL <- paste("http://download.baderlab.org/netDx/",
 cache <- rappdirs::user_cache_dir(appname = "netDx")
 bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)
 netFile <- bfcrpath(bfc,netFileURL)
-cancerNets <- read.delim(netFile,sep="\\t",header=TRUE,as.is=TRUE)
+cancerNets <- read.delim(netFile,sep="\t",header=TRUE,as.is=TRUE)
 # smooth mutations
 prop_net <- smoothMutations_LabelProp(geno,cancerNets,numCores=1L)
 genoP <- thresholdSmoothedMutations(

@@ -418,6 +418,12 @@ for (rngNum in startAt:numSplits) {
 				featScoreMax=featScoreMax,JavaMemory=JavaMemory,
 				debugMode=debugMode)
 	
+	tmp <- dir(path=resDir,pattern="RANK$")[1]
+	tmp <- sprintf("%s/%s",resDir,tmp)
+ 	if (sum(grepl(pattern=",",readLines(tmp,n=6))>0)) { # detect comma
+		replacePattern(path=resDir,fileType="RANK$")
+	}
+	
 	  	# Compute network score
 			nrank <- dir(path=resDir,pattern="NRANK$")
 			if (verbose_default) message("\tCompiling feature scores")

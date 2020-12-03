@@ -4,10 +4,18 @@
 \alias{convertProfileToNetworks}
 \title{Convert profiles to interaction networks before integration}
 \usage{
-convertProfileToNetworks(netDir, outDir = tempdir(),
-  simMetric = "pearson", numCores = 1L, JavaMemory = 4L,
-  GM_jar = NULL, P2N_threshType = "off", P2N_maxMissing = 100,
-  netSfx = "txt$", debugMode = FALSE)
+convertProfileToNetworks(
+  netDir,
+  outDir = tempdir(),
+  simMetric = "pearson",
+  numCores = 1L,
+  JavaMemory = 4L,
+  GM_jar = NULL,
+  P2N_threshType = "off",
+  P2N_maxMissing = 100,
+  netSfx = "txt$",
+  debugMode = FALSE
+)
 }
 \arguments{
 \item{netDir}{(char) directory with .profile files}

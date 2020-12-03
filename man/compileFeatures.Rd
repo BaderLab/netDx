@@ -4,10 +4,20 @@
 \alias{compileFeatures}
 \title{Create GeneMANIA database}
 \usage{
-compileFeatures(netDir, outDir = tempdir(), simMetric = "pearson",
-  netSfx = "txt$", verbose = TRUE, numCores = 1L,
-  P2N_threshType = "off", P2N_maxMissing = 100, JavaMemory = 4L,
-  altBaseDir = NULL, debugMode = FALSE, ...)
+compileFeatures(
+  netDir,
+  outDir = tempdir(),
+  simMetric = "pearson",
+  netSfx = "txt$",
+  verbose = TRUE,
+  numCores = 1L,
+  P2N_threshType = "off",
+  P2N_maxMissing = 100,
+  JavaMemory = 4L,
+  altBaseDir = NULL,
+  debugMode = FALSE,
+  ...
+)
 }
 \arguments{
 \item{netDir}{(char) path to dir with input networks/profiles. All
@@ -17,10 +27,10 @@ This needs to be an absolute path, not relative.}
 \item{outDir}{(char) path to dir in which GeneMANIA database is created. 
 The database will be under \code{outDir/dataset}.}
 
-\item{simMetric}{(char) similarity measure to use in converting 
-profiles to interaction networks.}
+\item{simMetric}{(char) similarity measure to use in converting}
 
-\item{netSfx}{(char) pattern for finding network files in \code{netDir}.}
+\item{netSfx}{(char) pattern for finding network files in \code{netDir}.
+profiles to interaction networks.}
 
 \item{verbose}{(logical) print messages}
 

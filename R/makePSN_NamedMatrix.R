@@ -106,9 +106,9 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
                 outFile <- paste(outDir,sprintf("%s.profile",curSet),
-			sep=getFileSep())
+					sep=getFileSep())
                 write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
-			sep = "\t", 
+				sep = "\t",dec=".",
                   col.names = FALSE, row.names = TRUE, quote = FALSE)
             } else {
                 outFile <- paste(outDir,sprintf("%s_cont.txt", curSet),

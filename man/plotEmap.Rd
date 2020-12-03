@@ -4,21 +4,11 @@
 \alias{plotEmap}
 \title{Create EnrichmentMap in Cytoscape to visualize predictive pathways}
 \usage{
-plotEmap(
-  gmtFile,
-  nodeAttrFile,
-  netName = "generic",
-  scoreCol = "maxScore",
-  minScore = 1,
-  maxScore = 10,
-  nodeFillStops = c(7, 9),
-  colorScheme = "cont_heatmap",
-  imageFormat = "png",
-  verbose = FALSE,
-  createStyle = TRUE,
-  groupClusters = FALSE,
-  hideNodeLabels = FALSE
-)
+plotEmap(gmtFile, nodeAttrFile, netName = "generic",
+  scoreCol = "maxScore", minScore = 1, maxScore = 10,
+  nodeFillStops = c(7, 9), colorScheme = "cont_heatmap",
+  imageFormat = "png", verbose = FALSE, createStyle = TRUE,
+  groupClusters = FALSE, hideNodeLabels = FALSE)
 }
 \arguments{
 \item{gmtFile}{(character) file path to GMT file 
@@ -82,7 +72,7 @@ pathwayList <- pathwayList[seq_len(5)]
 netInfoFile <- system.file("extdata",
 	paste("example_output","inputNets.txt",sep=getFileSep()),
 	package="netDx")
-netTypes <- read.delim(netInfoFile,sep='\t',header=FALSE,as.is=TRUE)
+netTypes <- read.delim(netInfoFile,sep='\\t',header=FALSE,as.is=TRUE)
 outDir <- paste(tempdir(),'plots',sep=getFileSep())
 if (!file.exists(outDir)) dir.create(outDir)
 EMap_input <- getEMapInput_many(featScores,pathwayList,
@@ -94,5 +84,5 @@ nodeAttrFile <- EMap_input[[1]][2]
 
 # not run because requires Cytoscape to be installed and open
 # plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, 
-#\t\tnetName='HighRisk')
+#\\t\\tnetName='HighRisk')
 }

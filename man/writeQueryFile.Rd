@@ -4,13 +4,8 @@
 \alias{writeQueryFile}
 \title{Wrapper to write GeneMANIA query file}
 \usage{
-writeQueryFile(
-  qSamps,
-  incNets = "all",
-  numReturn = 1L,
-  outFile,
-  orgName = "predictor"
-)
+writeQueryFile(qSamps, incNets = "all", numReturn = 1L, outFile,
+  orgName = "predictor")
 }
 \arguments{
 \item{qSamps}{(char) vector of patient IDs in query}

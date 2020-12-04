@@ -9,6 +9,8 @@
 #' @param inFiles (char) path to predictionResults.txt files.
 #' A vector, each with absolute paths to predictionResults.txt
 #' @param predClasses (char) vector of class names.
+#' @param plotSEM (logical) metric for error bars. If set to TRUE, plots SEM;
+#' else plots SD. 
 #' @return (list) each key corresponds to an input file in inDir.
 #' Value is a list with:
 #' 1) stats: 'stats' component of perfCalc
@@ -19,8 +21,8 @@
 #' 6) accuracy: Accuracy
 #'
 #' Side effect of plotting in a 2x2 format:
-#' 1) mean+/-SEM AUROC
-#' 2) mean+/-SEM AUPR
+#' 1) mean+/-SEM or (mean+/-SD) AUROC
+#' 2) mean+/-SEM or (mean+/-SD) AUPR
 #' 3) ROC curve for all runs plus average
 #' 4) PR curve for all runs plus average
 #' @examples
@@ -37,7 +39,7 @@
 #' @importFrom stats sd
 #' @importFrom graphics abline axis par points segments text title hist
 #' @export
-plotPerf <- function(resList=NULL, inFiles, predClasses) {
+plotPerf <- function(resList=NULL, inFiles, predClasses,plotSEM=FALSE) {
 	if (is.null(resList)) {
     	if (missing(inFiles)) 
         	stop("inDir not provided")
@@ -109,30 +111,37 @@ plotPerf <- function(resList=NULL, inFiles, predClasses) {
             auroc = auroc, aupr = aupr, accuracy = overall_acc)
     }
     
-    .plotAvg <- function(res, name) {
+    .plotAvg <- function(res, name,plotSEM) {
         mu <- mean(res, na.rm = TRUE)
-        sem <- sd(res, na.rm = TRUE)/sqrt(length(res))
-        plot(1, mu, type = "n", bty = "n", ylab = sprintf("%s (mean+/-SEM)", 
-						name), xaxt = "n", ylim = c(0.4, 1), las = 1, 
+		if (plotSEM) {
+        	err <- sd(res, na.rm = TRUE)/sqrt(length(res))
+			errnm <- "SEM"
+		} else {
+        	err <- sd(res, na.rm = TRUE)
+			errnm <- "SD"
+}
+        plot(1, mu, type = "n", bty = "n", 
+						ylab = sprintf("%s (mean+/-%s)", name,errnm), 
+						xaxt = "n", ylim = c(0.4, 1), las = 1, 
 								xlim = c(0.8,1.2), 
 								cex.axis = 1.4, xlab = "")
         abline(h = c(0.7, 0.8), col = "cadetblue3", lty = 3, lwd = 3)
         points(1, mu, type = "p", cex = 1.4, pch = 16)
         
         # error bars
-        segments(x0 = 1, y0 = mu - sem, y1 = mu + sem, lwd = 3)
-        segments(x0 = 1 - 0.01, x1 = 1 + 0.01, y0 = mu - sem, y1 = mu - sem)
-        segments(x0 = 1 - 0.01, x1 = 1 + 0.01, y0 = mu + sem, y1 = mu + sem)
+        segments(x0 = 1, y0 = mu - err, y1 = mu + err, lwd = 3)
+        segments(x0 = 1 - 0.01, x1 = 1 + 0.01, y0 = mu - err, y1 = mu - err)
+        segments(x0 = 1 - 0.01, x1 = 1 + 0.01, y0 = mu + err, y1 = mu + err)
         abline(h = 0.5, col = "red", lty = 1, lwd = 2)
         title(sprintf("%s: N=%i runs", name, length(res)))
     }
     
-    # plot average +/-SEM
+    # plot average +/-error
     par(mfrow = c(2, 2))
     x <- unlist(lapply(mega, function(x) x$auroc))
-    .plotAvg(x, "AUROC")
+    .plotAvg(x, "AUROC",plotSEM)
     x <- unlist(lapply(mega, function(x) x$aupr))
-    .plotAvg(x, "AUPR")
+    .plotAvg(x, "AUPR",plotSEM)
     
     # plot individual curves
     rocCurves <- lapply(mega, function(x) x$roc_curve)

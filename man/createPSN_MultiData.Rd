@@ -4,8 +4,16 @@
 \alias{createPSN_MultiData}
 \title{Wrapper to create custom input features (patient similarity networks)}
 \usage{
-createPSN_MultiData(dataList, groupList, pheno, netDir = tempdir(),
-  filterSet = NULL, verbose = TRUE, customFunc, ...)
+createPSN_MultiData(
+  dataList,
+  groupList,
+  pheno,
+  netDir = tempdir(),
+  filterSet = NULL,
+  verbose = TRUE,
+  customFunc,
+  ...
+)
 }
 \arguments{
 \item{dataList}{(list) key is datatype (e.g. clinical, rna, etc.,), value is
@@ -68,7 +76,7 @@ colData(brca)$STATUS <- pam50
 
 # keep only tumour samples
 idx <- union(which(pam50 == 'Normal-like'), which(is.na(st2)))
-cat(sprintf('excluding \%i samples\\n', length(idx)))
+cat(sprintf('excluding \%i samples\n', length(idx)))
                                                                            
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
@@ -95,10 +103,10 @@ makeNets <- function(dataList, groupList, netDir,...) {
                 netDir,verbose=FALSE,
                 writeProfiles=TRUE,...)
     netList <- unlist(netList)
-    cat(sprintf('Made \%i RNA pathway nets\\n', length(netList)))
+    cat(sprintf('Made \%i RNA pathway nets\n', length(netList)))
     }
 
-    cat(sprintf('Total of \%i nets\\n', length(netList)))
+    cat(sprintf('Total of \%i nets\n', length(netList)))
     return(netList)
 }
 

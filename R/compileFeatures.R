@@ -208,6 +208,13 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     file.copy(from = paste(olddir, flist, sep = getFileSep()), 
 	to = paste(dataDir, flist,sep =getFileSep()))
     unlink(olddir)
+
+	# Check: need to replace commas used as decimal separators, into periods
+	tmp <- dir(path=sprintf("%s/INTERACTIONS",netDir),pattern="txt$")[1]
+	tmp <- sprintf("%s/INTERACTIONS/%s",netDir,tmp)
+ 	if (sum(grepl(pattern=",",readLines(tmp,n=1))>0)) { # detect comma
+		replacePattern(path=sprintf("%s/INTERACTIONS",netDir))
+	}
     
     # Build GeneMANIA cache
     if (verbose) 
@@ -236,4 +243,25 @@ compileFeatures <- function(netDir, outDir = tempdir(),
     
     setwd(curwd)
     return(list(dbDir = dataDir, netDir = netDir))
+}
+
+#' Replace pattern in all files in dir
+#' @description find/replace pattern in all files of specified file type
+#' in specified directory. Needed to modify number format when intefacing
+#' with GeneMANIA, on  French locale machines. Without this step,
+#' CacheBuilder throws error with commas. 
+#' @param pattern (char) pattern to find
+#' @param target (char) pattern to replace
+#' @param path (char) dir to replace pattern in
+#' @param fileType (char) pattern for files to replace pattern in
+#' @return No value. Files have patterns replaced in place.
+#' @export
+replacePattern <- function(pattern=",",target=".",path=getwd(),fileType="txt$") {
+fList <- dir(path,fileType)
+for (currF in fList) {
+        fFull <- sprintf("%s/%s",path,currF)
+        tx <- readLines(fFull)
+        tx2 <- gsub(",",".",tx)
+        writeLines(tx2,con=fFull)
+}
 }

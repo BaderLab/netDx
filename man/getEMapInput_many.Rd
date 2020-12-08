@@ -43,7 +43,7 @@ pathwayList <- readPathways(fetchPathwayDefinitions("October",2020))
 pathwayList <- pathwayList[seq_len(5)]
 
 netInfoFile <- system.file("extdata","example_output/inputNets.txt",package="netDx")
-netTypes <- read.delim(netInfoFile,sep='\\t',h=FALSE,as.is=TRUE)
+netTypes <- read.delim(netInfoFile,sep='\t',h=FALSE,as.is=TRUE)
 outDir <- paste(tempdir(),'plots',sep='/')
 if (!file.exists(outDir)) dir.create(outDir)
 EMap_input <- getEMapInput_many(featScores,pathwayList,

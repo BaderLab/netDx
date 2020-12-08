@@ -26,7 +26,7 @@ d <- tempdir()
 # write PSN
 m1 <- matrix(c("P1","P1","P2","P2","P3","P4",1,1,1),byrow=FALSE,ncol=3)
 write.table(m1,file=paste(d,"net1.txt",sep=getFileSep()),
-sep="\\t",
+sep="\t",
 col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 countIntType(paste(d,"net1.txt",sep=getFileSep()),c("P1","P2","P3"),

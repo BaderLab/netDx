@@ -150,7 +150,7 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
                   }
                 } else {
                   write.table(pat_pairs, file = outFile, sep = "\t", 
-			col.names = FALSE, 
+					col.names = FALSE,
                 	row.names = FALSE, quote = FALSE)
                   print(basename(outFile))
                   message("done")

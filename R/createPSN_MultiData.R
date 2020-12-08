@@ -52,7 +52,7 @@
 #' tokeep <- setdiff(pID, pID[idx])
 #' brca <- brca[,tokeep,]
 #' 
-#' pathList <- readPathways(fetchPathwayDefinitions())
+#' pathList <- readPathways(fetchPathwayDefinitions("October",2020))
 #' 
 #' brca <- brca[,,1] # keep only clinical and mRNA data
 #' 

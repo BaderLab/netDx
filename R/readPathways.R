@@ -30,7 +30,7 @@
 #' length two, (1) geneSets: pathway-gene mappings as default, 
 #' (2) pNames: data.frame with original and cleaned names.
 #' @examples
-#' pathFile <- fetchPathwayDefinitions()
+#' pathFile <- fetchPathwayDefinitions("October",2020)
 #' pathwayList    <- readPathways(pathFile)
 #' 
 #' @export

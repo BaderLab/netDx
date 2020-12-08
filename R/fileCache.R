@@ -45,30 +45,42 @@ getGMjar_path <- function(verbose = FALSE) {
 #' For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.
 #' (2010). PLoS One. 5(11):e13984.
 #' @param verbose (logical) print messages
-#' @examples fetchPathwayDefinitions()
-#' @param month (char) month of pathway definition file. Must be
-#' textual name (e.g. "January","April"). If NULL, gets the latest
-#' release
+#' @examples fetchPathwayDefinitions("October",2020)
+#' @param day (integer)
+#' @param month (numeric or char) month of pathway definition file. Can be
+#' numeric or text (e.g. "January","April"). If NULL, fails.
 #' @param year (numeric) year of pathway definition file. Must be in
-#' yyyy format (e.g. 2018).
+#' yyyy format (e.g. 2018). If NULL, fails.
 #' @return (char) Path to local cached copy of GMT file
 #' or initial download is required 
+#' @importFrom httr HEAD
 #' @export
 #' @examples 
 #' fetchPathwayDefinitions("January",2018)
-#' fetchPathwayDefinitions()
-fetchPathwayDefinitions <- function(month=NULL,year=NULL,verbose=FALSE){
+#' fetchPathwayDefinitions(month=10,year=2020)
+fetchPathwayDefinitions <- function(month=NULL,year=NULL,day=1,verbose=FALSE){
 	if (is.null(month) || is.null(year)) {
-		month <- month.name[as.integer(format(Sys.Date(),"%m"))]
-		year <- as.integer(format(Sys.Date(),"%Y"))
+		stop("Please provide a month and year.")
+		#month <- month.name[as.integer(format(Sys.Date(),"%m"))]
+		#year <- as.integer(format(Sys.Date(),"%Y"))
 	}
-		pdate <- sprintf("%s_01_%i",month,year)
-    pathwayURL <- paste("http://download.baderlab.org/EM_Genesets/", 
+	if (class(month) %in% c("numeric","integer")) {
+		month <- month.name[month]
+	}
+		pdate <- sprintf("%s_%02d_%i",month,day,year)
+    	pathwayURL <- paste("http://download.baderlab.org/EM_Genesets/", 
 		sprintf("%s/Human/symbol/",pdate),
         sprintf("Human_AllPathways_%s_symbol.gmt",pdate),
 		 sep = "")
 
 	message(sprintf("Fetching %s",pathwayURL))
-    bfc <- .get_cache()
+   	bfc <- .get_cache()
+	chk <- httr::HEAD(pathwayURL)
+	if (chk$status_code==404) {
+		stop(paste(sprintf("The pathway file for %02d %s %i doesn't exist.",day,month,year),
+				"Select a different date. ",
+				"See http://download.baderlab.org/EM_Genesets/Human/symbol for options.",
+				sep=" "))
+	}
     bfcrpath(bfc, pathwayURL)
 }

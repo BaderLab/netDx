@@ -4,7 +4,7 @@
 \alias{plotPerf}
 \title{Plots various measures of predictor performance for binary classifiers}
 \usage{
-plotPerf(resList = NULL, inFiles, predClasses)
+plotPerf(resList = NULL, inFiles, predClasses, plotSEM = FALSE)
 }
 \arguments{
 \item{resList}{(list) list of prediction results. If provided, the method
@@ -14,6 +14,9 @@ will ignore inDir}
 A vector, each with absolute paths to predictionResults.txt}
 
 \item{predClasses}{(char) vector of class names.}
+
+\item{plotSEM}{(logical) metric for error bars. If set to TRUE, plots SEM;
+else plots SD.}
 }
 \value{
 (list) each key corresponds to an input file in inDir.
@@ -26,8 +29,8 @@ Value is a list with:
 6) accuracy: Accuracy
 
 Side effect of plotting in a 2x2 format:
-1) mean+/-SEM AUROC
-2) mean+/-SEM AUPR
+1) mean+/-SEM or (mean+/-SD) AUROC
+2) mean+/-SEM or (mean+/-SD) AUPR
 3) ROC curve for all runs plus average
 4) PR curve for all runs plus average
 }

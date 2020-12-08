@@ -59,7 +59,7 @@ to assign the key name of the output list (see \code{useIDasName}
 argument).
 }
 \examples{
-pathFile <- fetchPathwayDefinitions()
+pathFile <- fetchPathwayDefinitions("October",2020)
 pathwayList    <- readPathways(pathFile)
 
 }

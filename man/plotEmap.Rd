@@ -77,7 +77,7 @@ such network for each patient label.
 \examples{
 #refer to getEMapInput_many.R for working getEMapInput_many() example
 data(featScores)
-pathwayList <- readPathways(fetchPathwayDefinitions())
+pathwayList <- readPathways(fetchPathwayDefinitions("October",2020))
 pathwayList <- pathwayList[seq_len(5)]
 netInfoFile <- system.file("extdata",
 	paste("example_output","inputNets.txt",sep=getFileSep()),

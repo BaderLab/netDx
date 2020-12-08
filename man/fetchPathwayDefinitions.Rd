@@ -4,15 +4,16 @@
 \alias{fetchPathwayDefinitions}
 \title{fetch pathway definitions from downloads.baderlab.org}
 \usage{
-fetchPathwayDefinitions(month = NULL, year = NULL, verbose = FALSE)
+fetchPathwayDefinitions(month = NULL, year = NULL, day = 1, verbose = FALSE)
 }
 \arguments{
-\item{month}{(char) month of pathway definition file. Must be
-textual name (e.g. "January","April"). If NULL, gets the latest
-release}
+\item{month}{(numeric or char) month of pathway definition file. Can be
+numeric or text (e.g. "January","April"). If NULL, fails.}
 
 \item{year}{(numeric) year of pathway definition file. Must be in
-yyyy format (e.g. 2018).}
+yyyy format (e.g. 2018). If NULL, fails.}
+
+\item{day}{(integer)}
 
 \item{verbose}{(logical) print messages}
 }
@@ -32,7 +33,7 @@ For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.
 (2010). PLoS One. 5(11):e13984.
 }
 \examples{
-fetchPathwayDefinitions()
+fetchPathwayDefinitions("October",2020)
 fetchPathwayDefinitions("January",2018)
-fetchPathwayDefinitions()
+fetchPathwayDefinitions(month=10,year=2020)
 }

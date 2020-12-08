@@ -39,7 +39,7 @@ Wrapper to generate multiple EnrichmentMaps (perhaps one per class)
 \examples{
 data(featScores)
 
-pathwayList <- readPathways(fetchPathwayDefinitions())
+pathwayList <- readPathways(fetchPathwayDefinitions("October",2020))
 pathwayList <- pathwayList[seq_len(5)]
 
 netInfoFile <- system.file("extdata","example_output/inputNets.txt",package="netDx")

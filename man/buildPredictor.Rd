@@ -153,7 +153,7 @@ cat(sprintf("excluding \%i samples\\n", length(idx)))
 tokeep <- setdiff(pID, pID[idx])
 brca <- brca[,tokeep,]
 
-pathList <- readPathways(fetchPathwayDefinitions())
+pathList <- readPathways(fetchPathwayDefinitions(month=10,year=2020))
 brca <- brca[,,1] # keep only clinical and mRNA data
 
 # remove duplicate arrays

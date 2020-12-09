@@ -54,10 +54,10 @@ Wrapper to create custom input features (patient similarity networks)
 
 library(curatedTCGAData)
 library(MultiAssayExperiment)
-curatedTCGAData(diseaseCode='BRCA', assays='*',dry.run=TRUE)
+curatedTCGAData(diseaseCode='BRCA', assays='*',dry.run=TRUE,version="1.1.38")
 
 # fetch mrna, mutation data
-brca <- curatedTCGAData('BRCA',c('mRNAArray'),FALSE)
+brca <- curatedTCGAData('BRCA',c('mRNAArray'),FALSE,version="1.1.38")
 
 # get subtype info
 pID <- colData(brca)$patientID

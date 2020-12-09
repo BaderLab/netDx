@@ -19,7 +19,8 @@ suppressWarnings(suppressMessages(require(netDx)))
 suppressWarnings(suppressMessages(library(curatedTCGAData)))
 
 # fetch data remotely
-brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
+brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE,
+	version="1.1.38"))
 
 # process input variables
 staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
@@ -241,12 +242,14 @@ suppressMessages(library(curatedTCGAData))
 
 Take a look at the available data without downloading any:
 ```{r,eval=TRUE}
-curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE,
+	version="1.1.38")
 ```
 
 We will work only with the mRNA data in this example:
 ```{r,eval=TRUE}
-brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
+brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE,
+	version="1.1.38"))
 ```
 
 This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 

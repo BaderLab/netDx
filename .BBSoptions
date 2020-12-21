@@ -5,4 +5,4 @@
 UnsupportedPlatforms: win32
 # Unsupported on Windows per maintainer request until package gets
 # switched to rJava.
-#UnsupportedPlatforms: win
+UnsupportedPlatforms: win

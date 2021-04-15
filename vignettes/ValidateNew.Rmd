@@ -1,13 +1,37 @@
-## ----eval=FALSE---------------------------------------------------------------
-## NA
+---
+title: "Validate trained model on an independent dataset"
+author: "Shraddha Pai"
+package: netDx
+date: "`r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{04. Validate model with selected features on an independent dataset}.
+    %\VignetteEngine{knitr::knitr}
+    %\VignetteEncoding{UTF-8}
+---
 
+# TL;DR
+This code block is not evaluated. Need a breakdown? Look at the following sections.
+```{r,eval=FALSE}
+```
 
-## ----eval=TRUE----------------------------------------------------------------
+# Introduction
+
+Validating a trained model on an independent new dataset is important to ensure that the model generalizes on new samples and has real-world value. In netDx, we first use `buildPredictor()` to train models, wherein we score features based on their predictive value for various patient labels. In this example, we use the `predict()` function to classify samples held out from the original training. 
+
+We're going to reuse the application from earlier vignettes, seeking to classify breast tumour profiles as either being of "Luminal A" subtype or other. 
+
+# Split Data into Training and Hold-Out Set
+
+```{r,eval=TRUE}
 suppressWarnings(suppressMessages(require(netDx)))
 suppressMessages(library(curatedTCGAData))
+```
 
-
-## ----eval=TRUE----------------------------------------------------------------
+We start by formatting the input data.
+```{r,eval=TRUE}
 brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE, version="1.1.38"))
 staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
 staget <- suppressWarnings(as.integer(staget))
@@ -35,9 +59,11 @@ message("* Holding out 10 samples per class for validation")
 
 pam50 <- colData(brca)$pam_mod
 pheno <- colData(brca)
+```
 
+Set 20 samples aside for independent validation. In practice, this sample size may be larger (e.g. 30% held-out, or independent dataset).
 
-## ----eval=TRUE----------------------------------------------------------------
+```{r,eval=TRUE}
 set.seed(123) # make reproducible
 idx_holdout <- c(
   sample(which(pam50 == "LumA"),10,F),
@@ -50,9 +76,12 @@ brca <- brca[,rownames(pheno)[setdiff(1:length(pam50),idx_holdout)]]
 pID <- as.character(colData(brca)$patientID)
 colData(brca)$ID <- pID
 colData(brca)$STATUS <- colData(brca)$pam_mod
+```
 
+The rest of the process for data setup and running the model is identical to that shown in previous vignettes. 
 
-## ----eval=TRUE----------------------------------------------------------------
+Create feature groupings:
+```{r,eval=TRUE}
 # genes in mRNA data are grouped by pathways
 pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 
@@ -64,9 +93,10 @@ groupList[["clinical"]] <- list(
       age="patient.age_at_initial_pathologic_diagnosis",
 	   stage="STAGE"
 )
+```
 
-
-## ----eval=TRUE----------------------------------------------------------------
+Define the function to convert features into patient similarity networks:
+```{r,eval=TRUE}
 makeNets <- function(dataList, groupList, netDir, ...) {
   netList <- c() # initialize before is.null() check
   # make RNA nets (NOTE: the check for is.null() is important!)
@@ -92,9 +122,10 @@ makeNets <- function(dataList, groupList, netDir, ...) {
   netList <- c(unlist(netList), unlist(netList2))
   return(netList)
 }
+```
 
-
-## ----eval=TRUE----------------------------------------------------------------
+Train the model:
+```{r,eval=TRUE}
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
@@ -106,6 +137,11 @@ out <- buildPredictor(
       outDir=outDir, ## netDx requires absolute path
       numSplits=2L,featScoreMax=2L,
       featSelCutoff=1L,
-      numCores=1L,debugMode=TRUE,
-      logging="all")
+      numCores=1L,debugMode=FALSE,
+      logging="none")
+```
+
+# Train model on training Samples
+
+# Validate on independent samples
 

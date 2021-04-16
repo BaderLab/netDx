@@ -4,7 +4,8 @@
 
 ## ----eval=TRUE----------------------------------------------------------------
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressMessages(require(curatedTCGAData))
+suppressMessages(require(plotrix))
 
 
 ## ----eval=TRUE----------------------------------------------------------------
@@ -45,6 +46,7 @@ idx_holdout <- c(
 	)
 holdout <- brca[,rownames(pheno)[idx_holdout]]
 colData(holdout)$ID <- as.character(colData(holdout)$patientID)
+colData(holdout)$STATUS <- colData(holdout)$pam_mod
 brca <- brca[,rownames(pheno)[setdiff(1:length(pam50),idx_holdout)]]
 
 pID <- as.character(colData(brca)$patientID)
@@ -76,7 +78,7 @@ makeNets <- function(dataList, groupList, netDir, ...) {
         rownames(dataList[["BRCA_mRNAArray-20160128"]]),
           groupList[["BRCA_mRNAArray-20160128"]],
         netDir, verbose = FALSE,
-          writeProfiles = TRUE, ...)
+          writeProfiles = TRUE, runSerially=TRUE, ...)
   }
 
   # make clinical nets (normalized difference)
@@ -87,7 +89,7 @@ makeNets <- function(dataList, groupList, netDir, ...) {
     groupList[["clinical"]], netDir,
     simMetric = "custom", customFunc = normDiff, # custom function
     writeProfiles = FALSE,
-    sparsify = TRUE, verbose = TRUE, ...)
+    sparsify = TRUE, verbose = TRUE, runSerially=TRUE, ...)
   }
   netList <- c(unlist(netList), unlist(netList2))
   return(netList)
@@ -100,12 +102,71 @@ outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 # set keepAllData=TRUE to not delete at the end of the predictor run.
 # This can be useful for debugging.
+numSplits <- 2L
 out <- buildPredictor(
       dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,
       outDir=outDir, ## netDx requires absolute path
-      numSplits=2L,featScoreMax=2L,
+      numSplits=numSplits,
+      featScoreMax=2L,
       featSelCutoff=1L,
-      numCores=1L,debugMode=TRUE,
-      logging="all")
+      numCores=1L,debugMode=FALSE,
+      logging="none")
+
+
+## ----eval=TRUE----------------------------------------------------------------
+ featScores <- list() # feature scores per class
+ st <- unique(colData(brca)$STATUS)
+ for (k in 1:numSplits) { 
+ 	# feature scores
+ 	for (cur in unique(st)) {
+     if (is.null(featScores[[cur]])) featScores[[cur]] <- list()
+ 	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
+ 	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
+ 	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
+ 	}
+ }
+ # compile scores across runs
+ featScores2 <- lapply(featScores, getNetConsensus)
+
+
+## ----eval=TRUE----------------------------------------------------------------
+ featSelNet <- lapply(featScores2, function(x) {
+     callFeatSel(x, fsCutoff=1, fsPctPass=0)
+})
+
+
+## ----eval=TRUE----------------------------------------------------------------
+outDir <- paste(tempdir(), randAlphanumString(), sep = getFileSep())
+if (file.exists(outDir)) unlink(outDir, recursive = TRUE)
+dir.create(outDir)
+
+names(groupList[["BRCA_mRNAArray-20160128"]]) <- gsub(",", ".",
+  names(groupList[["BRCA_mRNAArray-20160128"]]))
+predModel <- predict(brca, holdout, groupList, featSelNet, makeNets,
+  outDir, verbose = FALSE)
+
+
+## ----eval=TRUE----------------------------------------------------------------
+perf <- getPerformance(predModel, c("LumA", "notLumA"))
+message(sprintf("AUROC=%1.2f", perf$auroc))
+message(sprintf("AUPR=%1.2f", perf$aupr))
+message(sprintf("Accuracy=%1.1f%%", perf$acc))
+
+
+## ----eval=TRUE----------------------------------------------------------------
+pdf(sprintf("perf.pdf"))
+plotPerf_multi(list(perf$rocCurve),
+  plotTitle = sprintf("BRCA Validation: %i samples", nrow(colData(holdout))))
+plotPerf_multi(list(perf$prCurve), plotType = "PR",
+  plotTitle = sprintf("BRCA Validation: %i samples", nrow(colData(holdout))))
+dev.off()
+
+pdf("colormat.pdf")
+tbl <- as.matrix(table(out[,c("STATUS","PRED_CLASS")]))
+color2D.matplot((tbl/nrow(out))*100,show.values=TRUE,axes=FALSE,
+	xlab="Predicted label", ylab="Actual label",par(las=1))
+axis(1,at=seq_len(ncol(tbl))-0.5,labels=colnames(tbl))
+axis(2,at=seq_len(nrow(tbl))-0.5,labels=rownames(tbl))
+dev.off()
 

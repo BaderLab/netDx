@@ -27,7 +27,8 @@ We're going to reuse the application from earlier vignettes, seeking to classify
 
 ```{r,eval=TRUE}
 suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(library(curatedTCGAData))
+suppressMessages(require(curatedTCGAData))
+suppressMessages(require(plotrix))
 ```
 
 We start by formatting the input data.
@@ -78,6 +79,7 @@ colData(brca)$ID <- pID
 colData(brca)$STATUS <- colData(brca)$pam_mod
 ```
 
+# Train model on training Samples
 The rest of the process for data setup and running the model is identical to that shown in previous vignettes. 
 
 Create feature groupings:
@@ -131,17 +133,63 @@ outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 # set keepAllData=TRUE to not delete at the end of the predictor run.
 # This can be useful for debugging.
+numSplits <- 2L
 out <- buildPredictor(
       dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,
       outDir=outDir, ## netDx requires absolute path
-      numSplits=2L,featScoreMax=2L,
+      numSplits=numSplits,
+      featScoreMax=2L,
       featSelCutoff=1L,
       numCores=1L,debugMode=FALSE,
       logging="none")
 ```
 
-# Train model on training Samples
+Compile feature scores:
+```{r,eval=TRUE}
+ for (k in 1:numSplits) { 
+ 	# feature scores
+ 	for (cur in unique(st)) {
+ 	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
+ 	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
+ 	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
+ 	}
+ }
+ # compile scores across runs
+ featScores2 <- lapply(featScores, getNetConsensus)
+```
+
+Identify consistently high-scoring features for each class. In this toy example, we pick any feature that scored a minimum of 1 (`fsCutoff`) in one or more split (`fsPctPass`).
+```{r,eval=TRUE}
+ featSelNet <- lapply(featScores2, function(x) {
+     callFeatSel(x, fsCutoff=1, fsPctPass=0)
+})
+```
 
 # Validate on independent samples
+```{r,eval=TRUE}
+names(groupList[["BRCA_mRNAArray-20160128"]]) <- gsub(",", ".",
+  names(groupList[["BRCA_mRNAArray-20160128"]]))
+predModel <- predict(brca, holdout, groupList, featSelNet, makeNets,
+  outDir, verbose = FALSE)
+```
+
+# Plot results of validation
+
+```{r,eval=TRUE}
+pdf(sprintf("perf.pdf"))
+plotPerf_multi(list(perf$rocCurve),
+  plotTitle = sprintf("BRCA Validation: %i samples", nrow(colData(holdout))))
+plotPerf_multi(list(perf$prCurve), plotType = "PR",
+  plotTitle = sprintf("BRCA Validation: %i samples", nrow(colData(holdout))))
+dev.off()
+
+pdf("colormat.pdf")
+tbl <- as.matrix(table(out[,c("STATUS","PRED_CLASS")]))
+color2D.matplot((tbl/nrow(out))*100,show.values=TRUE,axes=FALSE,
+	xlab="Predicted label", ylab="Actual label",par(las=1))
+axis(1,at=seq_len(ncol(tbl))-0.5,labels=colnames(tbl))
+axis(2,at=seq_len(nrow(tbl))-0.5,labels=rownames(tbl))
+dev.off()
+```
 

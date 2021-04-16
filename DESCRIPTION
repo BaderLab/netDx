@@ -19,8 +19,9 @@ Suggests:
   curatedTCGAData,
 	TCGAutils,
 	rmarkdown,
-  testthat,
-	knitr
+	testthat,
+	knitr, 
+	plotrix
 Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer, scater, netSmooth, clusterExperiment,Rtsne,httr
 VignetteBuilder: knitr 
 Encoding: UTF-8

@@ -10,7 +10,7 @@
 #' keys are patient labels (e.g. "responder/nonresponder"), and values are feature names 
 #' identified by running buildPredictor(). Feature names must correspond to names of groupList, from which they will be subset.
 #' @param makeNetFunc (function) function to create PSN features from patient data. See makeNetFunc in buildPredictor() for details
-#' @param impute (logical) if TRUE imputes train and test samples separately before creating features. 
+#' @param impute (logical) if TRUE imputes train and test samples separately before creating features. Currently unsupported.
 #' @param outDir (char) directory for results
 #' @param verbose (logical) print messages
 #' @param numCores (integer) number of CPU cores for parallel processing
@@ -62,12 +62,10 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
   }
 
   if (sum(!fs %in% gl) > 0) {
-    message("one or more entry in featSelNet not found in groupList")
-    browser()
+    stop("One or more entry in featSelNet not found in groupList.")
   }
 
   # merging train-test for joint db
-  #colData(testMAE)$STATUS <- "UNKNOWN"
   trainList <- dataList2List(trainMAE)
   testList <- dataList2List(testMAE)
 
@@ -83,6 +81,7 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
     stop(paste("couldn't combine train and test pheno.",
             "check that they have identical columns in same order", sep = ""))
   })
+  print(table(pheno[, c("STATUS", "TT_STATUS")]))
 
   message("* Merging assays ...")
   assays <- list()
@@ -117,8 +116,11 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
         numCores = 1L,
         filterSet = featSel[[g]],
         verbose = verbose)
-    dbDir <- compileFeatures(netDir, outDir = pDir, numCores = numCores,
-    verbose = verbose, debugMode = debugMode)
+    dbDir <- compileFeatures(netDir,
+      outDir = pDir,
+      numCores = numCores,
+      verbose = verbose,
+      debugMode = debugMode)
 
     # run query for this class
     qSamps <- pheno$ID[which(pheno$STATUS %in% g & pheno$TT_STATUS %in% "TRAIN")]
@@ -143,7 +145,7 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
   message("Confusion matrix")
   print(table(out[, c("STATUS", "PRED_CLASS")]))
 
-  out <- out[, -which(colnames(out) == "TT_STATUS")]
+  out <- out[, - which(colnames(out) == "TT_STATUS")]
 
   return(out)
 

@@ -35,7 +35,7 @@ identified by running buildPredictor(). Feature names must correspond to names o
 
 \item{outDir}{(char) directory for results}
 
-\item{impute}{(logical) if TRUE imputes train and test samples separately before creating features.}
+\item{impute}{(logical) if TRUE imputes train and test samples separately before creating features. Currently unsupported.}
 
 \item{verbose}{(logical) print messages}
 

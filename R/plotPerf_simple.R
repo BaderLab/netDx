@@ -1,13 +1,14 @@
 #' performance metrics for model
-#' @param res (resa.frame) result from predicting labels on held-out test set. output of predict() function. 
+#' @param res (data.frame) result from predicting labels on held-out test set. output of predict() function. 
 #' columns include ID, STATUS (ground truth) and PRED_CLASS (predicted label)
+#' @param predClasses (character) patient labels used by classifier
 #' @return (list)
 #' 1) rocCurve: ROCR performance object for ROC curve
 #' 2) prCurve: ROCR performance object for PR curve
 #' 3) auroc: Area under ROC curve
 #' 4) aupr: Area under PR curve
 #' 5) accuracy: Accuracy
-#' @import ROCR 
+#' @import ROCR
 #' @export
 getPerformance <- function(res, predClasses) {
 

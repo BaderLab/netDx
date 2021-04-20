@@ -111,6 +111,7 @@ makeNets <- function(dataList, groupList, netDir, ...) {
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 numSplits <- 2L
 out <- suppressMessages(
   buildPredictor(
@@ -145,6 +146,7 @@ out <- suppressMessages(
 # predict performance on holdout set
 outDir <- paste(tempdir(), randAlphanumString(), 
   sep = getFileSep())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 predModel <- suppressMessages(
   predict(brca, holdout, groupList, 
@@ -181,7 +183,7 @@ As with the earlier vignette, we will use the application of classifying breast 
 
 In this example we will separate out 20 samples of the data (10 per class) to validate our trained model; those samples will not be used to train the model. We start by fetching the multi-omic dataset using the `curatedTCGAData` package, performing some data formatting, and then finally separating the holdout set (here, `holdout`). 
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 suppressWarnings(suppressMessages(require(netDx)))
 suppressMessages(require(curatedTCGAData))
 
@@ -218,7 +220,7 @@ pheno <- colData(brca)
 
 We next set 20 samples aside for independent validation. In practice, this sample size may be larger (e.g. 30% of the samples are held out), or an independent dataset may be used for the same.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 set.seed(123) # make reproducible
 idx_holdout <- c(
   sample(which(pam50 == "LumA"),10,F),
@@ -239,7 +241,7 @@ colData(brca)$STATUS <- colData(brca)$pam_mod
 The rest of the process for data setup and running the model is identical to that shown in previous vignettes. 
 
 Create feature groupings:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 # genes in mRNA data are grouped by pathways
 pathList <- readPathways(fetchPathwayDefinitions("January",2018))
 
@@ -254,7 +256,7 @@ groupList[["clinical"]] <- list(
 ```
 
 Define the function to convert features into patient similarity networks:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 makeNets <- function(dataList, groupList, netDir, ...) {
   netList <- c() # initialize before is.null() check
 
@@ -287,11 +289,11 @@ makeNets <- function(dataList, groupList, netDir, ...) {
 
 Train the model:
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
-
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 numSplits <- 2L
 out <- suppressMessages(
   buildPredictor(
@@ -307,7 +309,7 @@ out <- suppressMessages(
 ```
 
 Compile feature scores:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
  featScores <- list() # feature scores per class
  st <- unique(colData(brca)$STATUS)
  for (k in 1:numSplits) { 
@@ -328,7 +330,7 @@ Identify consistently high-scoring features for each class. Here, we select any 
 
 In practice you should run a higher number of splits to ensure resampling helps the predictor generalize, and change the other metrics accordingly. For example, scoring features out of 10 over 100 train/test splits, and selecting features that score 7 or higher in 80% of those splits, i.e. `buildPredictor(...numSplits = 100, featScoreMax=10L)` and `callFeatSel(..., fsCutoff=7, fsPctPass=0.8)`.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
  featSelNet <- lapply(featScores2, function(x) {
      callFeatSel(x, fsCutoff=1, fsPctPass=0)
 })
@@ -339,9 +341,10 @@ Now we use `predict()` to classify samples in the independent dataset. We provid
 
 The training data needs to be provided because netDx creates a single patient similarity network with both training and test data. It then uses label propagation to "diffuse" patient labels from training samples to test samples, and labels the latter based on which class they are most similar to.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 outDir <- paste(tempdir(), randAlphanumString(), 
   sep = getFileSep())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 
 predModel <- suppressMessages(
@@ -356,7 +359,7 @@ predModel <- suppressMessages(
 Finally we examine how well our model performed, using `getPerformance()`. 
 
 Compute performance:
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 perf <- getPerformance(predModel, c("LumA", "notLumA"))
 
 message(sprintf("AUROC=%1.2f", perf$auroc))
@@ -366,7 +369,7 @@ message(sprintf("Accuracy=%1.1f%%", perf$acc))
 
 We plot the AUROC and AUPR curves using `plotPerf_multi()`.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 plotPerf_multi(list(perf$rocCurve),
   plotTitle = sprintf(
     "BRCA Validation: %i samples", 
@@ -380,7 +383,7 @@ plotPerf_multi(list(perf$prCurve),
 
 # sessionInfo
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sessionInfo()
 ```
 

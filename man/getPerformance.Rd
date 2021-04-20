@@ -7,8 +7,10 @@
 getPerformance(res, predClasses)
 }
 \arguments{
-\item{res}{(resa.frame) result from predicting labels on held-out test set. output of predict() function. 
+\item{res}{(data.frame) result from predicting labels on held-out test set. output of predict() function. 
 columns include ID, STATUS (ground truth) and PRED_CLASS (predicted label)}
+
+\item{predClasses}{(character) patient labels used by classifier}
 }
 \value{
 (list)

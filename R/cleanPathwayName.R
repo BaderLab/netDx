@@ -20,6 +20,7 @@ cleanPathwayName <- function(curP) {
     pforfile <- gsub("\\\xa0", "X", pforfile)
     pforfile <- gsub("\\\xca", "_", pforfile)
     pforfile <- gsub("\\+", "plus", pforfile)
+    pforfile <- gsub(",",".",pforfile)
     
     return(pforfile)
 }

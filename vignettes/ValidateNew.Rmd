@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{04. Validate model with selected features on an independent dataset}.
-    %\VignetteEngine{knitr::knitr}
+    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 

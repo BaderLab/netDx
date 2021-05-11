@@ -64,185 +64,212 @@
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
 #' @export
-compileFeatures <- function(netDir, outDir = tempdir(), 
-		simMetric = "pearson", 
-		netSfx = "txt$", verbose = TRUE, numCores = 1L, 
-		P2N_threshType = "off", P2N_maxMissing = 100, 
-    JavaMemory = 4L, altBaseDir = NULL, debugMode=FALSE,...) {
-    
-    dataDir <- paste(outDir,"dataset",sep=getFileSep())
-    GM_jar <- getGMjar_path()
-    
-    if (P2N_maxMissing < 5) 
-        PSN_maxMissing <- 5
-    if (P2N_maxMissing > 100) 
-        PSN_maxMissing <- 100
-    if (!P2N_threshType %in% c("off", "auto")) 
-        P2N_threshType <- "off"
-    
-    if (!file.exists(dataDir)) dir.create(dataDir)
-    curwd <- getwd()
-    setwd(netDir)
-    
-    netList1 <- dir(path = paste(netDir,"profiles",sep=getFileSep()),
-				pattern = "profile$")
-    netList2 <- dir(path = paste(netDir,"INTERACTIONS",sep=getFileSep()),
-				pattern = netSfx)
-    netList <- c(netList1, netList2)
-    
-    if (verbose) 
-        message(sprintf("Got %i networks", length(netList)))
-    idFile <- paste(outDir,"ids.txt", sep=getFileSep())
-    writeQueryBatchFile(netDir, netList, netDir, idFile, ...)
-    
-    if (length(netList1) > 0) {
-        if (verbose) 
-            message("\t* Converting profiles to interaction networks")
-        
-        cl <- makeCluster(numCores, 
-			outfile = paste(netDir,"P2N_log.txt",
-			sep=getFileSep()))
-        registerDoParallel(cl)
-        
-        if (simMetric == "pearson") {
-            corType <- "PEARSON"
-        } else if (simMetric == "MI") {
-            corType <- "MUTUAL_INFORMATION"
-        }
-        
-        args <- c(sprintf("-Xmx%iG", JavaMemory), "-cp", GM_jar)
-        args <- c(args, 
-					paste("org.genemania.engine.core.",
-					"evaluation.ProfileToNetworkDriver",sep=""))
-        args <- c(args, c("-proftype", "continuous", "-cor", corType))
-        args <- c(args, c("-threshold", P2N_threshType, 
-							"-maxmissing", 
-							sprintf("%1.1f", P2N_maxMissing)))
-        profDir <- paste(netDir,"profiles",sep=getFileSep())
-        netOutDir <- paste(netDir,"INTERACTIONS",sep=getFileSep())
-        tmpsfx <- sub("\\$", "", netSfx)
-        
-        curProf <- ""
-		`%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
-        foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
-            args2 <- c("-in", paste(profDir,curProf,sep=getFileSep()))
-            args2 <- c(args2, "-out", 
-		paste(netOutDir,sub(".profile", ".txt", curProf),
-			sep=getFileSep()))
-            args2 <- c(args2, "-syn", 
-		paste(netDir,"1.synonyms",sep=getFileSep()),
-			"-keepAllTies", "-limitTies")
-	if (debugMode) {
-		message("Making Java call")
-		tmp <- paste(c(args,args2),collapse=" ")
-		message(sprintf("java %s",tmp))
-            	system2("java", args = c(args, args2), wait = TRUE)
-			} else {
-            	system2("java", args = c(args, args2), wait = TRUE, 
-					stdout = NULL)
-			}
-        }
-        stopCluster(cl)
-        netSfx = ".txt"
-        netList2 <- dir(path = netOutDir, pattern = netSfx)
-				msg2 <- paste("This problem usually occurs because of a failed",
-							"Java call. Try upgrading to Java 11. If that doesn't",
-							"work, contact shraddha.pai@utoronto.ca with a copy",
-							"of the complete log file after running buildPredict()",
-							"with debugMode=TRUE",sep="\n")
+compileFeatures <- function(netDir, outDir = tempdir(),
+    simMetric = "pearson",
+    netSfx = "txt$", verbose = TRUE, numCores = 1L,
+    P2N_threshType = "off", P2N_maxMissing = 100,
+    JavaMemory = 4L, altBaseDir = NULL, debugMode = FALSE, ...) {
 
-				if (length(netList2)<length(netList)) {
-				  warnings(paste("",
-						"---------------------------------",
-						"One or more profiles did not successfully convert to PSNs!",
-						"This usually happens because of the underlying call to a",
-						"Java library failed. Upgrading to Java 11 usually fixes",
-						"this problem. If not, please send a copy of the detailed",
-						"error message from the call below to",
-						"shraddha.pai@utoronto.ca","",sep="\n")
-					)
-					
-					curProf <- dir(profDir,"profile$")[1]
-	        args2 <- c("-in", paste(profDir, curProf,sep=getFileSep()))
-	        args2 <- c(args2, "-out", paste(netOutDir, 
-				sub(".profile", ".txt", curProf),
-				sep=getFileSep()))
-	        args2 <- c(args2, "-syn", 
-			paste(netDir,"1.synonyms",sep=getFileSep()),
-				"-keepAllTies", "-limitTies")
-		tmp <- paste(c(args,args2),collapse=" ")
-		print(sprintf("java %s",tmp))
-	       	system2("java", args = c(args, args2), wait = TRUE)
-		stop("Stopping netDx now. See error message above.")
-	 }
-        
-        if (verbose) 
-            message(sprintf("Got %i networks from %i profiles", 
-		length(netList2), length(netList)))
-        netList <- netList2
-        rm(netOutDir, netList2)
+  dataDir <- paste(outDir, "dataset", sep = getFileSep())
+  GM_jar <- getGMjar_path()
+
+  if (P2N_maxMissing < 5)
+    PSN_maxMissing <- 5
+  if (P2N_maxMissing > 100)
+    PSN_maxMissing <- 100
+  if (!P2N_threshType %in% c("off", "auto"))
+    P2N_threshType <- "off"
+
+  if (!file.exists(dataDir)) dir.create(dataDir)
+  curwd <- getwd()
+  setwd(netDir)
+
+  netList1 <- dir(path = paste(netDir, "profiles", sep = getFileSep()),
+        pattern = "profile$")
+  netList2 <- dir(path = paste(netDir, "INTERACTIONS", sep = getFileSep()),
+        pattern = netSfx)
+  netList <- c(netList1, netList2)
+
+  if (verbose)
+    message(sprintf("Got %i networks", length(netList)))
+  idFile <- paste(outDir, "ids.txt", sep = getFileSep())
+  writeQueryBatchFile(netDir, netList, netDir, idFile, ...)
+
+  if (length(netList1) > 0) {
+    if (verbose)
+      message("\t* Converting profiles to interaction networks")
+
+    cl <- makeCluster(numCores,
+      outfile = paste(netDir, "P2N_log.txt",
+      sep = getFileSep()))
+    registerDoParallel(cl)
+
+    if (simMetric == "pearson") {
+      corType <- "PEARSON"
+    } else if (simMetric == "MI") {
+      corType <- "MUTUAL_INFORMATION"
+    }
+
+    args <- c(sprintf("-Xmx%iG", JavaMemory), "-cp", GM_jar)
+    args <- c(args,
+          paste("org.genemania.engine.core.",
+          "evaluation.ProfileToNetworkDriver", sep = ""))
+    args <- c(args, c("-proftype", "continuous", "-cor", corType))
+    args <- c(args, c("-threshold", P2N_threshType,
+              "-maxmissing",
+              sprintf("%1.1f", P2N_maxMissing)))
+    profDir <- paste(netDir, "profiles", sep = getFileSep())
+    netOutDir <- paste(netDir, "INTERACTIONS", sep = getFileSep())
+    tmpsfx <- sub("\\$", "", netSfx)
+
+    curProf <- ""
+    `%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
+    foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
+      args2 <- c("-in", paste(profDir, curProf, sep = getFileSep()))
+      args2 <- c(args2, "-out",
+    paste(netOutDir, sub(".profile", ".txt", curProf),
+      sep = getFileSep()))
+      args2 <- c(args2, "-syn",
+    paste(netDir, "1.synonyms", sep = getFileSep()),
+      "-keepAllTies", "-limitTies")
+      if (debugMode) {
+        message("Making Java call")
+        tmp <- paste(c(args, args2), collapse = " ")
+        message(sprintf("java %s", tmp))
+        system2("java", args = c(args, args2), wait = TRUE)
+      } else {
+        system2("java", args = c(args, args2), wait = TRUE,
+          stdout = NULL)
+      }
     }
     
-    #### Build GeneMANIA index
-    if (verbose) 
-        message("\t* Build GeneMANIA index")
-    setwd(dataDir)
-    args <- c("-Xmx10G", "-cp", GM_jar)
-    args <- c(args, paste("org.genemania.mediator.lucene.",
-			"exporter.Generic2LuceneExporter",sep=""))
-    args <- c(args, paste(netDir,"db.cfg",sep=getFileSep()), netDir, 
-		paste(netDir,"colours.txt",sep=getFileSep()))
-	if (debugMode){ 
-		tmp <- paste(args,collapse=" ")
-		message(sprintf("java %s",tmp))
-    		system2("java", args, wait = TRUE)
-	} else {
-    		system2("java", args, wait = TRUE, stdout = NULL)
-	}
-    
-    olddir <- paste(dataDir,"lucene_index", sep=getFileSep())
-    flist <- list.files(olddir, recursive = TRUE)
-    dirs <- list.dirs(olddir, recursive = TRUE, full.names = FALSE)
-    dirs <- setdiff(dirs, "")
-    for (d in dirs) dir.create(paste(dataDir, d, sep = getFileSep()))
-    file.copy(from = paste(olddir, flist, sep = getFileSep()), 
-	to = paste(dataDir, flist,sep =getFileSep()))
-    unlink(olddir)
+    stopCluster(cl)
+    netSfx = ".txt"
+    netList2 <- dir(path = netOutDir, pattern = netSfx)
+    msg2 <- paste("This problem usually occurs because of a failed",
+              "Java call. Try upgrading to Java 11. If that doesn't",
+              "work, contact shraddha.pai@utoronto.ca with a copy",
+              "of the complete log file after running buildPredict()",
+              "with debugMode=TRUE", sep = "\n")
 
-	# Check: need to replace commas used as decimal separators, into periods
-	tmp <- dir(path=sprintf("%s/INTERACTIONS",netDir),pattern="txt$")[1]
-	tmp <- sprintf("%s/INTERACTIONS/%s",netDir,tmp)
- 	if (sum(grepl(pattern=",",readLines(tmp,n=1))>0)) { # detect comma
-		replacePattern(path=sprintf("%s/INTERACTIONS",netDir))
-	}
-    
-    # Build GeneMANIA cache
-    if (verbose) 
-        message("\t* Build GeneMANIA cache")
 
-    args <- c("-Xmx10G", "-cp", GM_jar, 
-				"org.genemania.engine.apps.CacheBuilder")
-    args <- c(args, "-cachedir", "cache", "-indexDir", ".", 
-				"-networkDir", 
-			paste(netDir,"INTERACTIONS",sep=getFileSep()), 
-				"-log", 
-			paste(netDir,"test.log",sep=getFileSep()))
+    if (length(netList2) < length(netList)) {
+        browser()
+      warnings(paste("",
+            "---------------------------------",
+            "One or more profiles did not successfully convert to PSNs!",
+            "This usually happens because of the underlying call to a",
+            "Java library failed. Upgrading to Java 11 usually fixes",
+            "this problem. If not, please send a copy of the detailed",
+            "error message from the call below to",
+            "shraddha.pai@utoronto.ca", "", sep = "\n")
+          )
+
+      curProf <- dir(profDir, "profile$")[1]
+      args2 <- c("-in", paste(profDir, curProf, sep = getFileSep()))
+      args2 <- c(args2, "-out", paste(netOutDir,
+        sub(".profile", ".txt", curProf),
+        sep = getFileSep()))
+      args2 <- c(args2, "-syn",
+      paste(netDir, "1.synonyms", sep = getFileSep()),
+        "-keepAllTies", "-limitTies")
+      tmp <- paste(c(args, args2), collapse = " ")
+      print(sprintf("java %s", tmp))
+      system2("java", args = c(args, args2), wait = TRUE)
+      stop("Stopping netDx now. See error message above.")
+    }
+
+    if (verbose)
+      message(sprintf("Got %i networks from %i profiles",
+    length(netList2), length(netList)))
+    netList <- netList2
+    rm(netOutDir, netList2)
+  }
+
+  #### Build GeneMANIA index
+  if (verbose)
+    message("\t* Build GeneMANIA index")
+  setwd(dataDir)
+  args <- c("-Xmx10G", "-cp", GM_jar)
+  args <- c(args, paste("org.genemania.mediator.lucene.",
+      "exporter.Generic2LuceneExporter", sep = ""))
+  args <- c(args, paste(netDir, "db.cfg", sep = getFileSep()), netDir,
+    paste(netDir, "colours.txt", sep = getFileSep()))
+
   if (debugMode) {
-		tmp <- paste(args,collapse=" ")
-		message(sprintf("java %s", tmp))
-    	system2("java", args = args)
-	} else {
-    	system2("java", args = args, stdout = NULL)
-	}
-    
-    # Cleanup
-    if (verbose) 
-        message("\t * Cleanup")
-    GM_xml <- system.file("extdata","genemania.xml",package="netDx")
-    file.copy(from = GM_xml, to = paste(dataDir,".",sep=getFileSep()))
-    
-    setwd(curwd)
-    return(list(dbDir = dataDir, netDir = netDir))
+    tmp <- paste(args, collapse = " ")
+    message(sprintf("java %s", tmp))
+    system2("java", args, wait = TRUE)
+  } else {
+    system2("java", args, wait = TRUE, stdout = NULL)
+  }
+
+  olddir <- paste(dataDir, "lucene_index", sep = getFileSep())
+  flist <- list.files(olddir, recursive = TRUE)
+  dirs <- list.dirs(olddir, recursive = TRUE, full.names = FALSE)
+  dirs <- setdiff(dirs, "")
+  for (d in dirs)
+    dir.create(paste(dataDir, d, sep = getFileSep()))
+  file.copy(from = paste(olddir, flist, sep = getFileSep()),
+  to = paste(dataDir, flist, sep = getFileSep()))
+  unlink(olddir)
+
+  # Check: need to replace commas used as decimal separators, into periods
+  tmp <- dir(path = sprintf("%s/INTERACTIONS", netDir), pattern = "txt$")[1]
+  tmp <- sprintf("%s/INTERACTIONS/%s", netDir, tmp)
+  if (sum(grepl(pattern = ",", readLines(tmp, n = 1)) > 0)) {
+    # detect comma
+    replacePattern(path = sprintf("%s/INTERACTIONS", netDir))
+  }
+
+  # Build GeneMANIA cache
+  if (verbose)
+    message("\t* Build GeneMANIA cache")
+
+  args <- c("-Xmx10G", "-cp", GM_jar,
+        "org.genemania.engine.apps.CacheBuilder")
+  args <- c(args, "-cachedir", "cache", "-indexDir", ".",
+        "-networkDir",
+      paste(netDir, "INTERACTIONS", sep = getFileSep()),
+        "-log",
+      paste(netDir, "test.log", sep = getFileSep()))
+  if (debugMode) {
+    tmp <- paste(args, collapse = " ")
+    message(sprintf("java %s", tmp))
+    system2("java", args = args)
+  } else {
+    system2("java", args = args, stdout = NULL)
+  }
+
+  # Cleanup
+  if (verbose)
+    message("\t * Cleanup")
+  GM_xml <- system.file("extdata", "genemania.xml", package = "netDx")
+  file.copy(from = GM_xml, to = paste(dataDir, ".", sep = getFileSep()))
+
+  setwd(curwd)
+  return(list(dbDir = dataDir, netDir = netDir))
+}
+
+#' Replace pattern in all files in dir
+#' @description find/replace pattern in all files of specified file type
+#' in specified directory. Needed to modify number format when intefacing
+#' with GeneMANIA, on  French locale machines. Without this step,
+#' CacheBuilder throws error with commas. 
+#' @param pattern (char) pattern to find
+#' @param target (char) pattern to replace
+#' @param path (char) dir to replace pattern in
+#' @param fileType (char) pattern for files to replace pattern in
+#' @return No value. Files have patterns replaced in place.
+#' @export
+replacePattern <- function(pattern = ",", target = ".", path = getwd(), fileType = "txt$") {
+  fList <- dir(path, fileType)
+  for (currF in fList) {
+    fFull <- sprintf("%s/%s", path, currF)
+    tx <- readLines(fFull)
+    tx2 <- gsub(",", ".", tx)
+    writeLines(tx2, con = fFull)
+  }
 }
 
 #' Replace pattern in all files in dir

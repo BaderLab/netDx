@@ -1,7 +1,7 @@
 #' Plots a set of ROC/PR curves with average.
 #'
 #' @details Plots average curves with individual curves imposed.
-#' @param inList (list) ROCR::performance objects, one per iteration
+#' @param inList (list or ROCR::performance object) ROCR::performance objects, one per iteration
 #' @param plotType (char) one of ROC | PR | custom. Affects x/y labels
 #' @param xlab (char) x-axis label
 #' @param ylab (char) y-axis label
@@ -34,6 +34,10 @@
 plotPerf_multi <- function(inList, plotTitle = "performance", 
 		plotType = "ROC", xlab = "TPR", 
     ylab = "FPR", meanCol = "darkblue", xlim = c(0, 1), ylim = c(0, 1)) {
+
+    if (class(inList)=="performance"){  #if (isa(inList,"performance")){
+        inList <- list(inList)
+    }
     
     if (plotType == "ROC") {
         xlab <- "TPR"
@@ -77,9 +81,12 @@ plotPerf_multi <- function(inList, plotTitle = "performance",
     out[[k]] <- cur
     points(x, y, type = "l", col = meanCol, lwd = 4)
     
+    
+    if (length(inList)>1){
     text(0.8 * xlim[2], 0.1 * ylim[2], 
-			sprintf("N=%i", length(inList) - is_empty), 
+			sprintf("%i splits", length(inList) - is_empty), 
         cex = 1.3)
+    }
     
     if (plotType == "ROC") 
         abline(0, 1, col = "red", lwd = 3) else if (plotType == "PR") 

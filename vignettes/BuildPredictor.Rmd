@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{01. Build binary predictor and view performance, top features and integrated Patient Similarity Network}.
-    %\VignetteEngine{knitr::knitr}
+    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 

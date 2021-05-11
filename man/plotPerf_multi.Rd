@@ -16,7 +16,7 @@ plotPerf_multi(
 )
 }
 \arguments{
-\item{inList}{(list) ROCR::performance objects, one per iteration}
+\item{inList}{(list or ROCR::performance object) ROCR::performance objects, one per iteration}
 
 \item{plotTitle}{(numeric) plot title}
 

@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{02. Build three-way classifier (N-way; N>2) from multi-omic data}
-    %\VignetteEngine{knitr::knitr}
+    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 

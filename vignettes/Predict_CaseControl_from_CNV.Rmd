@@ -8,7 +8,7 @@ output:
     toc_float: true
 vignette: >
     %\VignetteIndexEntry{03. Build classifier from sparse genetic data}
-    %\VignetteEngine{knitr::knitr}
+    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 

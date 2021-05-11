@@ -21,7 +21,7 @@ suppressMessages(require(curatedTCGAData))
 
 # fetch data for example
 brca <- suppressMessages(
-  curatedTCGAData("BRCA",c("mRNAArray"),FALSE, version="1.1.38"))
+  curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
 
 # reformat for this example
 staget <- sub("[abcd]","",
@@ -188,7 +188,7 @@ suppressWarnings(suppressMessages(require(netDx)))
 suppressMessages(require(curatedTCGAData))
 
 brca <- suppressMessages(
-  curatedTCGAData("BRCA",c("mRNAArray"),FALSE, version="1.1.38"))
+  curatedTCGAData("BRCA",c("mRNAArray"),FALSE))
 
 staget <- sub("[abcd]","",
   sub("t","",colData(brca)$pathology_T_stage))

@@ -22,7 +22,7 @@ suppressWarnings(suppressMessages(library(curatedTCGAData)))
 brca <- suppressMessages(
    curatedTCGAData("BRCA",
                c("mRNAArray","RPPA*","Methylation_methyl27*"),
-	dry.run=FALSE,version="1.1.38"))
+	dry.run=FALSE))
 
 # process input variables
 # prepare clinical variable - stage
@@ -168,7 +168,7 @@ suppressMessages(library(curatedTCGAData))
 
 We use the `curatedTCGAData()` command to look at available assays in the breast cancer dataset. 
 ```{r,eval=TRUE}
-curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE,version="1.1.38")
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE)
 ```
 
 In this call we fetch only the gene expression, proteomic and methylation data; setting `dry.run=FALSE` initiates the fetching of the data.
@@ -177,7 +177,7 @@ In this call we fetch only the gene expression, proteomic and methylation data; 
 brca <- suppressMessages(
    curatedTCGAData("BRCA",
                c("mRNAArray","RPPA*","Methylation_methyl27*"),
-	dry.run=FALSE,version="1.1.38"))
+	dry.run=FALSE))
 ```
 
 This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 

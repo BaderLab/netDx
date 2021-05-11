@@ -142,6 +142,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
           stdout = NULL)
       }
     }
+    
     stopCluster(cl)
     netSfx = ".txt"
     netList2 <- dir(path = netOutDir, pattern = netSfx)
@@ -194,6 +195,7 @@ compileFeatures <- function(netDir, outDir = tempdir(),
       "exporter.Generic2LuceneExporter", sep = ""))
   args <- c(args, paste(netDir, "db.cfg", sep = getFileSep()), netDir,
     paste(netDir, "colours.txt", sep = getFileSep()))
+
   if (debugMode) {
     tmp <- paste(args, collapse = " ")
     message(sprintf("java %s", tmp))
@@ -268,4 +270,25 @@ replacePattern <- function(pattern = ",", target = ".", path = getwd(), fileType
     tx2 <- gsub(",", ".", tx)
     writeLines(tx2, con = fFull)
   }
+}
+
+#' Replace pattern in all files in dir
+#' @description find/replace pattern in all files of specified file type
+#' in specified directory. Needed to modify number format when intefacing
+#' with GeneMANIA, on  French locale machines. Without this step,
+#' CacheBuilder throws error with commas. 
+#' @param pattern (char) pattern to find
+#' @param target (char) pattern to replace
+#' @param path (char) dir to replace pattern in
+#' @param fileType (char) pattern for files to replace pattern in
+#' @return No value. Files have patterns replaced in place.
+#' @export
+replacePattern <- function(pattern=",",target=".",path=getwd(),fileType="txt$") {
+fList <- dir(path,fileType)
+for (currF in fList) {
+        fFull <- sprintf("%s/%s",path,currF)
+        tx <- readLines(fFull)
+        tx2 <- gsub(",",".",tx)
+        writeLines(tx2,con=fFull)
+}
 }

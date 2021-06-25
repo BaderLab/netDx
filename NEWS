@@ -1,3 +1,7 @@
+netDx 1.5.1
+==================
+* Adding support for Java 16. 
+* Disabling CNV-based vignette to allow other three vignettes to run without causing build timeout on devel system
 
 netDx 1.1.4
 ==================

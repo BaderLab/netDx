@@ -28,7 +28,7 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
 	args <- c()
 	java_ver <- suppressWarnings(system2("java", 
 		args="--version",stdout=TRUE,stderr=NULL))
-	if (any(grep(" 11",java_ver)) || any(grep(" 12",java_ver)) || any(grep(" 13",java_ver)) || any(grep(" 14",java_ver))) {
+	if (any(grep(" 11",java_ver)) || any(grep(" 12",java_ver)) || any(grep(" 13",java_ver)) || any(grep(" 14",java_ver)) || any(grep(" 16",java_ver))) {
 		if (verbose) message("Java 11 or later detected")
 	} else {
 		if (verbose) message("Java 8 detected")

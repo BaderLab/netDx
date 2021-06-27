@@ -14,221 +14,31 @@ vignette: >
 
 # TL;DR
 This code block is not evaluated. Need a breakdown? Look at the following sections.
-```{r,eval=FALSE}
-suppressWarnings(suppressMessages(require(netDx)))
-suppressWarnings(suppressMessages(library(curatedTCGAData)))
-
-# fetch data remotely
-brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE,
-	version="1.1.38"))
-
-# process input variables
-staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
-staget <- suppressWarnings(as.integer(staget))
-colData(brca)$STAGE <- staget
-
-pam50 <- colData(brca)$PAM50.mRNA
-pam50[which(!pam50 %in% "Luminal A")] <- "notLumA"
-pam50[which(pam50 %in% "Luminal A")] <- "LumA"
-colData(brca)$pam_mod <- pam50
-
-tmp <- colData(brca)$PAM50.mRNA
-idx <- union(which(tmp %in% c("Normal-like","Luminal B","HER2-enriched")),
-             		which(is.na(staget)))
-pID <- colData(brca)$patientID
-tokeep <- setdiff(pID, pID[idx])
-brca <- brca[,tokeep,]
-
-smp <- sampleMap(brca)
-samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-# remove duplicate assays mapped to the same sample
-notdup <- samps[which(!duplicated(samps$primary)),"colname"]
-brca[[1]] <- suppressMessages(brca[[1]][,notdup])
-
-# colData must have ID and STATUS columns
-pID <- colData(brca)$patientID
-colData(brca)$ID <- pID
-colData(brca)$STATUS <- colData(brca)$pam_mod
-
-# create grouping rules
-groupList <- list()
-# genes in mRNA data are grouped by pathways
-pathList <- readPathways(fetchPathwayDefinitions("January",2018))
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
-# clinical data is not grouped; each variable is its own feature
-groupList[["clinical"]] <- list(
-      age="patient.age_at_initial_pathologic_diagnosis",
-	   stage="STAGE"
-)
-
-# create function to tell netDx how to build features (PSN) from your data
-makeNets <- function(dataList, groupList, netDir,...) {
-	netList <- c() # initialize before is.null() check
-	# make RNA nets (NOTE: the check for is.null() is important!)
-	# (Pearson correlation)
-	if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) { 
-	netList <- makePSN_NamedMatrix(dataList[["BRCA_mRNAArray-20160128"]],
-				rownames(dataList[["BRCA_mRNAArray-20160128"]]),
-			   	groupList[["BRCA_mRNAArray-20160128"]],
-				netDir,verbose=FALSE, 
-			  	writeProfiles=TRUE,...) 
-	}
-	
-	# make clinical nets (normalized difference)
-	netList2 <- c()
-	if (!is.null(groupList[["clinical"]])) {
-	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
-		rownames(dataList$clinical),
-		groupList[["clinical"]],netDir,
-		simMetric="custom",customFunc=normDiff, # custom function
-		writeProfiles=FALSE,
-		sparsify=TRUE,verbose=TRUE,...)
-	}
-	netList <- c(unlist(netList),unlist(netList2))
-	return(netList)
-}
-
-# run predictor 
-set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),randAlphanumString(),
-	"pred_output",sep=getFileSep())
-# To see all messages, remove suppressMessages() and set logging="default".
-# To keep all intermediate data, set keepAllData=TRUE
-out <- buildPredictor(
-      dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,
-      outDir=outDir, ## netDx requires absolute path
-      numSplits=2L,featScoreMax=2L, featSelCutoff=1L,
-      numCores=1L,logging="none",
-      keepAllData=FALSE,debugMode=TRUE
-   )
-
-# collect results
-numSplits <- 2
-st <- unique(colData(brca)$STATUS)
-acc <- c()         # accuracy
-predList <- list() # prediction tables
-featScores <- list() # feature scores per class
-for (cur in unique(st)) featScores[[cur]] <- list()
-
-for (k in 1:numSplits) { 
-	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
-	# predictions table
-	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
-	                 sprintf("%s_SCORE",st))]
-	predList[[k]] <- tmp 
-	# accuracy
-	acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
-	# feature scores
-	for (cur in unique(st)) {
-	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
-	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
-	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
-	}
-}
-
-# plot ROC and PR curve, compute AUROC, AUPR
-predPerf <- plotPerf(predList, predClasses=st)
-# get table of feature scores for each split and patient label
-featScores2 <- lapply(featScores, getNetConsensus)
-# identify features that consistently perform well
-featSelNet <- lapply(featScores2, function(x) {
-    callFeatSel(x, fsCutoff=1, fsPctPass=0)
-})
-
-# prepare data for EnrichmentMap plotting of top-scoring features
-Emap_res <- getEMapInput_many(featScores2,pathList,
-    minScore=1,maxScore=2,pctPass=0,out$inputNets,verbose=FALSE)
-gmtFiles <- list()
-nodeAttrFiles <- list()
-
-for (g in names(Emap_res)) {
-    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=getFileSep())
-    write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
-        sep="\t",col=TRUE,row=FALSE,quote=FALSE)
-    nodeAttrFiles[[g]] <- outFile
-
-    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=getFileSep())
-    conn <- suppressWarnings(
-         suppressMessages(base::file(outFile,"w")))
-    tmp <- Emap_res[[g]][["featureSets"]]
-    gmtFiles[[g]] <- outFile
-
-    for (cur in names(tmp)) {
-        curr <- sprintf("%s\t%s\t%s", cur,cur,
-            paste(tmp[[cur]],collapse="\t"))
-        writeLines(curr,con=conn)
-    }
-close(conn)
-}
-
-# This step requires Cytoscape to be installed and running.
-###plotEmap(gmtFiles[[1]],nodeAttrFiles[[1]],
-###         groupClusters=TRUE, hideNodeLabels=TRUE)
-
-# collect data for integrated PSN
-featScores2 <- lapply(featScores, getNetConsensus)
-featSelNet <- lapply(featScores2, function(x) {
-    callFeatSel(x, fsCutoff=2, fsPctPass=1)
-})
-topPath <- gsub(".profile","",
-		unique(unlist(featSelNet)))
-topPath <- gsub("_cont.txt","",topPath)
-# create groupList limited to top features
-g2 <- list();
-for (nm in names(groupList)) {
-	cur <- groupList[[nm]]
-	idx <- which(names(cur) %in% topPath)
-	message(sprintf("%s: %i pathways", nm, length(idx)))
-	if (length(idx)>0) g2[[nm]] <- cur[idx]
-}
-
-# calculates integrated PSN, calculates grouping statistics,
-# and plots integrates PSN. Set plotCytoscape=TRUE if Cytoscape is running.
-psn <- suppressMessages(
-   plotIntegratedPatientNetwork(brca,
-  groupList=g2, makeNetFunc=makeNets,
-  aggFun="MEAN",prune_X=0.30,prune_useTop=TRUE,
-  numCores=1L,calcShortestPath=TRUE,
-  showStats=FALSE,
-  verbose=FALSE, plotCytoscape=FALSE)
-)
-
-# Visualize integrated patient similarity network as a tSNE plot
-tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
+```{r,eval=TRUE}
 ```
 
 # Introduction
 
-In this example, we will build a binary breast tumour classifier from clinical data and gene expression data. We will use different rules to create features for each data layer. Specifically:
+In this lab we will build a predictor to classify three different types of breast tumours, two of a luminal subtype (Luminal A and Luminal B), and one of a basal subtype. 
 
-* Clinical data: Features are defined directly at the level of *variables*; similarity is defined by normalized difference.
-* Gene expression data: Features are defined at the level of *pathways*; similarity is defined by pairwise Pearson correlation.
+For this we will use data from the  The Cancer Genome Atlas, and will integrate four types of -omic data: 
 
-Feature scoring is performed over multiple random splits of the data into train and blind test partitions. Feature selected networks are those that consistently score highly across the multiple splits (e.g. those that score 9 out of 10 in >=70% of splits). 
+* gene expression from Agilent mRNA microarrays
+* DNA methylation (Illumina HumanMethylation 27K microarrays))
+* proteomic measures from reverse-phase protein arrays, and 
+* miRNA sequencing 
 
-Conceptually, this is what the higher-level logic looks like for a  cross-validation design. In the pseudocode example below, the predictor runs for 100 train/test splits. Within a split, features are scored from 0 to 10. Features scoring >=9 are used to predict labels on the held-out test set (20%).
 
-*(Note: these aren't real function calls; this block just serves to illustrate the concept of the design for our purposes)*
-```{r,eval=FALSE}
-numSplits <- 100     # num times to split data into train/blind test samples
-featScoreMax <- 10   # num folds for cross-validation, also max score for a network
-featSelCutoff <- 9
-netScores <- list()  # collect <numSplits> set of netScores
-perf <- list()       # collect <numSplits> set of test evaluations
-
-for k in 1:numSplits
- [train, test] <- splitData(80:20) # split data using RNG seed
-  featScores[[k]] <- scoreFeatures(train, featScoreMax)
- topFeat[[k]] <- applyFeatCutoff(featScores[[k]])
- perf[[k]] <- collectPerformance(topFeat[[k]], test)
-end
+```{r, fig.cap="Lab 1 design: We will integrate four layers of genomic data. Each layer will be converted into a single patient similarity network using Pearson correlation for pairwise similarity. ",echo=FALSE}
+knitr::include_graphics("images/vignette1_design.jpg")
 ```
 
-# Setup
+## Get and prepare data
 
-```{r,eval=TRUE}
-suppressWarnings(suppressMessages(require(netDx)))
+In this example, we use curated multi-modal data from The Cancer Genome Atlas, gotten from the BioConductor `curatedTCGAData` package. Data for all cancer types profiled in TCGA are available through this package; [see this tutorial for details](https://bioconductor.org/packages/release/data/experiment/vignettes/curatedTCGAData/inst/doc/curatedTCGAData.html). 
+
+```{r, class.source="codeblock",eval=TRUE}
+suppressMessages(library(curatedTCGAData))
 ```
 
 # Data 
@@ -240,381 +50,301 @@ Here we load the required packages and download clinical and gene expression dat
 suppressMessages(library(curatedTCGAData))
 ```
 
-Take a look at the available data without downloading any:
-```{r,eval=TRUE}
-curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE,
-	version="1.1.38")
+Let's take a look at the available data for breast cancer, without downloading any (set `dry.run=TRUE`). 
+Note that the new release of BioConductor (3.13) actually allows users to fetch one of two versions of TCGA data. 
+
+```{r, class.source="codeblock",eval=TRUE}
+curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE, version="1.1.38")
+```
+Now let's actually download the data, getting just the four layers we need:
+
+```{r, class.source="codeblock",eval=TRUE}
+brca <- suppressMessages(curatedTCGAData("BRCA",
+                                         c("mRNAArray","Methylation_methyl27", 
+										 "RPPAArray","miRNASeqGene"),
+                                         dry.run=FALSE, version="1.1.38"))
 ```
 
-We will work only with the mRNA data in this example:
-```{r,eval=TRUE}
-brca <- suppressMessages(curatedTCGAData("BRCA",c("mRNAArray"),FALSE,
-	version="1.1.38"))
+This call returns a `MultiAssayExperiment` object. Recall that this is a container for storing multiple assays performed on the same set of samples. [See this tutorial](https://bioconductor.org/packages/release/bioc/vignettes/MultiAssayExperiment/inst/doc/QuickStartMultiAssay.html) to learn more.
+
+Let's briefly explore the `brca` `MultiAssayExperiment` object.
+
+```{r, class.source="codeblock",eval=TRUE}
+brca
 ```
 
-This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 
+`assays()` returns a `list` with all -omic data associated with this object.  
 
-```{r,eval=TRUE}
-staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
-staget <- suppressWarnings(as.integer(staget))
-colData(brca)$STAGE <- staget
+```{r, class.source="codeblock",eval=TRUE}
+summary(assays(brca))
+```
+`names()` shows the datatypes in each slot of `assays()`:
 
-pam50 <- colData(brca)$PAM50.mRNA
-pam50[which(!pam50 %in% "Luminal A")] <- "notLumA"
-pam50[which(pam50 %in% "Luminal A")] <- "LumA"
-colData(brca)$pam_mod <- pam50
+```{r, class.source="codeblock",eval=TRUE}
+names(assays(brca))
+```
 
-tmp <- colData(brca)$PAM50.mRNA
-idx <- union(which(tmp %in% c("Normal-like","Luminal B","HER2-enriched")),
-             		which(is.na(staget)))
-pID <- colData(brca)$patientID
-tokeep <- setdiff(pID, pID[idx])
-brca <- brca[,tokeep,]
+So miRNA data is in slot 1, gene expression in slot 2, etc., 
 
-# remove duplicate assays mapped to the same sample
-smp <- sampleMap(brca)
-samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-notdup <- samps[which(!duplicated(samps$primary)),"colname"]
-brca[[1]] <- suppressMessages(brca[[1]][,notdup])
+We can subset the data to see what it looks like. Let's do that for the miRNA data, looking at just the first five measures:
+
+```{r, class.source="codeblock",eval=TRUE}
+mir <- assays(brca)[["BRCA_miRNASeqGene-20160128"]]
+head(mir[,1:5])
+```
+
+Patient metadata is contained in the `colData()` slot. Rows contain data for each patient and columns contain measures such as clinical characteristics:
+
+```{r, class.source="codeblock",eval=TRUE}
+pheno <- colData(brca)
+colnames(pheno)[1:20]
+head(pheno[,1:5])
+```
+
+This next code block prepares the TCGA data. This includes:
+
+* removing duplicate samples
+* reformatting patient IDs (e.g. removing spaces and hyphens)
+* creating an `ID` column in `colData(brca)`, which contains unique patient IDs
+* creating a `STATUS` column in `colData(brca)` which contains the patient labels (i.e what we want netDx to classify). 
+
+
+In practice you would prepare the dataset once and save it to file, then separately load it before running netDx; i.e. decouple data processing and running the predictor. The data processing code has been moved into a supporting file, `prepare_data.R`. You can explore it after the lab to see how some things are achieved (e.g. removing duplicate samples). For now, let's just run it.
+
+```{r, class.source="codeblock",eval=TRUE}
+source("prepare_data.R")
+brca <- prepareData(brca)
 ```
 
 The important thing is to create `ID` and `STATUS` columns in the sample metadata table. netDx uses these to get the patient identifiers and labels, respectively.
 
-```{r,eval=TRUE}
-pID <- colData(brca)$patientID
-colData(brca)$ID <- pID
-colData(brca)$STATUS <- colData(brca)$pam_mod
+
+```{r, class.source="codeblock",eval=TRUE}
+pheno <- colData(brca)
+head(pheno[,c("ID","STATUS")])
+table(pheno$STATUS,useNA="always")  # good practice: useNA="always" shows missing values
 ```
 
-# Design custom patient similarity networks (features)
+## Create feature design rules
 
-netDx allows the user to define a custom function that takes patient data and variable groupings as input, and returns a set of patient similarity networks (PSN) as output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype. 
+Now let's set up the data for input to netDx. 
 
-When running the predictor (next section), the user simply passes this custom function as an input variable; i.e. the `makeNetFunc` parameter when calling `buildPredictor()`.
+netDx allows the user to define how data is converted into patient similarity networks (or PSNs), which are the features that go into the model. This is done specifically by telling the model how to:
 
-***Note:*** While netDx provides a high degree of flexibility in achieving your design of choice, it is up to the user to ensure that the design, i.e. the similarity metric and variable groupings, is appropriate for your application. Domain knowledge is almost likely required for good design. 
+* **group** different types of data and 
+* **define similarity** for each of these (e.g. Pearson correlation, normalized difference, etc.,).
 
-netDx requires that this function take some generic parameters as input. These include:
+The relevant input parameters are:
 
-* `dataList`: the patient data, provided as a `MultiAssayExperiment` object. Refer to the [tutorials for MultiAssayExperiment](https://bioconductor.org/packages/release/bioc/html/MultiAssayExperiment.html) to see how to construct those objects from data.
 * `groupList`: sets of input data that would correspond to individual networks (e.g. genes grouped into pathways)
-* `netDir`: the directory where the resulting PSN would be stored.
+* `makeNets()`: an R function telling netDx what similarity metric to use for each data layer
 
-## dataList
-Here the BRCA data is already provided to us as a `MultiAssayExperiment` object:
+Let's start by loading the `netDx` package.
 
-```{r,eval=TRUE}
-summary(brca)
+
+```{r, class.source="codeblock",eval=TRUE}
+suppressWarnings(suppressMessages(require(netDx)))
 ```
 
-## groupList
-This object tells the predictor how to group units when constructing a network. For examples, genes may be grouped into a network representing a pathway. This object is a list; the names match those of `dataList` while each value is itself a list and reflects a potential network.
+Let's set up each of the input arguments one by one.
 
-```{r,eval=TRUE}
+### groupList
+**What is this:** `groupList` tells netDx how to group measures within a layer, to generate a PSN. Measures could be individual genes, proteins, CpG bases (in DNA methylation data), clinical variables, etc., 
+
+In this simple example we just create a single PSN for each datatype, containing all measures from that datatype.
+
+
+```{r, class.source="codeblock",eval=TRUE}
+expr <- assays(brca)
 groupList <- list()
+for (k in 1:length(expr)) {	# loop over all layers
+	cur <- expr[[k]]; nm <- names(expr)[k]
 
-# genes in mRNA data are grouped by pathways
-pathList <- readPathways(fetchPathwayDefinitions("January",2018))
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
-# clinical data is not grouped; each variable is its own feature
-groupList[["clinical"]] <- list(
-      age="patient.age_at_initial_pathologic_diagnosis",
-	   stage="STAGE"
-)
+	# all measures from this layer go into our single PSN
+	groupList[[nm]] <- list(nm=rownames(cur)) 
+
+	# assign same layer name as in input data
+	names(groupList[[nm]])[1] <- nm;
+}
 ```
+Notice that `groupList` is a two tiered list, or list-of-lists. The first tier is for each data layers, with names matching those in `assays(brca)`. The second tier contains all the PSNs we want to make for that layer. In this lab exercise we create only one PSN per data layer, using all the measures from an -omic assay. e.g. One PSN based on similarity across entire transcriptome, one for methylome, etc.,). So in this lab exercise, the inner tier simply contains one entry, with all measures for the given layer. 
 
-So the `groupList` variable has one entry per data *layer*:
-```{r,eval=TRUE}
+This design will get more interesting in Lab 2, when we create pathway-level features. 
+
+Let's take a look at `groupList`. Here is the first tier:
+
+
+```{r, class.source="codeblock",eval=TRUE}
 summary(groupList)
 ```
 
-Each entry contains a list, with one entry per feature. Here we have 3 pathway-level features for mRNA and two variable-level features for clinical data.
+And the second tier:
 
-For example, here are the networks to be created with RNA data. Genes corresponding to pathways are to be grouped into individual network. Such a groupList would create pathway-level networks:
-
-```{r,eval=TRUE}
-groupList[["BRCA_mRNAArray-20160128"]][1:3]
+```{r, class.source="codeblock",eval=TRUE}
+names(groupList[["BRCA_mRNAArray-20160128"]])
+length(groupList[["BRCA_mRNAArray-20160128"]][[1]])
+head(groupList[["BRCA_mRNAArray-20160128"]][[1]])
 ```
 
-For clinical data, we want to keep each variable as its own network:
-
-```{r,eval=TRUE}
-head(groupList[["clinical"]])
-```
-
-## Define patient similarity for each network
-This function is defined by the user and tells the predictor how to create networks from the provided input data.
+### Define patient similarity for each network
+The `makeNets` function tells the predictor how to create networks from provided input data.
 
 This function requires `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably `numCores` (number of parallel jobs).
 
-In this particular example, the custom similarity function does the following:
+netDx requires that this function have:
 
-1. Creates *pathway-level networks from RNA* data using the default Pearson correlation measure `makePSN_NamedMatrix(writeProfiles=TRUE,...)`
-2. Creates *variable-level networks from clinical* data using a custom similarity function of normalized difference: `makePSN_NamedMatrix(writeProfiles=FALSE,simMetric="custom",customFunc=normDiff)`.
+* `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably number of cores for parallel processing (`numCores`). 
 
 
-```{r}
+```{r, class.source="codeblock", eval=TRUE}
 makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
-	# make RNA nets (NOTE: the check for is.null() is important!)
-	# (Pearson correlation)
-	if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) { 
-	netList <- makePSN_NamedMatrix(dataList[["BRCA_mRNAArray-20160128"]],
-				rownames(dataList[["BRCA_mRNAArray-20160128"]]),
-			   	groupList[["BRCA_mRNAArray-20160128"]],
-				netDir,verbose=FALSE, 
-			  	writeProfiles=TRUE,...) 
-	}
 	
-	# make clinical nets (normalized difference)
-	netList2 <- c()
-	if (!is.null(groupList[["clinical"]])) {
-	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
-		rownames(dataList$clinical),
-		groupList[["clinical"]],netDir,
-		simMetric="custom",customFunc=normDiff, # custom function
-		writeProfiles=FALSE,
-		sparsify=TRUE,verbose=TRUE,...)
-	}
-	netList <- c(unlist(netList),unlist(netList2))
-	return(netList)
-}
+	layerNames <- c("BRCA_miRNASeqGene-20160128",
+		"BRCA_mRNAArray-20160128",
+		"BRCA_RPPAArray-20160128",
+		"BRCA_Methylation_methyl27-20160128")
+	
+	for (nm in layerNames){  			## for each layer
+		if (!is.null(groupList[[nm]])){ ## must check for null for each layer
+			netList_cur <- makePSN_NamedMatrix(
+				dataList[[nm]],
+				rownames(dataList[[nm]]),	## names of measures (e.g. genes, CpGs)
+				groupList[[nm]],			## how to group measures in that layer
+				netDir,						## leave this as-is, netDx will figure out where this is.
+				verbose=FALSE, 			
+				writeProfiles=TRUE,   		## use Pearson correlation-based similarity
+				...
+				)
 
+			netList <- c(netList,netList_cur)	## just leave this in
+		}
+	}
+	return(unlist(netList))	## just leave this in 
+}
 ```
 
-**Note:** `dataList` and `groupList` are generic containers that can contain whatever object the user requires to create PSN. **The custom function gives the user complete flexibility in feature design**. 
-
-# Build predictor
+## Build predictor
 
 Finally we call the function that runs the netDx predictor. We provide:
 
-* number of train/test splits over which to collect feature scores and average performance: `numSplits`, 
+* patient data  (`dataList`)
+* grouping rules (`groupList`)
+* function to create PSN from data, includes choice of similarity metric (`makeNetFunc`)
+* number of train/test splits over which to collect feature scores and average performance (`numSplits`), 
 * maximum score for features in one round of feature selection  (`featScoreMax`, set to 10)
-* threshold to call feature-selected networks for each train/test split (`featSelCutoff`); only features scoring this value or higher will be used to classify test patients, and
-* the information to create the PSN, including patient data (`dataList`), how variables are to be grouped into networks (`groupList`) and the custom function to generate features (`makeNetFunc`).
+* threshold to call feature-selected networks for each train/test split (`featSelCutoff`); only features scoring this value or higher will be used to classify test patients,
+* number of cores to use for parallel processing (`numCores`).
 
-Change `numCores` to match the number of cores available on your machine for 
-parallel processing.
+The call below runs 10 train/test splits. 
+Within each split, it:
 
-The call below runs 2 train/test splits. Within each split, it:
+* splits data into train/test using the default split of 80:20 (`trainProp=0.8`)
+* score networks between 0 to 10 (i.e. `featScoreMax=10L`)
+* uses networks that score >=9 out of 10 (`featSelCutoff=9L`) to classify test samples for that split.
 
-* splits data into train/test using the default split of 80:20
-* score2 networks between 0 to 2 (i.e. `featScoreMax=2`)
-* uses networks that score >=1 out of 2 (`featSelCutoff`) to classify test samples for that split.
+```{block,type="rmd-design"}
+In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=10L`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples.
+``` 
 
-These are unrealistically low values set so the example will run fast. In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=100`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples.
+This step can take a few hours based on the current parameters, so we're commenting this out for the tutorial and will simply load the results.
  
-```{r,eval=TRUE}
+```{r lab1-buildpredictor ,class.source="codeblock",eval=TRUE}
+t0 <- Sys.time()
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
-# set keepAllData=TRUE to not delete at the end of the predictor run.
-# This can be useful for debugging.
-out <- buildPredictor(
-      dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,
-      outDir=outDir, ## netDx requires absolute path
-      numSplits=2L,featScoreMax=2L,
-      featSelCutoff=1L,
-      numCores=1L,debugMode=TRUE,
-      logging="none")
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+model <- suppressMessages(buildPredictor(
+	dataList=brca,			## your data
+	groupList=groupList,	## grouping strategy
+	makeNetFunc=makeNets,	## function to build PSNs
+	outDir=outDir, 			## output directory
+	trainProp=0.8,			## pct of samples to use to train model in
+							## each split
+	numSplits=2L,			## number of train/test splits
+ featSelCutoff=1L,		## threshold for calling something
+							## feature-selected
+	featScoreMax=2L,		## max score for feature selection
+ numCores=2L,			## set higher for parallelizing
+ debugMode=FALSE,
+ keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
+ logging="none"
+  ))
+t1 <- Sys.time()
+print(t1-t0)
 ```
 
-# Examine output
-The results are stored in the list object returned by the `buildPredictor()` call.
-This list contains:
+## Examine results
 
-* `inputNets`: all input networks that the model started with. 
-* `Split<i>`: a list with results for each train-test split
-  * `predictions`: real and predicted labels for test patients
-  * `accuracy`: percent accuracy of predictions
-  * `featureScores`: feature scores for each label (list with `g` entries, where `g` is number of patient labels). Each entry contains the feature selection scores for the corresponding label.
-  * `featureSelected`: vector of features that pass feature selection. List of length `g`, with one entry per label.
+Now we get model output, including performance for various train/test splits and consistently high-scoring features. 
 
-```{r,eval=TRUE}
-summary(out)
-summary(out$Split1)
+Let's load those:
+
+```{r, class.source="codeblock",eval=TRUE}
+outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
+download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_10splits.rda",
+	destfile=outFile)
+lnames <- load(outFile)
 ```
 
-## Reformat results for further analysis
+In the function below, we define top-scoring features as those which score at least 9 in at least 90% of the train/test splits:
 
-This code collects different components of model output to examine the results. 
-
-```{r,eval=TRUE}
-numSplits <- 2
-st <- unique(colData(brca)$STATUS)
-acc <- c()         # accuracy
-predList <- list() # prediction tables
-
-featScores <- list() # feature scores per class
-for (cur in unique(st)) featScores[[cur]] <- list()
-
-for (k in 1:numSplits) { 
-	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
-	# predictions table
-	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
-	                 sprintf("%s_SCORE",st))]
-	predList[[k]] <- tmp 
-	# accuracy
-	acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
-	# feature scores
-	for (cur in unique(st)) {
-	   tmp <- out[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
-	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
-	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
-	}
-}
+```{r lab1-getresults,class.source="codeblock",eval=TRUE}
+results <- getResults(brca,model_full,featureSelCutoff=9L,
+	featureSelPct=0.9)
 ```
 
-## Compute model performance
+`results` contains `performance`, `selectedFeatures` for each patient label, and the table of feature `scores`.
 
-After compiling the data above, plot accuracy for each train/test split:
-```{r,eval=TRUE}
-print(acc)
+```{r, class.source="codeblock",eval=TRUE}
+summary(results)
 ```
 
-Create a ROC curve, a precision-recall curve, and plot average AUROC and AUPR:
-
-```{r,eval=TRUE,fig.width=8,fig.height=10}
-predPerf <- plotPerf(predList, predClasses=st)
+Look at the performance:
+```{r, class.source="codeblock",eval=TRUE}
+results$performance
 ```
 
-## Examine feature scores and consistently high-scoring features
+Look at feature scores for all labels, across all train-test splits:
 
-Use `getNetConsensus()` to convert the list data structure into a single table, one per patient label. The rows show train/test splits and the columns show features that consistently perform well. 
-
-We then use `callFeatSel()` to identify features that consistently perform well across the various train/test splits. Because this is a toy example, we set the bar very low to get some features. Here we accept a feature if it scores 1 or higher (`fsCutoff=1`) in even one split (`fsPctPass=0.05`), setting the latter to a low positive fraction. 
-
-```{r,eval=TRUE}
-featScores2 <- lapply(featScores, getNetConsensus)
-summary(featScores2)
-head(featScores2[["LumA"]])
+```{r, class.source="codeblock", eval=TRUE}
+results$featureScores
 ```
 
-In practice, a recommended setting is `fsCutoff=9` and `fsPctPass=0.7` to get features that score at least 9 (out of 10) in at least 70% of the train/test splits.
-
-```{r,eval=TRUE}
-featSelNet <- lapply(featScores2, function(x) {
-    callFeatSel(x, fsCutoff=1, fsPctPass=0)
-})
-print(head(featScores2[["LumA"]]))
+Let's examine our confusion matrix:
+```{r, class.source="codeblock",eval=TRUE}
+confMat <- confusionMatrix(model_full)
 ```
 
-## Visualize EnrichmentMap 
+*Note: Rows of this matrix don't add up to 100% because the matrix is an average of the confusion matrices from all of the train/test splits.*
 
-An EnrichmentMap is a network-based visualization of pathway connectivity and is used in netDx to visualize themes in predictive pathway-based features. It is used in conjunction with AutoAnnotate to identify clusters, and apply auto-generated labels to these. For more information, see the [EnrichmentMap](https://www.baderlab.org/Software/EnrichmentMap) website at baderlab.org.
+And here are selected features, which are those scoring 2 out of 2 in at least half of the splits. This threshold is simply for illustration. In practice we would run at least 10 train/test splits (ideally 100+), and look for features that score 7+ out of 10 in >70% splits.
 
-Use `getEMapInput_many()` to create the input that helps generate the EnrichmentMap in Cytoscape.
-
-```{r,eval=TRUE}
-Emap_res <- getEMapInput_many(featScores2,pathList,
-    minScore=1,maxScore=2,pctPass=0,out$inputNets,verbose=FALSE)
+```{r, class.source="codeblock",eval=TRUE}
+results$selectedFeatures
 ```
 
-Write the results to files that Cytoscape can read in:
-```{r,eval=TRUE}
-gmtFiles <- list()
-nodeAttrFiles <- list()
+We finally get the integrated PSN and visualize it using a tSNE plot:
 
-for (g in names(Emap_res)) {
-    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=getFileSep())
-    write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
-        sep="\t",col=TRUE,row=FALSE,quote=FALSE)
-    nodeAttrFiles[[g]] <- outFile
+```{r, class.source="codeblock",fig.width=8,fig.height=8, eval=TRUE}
+## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
+## psn <- getPSN(brca,groupList_full,makeNets_full,results$selectedFeatures)
 
-    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=getFileSep())
-    conn <- suppressWarnings(
-         suppressMessages(base::file(outFile,"w")))
-    tmp <- Emap_res[[g]][["featureSets"]]
-    gmtFiles[[g]] <- outFile
+psnFile <- sprintf("%s/psn.rda",tempdir())
+download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_PSN.rda",
+	destfile=outFile)
+load(outFile)
 
-    for (cur in names(tmp)) {
-        curr <- sprintf("%s\t%s\t%s", cur,cur,
-            paste(tmp[[cur]],collapse="\t"))
-        writeLines(curr,con=conn)
-    }
-close(conn)
-}
+require(Rtsne)
+tsne <- tSNEPlotter(
+	psn$patientSimNetwork_unpruned, 
+	colData(brca)
+	)
 ```
 
-Finally, plot the EnrichmentMap. This step requires Cytoscape to be installed, along with the EnrichmentMap and AutoAnnotate apps. It also requires the Cytoscape application to be open and running on the machine running the code. This block is commented out for automatic builds on BioConductor, but a screenshot of the intended result is shown below.
 
-```{r,eval=TRUE}
-###plotEmap(gmtFiles[[1]],nodeAttrFiles[[1]],
-###         groupClusters=TRUE, hideNodeLabels=TRUE)
-
-```
-
-This example EnrichmentMap isn't terribly exciting because of the low number of pathway features permitted, the upper bound on feature selection scores and low number of train/test splits. But hopefully it serves its purpose to be illustrative.
-
-![EnrichmentMap generated from example in this vignette. The small number of nodes reflects the limited number of pathways provided to the model, and also reduced parameter values for model building.](Emap_example_screenshot.png)
-
-Here is an example of an EnrichmentMap generated by running the above predictor with more real-world parameter values, and all available pathways:
-
-![EnrichmentMap from the same data but using all pathways, more train/test splits and higher range of feature scores.](EMap_realworld.png)
-
-# Visualize integrated patient similarity network based on top features
-
-We can apply a threshold to define predictive features, and integrate these into a single patient similarity network. Such a network is useful for downstream operations such as ascertaining whether or not classes are significantly separated and visualization. 
-
-Here we define predictive features as those scoring 3 out of 3 in all train/test splits. 
-
-```{r,eval=TRUE}
-featScores2 <- lapply(featScores, getNetConsensus)
-featSelNet <- lapply(featScores2, function(x) {
-    callFeatSel(x, fsCutoff=2, fsPctPass=1)
-})
-```
-
-We can examine the features:
-```{r,eval=TRUE}
-print(featSelNet)
-```
-
-Create a new `groupList` limited to top features:
-```{r,eval=TRUE}
-topPath <- gsub(".profile","",
-		unique(unlist(featSelNet)))
-topPath <- gsub("_cont.txt","",topPath)
-# create groupList limited to top features
-g2 <- list();
-for (nm in names(groupList)) {
-	cur <- groupList[[nm]]
-	idx <- which(names(cur) %in% topPath)
-	message(sprintf("%s: %i pathways", nm, length(idx)))
-	if (length(idx)>0) g2[[nm]] <- cur[idx]
-}
-```
-
-Plot the integrated patient network based on the features selected above. Note that at this stage, the similarity measure is inverted into a dissimilarity measure so that nodes with greater similarity are closer (have smaller distance or dissimilarity) in the final network. 
-
-In the example below, the networks are integrated by taking the mean of the edge weights (`aggFun="MEAN"`). For the plotting we retain only the top 5% of the strongest edges (`topX=0.05`). 
-
-By setting `calcShortestPath=TRUE`, the function will also compute the pairwise shortest path for within- and across-group nodes. The result is shown as a set of violin plots and a one-sided Wilcoxon-Mann-Whitney test is used to assign significance.
-
-As with `plotEMap()`, this method must be run on a computer with Cytoscape installed and running. For the purposes of this example, `plotCytoscape` is set to `FALSE` and a screenshot of the resulting network is provided below. To plot in Cytoscape, set `plotCytoscape=TRUE`.
-
-```{r,eval=TRUE}
-psn <- suppressMessages(
-   plotIntegratedPatientNetwork(brca,
-  groupList=g2, makeNetFunc=makeNets,
-  aggFun="MEAN",prune_pctX=0.30,prune_useTop=TRUE,
-  numCores=1L,calcShortestPath=TRUE,
-  showStats=FALSE,
-  verbose=FALSE, plotCytoscape=FALSE)
-)
-```
-
- ![Patient network after integrating features that scored 2 out of 2 in all train-test splits. For visualization only the top 10% strongest edges are shown. Nodes are patients, and edges are average distance across all features passing feature selection. Green indicates "LumA" status and orange indicates "nonLumA" status.](integratedPSN_MEAN_top0.10.png)
-
-The integrated PSN can also be visualized as a tSNE plot:
-```{r,fig.width=8,fig.height=8}
-tsne <- plot_tSNE(psn$patientSimNetwork_unpruned,colData(brca))
-summary(tsne)
-class(tsne)
-```
- 
-# sessionInfo
+## sessionInfo
 ```{r}
 sessionInfo()
 ```

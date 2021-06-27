@@ -1,3 +1,4 @@
+rm(list=ls())
 ## ----eval=TRUE----------------------------------------------------------------
 
 
@@ -16,11 +17,9 @@ suppressMessages(library(curatedTCGAData))
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
 curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE, version="1.1.38")
 
-
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
 brca <- suppressMessages(curatedTCGAData("BRCA",
-                                         c("mRNAArray","Methylation_methyl27", 
-										 "RPPAArray","miRNASeqGene"),
+                                         c("mRNAArray","RPPAArray"),
                                          dry.run=FALSE, version="1.1.38"))
 
 
@@ -34,11 +33,6 @@ summary(assays(brca))
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
 names(assays(brca))
-
-
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
-mir <- assays(brca)[["BRCA_miRNASeqGene-20160128"]]
-head(mir[,1:5])
 
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
@@ -90,10 +84,9 @@ head(groupList[["BRCA_mRNAArray-20160128"]][[1]])
 makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
 	
-	layerNames <- c("BRCA_miRNASeqGene-20160128",
+	layerNames <- c(
 		"BRCA_mRNAArray-20160128",
-		"BRCA_RPPAArray-20160128",
-		"BRCA_Methylation_methyl27-20160128")
+		"BRCA_RPPAArray-20160128")		
 	
 	for (nm in layerNames){  			## for each layer
 		if (!is.null(groupList[[nm]])){ ## must check for null for each layer
@@ -142,7 +135,7 @@ model <- suppressMessages(buildPredictor(
 t1 <- Sys.time()
 print(t1-t0)
 
-browser()
+###browser()
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
 outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
@@ -150,11 +143,9 @@ outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
 ###	destfile=outFile)
 lnames <- load(outFile)
 
-
 ## ----lab1-getresults,class.source="codeblock",eval=TRUE-----------------------
-results <- getResults(brca,model_full,featureSelCutoff=9L,
+results <- getResults(brca,model,featureSelCutoff=9L,
 	featureSelPct=0.9)
-
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
 summary(results)
@@ -169,7 +160,8 @@ results$featureScores
 
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
-confMat <- confusionMatrix(model_full)
+par(mar=c(4,8,2,2))
+confMat <- confusionMatrix(model)
 
 
 ## ---- class.source="codeblock",eval=TRUE--------------------------------------
@@ -185,12 +177,12 @@ download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/ma
 	destfile=outFile)
 load(outFile)
 
-require(Rtsne)
-tsne <- tSNEPlotter(
-	psn$patientSimNetwork_unpruned, 
-	colData(brca)
-	)
-
+###require(Rtsne)
+###tsne <- tSNEPlotter(
+###	psn$patientSimNetwork_unpruned, 
+###	colData(brca)
+###	)
+###
 
 ## -----------------------------------------------------------------------------
 sessionInfo()

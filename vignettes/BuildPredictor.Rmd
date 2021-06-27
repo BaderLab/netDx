@@ -37,7 +37,7 @@ knitr::include_graphics("images/vignette1_design.jpg")
 
 In this example, we use curated multi-modal data from The Cancer Genome Atlas, gotten from the BioConductor `curatedTCGAData` package. Data for all cancer types profiled in TCGA are available through this package; [see this tutorial for details](https://bioconductor.org/packages/release/data/experiment/vignettes/curatedTCGAData/inst/doc/curatedTCGAData.html). 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 suppressMessages(library(curatedTCGAData))
 ```
 
@@ -53,12 +53,12 @@ suppressMessages(library(curatedTCGAData))
 Let's take a look at the available data for breast cancer, without downloading any (set `dry.run=TRUE`). 
 Note that the new release of BioConductor (3.13) actually allows users to fetch one of two versions of TCGA data. 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE, version="1.1.38")
 ```
 Now let's actually download the data, getting just the four layers we need:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 brca <- suppressMessages(curatedTCGAData("BRCA",
                                          c("mRNAArray","Methylation_methyl27", 
 										 "RPPAArray","miRNASeqGene"),
@@ -69,18 +69,18 @@ This call returns a `MultiAssayExperiment` object. Recall that this is a contain
 
 Let's briefly explore the `brca` `MultiAssayExperiment` object.
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 brca
 ```
 
 `assays()` returns a `list` with all -omic data associated with this object.  
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 summary(assays(brca))
 ```
 `names()` shows the datatypes in each slot of `assays()`:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 names(assays(brca))
 ```
 
@@ -88,14 +88,14 @@ So miRNA data is in slot 1, gene expression in slot 2, etc.,
 
 We can subset the data to see what it looks like. Let's do that for the miRNA data, looking at just the first five measures:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 mir <- assays(brca)[["BRCA_miRNASeqGene-20160128"]]
 head(mir[,1:5])
 ```
 
 Patient metadata is contained in the `colData()` slot. Rows contain data for each patient and columns contain measures such as clinical characteristics:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 pheno <- colData(brca)
 colnames(pheno)[1:20]
 head(pheno[,1:5])
@@ -111,7 +111,7 @@ This next code block prepares the TCGA data. This includes:
 
 In practice you would prepare the dataset once and save it to file, then separately load it before running netDx; i.e. decouple data processing and running the predictor. The data processing code has been moved into a supporting file, `prepare_data.R`. You can explore it after the lab to see how some things are achieved (e.g. removing duplicate samples). For now, let's just run it.
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 source("prepare_data.R")
 brca <- prepareData(brca)
 ```
@@ -119,7 +119,7 @@ brca <- prepareData(brca)
 The important thing is to create `ID` and `STATUS` columns in the sample metadata table. netDx uses these to get the patient identifiers and labels, respectively.
 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 pheno <- colData(brca)
 head(pheno[,c("ID","STATUS")])
 table(pheno$STATUS,useNA="always")  # good practice: useNA="always" shows missing values
@@ -142,7 +142,7 @@ The relevant input parameters are:
 Let's start by loading the `netDx` package.
 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 suppressWarnings(suppressMessages(require(netDx)))
 ```
 
@@ -154,7 +154,7 @@ Let's set up each of the input arguments one by one.
 In this simple example we just create a single PSN for each datatype, containing all measures from that datatype.
 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 expr <- assays(brca)
 groupList <- list()
 for (k in 1:length(expr)) {	# loop over all layers
@@ -174,13 +174,13 @@ This design will get more interesting in Lab 2, when we create pathway-level fea
 Let's take a look at `groupList`. Here is the first tier:
 
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 summary(groupList)
 ```
 
 And the second tier:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 names(groupList[["BRCA_mRNAArray-20160128"]])
 length(groupList[["BRCA_mRNAArray-20160128"]][[1]])
 head(groupList[["BRCA_mRNAArray-20160128"]][[1]])
@@ -196,7 +196,7 @@ netDx requires that this function have:
 * `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably number of cores for parallel processing (`numCores`). 
 
 
-```{r, class.source="codeblock", eval=TRUE}
+```{r,  eval=TRUE}
 makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
 	
@@ -243,36 +243,34 @@ Within each split, it:
 * score networks between 0 to 10 (i.e. `featScoreMax=10L`)
 * uses networks that score >=9 out of 10 (`featSelCutoff=9L`) to classify test samples for that split.
 
-```{block,type="rmd-design"}
-In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=10L`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples.
-``` 
+In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=10L`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples. 
 
 This step can take a few hours based on the current parameters, so we're commenting this out for the tutorial and will simply load the results.
  
-```{r lab1-buildpredictor ,class.source="codeblock",eval=TRUE}
-t0 <- Sys.time()
-set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),randAlphanumString(),
-	"pred_output",sep=getFileSep())
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-model <- suppressMessages(buildPredictor(
-	dataList=brca,			## your data
-	groupList=groupList,	## grouping strategy
-	makeNetFunc=makeNets,	## function to build PSNs
-	outDir=outDir, 			## output directory
-	trainProp=0.8,			## pct of samples to use to train model in
-							## each split
-	numSplits=2L,			## number of train/test splits
- featSelCutoff=1L,		## threshold for calling something
-							## feature-selected
-	featScoreMax=2L,		## max score for feature selection
- numCores=2L,			## set higher for parallelizing
- debugMode=FALSE,
- keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
- logging="none"
-  ))
-t1 <- Sys.time()
-print(t1-t0)
+```{r lab1-buildpredictor ,eval=TRUE}
+###t0 <- Sys.time()
+###set.seed(42) # make results reproducible
+###outDir <- paste(tempdir(),randAlphanumString(),
+###	"pred_output",sep=getFileSep())
+###if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+###model <- suppressMessages(buildPredictor(
+###	dataList=brca,			## your data
+###	groupList=groupList,	## grouping strategy
+###	makeNetFunc=makeNets,	## function to build PSNs
+###	outDir=outDir, 			## output directory
+###	trainProp=0.8,			## pct of samples to use to train model in
+###							## each split
+###	numSplits=2L,			## number of train/test splits
+### featSelCutoff=1L,		## threshold for calling something
+###							## feature-selected
+###	featScoreMax=2L,		## max score for feature selection
+### numCores=2L,			## set higher for parallelizing
+### debugMode=FALSE,
+### keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
+### logging="none"
+###  ))
+###t1 <- Sys.time()
+###print(t1-t0)
 ```
 
 ## Examine results
@@ -281,7 +279,7 @@ Now we get model output, including performance for various train/test splits and
 
 Let's load those:
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
 download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_10splits.rda",
 	destfile=outFile)
@@ -290,30 +288,30 @@ lnames <- load(outFile)
 
 In the function below, we define top-scoring features as those which score at least 9 in at least 90% of the train/test splits:
 
-```{r lab1-getresults,class.source="codeblock",eval=TRUE}
+```{r lab1-getresults,eval=TRUE}
 results <- getResults(brca,model_full,featureSelCutoff=9L,
 	featureSelPct=0.9)
 ```
 
 `results` contains `performance`, `selectedFeatures` for each patient label, and the table of feature `scores`.
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 summary(results)
 ```
 
 Look at the performance:
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 results$performance
 ```
 
 Look at feature scores for all labels, across all train-test splits:
 
-```{r, class.source="codeblock", eval=TRUE}
+```{r,  eval=TRUE}
 results$featureScores
 ```
 
 Let's examine our confusion matrix:
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 confMat <- confusionMatrix(model_full)
 ```
 
@@ -321,13 +319,13 @@ confMat <- confusionMatrix(model_full)
 
 And here are selected features, which are those scoring 2 out of 2 in at least half of the splits. This threshold is simply for illustration. In practice we would run at least 10 train/test splits (ideally 100+), and look for features that score 7+ out of 10 in >70% splits.
 
-```{r, class.source="codeblock",eval=TRUE}
+```{r, eval=TRUE}
 results$selectedFeatures
 ```
 
 We finally get the integrated PSN and visualize it using a tSNE plot:
 
-```{r, class.source="codeblock",fig.width=8,fig.height=8, eval=TRUE}
+```{r, fig.width=8,fig.height=8, eval=TRUE}
 ## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
 ## psn <- getPSN(brca,groupList_full,makeNets_full,results$selectedFeatures)
 

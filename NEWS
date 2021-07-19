@@ -1,3 +1,12 @@
+netDx 1.5.2
+==================
+* Added wrapper functions for ease-of-use. Includes:
+	* getResults() to plot results of running the predictor
+	* getPSN() for creating and visualizing integrated PSN
+	* confusionMatrix() to visualize confusion matrix
+	* tSNEPlotter() to visualize tSNE of integrated PSN (doesn't require Cytoscape)
+* Added CITATION file with citations to netDx methods and software paper
+
 netDx 1.5.1
 ==================
 * Adding support for Java 16. 

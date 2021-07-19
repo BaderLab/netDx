@@ -1,4 +1,3 @@
-rm(list=ls())
 ## ----eval=TRUE----------------------------------------------------------------
 
 
@@ -6,7 +5,7 @@ rm(list=ls())
 knitr::include_graphics("images/vignette1_design.jpg")
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 suppressMessages(library(curatedTCGAData))
 
 
@@ -14,49 +13,56 @@ suppressMessages(library(curatedTCGAData))
 suppressMessages(library(curatedTCGAData))
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE, version="1.1.38")
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+
+## ---- eval=TRUE---------------------------------------------------------------
 brca <- suppressMessages(curatedTCGAData("BRCA",
-                                         c("mRNAArray","RPPAArray"),
+                                         c("mRNAArray","Methylation_methyl27", 
+										 "miRNASeqGene"),
                                          dry.run=FALSE, version="1.1.38"))
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 brca
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 summary(assays(brca))
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 names(assays(brca))
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
+mir <- assays(brca)[["BRCA_miRNASeqGene-20160128"]]
+head(mir[,1:5])
+
+
+## ---- eval=TRUE---------------------------------------------------------------
 pheno <- colData(brca)
 colnames(pheno)[1:20]
 head(pheno[,1:5])
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 source("prepare_data.R")
-brca <- prepareData(brca)
+brca <- prepareData(brca, setBinary=TRUE)
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 pheno <- colData(brca)
 head(pheno[,c("ID","STATUS")])
 table(pheno$STATUS,useNA="always")  # good practice: useNA="always" shows missing values
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 suppressWarnings(suppressMessages(require(netDx)))
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 expr <- assays(brca)
 groupList <- list()
 for (k in 1:length(expr)) {	# loop over all layers
@@ -70,23 +76,23 @@ for (k in 1:length(expr)) {	# loop over all layers
 }
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 summary(groupList)
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 names(groupList[["BRCA_mRNAArray-20160128"]])
 length(groupList[["BRCA_mRNAArray-20160128"]][[1]])
 head(groupList[["BRCA_mRNAArray-20160128"]][[1]])
 
 
-## ---- class.source="codeblock", eval=TRUE-------------------------------------
+## ----  eval=TRUE--------------------------------------------------------------
 makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
 	
-	layerNames <- c(
+	layerNames <- c("BRCA_miRNASeqGene-20160128",
 		"BRCA_mRNAArray-20160128",
-		"BRCA_RPPAArray-20160128")		
+		"BRCA_Methylation_methyl27-20160128")
 	
 	for (nm in layerNames){  			## for each layer
 		if (!is.null(groupList[[nm]])){ ## must check for null for each layer
@@ -107,16 +113,13 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 
 
-## In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=10L`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples.
-
-
-## ----lab1-buildpredictor ,class.source="codeblock",eval=TRUE------------------
+## ----lab1-buildpredictor ,eval=TRUE-------------------------------------------
 t0 <- Sys.time()
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-model <- suppressMessages(buildPredictor(
+model <- buildPredictor(
 	dataList=brca,			## your data
 	groupList=groupList,	## grouping strategy
 	makeNetFunc=makeNets,	## function to build PSNs
@@ -124,65 +127,65 @@ model <- suppressMessages(buildPredictor(
 	trainProp=0.8,			## pct of samples to use to train model in
 							## each split
 	numSplits=2L,			## number of train/test splits
-	featSelCutoff=1L,		## threshold for calling something
+ 	featSelCutoff=1L,		## threshold for calling something
 							## feature-selected
 	featScoreMax=2L,		## max score for feature selection
- numCores=2L,			## set higher for parallelizing
+ numCores=8L,			## set higher for parallelizing
  debugMode=FALSE,
- keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
- logging="none"
-  ))
+ keepAllData=FALSE	## set to TRUE for debugging or low-level files used by the dictor
+  )
 t1 <- Sys.time()
 print(t1-t0)
 
-###browser()
+browser()
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
-###download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_10splits.rda",
+##download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/###supporting_files/Lab1_files/Lab1_10splits.rda",
 ###	destfile=outFile)
-lnames <- load(outFile)
+###lnames <- load(outFile)
 
-## ----lab1-getresults,class.source="codeblock",eval=TRUE-----------------------
-results <- getResults(brca,model,featureSelCutoff=9L,
+
+## ----lab1-getresults,eval=TRUE------------------------------------------------
+results <- getResults(brca,model_full,featureSelCutoff=9L,
 	featureSelPct=0.9)
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+
+## ---- eval=TRUE---------------------------------------------------------------
 summary(results)
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 results$performance
 
 
-## ---- class.source="codeblock", eval=TRUE-------------------------------------
+## ----  eval=TRUE--------------------------------------------------------------
 results$featureScores
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
-par(mar=c(4,8,2,2))
-confMat <- confusionMatrix(model)
+## ---- eval=TRUE---------------------------------------------------------------
+confMat <- confusionMatrix(model_full)
 
 
-## ---- class.source="codeblock",eval=TRUE--------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 results$selectedFeatures
 
 
-## ---- class.source="codeblock",fig.width=8,fig.height=8, eval=TRUE------------
+## ---- fig.width=8,fig.height=8, eval=TRUE-------------------------------------
 ## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-## psn <- getPSN(brca,groupList_full,makeNets_full,results$selectedFeatures)
+psn <- getPSN(brca,groupList_full,makeNets_full,results$selectedFeatures)
 
-psnFile <- sprintf("%s/psn.rda",tempdir())
-download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_PSN.rda",
-	destfile=outFile)
-load(outFile)
+###psnFile <- sprintf("%s/psn.rda",tempdir())
+###download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_PSN.rda",
+###	destfile=outFile)
+###load(outFile)
 
-###require(Rtsne)
-###tsne <- tSNEPlotter(
-###	psn$patientSimNetwork_unpruned, 
-###	colData(brca)
-###	)
-###
+require(Rtsne)
+tsne <- tSNEPlotter(
+	psn$patientSimNetwork_unpruned, 
+	colData(brca)
+	)
+
 
 ## -----------------------------------------------------------------------------
 sessionInfo()

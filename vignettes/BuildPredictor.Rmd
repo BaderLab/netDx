@@ -19,13 +19,12 @@ This code block is not evaluated. Need a breakdown? Look at the following sectio
 
 # Introduction
 
-In this lab we will build a predictor to classify three different types of breast tumours, two of a luminal subtype (Luminal A and Luminal B), and one of a basal subtype. 
+In this example we will build a predictor to classify breast tumours as being either of Luminal A subtype or otherwise. The process is identical for classifying three or more labels, and the example uses minimal data for quick runtime.
 
-For this we will use data from the  The Cancer Genome Atlas, and will integrate four types of -omic data: 
+For this we will use data from the  The Cancer Genome Atlas, and will integrate three types of -omic data: 
 
 * gene expression from Agilent mRNA microarrays
-* DNA methylation (Illumina HumanMethylation 27K microarrays))
-* proteomic measures from reverse-phase protein arrays, and 
+* DNA methylation (Illumina HumanMethylation 27K microarrays)), and
 * miRNA sequencing 
 
 
@@ -61,7 +60,7 @@ Now let's actually download the data, getting just the four layers we need:
 ```{r, eval=TRUE}
 brca <- suppressMessages(curatedTCGAData("BRCA",
                                          c("mRNAArray","Methylation_methyl27", 
-										 "RPPAArray","miRNASeqGene"),
+										 "miRNASeqGene"),
                                          dry.run=FALSE, version="1.1.38"))
 ```
 
@@ -202,7 +201,6 @@ makeNets <- function(dataList, groupList, netDir,...) {
 	
 	layerNames <- c("BRCA_miRNASeqGene-20160128",
 		"BRCA_mRNAArray-20160128",
-		"BRCA_RPPAArray-20160128",
 		"BRCA_Methylation_methyl27-20160128")
 	
 	for (nm in layerNames){  			## for each layer
@@ -248,49 +246,41 @@ In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `n
 This step can take a few hours based on the current parameters, so we're commenting this out for the tutorial and will simply load the results.
  
 ```{r lab1-buildpredictor ,eval=TRUE}
-###t0 <- Sys.time()
-###set.seed(42) # make results reproducible
-###outDir <- paste(tempdir(),randAlphanumString(),
-###	"pred_output",sep=getFileSep())
-###if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-###model <- suppressMessages(buildPredictor(
-###	dataList=brca,			## your data
-###	groupList=groupList,	## grouping strategy
-###	makeNetFunc=makeNets,	## function to build PSNs
-###	outDir=outDir, 			## output directory
-###	trainProp=0.8,			## pct of samples to use to train model in
-###							## each split
-###	numSplits=2L,			## number of train/test splits
-### featSelCutoff=1L,		## threshold for calling something
-###							## feature-selected
-###	featScoreMax=2L,		## max score for feature selection
-### numCores=2L,			## set higher for parallelizing
-### debugMode=FALSE,
-### keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
-### logging="none"
-###  ))
-###t1 <- Sys.time()
-###print(t1-t0)
+t0 <- Sys.time()
+set.seed(42) # make results reproducible
+outDir <- paste(tempdir(),randAlphanumString(),
+	"pred_output",sep=getFileSep())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+model <- suppressMessages(buildPredictor(
+	dataList=brca,			## your data
+	groupList=groupList,	## grouping strategy
+	makeNetFunc=makeNets,	## function to build PSNs
+	outDir=outDir, 			## output directory
+	trainProp=0.8,			## pct of samples to use to train model in
+							## each split
+	numSplits=2L,			## number of train/test splits
+ featSelCutoff=1L,		## threshold for calling something
+							## feature-selected
+	featScoreMax=2L,		## max score for feature selection
+ numCores=8L,			## set higher for parallelizing
+ debugMode=FALSE,
+ keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
+ logging="none"
+  ))
+t1 <- Sys.time()
+print(t1-t0)
 ```
 
 ## Examine results
 
 Now we get model output, including performance for various train/test splits and consistently high-scoring features. 
 
-Let's load those:
 
-```{r, eval=TRUE}
-outFile <- sprintf("%s/CBW_Lab1_full.rda",tempdir())
-download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_10splits.rda",
-	destfile=outFile)
-lnames <- load(outFile)
-```
-
-In the function below, we define top-scoring features as those which score at least 9 in at least 90% of the train/test splits:
+In the function below, we define top-scoring features as those which score two out of two in at least half of the train/test splits:
 
 ```{r lab1-getresults,eval=TRUE}
-results <- getResults(brca,model_full,featureSelCutoff=9L,
-	featureSelPct=0.9)
+results <- getResults(brca,model,featureSelCutoff=2L,
+	featureSelPct=0.50)
 ```
 
 `results` contains `performance`, `selectedFeatures` for each patient label, and the table of feature `scores`.
@@ -312,7 +302,7 @@ results$featureScores
 
 Let's examine our confusion matrix:
 ```{r, eval=TRUE}
-confMat <- confusionMatrix(model_full)
+confMat <- confusionMatrix(model)
 ```
 
 *Note: Rows of this matrix don't add up to 100% because the matrix is an average of the confusion matrices from all of the train/test splits.*
@@ -327,12 +317,7 @@ We finally get the integrated PSN and visualize it using a tSNE plot:
 
 ```{r, fig.width=8,fig.height=8, eval=TRUE}
 ## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-## psn <- getPSN(brca,groupList_full,makeNets_full,results$selectedFeatures)
-
-psnFile <- sprintf("%s/psn.rda",tempdir())
-download.file("https://github.com/RealPaiLab/CBW_CAN_DataIntegration_2021/raw/master/supporting_files/Lab1_files/Lab1_PSN.rda",
-	destfile=outFile)
-load(outFile)
+psn <- getPSN(brca,groupList,makeNets,results$selectedFeatures)
 
 require(Rtsne)
 tsne <- tSNEPlotter(

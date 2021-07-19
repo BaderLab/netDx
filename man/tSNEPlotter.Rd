@@ -14,6 +14,8 @@ values will be replaced by very small number (effectively zero).}
 \item{pheno}{(data.frame) Patient labels. ID column is patient ID and 
 STATUS is patient label of interest. tSNE will colour-code nodes by 
 patient label.}
+
+\item{...}{Parameters for Rtsne() function.}
 }
 \value{
 (Rtsne) output of Rtsne call. Side effect of tSNE plot
@@ -22,5 +24,5 @@ patient label.}
 Plot tSNE
 }
 \details{
-Plots tSNE of patient similarity network using Rtsne
+Plots tSNE of integrated patient similarity network using Rtsne
 }

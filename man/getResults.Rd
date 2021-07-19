@@ -2,15 +2,9 @@
 % Please edit documentation in R/helper.R
 \name{getResults}
 \alias{getResults}
-\title{prints performance, returns list of output.}
+\title{Compiles performance and selected features for a trained model.}
 \usage{
-getResults(
-  dat,
-  res,
-  featureSelCutoff = 1L,
-  featureSelPct = 0,
-  pathwayList = NULL
-)
+getResults(dat, res, featureSelCutoff = 1L, featureSelPct = 0)
 }
 \arguments{
 \item{dat}{(MultiAssayExperiment) input data}
@@ -28,9 +22,15 @@ train/test splits to pass.}
 \value{
 list of results.
 - selectedFeatures (list of character vectors): list, one per class
-- performance (list of mixed datatypes) accuracy, confusion matrix, AUROC
+- performance (list of mixed datatypes) including mean accuracy (meanAccuracy), 
+split-level accuracy (splitAccuracy), split-level AUROC (auroc),
+split-level AUPR (splitAUR)
 Side effect of plotting ROC curve if binary classifier
 }
 \description{
-prints performance, returns list of output.
+Compiles performance and selected features for a trained model.
+}
+\details{
+This function is run after training a model using buildPredictor(). 
+It takes patient input data, model output, and returns performance and selected features.
 }

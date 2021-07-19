@@ -20,21 +20,55 @@ getPSN(
 \arguments{
 \item{dat}{(MultiAssayExperiment) input data}
 
-\item{aggFun}{- see plotIntegratedPatientNetwork()}
+\item{groupList}{(list) feature groups, identical to groupList provided for buildPredictor()}
 
-\item{prune_pctX}{- see plotIntegratedPatientNetwork()}
+\item{makeNets}{(function) Function used to create patient similarity networks. Identical to 
+makeNets provided to buildPredictor()}
 
-\item{prune_useTop}{- see plotIntegratedPatientNetwork()}
+\item{selectedFeatures}{(list) selected features for each class (key of list). This object is returned as
+part of a call to getResults(), after running buildPredictor().}
 
-\item{numCores}{- see plotIntegratedPatientNetwork()}
+\item{plotCytoscape}{(logical) If TRUE, plots network in Cytoscape.
+Requires Cytoscape software to be installed and running on the computer
+when the function call is being made.}
 
-\item{calcShortestPath}{- see plotIntegratedPatientNetwork()}
+\item{aggFun}{(char) function to aggregate edges from different PSN (e.g. mean)}
 
-\item{res}{(list) output of buildPredictor() function}
+\item{prune_pctX}{(numeric between 0 and 1) fraction of most/least 
+edges to keep when pruning the integrated PSN for visualization.
+Must be used in conjunction with useTop=TRUE/FALSE
+e.g. Setting pctX=0.2 and useTop=TRUE will keep 20\% top edges}
+
+\item{prune_useTop}{(logical) when pruning integrated PSN for visualization,
+determines whether to keep strongest edges (useTop=TRUE) or weakest edges
+(useTop=FALSE)}
+
+\item{numCores}{(integer) number of cores for parallel processing}
+
+\item{calcShortestPath}{(logical) if TRUE, computes weighted shortest path
+Unless you plan to analyse these separately from looking at the shortest 
+path violin plots or integrated PSN in Cytoscape, probably good to set to 
+FALSE.}
 }
 \value{
-(list) output of plotIntegratedPatientNetwork()
+(list) information about the integrated network
+similarity network
+2) patientDistNetwork_pruned (matrix) the network plotted in
+Cytoscape. Also note that this is a dissimilarity network, 
+so that more similar nodes have smaller edge weights
+3) colLegend (data.frame): legend for the patient network
+plotted in Cytoscape. Columns are node labels (STATUS) and
+colours (colour)
+6) outDir (char) value of outDir parameter
 }
 \description{
 get the integrated patient similarity network made of selected features
+}
+\details{
+An integrated patient similarity network can be built using combined
+top features for each patient class. Such a network is created by taking the union of selected features for
+all patient labels, and aggregating pairwise edges for all of them using a user-specified function (aggFun).
+The network is then pruned prior to visualization, using a user-specified fraction of strongest edges
+(prune_pctX, prune_useTop). In addition, the user may quantify the distance between patients of the 
+same class, relative to those of other classes, using Dijkstra distance (calcShortestPath flag).
 }

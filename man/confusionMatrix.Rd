@@ -2,16 +2,23 @@
 % Please edit documentation in R/helper.R
 \name{confusionMatrix}
 \alias{confusionMatrix}
-\title{make confusion matrix}
+\title{Make confusion matrix}
 \usage{
 confusionMatrix(model)
 }
 \arguments{
-\item{(list)}{output of buildPredictor()}
+\item{model}{(list) output of buildPredictor()}
 }
 \value{
 (list) confusion matrix for all train/test splits and final averaged matrix
+Side effect of plotting the averaged matrix.
 }
 \description{
-make confusion matrix
+Make confusion matrix
+}
+\details{
+Creates a confusion matrix, a square matrix which indicates the fraction of times
+patients in a class are correctly classified, versus misclassified as each of the other classes.
+Here, the confusion matrix is computed once per train-test split and the average is displayed. 
+For this reason, the fractions may not cleanly add up to 100%.
 }

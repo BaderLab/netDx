@@ -1,0 +1,43 @@
+c(bibentry(bibtype = "Article",
+           key = "netDx-methods",
+           title = "{netDx: interpretable patient classification using integrated patient similarity networks}",
+           author = c(
+               person("Shraddha", "Pai"),
+               person("Shirley", "Hui"),
+               person("Ruth", "Isserlin"),
+               person(c("Muhammad","A"), "Shah"),
+               person("Hussam","Kaka"),
+               person(c("Gary", "D."), "Bader")
+           ),
+           year = 2019,
+           journal = "Molecular Systems Biology",
+           volume = "15",
+           pages = "e8497",
+           doi = "10.15252/msb.20188497",
+           pubmed = "30872331",
+           header = "The netDx algorithm is described in:"),
+bibentry(bibtype = "Article",
+           key = "netDx-software",
+           title = "{netDx: Software for building interpretable patient classifiers by multi-'omic data integration using patient similarity networks}",
+           author = c(
+               person("Shraddha", "Pai"),
+               person("Philipp", "Weber"),
+               person("Ruth", "Isserlin"),
+               person("Hussam","Kaka"),
+               person("Shirley", "Hui"),
+               person(c("Muhammad","A"), "Shah"),
+               person("Luca", "Giudice"),
+               person("Rosalba", "Giugno"),
+               person(c("Anne","Krogh"), "Nøhr"),
+               person("Jan", "Baumbach"),
+               person(c("Gary", "D."), "Bader")
+           ),
+           year = 2021,
+           journal = "F1000Research",
+           volume = "9",
+           pages = "1239",
+           doi = "10.12688/f1000research.26429.2",
+           pubmed = "33628435",
+           header = "The netDx package is described in:")
+
+)

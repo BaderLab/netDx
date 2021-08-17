@@ -1,3 +1,4 @@
+c(
 bibentry(bibtype = "Article",
            key = "netDx-methods",
            title = "{netDx: interpretable patient classification using integrated patient similarity networks}",
@@ -15,7 +16,8 @@ bibentry(bibtype = "Article",
            pages = "e8497",
            doi = "10.15252/msb.20188497",
            pubmed = "30872331",
-           header = "The netDx algorithm is described in:"),
+           header = "The netDx algorithm is described in:"
+	),
 bibentry(bibtype = "Article",
            key = "netDx-software",
            title = "{netDx: Software for building interpretable patient classifiers by multi-'omic data integration using patient similarity networks}",
@@ -38,6 +40,6 @@ bibentry(bibtype = "Article",
            pages = "1239",
            doi = "10.12688/f1000research.26429.2",
            pubmed = "33628435",
-           header = "The netDx package is described in:")
-
+           header = "The netDx package is described in:"
+        )
 )

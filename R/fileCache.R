@@ -24,11 +24,11 @@ getGMjar_path <- function(verbose = FALSE) {
 	)
 	if (any(grep(" 11",java_ver)) || any(grep(" 12",java_ver)) || any(grep(" 13",java_ver)) || any(grep(" 14",java_ver)) || any(grep(" 16",java_ver))) {
 		if (verbose) message("Java 11+ detected")
-    	fileURL <- paste("http://download.baderlab.org/netDx/java11/", 
+    	fileURL <- paste("https://download.baderlab.org/netDx/java11/", 
 			"genemania-netdx.jar",sep="")
 	} else {
 		if (verbose) message("Java 8 detected")
-    	fileURL <- paste("http://download.baderlab.org/netDx/java8/", 
+    	fileURL <- paste("https://download.baderlab.org/netDx/java8/", 
 			"genemania-netdx.jar",sep="")
 	}
 	

@@ -253,7 +253,7 @@ for (k in seq_len(length(exprs))) {
 if ("clinical" %in% names(groupList)) {
 	tmp <- colData(dataList)
 	vars <- unique(unlist(groupList[["clinical"]]))
-	datList2[["clinical"]] <- t(as.matrix(tmp[,vars,drop=FALSE]))
+	datList2[["clinical"]] <- t(as.matrix(tmp[,vars,drop=FALSE]))	
 }
 
 dataList <- datList2; rm(datList2);
@@ -310,7 +310,7 @@ for (rngNum in startAt:numSplits) {
 	pheno <- pheno_all[which(pheno_all$TT_STATUS %in% "TRAIN"),]
 
 	dats_train <- lapply(dataList, function(x) 
-		x[,which(colnames(x) %in% pheno$ID)])
+		x[,which(colnames(x) %in% pheno$ID),drop=FALSE])
 
 	if (impute) {
 	if (verbose_default) message("**** IMPUTING ****")
@@ -505,7 +505,7 @@ for (rngNum in startAt:numSplits) {
 			#alldat_tmp <- do.call("rbind",dats_tmp)
 			}
 
-		if (verbose_default) message(sprintf("\tCreate & compile features",g))
+		if (verbose_default) message(sprintf("\t%s: Create & compile features",g))
 		if (length(pTally)>=1) {
 		netDir <- paste(pDir,"tmp",sep=getFileSep())
 		dir.create(netDir)

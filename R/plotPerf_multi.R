@@ -35,7 +35,7 @@ plotPerf_multi <- function(inList, plotTitle = "performance",
 		plotType = "ROC", xlab = "TPR", 
     ylab = "FPR", meanCol = "darkblue", xlim = c(0, 1), ylim = c(0, 1)) {
 
-    if (isa(inList,"performance")){
+    if (class(inList)=="performance"){
         inList <- list(inList)
     }
     

@@ -144,9 +144,7 @@ sessionInfo()
 
 # Introduction
 
-In this example, we will use clinical data and three types of 'omic data - gene expression, DNA methylation and proteomic data - to classify breast tumours as being one of three types: Luminal A, Luminal B, or Basal. This example is nearly identical to the one used to build a binary classifier. 
-
-We also use several strategies and definitions of similarity to create features: 
+In this example, we will use clinical data and three types of 'omic data - gene expression, DNA methylation and proteomic data - for binary classification of breast tumours. We also use several strategies and definitions of similarity to create features. 
 
  * Clinical variables: Each *variable* is its own feature (e.g. age); similarity is defined as *normalized difference*. 
  * Gene expression: Features are defined at the level of ***pathways***; i.e. a feature groups genes corresponding to the pathway. Similarity is defined as pairwise *Pearson correlation*
@@ -183,30 +181,8 @@ brca <- suppressMessages(
 This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 
 
 ```{r,eval=TRUE}
-# prepare clinical variable - stage
-staget <- sub("[abcd]","",sub("t","",colData(brca)$pathology_T_stage))
-staget <- suppressWarnings(as.integer(staget))
-colData(brca)$STAGE <- staget
-
-# exclude normal, HER2 (small num samples)
-pam50 <- colData(brca)$PAM50.mRNA
-idx <- union(which(pam50 %in% c("Normal-like","HER2-enriched")), 
-	which(is.na(staget)))
-idx <- union(idx, which(is.na(pam50)))
-pID <- colData(brca)$patientID
-tokeep <- setdiff(pID, pID[idx])
-brca <- brca[,tokeep,]
-
-pam50 <- colData(brca)$PAM50.mRNA
-colData(brca)$pam_mod <- pam50
-
-# remove duplicate names
-smp <- sampleMap(brca)
-for (nm in names(brca)) {
-	samps <- smp[which(smp$assay==nm),]
-	notdup <- samps[which(!duplicated(samps$primary)),"colname"]
-	brca[[nm]] <- suppressMessages(brca[[nm]][,notdup])
-}
+source("prepare_data.R")
+brca <- prepareData(brca,setBinary=TRUE)
 ```
 
 The important thing is to create `ID` and `STATUS` columns in the sample metadata slot. netDx uses these to get the patient identifiers and labels, respectively.
@@ -305,6 +281,8 @@ set.seed(42) # make results reproducible
 # set keepAllData to TRUE to not delete at the end of the 
 # predictor run.
 # This can be useful for debugging.
+nco <- round(parallel::detectCores()*0.75) # use 75% available cores
+message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
 outDir <- paste(tempdir(),"pred_output",sep=getFileSep()) # use absolute path
 numSplits <- 2L
 out <- suppressMessages(
@@ -312,7 +290,7 @@ out <- suppressMessages(
       makeNetFunc=makeNets,
       outDir=outDir, ## netDx requires absolute path
       numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
-	   numCores=1L)
+	  numCores=nco)
 )
 ```
 

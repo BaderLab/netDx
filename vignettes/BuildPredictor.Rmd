@@ -23,12 +23,11 @@ In this example we will build a predictor to classify breast tumours as being ei
 
 For this we will use data from the  The Cancer Genome Atlas, and will integrate three types of -omic data: 
 
-* gene expression from Agilent mRNA microarrays
-* DNA methylation (Illumina HumanMethylation 27K microarrays)), and
+* gene expression from Agilent mRNA microarrays and
 * miRNA sequencing 
 
 
-```{r, fig.cap="Lab 1 design: We will integrate four layers of genomic data. Each layer will be converted into a single patient similarity network using Pearson correlation for pairwise similarity. ",echo=FALSE}
+```{r, fig.cap="We will integrate two layers of genomic data. Each layer will be converted into a single patient similarity network using Pearson correlation for pairwise similarity. ",echo=FALSE}
 knitr::include_graphics("images/vignette1_design.jpg")
 ```
 
@@ -55,11 +54,11 @@ Note that the new release of BioConductor (3.13) actually allows users to fetch 
 ```{r, eval=TRUE}
 curatedTCGAData(diseaseCode="BRCA", assays="*",dry.run=TRUE, version="1.1.38")
 ```
-Now let's actually download the data, getting just the four layers we need:
+Now let's actually download the data, getting just the three layers we need:
 
 ```{r, eval=TRUE}
 brca <- suppressMessages(curatedTCGAData("BRCA",
-                                         c("mRNAArray","Methylation_methyl27", 
+                                         c("mRNAArray", 
 										 "miRNASeqGene"),
                                          dry.run=FALSE, version="1.1.38"))
 ```
@@ -112,7 +111,7 @@ In practice you would prepare the dataset once and save it to file, then separat
 
 ```{r, eval=TRUE}
 source("prepare_data.R")
-brca <- prepareData(brca)
+brca <- prepareData(brca,setBinary=TRUE)
 ```
 
 The important thing is to create `ID` and `STATUS` columns in the sample metadata table. netDx uses these to get the patient identifiers and labels, respectively.
@@ -200,8 +199,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 	netList <- c() # initialize before is.null() check
 	
 	layerNames <- c("BRCA_miRNASeqGene-20160128",
-		"BRCA_mRNAArray-20160128",
-		"BRCA_Methylation_methyl27-20160128")
+		"BRCA_mRNAArray-20160128")
 	
 	for (nm in layerNames){  			## for each layer
 		if (!is.null(groupList[[nm]])){ ## must check for null for each layer
@@ -246,6 +244,8 @@ In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `n
 This step can take a few hours based on the current parameters, so we're commenting this out for the tutorial and will simply load the results.
  
 ```{r lab1-buildpredictor ,eval=TRUE}
+nco <- round(parallel::detectCores()*0.75) # use 75% available cores
+message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
 t0 <- Sys.time()
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
@@ -262,7 +262,7 @@ model <- suppressMessages(buildPredictor(
  featSelCutoff=1L,		## threshold for calling something
 							## feature-selected
 	featScoreMax=2L,		## max score for feature selection
- numCores=8L,			## set higher for parallelizing
+ numCores=nco,			## set higher for parallelizing
  debugMode=FALSE,
  keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
  logging="none"

@@ -27,7 +27,8 @@ For this we will use data from the  The Cancer Genome Atlas, and will integrate 
 * miRNA sequencing 
 
 
-```{r, fig.cap="We will integrate two layers of genomic data. Each layer will be converted into a single patient similarity network using Pearson correlation for pairwise similarity. ",echo=FALSE}
+```{r, fig.cap="We will integrate two layers of genomic data. Each layer will be converted into a single patient similarity network using Pearson correlation for pairwise similarity. ",echo=FALSE, crop=NULL}
+knitr::opts_chunk$set(crop=NULL)
 knitr::include_graphics("images/vignette1_design.jpg")
 ```
 

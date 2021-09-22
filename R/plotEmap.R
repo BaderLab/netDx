@@ -59,7 +59,6 @@
 #' #\t\tnetName='HighRisk')
 #' @return No value. Side effect of plotting the EnrichmentMap in an open 
 #' session of Cytoscape.
-#' @import RCy3
 #' @export
 plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", 
 	  scoreCol="maxScore",
@@ -68,6 +67,10 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
 		createStyle = TRUE, 
     groupClusters = FALSE, hideNodeLabels=FALSE) {
 
+  if (!requireNamespace("RCy3",quietly=TRUE)) {
+		stop("Package \"RCy3\" needed for plotEmap() to work. Please install it and then make your call.",
+		call.=FALSE)
+	}
     
     validColSchemes <- c("cont_heatmap", "netDx_ms")
     if (!colorScheme %in% validColSchemes) {
@@ -78,12 +81,12 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
     
     ####################################### create EM using given parameters
     if (netName %in% getNetworkList()) {
-        deleteNetwork(netName)
+        RCy3::deleteNetwork(netName)
     }
     em_command <- paste("enrichmentmap build analysisType=\"generic\"", 
 				"gmtFile=", gmtFile, "pvalue=", 1, "qvalue=", 1, 
 				"similaritycutoff=", 0.05, "coefficients=", "JACCARD")
-    response <- commandsGET(em_command)
+    response <- RCy3::commandsGET(em_command)
     renameNetwork(netName, getNetworkSuid())
     
     ### #annotate the network using AutoAnnotate app
@@ -91,7 +94,7 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
 				"clusterAlgorithm=MCL", 
         "labelColumn=name", "maxWords=3", "network=", netName)
     print(aa_command)
-    response <- commandsGET(aa_command)
+    response <- RCy3::commandsGET(aa_command)
     
     message("* Importing node attributes\n")
     table_command <- sprintf(paste("table import file file=%s ", 
@@ -99,7 +102,7 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
         "firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s ", 
 				"WhereImportTable=To%%20selected%%20networks%%20only", 
         sep = " "), nodeAttrFile, netName)
-    response <- commandsGET(table_command)
+    response <- RCy3::commandsGET(table_command)
     
     # apply style
     message("* Creating or applying style\n")
@@ -119,31 +122,31 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
         style_cols[which(scoreVals >= nodeFillStops[1])] <- "orange"
         style_cols[which(scoreVals >= nodeFillStops[2])] <- "red"
     }
-    nodeLabels <- mapVisualProperty("node label", "name", "p")
-    nodeFills <- mapVisualProperty("node fill color", scoreCol, "d", 
+    nodeLabels <- RCy3::mapVisualProperty("node label", "name", "p")
+    nodeFills <- RCy3::mapVisualProperty("node fill color", scoreCol, "d", 
 				scoreVals, style_cols)
     defaults <- list(NODE_SHAPE = "ellipse", NODE_SIZE = 30, 
 				EDGE_TRANSPARENCY = 200, 
         NODE_TRANSPARENCY = 255, EDGE_STROKE_UNSELECTED_PAINT = "#999999")
     if (createStyle) {
         message("Making style\n")
-        createVisualStyle(styleName, defaults, list(nodeLabels, nodeFills))
+        RCy3::createVisualStyle(styleName, defaults, list(nodeLabels, nodeFills))
     }
-    setVisualStyle(styleName)
+    RCy3::setVisualStyle(styleName)
     if (groupClusters) {
-        layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
+        RCy3::layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
         redraw_command <- sprintf("autoannotate redraw network=%s", 
-					getNetworkSuid())
-        response <- commandsGET(redraw_command)
-        fitContent()
+					RCy3::getNetworkSuid())
+        response <- RCy3::commandsGET(redraw_command)
+        RCy3::fitContent()
         
         redraw_command <- sprintf("autoannotate redraw network=%s", 
-					getNetworkSuid())
-        response <- commandsGET(redraw_command)
-        fitContent()
+					RCy3::getNetworkSuid())
+        response <- RCy3::commandsGET(redraw_command)
+        RCy3::fitContent()
     }
 
 		if (hideNodeLabels) {
-			setNodeFontSizeDefault(0,styleName)
+			RCy3::setNodeFontSizeDefault(0,styleName)
 	}
 }

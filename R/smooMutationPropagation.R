@@ -34,9 +34,6 @@
 #' @param numCores (integer) Number of cores for parallel processing
 #' @return (data.frame) Continuous matrix of patient profiles in which each gene
 #'   has the final propagation score
-#' @importFrom netSmooth netSmooth
-#' @rawNamespace import(scater, except = plotHeatmap)
-#' @import clusterExperiment
 #' @import doParallel
 #' @examples 
 #' suppressWarnings(suppressMessages(require(MultiAssayExperiment)))
@@ -71,6 +68,16 @@ smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 
   res.l <- list()
 
+  required <- c("scater","clusterExperiment","netSmooth")
+  ctr <- 0
+  for (cur in required) {
+    if (!requireNamespace(cur, quietly=TRUE)) {
+      message(sprintf("Package \"%s\" needed for smoothMutations_LabelProp() to work. Please install it."))
+      ctr <- ctr+1
+    }
+    if (ctr >0) stop("Please install needed packages before proceeding.",call.=FALSE)
+  }
+
   #Apply parallelized propagation
 	cl <- makeCluster(numCores)
 	registerDoParallel(cl)
@@ -79,8 +86,9 @@ smoothMutations_LabelProp <- function(mat,net,numCores=1L) {
 	k <- NULL
   res.l <- foreach(k = 1:length(inds),
 	.packages=c("netSmooth","scater","clusterExperiment")) %dopar% {
-    nS.res=netSmooth(mat[,inds[[k]]], net , alpha=0.2, verbose = 'auto', 
-		normalizeAdjMatrix = c("columns")) 
+    nS.res=netSmooth::netSmooth(mat[,inds[[k]]], 
+      net , alpha=0.2, verbose = 'auto', 
+		  normalizeAdjMatrix = c("columns")) 
     return(nS.res)
   }
 	stopCluster(cl)

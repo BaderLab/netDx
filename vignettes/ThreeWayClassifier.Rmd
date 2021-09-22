@@ -190,7 +190,6 @@ The important thing is to create `ID` and `STATUS` columns in the sample metadat
 ```{r,eval=TRUE}
 pID <- colData(brca)$patientID
 colData(brca)$ID <- pID
-colData(brca)$STATUS <- colData(brca)$pam_mod
 ```
 
 # Rules to create features (patient similarity networks)

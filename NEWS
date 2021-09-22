@@ -1,3 +1,13 @@
+netDx 1.5.3
+==================
+* Moved RCy3, scater, clusterExperiment and netSmooth to "Suggests" to reduce dependency burden
+* Sped up vignettes by limiting all to binary classification and limiting number of layers
+
+Developers notes:
+-------------------
+* Added Dockerfile and Github Actions for automated testing
+* GHA auto-generates a Docker image with netDx which gets pushed to shraddhapai/netdx_devenv
+
 netDx 1.5.2
 ==================
 * Added wrapper functions for ease-of-use. Includes:

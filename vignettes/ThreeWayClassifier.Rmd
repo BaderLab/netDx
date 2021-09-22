@@ -56,8 +56,9 @@ colData(brca)$STATUS <- colData(brca)$pam_mod
 # create grouping rules
 groupList <- list()
 # genes in mRNA data are grouped by pathways
-pathList <- readPathways(fetchPathwayDefinitions("January",2018))
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+pathFile <- sprintf("%s/extdata/pathway_ex3.gmt", path.package("netDx"))
+pathList <- readPathways(pathFile)
+groupList[["BRCA_mRNAArray-20160128"]] <- pathList
 # clinical data is not grouped; each variable is its own feature
 groupList[["clinical"]] <- list(
       age="patient.age_at_initial_pathologic_diagnosis",
@@ -204,8 +205,9 @@ Grouping rules are accordingly created for the clinical, methylation and proteom
 groupList <- list()
 
 # genes in mRNA data are grouped by pathways
-pathList <- readPathways(fetchPathwayDefinitions("January",2018))
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList[1:3]
+pathFile <- sprintf("%s/extdata/pathway_ex3.gmt", path.package("netDx"))
+pathList <- readPathways(pathFile)
+groupList[["BRCA_mRNAArray-20160128"]] <- pathList
 # clinical data is not grouped; each variable is its own feature
 groupList[["clinical"]] <- list(
       age="patient.age_at_initial_pathologic_diagnosis",

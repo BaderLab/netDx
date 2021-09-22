@@ -21,12 +21,21 @@ Suggests:
 	rmarkdown,
 	testthat,
 	knitr,
-	BiocStyle
-Imports: ROCR,pracma,ggplot2,RCy3,glmnet,igraph,reshape2,parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,methods,BiocFileCache,GenomicRanges,bigmemory,doParallel,foreach,combinat,rappdirs,GenomeInfoDb,S4Vectors,IRanges,RColorBrewer, scater, netSmooth, clusterExperiment,Rtsne,httr,plotrix
+	BiocStyle,
+	RCy3,
+	clusterExperiment,
+	netSmooth,
+	scater
+Imports: ROCR,pracma,ggplot2,glmnet,igraph,reshape2,
+	parallel,stats,utils,MultiAssayExperiment,graphics,grDevices,
+	methods,BiocFileCache,GenomicRanges,
+	bigmemory,doParallel,foreach,
+	combinat,rappdirs,GenomeInfoDb,S4Vectors,
+	IRanges,RColorBrewer,Rtsne,httr,plotrix
 VignetteBuilder: knitr 
 Encoding: UTF-8
 License: MIT + file LICENSE
 LazyData: false
 URL: http://netdx.org
 biocViews: Classification, BiomedicalInformatics, Network, SystemsBiology
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

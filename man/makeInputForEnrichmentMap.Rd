@@ -29,9 +29,6 @@ makeInputForEnrichmentMap(
 [EMapMinScore,EMapMaxScore] to be included for EnrichmentMap visualization}
 
 \item{outDir}{(char) directory where files should be written}
-
-\item{featScores}{(list) keys are classes, values are matrices with feature scores for all 
-train/test splits. Output of callOverallSelectedFeatures()}
 }
 \value{
 

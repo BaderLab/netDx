@@ -58,7 +58,6 @@
 #' 6) outDir (char) value of outDir parameter
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom stats wilcox.test qexp density
-#' @import RCy3
 #' @export
 plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
 	setName="predictor",prune_pctX=0.05, prune_useTop=TRUE,
@@ -159,12 +158,16 @@ aggNet_pruned <- pruneNet_pctX(
 
 # plot in Cytoscape
 if (plotCytoscape) {
+	if (!requireNamespace("RCy3",quietly=TRUE)) {
+		stop("Package \"RCy3\" needed for this function to work. Please install it.",
+		call.=FALSE)
+	}
 	message("* Creating network in Cytoscape")
 	colnames(pheno)[which(colnames(pheno)=="ID")] <- "id"
 	colnames(aggNet_pruned) <- c("source","target","weight")
 	# layout network in Cytoscape
 	if (prune_useTop) { topTxt <- "top" } else { topTxt <- "bottom" }
-	createNetworkFromDataFrames(
+	RCy3::createNetworkFromDataFrames(
 		nodes=pheno, edges=aggNet_pruned,
 		title=sprintf("%s_%s_%s%1.2f",setName,aggFun,topTxt,prune_pctX),
 		collName=setName
@@ -177,7 +180,7 @@ if (plotCytoscape) {
 	message("* Creating style")
 	colLegend <- data.frame(STATUS=predClasses,colour=pal[1:length(predClasses)],
 		stringsAsFactors=FALSE)
-	nodeFills <- mapVisualProperty('node fill color',"GROUP",
+	nodeFills <- RCy3::mapVisualProperty('node fill color',"GROUP",
 										mapping.type="d",
 	                  table.column.values=predClasses,
 										visual.prop.values=pal)
@@ -186,13 +189,13 @@ if (plotCytoscape) {
 	                    "EDGE_TRANSPARENCY"=edgeTransparency,
 	                    "EDGE_STROKE_UNSELECTED_PAINT"="#999999",
 	                    "NODE_TRANSPARENCY"=nodeTransparency)
-	sty <- createVisualStyle(styleName,
+	sty <- RCy3::createVisualStyle(styleName,
 	                            defaults,list(nodeFills))
-	setVisualStyle(styleName)
+	RCy3::setVisualStyle(styleName)
 	
 	message("* Applying layout\n")
-	layoutNetwork("kamada-kawai column=weight")
-	setVisualStyle(styleName)
+	RCy3::layoutNetwork("kamada-kawai column=weight")
+	RCy3::setVisualStyle(styleName)
 	out <- list(
 		patientSimNetwork_unpruned=aggNet,
 		patientSimNetwork_pruned=aggNet_pruned,

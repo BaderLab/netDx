@@ -2,6 +2,7 @@ netDx 1.5.3
 ==================
 * Moved RCy3, scater, clusterExperiment and netSmooth to "Suggests" to reduce dependency burden
 * Sped up vignettes by limiting all to binary classification and limiting number of layers
+* Removed TL;DR from vignettes as usefulness in question but maintainance high.
 
 Developers notes:
 -------------------

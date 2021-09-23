@@ -147,7 +147,7 @@ cnv_GR    <- GRanges(pheno$seqnames,IRanges(pheno$start,pheno$end),
                         ID=pheno$ID,LOCUS_NAMES=pheno$Gene_symbols)
 
 # get gene coordinates
-geneURL <- paste("http://download.baderlab.org/netDx/",
+geneURL <- paste("https://download.baderlab.org/netDx/",
 	"supporting_data/refGene.hg18.bed",sep="")
 cache <- rappdirs::user_cache_dir(appname = "netDx")
 bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)

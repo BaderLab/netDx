@@ -92,6 +92,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 }
 tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
 sep=getFileSep())
+if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 dir.create(netDir,recursive=TRUE)
 
 pheno_id <- setupFeatureDB(pheno,netDir)

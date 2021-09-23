@@ -26,3 +26,12 @@ Plot tSNE
 \details{
 Plots tSNE of integrated patient similarity network using Rtsne
 }
+\examples{
+pid <- paste("P",1:100,sep="")
+psn <- matrix(rnorm(100*100),nrow=100,dimnames=list(pid,pid))
+psn[lower.tri(psn)] <- NA; diag(psn) <- NA
+psn2 <- reshape2::melt(psn); psn2 <- psn2[-which(is.na(psn2[,3])),]
+colnames(psn2) <- c("SOURCE","TARGET","WEIGHT")
+pheno <- data.frame(ID=pid,STATUS=c(rep("control",50),rep("case",50)))
+tSNEPlotter(psn2,pheno)
+}

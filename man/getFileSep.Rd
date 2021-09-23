@@ -12,3 +12,6 @@ getFileSep()
 \description{
 Returns OS-specific file separator
 }
+\examples{
+getFileSep()
+}

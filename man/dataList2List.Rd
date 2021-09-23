@@ -4,10 +4,12 @@
 \alias{dataList2List}
 \title{Convert MultiAssayExperiment object to list and data.frame}
 \usage{
-dataList2List(dat)
+dataList2List(dat, groupList)
 }
 \arguments{
-\item{dat}{(MultiAssayExperiment)}
+\item{dat}{(MultiAssayExperiment) Patient data and metadata}
+
+\item{groupList}{(list) variable groupings used for feature construction. See groupList arg in buildPredictor().}
 }
 \value{
 (list) Keys are:
@@ -20,4 +22,13 @@ Convert MultiAssayExperiment object to list and data.frame
 }
 \details{
 Used by internal routines in netDx
+}
+\examples{
+data(xpr,pheno)
+require(MultiAssayExperiment)
+objlist <- list("RNA"=SummarizedExperiment(xpr))
+mae <- MultiAssayExperiment(objlist,pheno)
+groupList <- list(RNA=rownames(xpr))
+dl <- dataList2List(mae,groupList)
+summary(dl) 
 }

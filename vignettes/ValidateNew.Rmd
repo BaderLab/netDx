@@ -12,166 +12,8 @@ vignette: >
     %\VignetteEncoding{UTF-8}
 ---
 
-# TL;DR
-This code block is not evaluated. Need a breakdown? Look at the following sections.
-```{r,eval=FALSE}
-
-suppressWarnings(suppressMessages(require(netDx)))
-suppressMessages(require(curatedTCGAData))
-
-# fetch data for example
-brca <- suppressMessages(
-  curatedTCGAData("BRCA",c("mRNAArray"),FALSE, version="1.1.38"))
-
-# reformat for this example
-staget <- sub("[abcd]","",
-  sub("t","",colData(brca)$pathology_T_stage))
-staget <- suppressWarnings(as.integer(staget))
-colData(brca)$STAGE <- staget
-
-pam50 <- colData(brca)$PAM50.mRNA
-# binarize class
-pam50[which(!pam50 %in% "Luminal A")] <- "notLumA"
-pam50[which(pam50 %in% "Luminal A")] <- "LumA"
-colData(brca)$pam_mod <- pam50 
-tmp <- colData(brca)$PAM50.mRNA
-idx <- union(which(tmp %in% c("Normal-like",
-                  "Luminal B","HER2-enriched")),
-            which(is.na(staget)))
-pID <- colData(brca)$patientID
-tokeep <- setdiff(pID, pID[idx])
-brca <- brca[,tokeep,] 
-# remove duplicate assays mapped to the same sample
-smp <- sampleMap(brca)
-samps <- smp[which(smp$assay=="BRCA_mRNAArray-20160128"),]
-notdup <- samps[which(!duplicated(samps$primary)),"colname"]
-brca[[1]] <- suppressMessages(brca[[1]][,notdup])
-pam50 <- colData(brca)$pam_mod
-pheno <- colData(brca)
-
-# create holdout set
-set.seed(123) # make reproducible
-idx_holdout <- c(
-  sample(which(pam50 == "LumA"),10,F),
-  sample(which(pam50 == "notLumA"),10,F)
-	)
-holdout <- brca[,rownames(pheno)[idx_holdout]]
-colData(holdout)$ID <- as.character(colData(holdout)$patientID)
-colData(holdout)$STATUS <- colData(holdout)$pam_mod
-
-# remove holdout samples from training set
-tokeep <- setdiff(1:length(pam50),idx_holdout)
-brca <- brca[,rownames(pheno)[tokeep]]
-pID <- as.character(colData(brca)$patientID)
-colData(brca)$ID <- pID
-colData(brca)$STATUS <- colData(brca)$pam_mod
-
-# feature design
-# genes in mRNA data are grouped by pathways
-pathFile <- sprintf("%s/extdata/pathway_ex3.gmt", path.package("netDx"))
-pathList <- readPathways(pathFile)
-
-groupList <- list()
-groupList[["BRCA_mRNAArray-20160128"]] <- pathList
-# clinical data is not grouped; each variable is its own feature
-groupList[["clinical"]] <- list(
-     age="patient.age_at_initial_pathologic_diagnosis",
-	   stage="STAGE"
-)
-
-# define function to create nets
-makeNets <- function(dataList, groupList, netDir, ...) {
-  netList <- c() # initialize before is.null() check
-  # make RNA nets (NOTE: the check for is.null() is important!)
-  # (Pearson correlation)
-  if (!is.null(groupList[["BRCA_mRNAArray-20160128"]])) {
-    netList <- makePSN_NamedMatrix(
-        dataList[["BRCA_mRNAArray-20160128"]],
-        rownames(dataList[["BRCA_mRNAArray-20160128"]]),
-        groupList[["BRCA_mRNAArray-20160128"]],
-        netDir, verbose = FALSE,
-        writeProfiles = TRUE, runSerially=TRUE, ...)
-  }
-
-  # make clinical nets (normalized difference)
-  netList2 <- c()
-  if (!is.null(groupList[["clinical"]])) {
-    netList2 <- makePSN_NamedMatrix(dataList$clinical,
-    rownames(dataList$clinical),
-    groupList[["clinical"]], netDir,
-    simMetric = "custom", 
-    customFunc = normDiff, # custom function
-    writeProfiles = FALSE,
-    sparsify = TRUE, verbose = TRUE, runSerially=TRUE, ...)
-  }
-  netList <- c(unlist(netList), unlist(netList2))
-  return(netList)
-}
-
-# run predictor
-set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),randAlphanumString(),
-	"pred_output",sep=getFileSep())
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-numSplits <- 2L
-out <- suppressMessages(
-  buildPredictor(
-      dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,
-      outDir=outDir, 
-      numSplits=numSplits,
-      featScoreMax=2L,
-      featSelCutoff=1L,
-      numCores=1L,debugMode=FALSE,
-      logging="none")
-)
-
-# compile consistently high-scoring functions
- featScores <- list() # feature scores per class
- st <- unique(colData(brca)$STATUS)
- for (k in 1:numSplits) { 
- 	# feature scores
- 	for (cur in unique(st)) {
-     if (is.null(featScores[[cur]])) featScores[[cur]] <- list()
- 	   tmp <- out[[sprintf("Split%i",k)]]
-     tmp2 <- tmp[["featureScores"]][[cur]]
- 	   colnames(tmp2) <- c("PATHWAY_NAME","SCORE")
- 	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp2
- 	}
- }
- featScores2 <- lapply(featScores, getNetConsensus)
- featSelNet <- lapply(featScores2, function(x) {
-     callFeatSel(x, fsCutoff=1, fsPctPass=0)
-})
-
-# predict performance on holdout set
-outDir <- paste(tempdir(), randAlphanumString(), 
-  sep = getFileSep())
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-dir.create(outDir)
-predModel <- suppressMessages(
-  predict(brca, holdout, groupList, 
-    featSelNet, makeNets,
-    outDir, verbose = FALSE)
-)
-
-# compute performance for prediction
-perf <- getPerformance(predModel, c("LumA", "notLumA"))
-message(sprintf("AUROC=%1.2f", perf$auroc))
-message(sprintf("AUPR=%1.2f", perf$aupr))
-message(sprintf("Accuracy=%1.1f%%", perf$acc))
-
-# plot ROC and PR curve
-plotPerf_multi(list(perf$rocCurve),
-  plotTitle = sprintf(
-    "BRCA Validation: %i samples", 
-    nrow(colData(holdout))))
-plotPerf_multi(list(perf$prCurve), 
-  plotType = "PR",
-  plotTitle = sprintf(
-    "BRCA Validation: %i samples", 
-    nrow(colData(holdout))))
-
+```{r,echo=FALSE}
+knitr::opts_chunk$set(crop=NULL)
 ```
 
 # Introduction
@@ -297,7 +139,7 @@ outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 numSplits <- 2L
-out <- suppressMessages(
+model <- suppressMessages(
   buildPredictor(
       dataList=brca,groupList=groupList,
       makeNetFunc=makeNets,
@@ -310,32 +152,16 @@ out <- suppressMessages(
 )
 ```
 
-Compile feature scores:
-```{r,eval=TRUE}
- featScores <- list() # feature scores per class
- st <- unique(colData(brca)$STATUS)
- for (k in 1:numSplits) { 
- 	# feature scores
- 	for (cur in unique(st)) {
-     if (is.null(featScores[[cur]])) featScores[[cur]] <- list()
- 	   tmp <- out[[sprintf("Split%i",k)]]
-     tmp2 <- tmp[["featureScores"]][[cur]]
- 	   colnames(tmp2) <- c("PATHWAY_NAME","SCORE")
- 	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp2
- 	}
- }
- # compile scores across runs
- featScores2 <- lapply(featScores, getNetConsensus)
+As before we get the model results. Let's set a very low threshold for top-scoring features. In practice this would be set higher.
+For example, if features are scored out of 10, you could consider a cutoff of features that consistently score 8 out of 10 or higher, for 70% of the trials (`featureSelCutoff=8L`, `featureSelPCt=0.7`)
+```{r}
+results <- getResults(model,unique(colData(brca)$STATUS),
+	featureSelCutoff=1L,featureSelPct=0)
 ```
 
-Identify consistently high-scoring features for each class. Here, we select any feature with a score of one or more (`fsCutoff=1`), in at least one split (`fsPctPass=0`). 
-
-In practice you should run a higher number of splits to ensure resampling helps the predictor generalize, and change the other metrics accordingly. For example, scoring features out of 10 over 100 train/test splits, and selecting features that score 7 or higher in 80% of those splits, i.e. `buildPredictor(...numSplits = 100, featScoreMax=10L)` and `callFeatSel(..., fsCutoff=7, fsPctPass=0.8)`.
-
-```{r,eval=TRUE}
- featSelNet <- lapply(featScores2, function(x) {
-     callFeatSel(x, fsCutoff=1, fsPctPass=0)
-})
+Features passing cutoff are here:
+```
+results$selectedFeatures
 ```
 
 # Validate on independent samples
@@ -351,7 +177,7 @@ dir.create(outDir)
 
 predModel <- suppressMessages(
   predict(brca, holdout, groupList, 
-    featSelNet, makeNets,
+    results$selectedFeatures, makeNets,
     outDir, verbose = FALSE)
 )
 ```

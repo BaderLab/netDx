@@ -26,7 +26,7 @@ fetch pathway definitions from downloads.baderlab.org
 }
 \details{
 Fetches genesets compiled from multiple curated pathway
-databases. Downloaded from: http://download.baderlab.org/EM_Genesets/
+databases. Downloaded from: https://download.baderlab.org/EM_Genesets/
 The file contains pathways from HumanCyc, NetPath, Reactome, NCI
 Curated Pathways and mSigDB.
 For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.

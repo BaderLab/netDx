@@ -69,7 +69,7 @@ plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
 
 if (missing(dataList)) stop("dataList is missing.")
 
-dat <- dataList2List(dataList)
+dat <- dataList2List(dataList, groupList)
 pheno <- dat$pheno[,c("ID","STATUS")]
 
 if (!file.exists(outDir)) dir.create(outDir)

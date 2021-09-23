@@ -4,12 +4,12 @@
 \alias{getResults}
 \title{Compiles performance and selected features for a trained model.}
 \usage{
-getResults(dat, res, featureSelCutoff = 1L, featureSelPct = 0)
+getResults(res, status, featureSelCutoff = 1L, featureSelPct = 0)
 }
 \arguments{
-\item{dat}{(MultiAssayExperiment) input data}
-
 \item{res}{(list) output of buildPredictor() function}
+
+\item{status}{(character) unique patient labels used by the classifier, found in colData()$STATUS}
 
 \item{featureSelCutoff}{(integer) cutoff score for feature selection.
 A feature must have minimum of this score for specified fraction of splits 
@@ -33,4 +33,10 @@ Compiles performance and selected features for a trained model.
 \details{
 This function is run after training a model using buildPredictor(). 
 It takes patient input data, model output, and returns performance and selected features.
+}
+\examples{
+data(toymodel) # load example results from binary breast classification
+patlabels <- names(toymodel$Split1$featureSelected)
+getResults(toymodel,patlabels,2,0.5)
+
 }

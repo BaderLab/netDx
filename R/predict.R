@@ -66,8 +66,8 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
   }
 
   # merging train-test for joint db
-  trainList <- dataList2List(trainMAE)
-  testList <- dataList2List(testMAE)
+  trainList <- dataList2List(trainMAE,groupList)
+  testList <- dataList2List(testMAE,groupList)
 
   ph <- trainList$pheno[, c("ID", "STATUS")]
   ph2 <- testList$pheno[, c("ID", "STATUS")]
@@ -82,6 +82,7 @@ predict <- function(trainMAE, testMAE, groupList, featSel, makeNetFunc, outDir,
             "check that they have identical columns in same order", sep = ""))
   })
   print(table(pheno[, c("STATUS", "TT_STATUS")]))
+
 
   message("* Merging assays ...")
   assays <- list()

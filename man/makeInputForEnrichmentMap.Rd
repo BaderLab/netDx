@@ -19,7 +19,7 @@ makeInputForEnrichmentMap(
 
 \item{results}{(list) Model results. output of getResults()}
 
-\item{pathwayList}{(list) output of readPathwayFile() used to make pathway-level features for predictor}
+\item{pathwayList}{(list) output of readPathwayFile() used to make pathway-level feat ures for predictor}
 
 \item{EMapMinScore}{(integer) minimum score for Enrichment Map}
 

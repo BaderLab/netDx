@@ -22,3 +22,7 @@ patients in a class are correctly classified, versus misclassified as each of th
 Here, the confusion matrix is computed once per train-test split and the average is displayed. 
 For this reason, the fractions may not cleanly add up to 100%.
 }
+\examples{
+data(toymodel)
+confusionMatrix(toymodel)
+}

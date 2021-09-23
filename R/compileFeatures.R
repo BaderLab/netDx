@@ -53,6 +53,7 @@
 #' }
 #' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
 #'	sep=getFileSep())
+#' if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 #' dir.create(netDir,recursive=TRUE)
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
@@ -259,7 +260,6 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 #' @param path (char) dir to replace pattern in
 #' @param fileType (char) pattern for files to replace pattern in
 #' @return No value. Files have patterns replaced in place.
-#' @export
 replacePattern <- function(pattern = ",", target = ".", path = getwd(), fileType = "txt$") {
   fList <- dir(path, fileType)
   for (currF in fList) {

@@ -12,11 +12,6 @@ vignette: >
     %\VignetteEncoding{UTF-8}
 ---
 
-# TL;DR
-This code block is not evaluated. Need a breakdown? Look at the following sections.
-```{r,eval=TRUE}
-```
-
 # Introduction
 
 In this example we will build a predictor to classify breast tumours as being either of Luminal A subtype or otherwise. The process is identical for classifying three or more labels, and the example uses minimal data for quick runtime.
@@ -280,8 +275,8 @@ Now we get model output, including performance for various train/test splits and
 In the function below, we define top-scoring features as those which score two out of two in at least half of the train/test splits:
 
 ```{r lab1-getresults,eval=TRUE}
-results <- getResults(brca,model,featureSelCutoff=2L,
-	featureSelPct=0.50)
+results <- getResults(model,unique(colData(brca)$STATUS),
+	featureSelCutoff=2L,featureSelPct=0.50)
 ```
 
 `results` contains `performance`, `selectedFeatures` for each patient label, and the table of feature `scores`.

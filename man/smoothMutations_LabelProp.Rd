@@ -64,7 +64,7 @@ rownames(pheno) <- pheno$ID
 
 # load interaction nets to smooth over
 require(BiocFileCache)
-netFileURL <- paste("http://download.baderlab.org/netDx/",
+netFileURL <- paste("https://download.baderlab.org/netDx/",
 	"supporting_data/CancerNets.txt",sep="")
 cache <- rappdirs::user_cache_dir(appname = "netDx")
 bfc <- BiocFileCache::BiocFileCache(cache,ask=FALSE)

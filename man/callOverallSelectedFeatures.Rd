@@ -44,3 +44,19 @@ of train/test splits; the threshold and fraction are both user-specified. This
 function is called by the wrapper getResults(), which returns both the matrix of 
 feature scores across splits and list of features that pass the user-specified cutoffs.
 }
+\examples{
+pathways <- paste("PATHWAY_",1:100,sep="")
+highrisk <- list()
+lowrisk <- list()
+for (k in 1:10) { 
+	highrisk[[k]] <- data.frame(PATHWAY_NAME=pathways, 
+	        SCORE=floor(runif(length(pathways),min=0,max=10)),
+			stringsAsFactors=FALSE);
+    lowrisk[[k]] <- data.frame(PATHWAY_NAME=pathways, 
+	        SCORE=floor(runif(length(pathways),min=0,max=10)),
+			stringsAsFactors=FALSE);
+}
+names(highrisk) <- sprintf("Split\%i",1:length(highrisk))
+names(lowrisk) <- sprintf("Split\%i",1:length(lowrisk))
+callOverallSelectedFeatures(list(highrisk=highrisk,lowrisk=lowrisk), 5,0.5)
+}

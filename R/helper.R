@@ -4,8 +4,8 @@
 #'
 #' @details This function is run after training a model using buildPredictor(). 
 #' It takes patient input data, model output, and returns performance and selected features. 
-#' @param dat (MultiAssayExperiment) input data
 #' @param res (list) output of buildPredictor() function
+#' @param status (character) unique patient labels used by the classifier, found in colData()$STATUS
 #' @param featureSelCutoff (integer) cutoff score for feature selection.
 #' A feature must have minimum of this score for specified fraction of splits 
 #' (see featureSelPct) to pass.
@@ -18,12 +18,17 @@
 #' split-level accuracy (splitAccuracy), split-level AUROC (auroc),
 #' split-level AUPR (splitAUR)
 #' Side effect of plotting ROC curve if binary classifier
+#' @examples 
+#' data(toymodel) # load example results from binary breast classification
+#' patlabels <- names(toymodel$Split1$featureSelected)
+#' getResults(toymodel,patlabels,2,0.5)
+#' 
 #' @export
-getResults <- function(dat, res, featureSelCutoff=1L, 
+getResults <- function(res, status, featureSelCutoff=1L, 
     featureSelPct=0){
 
 numSplits <- length(grep("^Split",names(res)))
-st <- unique(colData(dat)$STATUS)
+st <- status
 message(sprintf("Detected %i splits and %i classes", numSplits, length(st)))
 
 acc <- c()         # accuracy
@@ -101,6 +106,21 @@ return(list(
 #' A feature must have minimum score of featureSelCutoff for featureSelPct of 
 #' train/test splits to pass.
 #' @param cleanNames (logical) remove internal suffixes for human readability
+#' @examples
+#' pathways <- paste("PATHWAY_",1:100,sep="")
+#' highrisk <- list()
+#' lowrisk <- list()
+#' for (k in 1:10) { 
+#' 	highrisk[[k]] <- data.frame(PATHWAY_NAME=pathways, 
+#' 	        SCORE=floor(runif(length(pathways),min=0,max=10)),
+#' 			stringsAsFactors=FALSE);
+#'     lowrisk[[k]] <- data.frame(PATHWAY_NAME=pathways, 
+#' 	        SCORE=floor(runif(length(pathways),min=0,max=10)),
+#' 			stringsAsFactors=FALSE);
+#' }
+#' names(highrisk) <- sprintf("Split%i",1:length(highrisk))
+#' names(lowrisk) <- sprintf("Split%i",1:length(lowrisk))
+#' callOverallSelectedFeatures(list(highrisk=highrisk,lowrisk=lowrisk), 5,0.5)
 #' @return (list) Feature scores for all splits, plus those passing selection for overall predictor
 #' featScores: (matrix) feature scores for each split
 #' selectedFeatures: (list) features passing selection for each class; one key per class
@@ -265,6 +285,9 @@ return(psn)
 #' @param model (list) output of buildPredictor()
 #' @return (list) confusion matrix for all train/test splits and final averaged matrix
 #' Side effect of plotting the averaged matrix.
+#' @examples
+#' data(toymodel)
+#' confusionMatrix(toymodel)
 #' @importFrom plotrix color2D.matplot
 #' @export
 confusionMatrix <- function(model) {
@@ -316,6 +339,14 @@ confusionMatrix <- function(model) {
 #' @import Rtsne Rtsne
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom ggplot2 ggplot
+#' @examples
+#' pid <- paste("P",1:100,sep="")
+#' psn <- matrix(rnorm(100*100),nrow=100,dimnames=list(pid,pid))
+#' psn[lower.tri(psn)] <- NA; diag(psn) <- NA
+#' psn2 <- reshape2::melt(psn); psn2 <- psn2[-which(is.na(psn2[,3])),]
+#' colnames(psn2) <- c("SOURCE","TARGET","WEIGHT")
+#' pheno <- data.frame(ID=pid,STATUS=c(rep("control",50),rep("case",50)))
+#' tSNEPlotter(psn2,pheno)
 #' @export
 tSNEPlotter <- function(psn,pheno,...) {
 

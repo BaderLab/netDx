@@ -293,13 +293,3 @@ jobs:
         with:
           name: ${{ runner.os }}-biocversion-devel-r-4.1-results
           path: check
-
-      - name: Build & push Docker image v5
-        if: runner.os == 'Linux'
-        uses: mr-smithers-excellent/docker-build-push@v5   
-        with:
-          image: shraddhapai/netdx_devenv          
-          tags: latest
-          registry: docker.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}

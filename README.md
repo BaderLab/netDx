@@ -1,3 +1,7 @@
+
+## Update: Sep 2021: netDx is now maintained at [https://github.com/realpailab/netdx](https://github.com/realpailab/netdx).
+## Development in this repo now frozen.
+
 netDx is a general-purpose algorithm for building patient classifiers by using patient similarity networks as features. It excels at interpretability and handling missing data. It also allows custom grouping rules for features, notably grouping genes into pathways. It integrates with RCy3 for network visualization of predictive pathways.
 
 As of February 2020, netDx is available via the BioConductor repository. 

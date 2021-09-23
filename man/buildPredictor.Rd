@@ -9,6 +9,7 @@ buildPredictor(
   groupList,
   outDir = tempdir(),
   makeNetFunc,
+  sims,
   featScoreMax = 10L,
   trainProp = 0.8,
   numSplits = 10L,

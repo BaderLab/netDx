@@ -172,6 +172,7 @@
 #' #   outDir=paste(tempdir(),"pred_output",sep=getFileSep()), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
+	sims,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
 	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default",

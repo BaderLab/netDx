@@ -69,6 +69,7 @@ test_that("feature construction and compilation",{
 	# directory contains GENES.TXT, NETWORKS.TXT INTERACTIONS folder
 	 outDir <- tempdir()
 	netDir <- sprintf("%s/tmp",outDir)
+	if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 	dir.create(netDir)
 
 	pheno_id <- setupFeatureDB(pheno,netDir)

@@ -4,7 +4,7 @@
 \alias{psn__custom}
 \title{make PSN for custom similarity functions}
 \usage{
-psn__custom(settings, fn, ...)
+psn__custom(settings, fn, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}

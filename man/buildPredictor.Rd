@@ -8,8 +8,8 @@ buildPredictor(
   dataList,
   groupList,
   outDir = tempdir(),
-  makeNetFunc,
-  sims,
+  makeNetFunc = NULL,
+  sims = NULL,
   featScoreMax = 10L,
   trainProp = 0.8,
   numSplits = 10L,
@@ -49,6 +49,10 @@ directory exists, its contents will be overwritten. Must be absolute path}
 
 \item{makeNetFunc}{(function) user-defined function for creating the set
 of input PSN provided to netDx. See createPSN_MultiData()::customFunc.}
+
+\item{sims}{(list) rules to create similarity networks from input data. Keys are names of
+data layers and should be identical to names(groupList). Values is either a character
+for built-in similarity functions; call allowedSims() to see full list; or a custom function.}
 
 \item{featScoreMax}{(integer) number of CV folds in inner loop}
 

@@ -7,7 +7,8 @@
 plotIntegratedPatientNetwork(
   dataList,
   groupList,
-  makeNetFunc,
+  makeNetFunc = NULL,
+  sims = NULL,
   setName = "predictor",
   prune_pctX = 0.05,
   prune_useTop = TRUE,
@@ -32,6 +33,8 @@ list of lists, where the outer list corresponds to assay (e.g. mRNA,
 clinical) and inner list to features to generate from that datatype.}
 
 \item{makeNetFunc}{(function) function to create features}
+
+\item{sims}{(list) rules for creating PSN. Preferred over makeNetFunc}
 
 \item{setName}{(char) name to assign the network in Cytoscape}
 

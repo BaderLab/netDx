@@ -7,7 +7,8 @@
 getPSN(
   dat,
   groupList,
-  makeNets,
+  makeNetFunc = NULL,
+  sims = NULL,
   selectedFeatures,
   plotCytoscape = FALSE,
   aggFun = "MEAN",
@@ -22,8 +23,11 @@ getPSN(
 
 \item{groupList}{(list) feature groups, identical to groupList provided for buildPredictor()}
 
-\item{makeNets}{(function) Function used to create patient similarity networks. Identical to 
+\item{makeNetFunc}{(function) Function used to create patient similarity networks. Identical to 
 makeNets provided to buildPredictor()}
+
+\item{sims}{(list) rules for creating PSN. Preferred over makeNetFunc. See buildPredictor() 
+for details.}
 
 \item{selectedFeatures}{(list) selected features for each class (key of list). This object is returned as
 part of a call to getResults(), after running buildPredictor().}

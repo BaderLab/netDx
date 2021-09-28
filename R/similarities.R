@@ -210,7 +210,7 @@ avgNormDiff <- function(x) {
 #' built-in similarity functions
 #'
 allowedSims <- function(){
-  return(c("pearson_corr","normDiff","avgNormDiff",
+  return(c("pearsonCorr","normDiff","avgNormDiff",
         "sim.pearscale","sim.eucscale"))
 }
 
@@ -242,28 +242,69 @@ checkSimValid <- function(sims){
     return(TRUE)
 }
 
+#' internal test function to check validity of makeNetFunc and sims
+#'
+#' @details User must provide either makeNetFunc or sims. This function
+#' confirms this.
+#' @param makeNetFunc (function) makeNetFunc from buildPredictor()
+#' @param sims (list) sims from buildPredictor()
+#' @param groupList (list) groupList from buildPredictor()s
+#' @return (list) cleaned values for makeNetFunc and Sims
+checkMakeNetFuncSims <- function(makeNetFunc,sims,groupList){
+    if (is.null(makeNetFunc) && is.null(sims)) {
+	stop("Provide either makeNetFunc or sims (preferred).")
+} 
+if (!is.null(makeNetFunc) && !is.null(sims)){
+	stop("Provide either makeNetFunc or sims (preferred).")
+}
 
-makeNetFunc <- function(dataList, groupList, netDir, sims,...){    
+if (!is.null(sims))	{
+	if (class(sims)!="list") stop("sims must be a list.")
+	if (all.equal(sort(names(sims)),sort(names(groupList)))!=TRUE) 
+		stop("names(sims) must match names(groupList).")
+}
+return(TRUE)
+}
+
+#' create nets from provided similarities
+#'
+#' @export
+createNetFuncFromSimList <- function(dataList, groupList, netDir, sims,
+    verbose=TRUE,...){    
+    
+    if (length(groupList)!= length(sims)){
+        stop("groupList and sims need to be of same length.")
+    }
+    if (all.equal(sort(names(groupList)),sort(names(sims)))!=TRUE){
+        stop("names(groupList) needs to match names(sims).")
+    }
     settings <- list(dataList=dataList,groupList=groupList,
                     netDir=netDir,sims=sims)
+
+    if (verbose) message("Making nets from sims")
     netList <- c()    
     for (nm in names(sims)){
         csim <- sims[[nm]]
         netList_cur <- NULL
+        if (verbose) message(sprintf("\t%s",nm))
 
         cur_set <- settings; 
         cur_set[["name"]] <- nm; cur_set[["similarity"]] <- csim
 
         if (!is.null(groupList[[nm]])){
             if (class(csim)=="function") {# custom function
-                netList_cur <- psn__custom(cur_set,csim,...)
-            } else if (csim == "pearson_corr") {
-                netList_cur <- psn__corr(cur_set,...)
+    
+                netList_cur <- psn__custom(cur_set,csim, verbose,...)
+            } else if (csim == "pearsonCorr") {
+                netList_cur <- psn__corr(cur_set,verbose,...)
             } else {
-                netList_cur <- psn__builtIn(cur_set,...)
+                netList_cur <- psn__builtIn(cur_set,verbose,...)
             }
             netList <- c(netList,netList_cur)
         }
+    }
+    if (verbose) {
+        message("Net construction complete!")
     }
     unlist(netList)
 }
@@ -271,7 +312,8 @@ makeNetFunc <- function(dataList, groupList, netDir, sims,...){
 #' make PSN for built-in similarity functions
 #'
 #' @param settings (list) from makeNetFunc
-psn__builtIn <- function(settings,...){
+psn__builtIn <- function(settings,verbose,...){
+
 funcs <- list(
     "normDiff"=normDiff,
     "avgNormDiff"=avgNormDiff,
@@ -279,7 +321,8 @@ funcs <- list(
     "sim.eucscale"=sim.eucscale
 )
 
-    message(sprintf("Layer %s: Function %s",settings$name,settings$similarity))
+    if (verbose) message(sprintf("Layer %s: Built-in function %s",
+            settings$name,settings$similarity))
 
     nm <- settings$name
     netList <- makePSN_NamedMatrix(
@@ -298,9 +341,9 @@ funcs <- list(
 #' make PSN for custom similarity functions
 #'
 #' @param settings (list) from makeNetFunc
-psn__custom <- function(settings,fn, ...){
+psn__custom <- function(settings,fn,verbose, ...){
     nm <- settings$name
-    message(sprintf("Layer %s: CUSTOM FUNCTION",settings$name))
+    if (verbose) message(sprintf("Layer %s: CUSTOM FUNCTION",settings$name))
     netList <- makePSN_NamedMatrix(
         settings$dataList[[nm]],
 		rownames(settings$dataList[[nm]]),
@@ -316,16 +359,16 @@ psn__custom <- function(settings,fn, ...){
 #' wrapper for PSNs using Pearson correlation
 #'
 #' @param settings (list) from makeNetFunc
-psn__corr <- function(settings,...){
-    message(sprintf("Layer %s: PEARSON CORR",settings$name))
+psn__corr <- function(settings,verbose,...){
+    if (verbose) message(sprintf("Layer %s: PEARSON CORR",settings$name))
     nm <- settings$name
     netList <- makePSN_NamedMatrix(
-				settings$dataList,
-				rownames(settings$dataList[[nm]]),	## names of measures (e.g. genes, CpGs)
-				settings$groupList[[nm]],			## how to group measures in that layer
-				settings$netDir,						## leave this as-is, netDx will figure out where this is.
+				xpr=settings$dataList[[nm]],
+				nm=rownames(settings$dataList[[nm]]),
+				namedSets=settings$groupList[[nm]],	
+				outDir=settings$netDir,	
 				verbose=FALSE, 			
-				writeProfiles=TRUE,   		## use Pearson correlation-based similarity
+				writeProfiles=TRUE,  
 				...
 				)
     return(netList)

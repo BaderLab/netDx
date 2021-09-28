@@ -4,7 +4,7 @@
 \alias{psn__builtIn}
 \title{make PSN for built-in similarity functions}
 \usage{
-psn__builtIn(settings, ...)
+psn__builtIn(settings, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}

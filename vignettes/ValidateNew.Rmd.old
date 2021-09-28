@@ -176,9 +176,11 @@ if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 dir.create(outDir)
 
 predModel <- suppressMessages(
-  predict(brca, holdout, groupList, 
-    results$selectedFeatures, makeNets,
-    outDir, verbose = FALSE)
+  predict(trainMAE=brca, testMAE=holdout, 
+    groupList=groupList, 
+    featSel=results$selectedFeatures, 
+    makeNetFunc=makeNets,
+    outDir=outDir, verbose = FALSE)
 )
 ```
 

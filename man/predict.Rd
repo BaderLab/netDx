@@ -8,8 +8,9 @@ predict(
   trainMAE,
   testMAE,
   groupList,
-  featSel,
-  makeNetFunc,
+  selectedFeatures,
+  makeNetFunc = NULL,
+  sims = NULL,
   outDir,
   impute = FALSE,
   verbose = FALSE,
@@ -25,13 +26,15 @@ predict(
 
 \item{groupList}{(list) list of features used to train the model. Keys are data types, and values are lists for groupings within those datatypes.
 e.g. keys could include {'clinical','rna','methylation'}, and values within 'rna' could include pathway names {'cell cycle', 'DNA repair'}, etc.,
-featSel will be used to subset}
+selectedFeatures will be used to subset}
 
-\item{featSel}{(list) selected features to be used in the predictive model. 
+\item{selectedFeatures}{(list) selected features to be used in the predictive model. 
 keys are patient labels (e.g. "responder/nonresponder"), and values are feature names 
 identified by running buildPredictor(). Feature names must correspond to names of groupList, from which they will be subset.}
 
 \item{makeNetFunc}{(function) function to create PSN features from patient data. See makeNetFunc in buildPredictor() for details}
+
+\item{sims}{(list) rules for creating PSN. Preferred over makeNetFunc.}
 
 \item{outDir}{(char) directory for results}
 

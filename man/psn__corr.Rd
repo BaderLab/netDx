@@ -4,7 +4,7 @@
 \alias{psn__corr}
 \title{wrapper for PSNs using Pearson correlation}
 \usage{
-psn__corr(settings, ...)
+psn__corr(settings, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}

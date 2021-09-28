@@ -11,7 +11,8 @@ createPSN_MultiData(
   netDir = tempdir(),
   filterSet = NULL,
   verbose = TRUE,
-  customFunc,
+  makeNetFunc = NULL,
+  sims = NULL,
   ...
 )
 }
@@ -35,7 +36,7 @@ with internally-generated identifiers.}
 
 \item{verbose}{(logical) print messages}
 
-\item{customFunc}{(function) custom user-function to create PSN. 
+\item{makeNetFunc}{(function) custom user-function to create PSN. 
 Must take dataList,groupList,netDir as parameters. Must
 check if a given groupList is empty (no networks to create) before 
 the makePSN call for it. This is to avoid trying to make nets for datatypes
@@ -124,5 +125,5 @@ netDir <- tempdir()
 pheno_id <- setupFeatureDB(colData(brca),netDir)
 createPSN_MultiData(dataList=datList2,groupList=groupList,
  pheno=pheno_id,
- netDir=netDir,customFunc=makeNets,numCores=1)
+ netDir=netDir,makeNetFunc=makeNets,numCores=1)
 }

@@ -75,7 +75,7 @@ test_that("feature construction and compilation",{
 	pheno_id <- setupFeatureDB(pheno,netDir)
 	x <-createPSN_MultiData(dataList=dataList,groupList=groupList,
 			pheno=pheno_id,
-			netDir=netDir,customFunc=makeNets,numCores=1,
+			netDir=netDir,makeNetFunc=makeNets,numCores=1,
 			verbose=FALSE)
 	
 	# number of nets equals those submitted for creation

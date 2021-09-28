@@ -89,7 +89,7 @@ pheno_id <- setupFeatureDB(pheno,outDir)
 createPSN_MultiData(dataList=dat$assays,groupList=groupList,
 			pheno=pheno_id,
 			netDir=outDir,
-			customFunc=makeNetFunc,sims=sims,
+			makeNetFunc=makeNetFunc,sims=sims,
 			numCores=numCores,
 			verbose=FALSE)
 convertProfileToNetworks(

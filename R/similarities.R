@@ -323,6 +323,8 @@ createNetFuncFromSimList <- function(dataList, groupList, netDir, sims,
 #'
 #' @param settings (list) from makeNetFunc
 #' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
 psn__builtIn <- function(settings,verbose,...){
 
 funcs <- list(
@@ -354,6 +356,8 @@ funcs <- list(
 #' @param settings (list) from makeNetFunc
 #' @param fn (function) custom similarity function
 #' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
 psn__custom <- function(settings,fn,verbose, ...){
     nm <- settings$name
     if (verbose) message(sprintf("Layer %s: CUSTOM FUNCTION",settings$name))
@@ -373,6 +377,8 @@ psn__custom <- function(settings,fn,verbose, ...){
 #'
 #' @param settings (list) from makeNetFunc
 #' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
 psn__corr <- function(settings,verbose,...){
     if (verbose) message(sprintf("Layer %s: PEARSON CORR",settings$name))
     nm <- settings$name

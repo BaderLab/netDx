@@ -12,6 +12,11 @@ psn__custom(settings, fn, verbose, ...)
 \item{fn}{(function) custom similarity function}
 
 \item{verbose}{(logical) print messages}
+
+\item{...}{parameters for makePSN_NamedMatrix()}
+}
+\value{
+(char) names of networks created. Side effect of network creation.
 }
 \description{
 make PSN for custom similarity functions

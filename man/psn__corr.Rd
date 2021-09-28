@@ -10,6 +10,11 @@ psn__corr(settings, verbose, ...)
 \item{settings}{(list) from makeNetFunc}
 
 \item{verbose}{(logical) print messages}
+
+\item{...}{parameters for makePSN_NamedMatrix()}
+}
+\value{
+(char) names of networks created. Side effect of network creation.
 }
 \description{
 wrapper for PSNs using Pearson correlation

@@ -8,6 +8,10 @@ psn__custom(settings, fn, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}
+
+\item{fn}{(function) custom similarity function}
+
+\item{verbose}{(logical) print messages}
 }
 \description{
 make PSN for custom similarity functions

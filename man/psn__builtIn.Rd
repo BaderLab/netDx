@@ -8,6 +8,8 @@ psn__builtIn(settings, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}
+
+\item{verbose}{(logical) print messages}
 }
 \description{
 make PSN for built-in similarity functions

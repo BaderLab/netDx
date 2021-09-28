@@ -2,7 +2,7 @@
 % Please edit documentation in R/similarities.R
 \name{createNetFuncFromSimList}
 \alias{createNetFuncFromSimList}
-\title{create nets from provided similarities}
+\title{Create PSN from provided similarities}
 \usage{
 createNetFuncFromSimList(
   dataList,
@@ -13,6 +13,25 @@ createNetFuncFromSimList(
   ...
 )
 }
+\arguments{
+\item{dataList}{(list) patient data, output of dataList2List()}
+
+\item{groupList}{(list) measure groupings. Keys match assays(dataList) and are usually different data sources. Values for each are a list of 
+networks with user-provided groupings. See groupList in buildPredictor() for details.}
+
+\item{netDir}{(char) path to directory where networks are to be created}
+
+\item{sims}{(list) keys must be identical to those of groupList. Values are either of type character, used for built-in similarity functions, 
+or are functions, when a custom function is provided.}
+
+\item{verbose}{(logical) print messages}
+
+\item{...}{values to be passed to PSN creation functions such as makePSN_NamedMatrix().}
+}
 \description{
-create nets from provided similarities
+Create PSN from provided similarities
+}
+\details{
+Called by CreatePSN_MultiData(), this is the function that converts user-provided
+simlarity metrics to internal netDx function calls to generate nets.
 }

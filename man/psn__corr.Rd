@@ -8,6 +8,8 @@ psn__corr(settings, verbose, ...)
 }
 \arguments{
 \item{settings}{(list) from makeNetFunc}
+
+\item{verbose}{(logical) print messages}
 }
 \description{
 wrapper for PSNs using Pearson correlation

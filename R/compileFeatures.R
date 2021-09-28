@@ -58,7 +58,7 @@
 #' 
 #' pheno_id <- setupFeatureDB(pheno,netDir)
 #' netList <- createPSN_MultiData(dataList=dataList, groupList=groupList,
-#'     pheno=pheno_id,netDir=netDir,customFunc=makeNets,verbose=TRUE)
+#'     pheno=pheno_id,netDir=netDir,makeNetFunc=makeNets,verbose=TRUE)
 #' 
 #' outDir <- paste(tmpDir,'dbdir',sep=getFileSep()); 
 #'	dir.create(outDir)

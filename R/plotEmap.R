@@ -80,14 +80,14 @@ plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic",
     }
     
     ####################################### create EM using given parameters
-    if (netName %in% getNetworkList()) {
+    if (netName %in% RCy3::getNetworkList()) {
         RCy3::deleteNetwork(netName)
     }
     em_command <- paste("enrichmentmap build analysisType=\"generic\"", 
 				"gmtFile=", gmtFile, "pvalue=", 1, "qvalue=", 1, 
 				"similaritycutoff=", 0.05, "coefficients=", "JACCARD")
     response <- RCy3::commandsGET(em_command)
-    renameNetwork(netName, getNetworkSuid())
+    RCy3::renameNetwork(netName, RCy3::getNetworkSuid())
     
     ### #annotate the network using AutoAnnotate app
     aa_command <- paste("autoannotate annotate-clusterBoosted", 

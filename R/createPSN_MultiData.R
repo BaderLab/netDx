@@ -17,6 +17,10 @@
 #' check if a given groupList is empty (no networks to create) before 
 #' the makePSN call for it. This is to avoid trying to make nets for datatypes
 #' that did not pass feature selection
+#' @param sims (list) Similarity metric settings for patient data. 
+#' Keys must be identical to those of groupList. 
+#' Values are either of type character, used for built-in similarity functions, 
+#' or are functions, when a custom function is provided.
 #' @param verbose (logical) print messages
 #' @param ... other parameters to makePSN_NamedMatrix() or makePSN_RangedSets()
 #' @return (char) vector of network names. Side effect of creating the nets

@@ -31,7 +31,10 @@ makeInputForEnrichmentMap(
 \item{outDir}{(char) directory where files should be written}
 }
 \value{
-
+(list) 1) GMTfiles (char): GMT files used to create EnrichmentMap in Cytoscape.
+2) NodeStyles (char): .txt files used to assign node attributes in Cytoscape. Importantly, 
+attributes include node fill, which indicates the highest consistent score for a given 
+feature.
 }
 \description{
 Wrapper to create input files for Enrichment Map

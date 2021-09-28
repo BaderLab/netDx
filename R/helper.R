@@ -159,8 +159,11 @@ return(list(
 #' @param EMapPctPass (numeric between 0 and 1) percent of splits for which feature must have score in range
 #'  [EMapMinScore,EMapMaxScore] to be included for EnrichmentMap visualization
 #' @param outDir (char) directory where files should be written
-#' @return 
-#' @export
+#' @return (list) 1) GMTfiles (char): GMT files used to create EnrichmentMap in Cytoscape.
+#' 2) NodeStyles (char): .txt files used to assign node attributes in Cytoscape. Importantly, 
+#' attributes include node fill, which indicates the highest consistent score for a given 
+#' feature. 
+#' @export 
 makeInputForEnrichmentMap <- function(model,results,pathwayList,
     EMapMinScore=0L, EMapMaxScore=1L,
     EMapPctPass=0.5,outDir)

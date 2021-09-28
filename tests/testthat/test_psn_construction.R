@@ -18,7 +18,8 @@
                c("mRNAArray","RPPA*","Methylation_methyl27*"),
 	dry.run=FALSE,version="1.1.38"))
     
-    source("/software/netDx/vignettes/prepare_data.R")
+    source(paste(path.package("netDx"),"vignettes",
+        "prepare_data.R",sep=getFileSep()))
     brca <- prepareData(brca,setBinary=TRUE)
 
     groupList <- list()

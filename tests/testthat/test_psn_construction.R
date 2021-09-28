@@ -14,7 +14,7 @@
     library(curatedTCGAData)
     library(netDx)
     brca <- suppressMessages(
-   curatedTCGAData("BRCA",
+    curatedTCGAData("BRCA",
                c("mRNAArray","RPPA*","Methylation_methyl27*"),
 	dry.run=FALSE,version="1.1.38"))
     
@@ -24,7 +24,7 @@
     groupList <- list()
 
     # genes in mRNA data are grouped by pathways
-    pathFile <- sprintf("%s/extdata/pathway_ex3.gmt", 
+    pathFile <- sprintf("%s/inst/extdata/pathway_ex3.gmt", 
         path.package("netDx"))
     pathList <- readPathways(pathFile)
     groupList[["BRCA_mRNAArray-20160128"]] <- pathList
@@ -110,7 +110,7 @@ netList<- createPSN_MultiData(
     groupList=groupList,
     pheno=pheno, netDir=netDir,
     makeNetFunc=NULL, sims=sims,
-    numCores=8,verbose=TRUE)
+    numCores=1,verbose=TRUE)
 expect_equal(7, length(netList))
 testthat::expect_equal(2, length(dir(sprintf("%s/INTERACTIONS",netDir))))
 

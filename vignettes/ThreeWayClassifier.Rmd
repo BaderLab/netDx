@@ -66,20 +66,10 @@ colData(brca)$ID <- pID
 
 ADD HOLDOUT TEXT HERE
 ```{r}
-pheno <- colData(brca)
-
-set.seed(123) # make reproducible
-idx_holdout <- c()
-for (k in unique(pheno$STATUS)) {
-  idx_holdout <- c(idx_holdout, 
-    sample(which(pheno$STATUS == k),10,FALSE)
-    )
-}
-holdout <- brca[,rownames(pheno)[idx_holdout]]
-colData(holdout)$ID <- as.character(colData(holdout)$patientID)
-tokeep <- setdiff(1:nrow(pheno),idx_holdout)
-
-brca <- brca[,rownames(pheno)[tokeep]]
+set.seed(123)
+dsets <- subsampleValidationData(brca,pctValidation=0.1)
+brca <- dsets$trainMAE
+holdout <- dsets$validationMAE
 ```
 
 # Rules to create features (patient similarity networks)

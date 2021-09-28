@@ -2,26 +2,38 @@
 #' 
 #' @details This function takes in a list of key-value pairs (keys: data types,
 #' values: matrices/dataframes) and calls the necessary functions from the
-#' MultiAssayExperiment and SummarizedExperiment packages to incorporate the
-#' values from the input list into a MultiAssayExperiment object, transforming
-#' the values according to the keys. 
-#' @param dataList (list) input key-value pairs (keys: data types, values: data in
-#' the form of matrices/dataframes); must have a key-value pair that
-#' corresponds to patient IDs/metadata labelled patientPheno.
+#' MultiAssayExperiment package to incorporate the values from the input list 
+#' into a MultiAssayExperiment object, transforming the values according to the 
+#' keys. If duplicate sample names are found in the assay data, only the first
+#' instance is kept.
+#' @param dataList  (list) input key-value pairs (keys: data types, values: 
+#' data in the form of matrices/dataframes); must have a key-value pair that
+#' corresponds to patient IDs/metadata labelled pheno.
 #' @return MAE (MultiAssayExperiment) data from input list incorporated into a
 #' MultiAssayExperiment object, compatible with further analysis using the 
 #' netDx algorithm.
-
+#' @examples
+#' data(xpr, pheno)
+#' 
+#' # Generate random proteomic data
+#' prot <- matrix(rnorm(100*20), ncol=20)
+#' colnames(prot) <- sample(pheno$ID, 20)
+#' rownames(prot) <- sprintf("protein%i",1:100)	
+#' 
+#' myList <- list(rna = xpr, proteomic = prot, pheno = pheno)
+#' 
+#' MAE <- convertToMAE(myList)
+#' @export
 
 
 convertToMAE <- function(dataList) {
   
   # Check input data:
-  if (!class(dataList) == "list") {
+  if (class(dataList) != "list") {
     stop("dataList must be a list. \n")
   }
-  if (is.null(dataList$patientPheno)) {
-    stop("dataList must have patientPheno key-value pair.\n")
+  if (is.null(dataList$pheno)) {
+    stop("dataList must have key-value pair labelled pheno.\n")
   }
   if (length(dataList) == 1) {
     stop("dataList must have assay data to incorporate into a 
@@ -41,17 +53,17 @@ convertToMAE <- function(dataList) {
   # - RaggedExperiment::RaggedExperiment (range-based datasets; copy number and
   #   mutation data, measurements by genomic positions)
   
-  # Assumes that patientPheno is a DataFrame (or coerceable to be a DataFrame)
-  colData <- dataList$patientPheno
+  # Assumes that pheno is a DataFrame (or coerceable to be a DataFrame)
+  patientPheno <- dataList$pheno
   
   # Generate ExperimentList from input dataList
   tmp <- NULL
   track <- c()
   datType <- names(dataList)
   for (k in 1:length(dataList)) {
-    # For key-value pairs that aren't labelled patientPheno, transform into 
+    # For key-value pairs that aren't labelled pheno, transform into 
     # objects compatible with input into MultiAssayExperiment object
-    if (!(names(dataList[k]) == "patientPheno")) {
+    if (names(dataList[k]) != "pheno") {
       
       # Remove duplicated columns (we keep the first column) in the assay data
       if (sum(duplicated(colnames(dataList[[k]]))) != 0) {
@@ -66,7 +78,7 @@ convertToMAE <- function(dataList) {
   }
   names(tmp) <- datType[track]
   
-  MAE <- MultiAssayExperiment(experiments = tmp, colData = colData)
+  MAE <- MultiAssayExperiment(experiments = tmp, colData = patientPheno)
   
   return(MAE)
 }

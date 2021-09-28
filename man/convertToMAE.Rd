@@ -7,9 +7,9 @@
 convertToMAE(dataList)
 }
 \arguments{
-\item{dataList}{(list) input key-value pairs (keys: data types, values: data in
-the form of matrices/dataframes); must have a key-value pair that
-corresponds to patient IDs/metadata labelled patientPheno.}
+\item{dataList}{(list) input key-value pairs (keys: data types, values: 
+data in the form of matrices/dataframes); must have a key-value pair that
+corresponds to patient IDs/metadata labelled pheno.}
 }
 \value{
 MAE (MultiAssayExperiment) data from input list incorporated into a
@@ -22,7 +22,20 @@ Wrapper that converts an input list into a MultiAssayExperiment object
 \details{
 This function takes in a list of key-value pairs (keys: data types,
 values: matrices/dataframes) and calls the necessary functions from the
-MultiAssayExperiment and SummarizedExperiment packages to incorporate the
-values from the input list into a MultiAssayExperiment object, transforming
-the values according to the keys.
+MultiAssayExperiment package to incorporate the values from the input list 
+into a MultiAssayExperiment object, transforming the values according to the 
+keys. If duplicate sample names are found in the assay data, only the first
+instance is kept.
+}
+\examples{
+data(xpr, pheno)
+
+# Generate random proteomic data
+prot <- matrix(rnorm(100*20), ncol=20)
+colnames(prot) <- sample(pheno$ID, 20)
+rownames(prot) <- sprintf("protein\%i",1:100)	
+
+myList <- list(rna = xpr, proteomic = prot, pheno = pheno)
+
+MAE <- convertToMAE(myList)
 }

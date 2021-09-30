@@ -247,8 +247,13 @@ for (k in seq_len(length(exprs))) {
 	tmp <- exprs[[k]]
 	df <- sampleMap(dataList)[which(sampleMap(dataList)$assay==names(exprs)[k]),]
 	colnames(tmp) <- df$primary[match(df$colname,colnames(tmp))]
-	tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
-	datList2[[names(exprs)[k]]]<- tmp	
+	if ("matrix" %in% class(tmp)) {
+		datList2[[names(exprs)[k]]] <- tmp
+	} else {
+		tmp <- as.matrix(assays(tmp)[[1]]) # convert to matrix
+		datList2[[names(exprs)[k]]]<- tmp	
+	}
+
 }
 if ("clinical" %in% names(groupList)) {
 	tmp <- colData(dataList)

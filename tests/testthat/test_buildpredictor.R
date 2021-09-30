@@ -26,7 +26,7 @@ test_that("split test/train works", {
 
 })
 
-test_that("feature construction and compilation",{
+test_that("feature construction and compilation works",{
 	# 20 patients, 10 case, 10 control
 	pheno <- data.frame(ID=sprintf("PAT%i",1:20),
 		STATUS=rep(c("case","control"),each=10))
@@ -69,12 +69,13 @@ test_that("feature construction and compilation",{
 	# directory contains GENES.TXT, NETWORKS.TXT INTERACTIONS folder
 	 outDir <- tempdir()
 	netDir <- sprintf("%s/tmp",outDir)
+	if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 	dir.create(netDir)
 
 	pheno_id <- setupFeatureDB(pheno,netDir)
 	x <-createPSN_MultiData(dataList=dataList,groupList=groupList,
 			pheno=pheno_id,
-			netDir=netDir,customFunc=makeNets,numCores=1,
+			netDir=netDir,makeNetFunc=makeNets,numCores=1,
 			verbose=FALSE)
 	
 	# number of nets equals those submitted for creation
@@ -102,35 +103,53 @@ test_that("feature construction and compilation",{
 	expect_match(dir(dbDir$dbDir,"lucene.index"),"lucene.index") # copied ok
 })
 
-###test_that("making PSN works: Pearson", {
-###	# create network
-###  # read in file
-###  # take two patients, compute pearson, check with outptu in file
-###	# num .profile files are greater than zero
-###})
+test_that("holding out and validation set prediction works as it should", {
 
-###test_that("making PSN works: custom func", {
-###	# same
-###	# num _cont.txt files are greater than zero
-###})
-###
-#### ------------------------------------------
-#### feature selection
-#### ------------------------------------------
-###
-###test_that("queries are made correctly", {
-###	# patients are subset of incPat
-###})
-###
-###test_that("feature selection gives expected output", {
-###	# one dir per class
-###	# N PRANK and NRANK files
-###	# correct number of _pathwayCV_score.txt files
-###})
-###
-#### ------------------------------------------
-#### predicting test label
-#### ------------------------------------------
-###test_that("test patients are labelled correctly", {
-###	# are all test patients labelled?
-###})
+	data(xpr,pheno)
+	pheno$AGE <- runif(nrow(pheno),min=10,max=45)
+	pathList <- list(
+		a=sample(rownames(xpr),25,F),
+		b=sample(rownames(xpr),100,F),
+		c=sample(rownames(xpr),30,F)
+	)
+	suppressMessages(require(MultiAssayExperiment))
+	objlist <- list(a=SummarizedExperiment(xpr))
+	mae <- MultiAssayExperiment(objlist,pheno)
+	
+	# test validation set features
+	dset <- subsampleValidationData(mae,pctValidation=0.2)
+	testthat::expect_equal(nrow(colData(dset[[1]])) + nrow(colData(dset[[2]])),
+				nrow(colData(mae)) )
+	tst <- colData(dset[[2]])$STATUS
+	lbl <- unique(tst)
+	testthat::expect_equal(sum(tst == lbl[1]), sum(tst==lbl[2]))
+	testthat::expect_equal(0.2, round(length(tst)/nrow(colData(mae)),digits=1) )
+
+	outDir <- tempdir()
+	if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+	dir.create(outDir)
+	featSel <- list(LumA=c("a.profile","age_cont.txt"),notLumA=c("a.profile","b.profile"))
+	predModel <- suppressMessages(
+  		predict(trainMAE=dset[[1]], testMAE=dset[[2]], 
+    		groupList=list(a=pathList,clinical=list(age="AGE")), 
+    		selectedFeatures=featSel,
+    		sims=list(a="pearsonCorr",clinical="normDiff"),
+    		outDir=outDir, verbose = FALSE)
+	)
+
+	for (g in c("LumA","notLumA")){
+		luma <- read.delim(sprintf("%s/%s/%s_query",outDir,g,g),sep=":")
+		pat <- unlist(strsplit(trimws(luma[1,1]),"\t")) 
+		# check that query patients are training samples for the corresponding class
+		testthat::expect_equal(sort(pat),sort(colData(dset[[1]])$ID[which(colData(dset[[1]])$STATUS==g)]))
+		# check that only selected features are used
+		nets <- read.delim(sprintf("%s/%s/networks/NETWORKS.txt",outDir,g),sep="\t",h=F)
+		testthat::expect_identical(featSel[[g]],nets[,2])
+		# test that only and all holdout set patients are being classified
+		dat <- read.delim(sprintf("%s/%s/%s_query-results.report.txt.PRANK",outDir,g,g),h=T,skip=1,sep="\t")
+		sb <- dat[which(!is.na(dat[,2])),]
+		testthat::expect_equal(nrow(colData(dset[[2]])), length(intersect(sb[,1],colData(dset[[2]])$ID)))		
+	}
+
+})
+

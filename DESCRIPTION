@@ -17,7 +17,6 @@ Depends:
     R (>= 3.6)
 Suggests: 
   curatedTCGAData,
-	TCGAutils,
 	rmarkdown,
 	testthat,
 	knitr,

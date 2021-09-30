@@ -206,3 +206,190 @@ avgNormDiff <- function(x) {
     sim <- sim/nrow(x)
     sim
 }
+
+#' built-in similarity functions
+#'
+allowedSims <- function(){
+  return(c("pearsonCorr","normDiff","avgNormDiff",
+        "sim.pearscale","sim.eucscale"))
+}
+
+
+
+#' checks if provided similarity functions are valid. Returns error if not
+#'
+#' @param sims (list) keys are layer names, values are functions or characters (names of built-in similarity functions)
+#' @return TRUE if all pass check. Else throws error.
+checkSimValid <- function(sims){
+    allowed <- allowedSims()
+    for (k in names(sims)){    
+        if (class(sims[[k]])!="function"){
+            if (class(sims[[k]])!="character"){
+                stop(paste("Invalid sims datatype. ",
+                    "sims entries must be functions or keywords (characters) ",
+                    "for built-in similarity functions.",sep=""))
+            } else {
+                if (!sims[[k]] %in% allowed){
+                    stop(paste(
+                            sprintf("sims[[%s]] has invalid similarity type:",k),
+                            sims[[k]],". ",
+                            "Allowed values are: {%s}",
+                            paste(allowed,collapse=",")))
+                }
+            }
+        }
+    }
+    return(TRUE)
+}
+
+#' internal test function to check validity of makeNetFunc and sims
+#'
+#' @details User must provide either makeNetFunc or sims. This function
+#' confirms this.
+#' @param makeNetFunc (function) makeNetFunc from buildPredictor()
+#' @param sims (list) sims from buildPredictor()
+#' @param groupList (list) groupList from buildPredictor()s
+#' @return (list) cleaned values for makeNetFunc and Sims
+checkMakeNetFuncSims <- function(makeNetFunc,sims,groupList){
+    if (is.null(makeNetFunc) && is.null(sims)) {
+	stop("Provide either makeNetFunc or sims (preferred).")
+} 
+if (!is.null(makeNetFunc) && !is.null(sims)){
+	stop("Provide either makeNetFunc or sims (preferred).")
+}
+
+if (!is.null(sims))	{
+	if (class(sims)!="list") stop("sims must be a list.")
+	if (all.equal(sort(names(sims)),sort(names(groupList)))!=TRUE) 
+		stop("names(sims) must match names(groupList).")
+}
+return(TRUE)
+}
+
+#' Create PSN from provided similarities
+#'
+#' @details Called by CreatePSN_MultiData(), this is the function that converts user-provided
+#' simlarity metrics to internal netDx function calls to generate nets.
+#' @param dataList (list) patient data, output of dataList2List()
+#' @param groupList (list) measure groupings. Keys match assays(dataList) and are usually different data sources. Values for each are a list of 
+#' networks with user-provided groupings. See groupList in buildPredictor() for details.
+#' @param netDir (char) path to directory where networks are to be created
+#' @param sims (list) keys must be identical to those of groupList. Values are either of type character, used for built-in similarity functions, 
+#' or are functions, when a custom function is provided.
+#' @param verbose (logical) print messages
+#' @param ... values to be passed to PSN creation functions such as makePSN_NamedMatrix().
+#' @export
+createNetFuncFromSimList <- function(dataList, groupList, netDir, sims,
+    verbose=TRUE,...){    
+    
+    if (length(groupList)!= length(sims)){
+        stop("groupList and sims need to be of same length.")
+    }
+    if (all.equal(sort(names(groupList)),sort(names(sims)))!=TRUE){
+        stop("names(groupList) needs to match names(sims).")
+    }
+    settings <- list(dataList=dataList,groupList=groupList,
+                    netDir=netDir,sims=sims)
+
+    if (verbose) message("Making nets from sims")
+    netList <- c()    
+    for (nm in names(sims)){
+        csim <- sims[[nm]]
+        netList_cur <- NULL
+        if (verbose) message(sprintf("\t%s",nm))
+
+        cur_set <- settings; 
+        cur_set[["name"]] <- nm; cur_set[["similarity"]] <- csim
+
+        if (!is.null(groupList[[nm]])){
+            if (class(csim)=="function") {# custom function
+    
+                netList_cur <- psn__custom(cur_set,csim, verbose,...)
+            } else if (csim == "pearsonCorr") {
+                netList_cur <- psn__corr(cur_set,verbose,...)
+            } else {
+                netList_cur <- psn__builtIn(cur_set,verbose,...)
+            }
+            netList <- c(netList,netList_cur)
+        }
+    }
+    if (verbose) {
+        message("Net construction complete!")
+    }
+    unlist(netList)
+}
+
+#' make PSN for built-in similarity functions
+#'
+#' @param settings (list) from makeNetFunc
+#' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
+psn__builtIn <- function(settings,verbose,...){
+
+funcs <- list(
+    "normDiff"=normDiff,
+    "avgNormDiff"=avgNormDiff,
+    "sim.pearscale"=sim.pearscale,
+    "sim.eucscale"=sim.eucscale
+)
+
+    if (verbose) message(sprintf("Layer %s: Built-in function %s",
+            settings$name,settings$similarity))
+
+    nm <- settings$name
+    netList <- makePSN_NamedMatrix(
+        settings$dataList[[nm]],
+		rownames(settings$dataList[[nm]]),
+		settings$groupList[[nm]],
+        settings$netDir,
+		simMetric="custom",
+        customFunc=funcs[[settings$similarity]], # custom function
+		writeProfiles=FALSE,
+		sparsify=TRUE,...
+    )
+    netList
+}
+
+#' make PSN for custom similarity functions
+#'
+#' @param settings (list) from makeNetFunc
+#' @param fn (function) custom similarity function
+#' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
+psn__custom <- function(settings,fn,verbose, ...){
+    nm <- settings$name
+    if (verbose) message(sprintf("Layer %s: CUSTOM FUNCTION",settings$name))
+    netList <- makePSN_NamedMatrix(
+        settings$dataList[[nm]],
+		rownames(settings$dataList[[nm]]),
+		settings$groupList[[nm]],
+        settings$netDir,
+		simMetric="custom",customFunc=fn, # custom function
+		writeProfiles=FALSE,
+		sparsify=TRUE,...
+    )
+    netList
+}
+
+#' wrapper for PSNs using Pearson correlation
+#'
+#' @param settings (list) from makeNetFunc
+#' @param verbose (logical) print messages
+#' @param ... parameters for makePSN_NamedMatrix()
+#' @return (char) names of networks created. Side effect of network creation.
+psn__corr <- function(settings,verbose,...){
+    if (verbose) message(sprintf("Layer %s: PEARSON CORR",settings$name))
+    nm <- settings$name
+    netList <- makePSN_NamedMatrix(
+				xpr=settings$dataList[[nm]],
+				nm=rownames(settings$dataList[[nm]]),
+				namedSets=settings$groupList[[nm]],	
+				outDir=settings$netDir,	
+				verbose=FALSE, 			
+				writeProfiles=TRUE,  
+				...
+				)
+    return(netList)
+}

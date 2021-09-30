@@ -159,8 +159,11 @@ return(list(
 #' @param EMapPctPass (numeric between 0 and 1) percent of splits for which feature must have score in range
 #'  [EMapMinScore,EMapMaxScore] to be included for EnrichmentMap visualization
 #' @param outDir (char) directory where files should be written
-#' @return 
-#' @export
+#' @return (list) 1) GMTfiles (char): GMT files used to create EnrichmentMap in Cytoscape.
+#' 2) NodeStyles (char): .txt files used to assign node attributes in Cytoscape. Importantly, 
+#' attributes include node fill, which indicates the highest consistent score for a given 
+#' feature. 
+#' @export 
 makeInputForEnrichmentMap <- function(model,results,pathwayList,
     EMapMinScore=0L, EMapMaxScore=1L,
     EMapPctPass=0.5,outDir)
@@ -214,8 +217,10 @@ return(list(GMTfiles=gmtFiles,NodeStyles=nodeAttrFiles))
 #' same class, relative to those of other classes, using Dijkstra distance (calcShortestPath flag).  
 #' @param dat (MultiAssayExperiment) input data
 #' @param groupList (list) feature groups, identical to groupList provided for buildPredictor()
-#' @param makeNets (function) Function used to create patient similarity networks. Identical to 
+#' @param makeNetFunc (function) Function used to create patient similarity networks. Identical to 
 #' makeNets provided to buildPredictor()
+#' @param sims (list) rules for creating PSN. Preferred over makeNetFunc. See buildPredictor() 
+#' for details.
 #' @param selectedFeatures (list) selected features for each class (key of list). This object is returned as
 #' part of a call to getResults(), after running buildPredictor().
 #' @param plotCytoscape (logical) If TRUE, plots network in Cytoscape.
@@ -245,9 +250,18 @@ return(list(GMTfiles=gmtFiles,NodeStyles=nodeAttrFiles))
 #' colours (colour)
 #' 6) outDir (char) value of outDir parameter
 #' @export
-getPSN <- function(dat, groupList, makeNets, selectedFeatures, plotCytoscape=FALSE,
-    aggFun="MEAN", prune_pctX=0.30, prune_useTop=TRUE,numCores=1L,calcShortestPath=FALSE
+getPSN <- function(dat, groupList, 
+    makeNetFunc=NULL, sims=NULL, 
+    selectedFeatures, plotCytoscape=FALSE,
+    aggFun="MEAN", prune_pctX=0.30, prune_useTop=TRUE,
+    numCores=1L,calcShortestPath=FALSE
     ){
+
+
+# checks either/or provided, sets missing var to NULL
+x <- checkMakeNetFuncSims(makeNetFunc=makeNetFunc, 
+    sims=sims,groupList=groupList)
+
 topPath <- gsub(".profile","", unique(unlist(selectedFeatures)))
 topPath <- gsub("_cont.txt","",topPath)
 
@@ -262,8 +276,10 @@ for (nm in names(groupList)) {
 
 message("* Making integrated PSN")
 psn <- 
-   plotIntegratedPatientNetwork(dat,
-  groupList=g2, makeNetFunc=makeNets,
+   plotIntegratedPatientNetwork(
+       dataList=dat,
+  groupList=g2, makeNetFunc=makeNetFunc,
+  sims=sims,
   aggFun=aggFun,
   prune_pctX=prune_pctX,
   prune_useTop=prune_useTop,

@@ -10,7 +10,6 @@ test_that("readPathways works", {
 		expect_lt(max(ln),201)
 })
 
-
 ###test_that("lasso filtering works", {
 ###	# make own subroutine
 ###})

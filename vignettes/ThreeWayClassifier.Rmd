@@ -64,6 +64,14 @@ pID <- colData(brca)$patientID
 colData(brca)$ID <- pID
 ```
 
+ADD HOLDOUT TEXT HERE
+```{r}
+set.seed(123)
+dsets <- subsampleValidationData(brca,pctValidation=0.1)
+brca <- dsets$trainMAE
+holdout <- dsets$validationMAE
+```
+
 # Rules to create features (patient similarity networks)
 
 Our plan is to group gene expression data by pathways and clinical data by single variables. We will treat methylation and proteomic data each as a single feature, so each of those groups will contain the entire input table for those corresponding data types. 
@@ -97,49 +105,13 @@ groupList[[names(brca)[3]]] <- tmp
 
 ## Define patient similarity for each network
 
-We provide `netDx` with a custom function to generate similarity networks (i.e. features). The first block tells netDx to generate correlation-based networks using everything but the clinical data. This is achieved by the call:
-```{r,eval=FALSE}
-makePSN_NamedMatrix(..., writeProfiles=TRUE,...)`
-```
-
-The second block makes a different call to `makePSN_NamedMatrix()` but this time, requesting the use of the normalized difference similarity metric. This is achieved by calling:
-```{r,eval=FALSE}
-   makePSN_NamedMatrix(,..., 
-                       simMetric="custom", customFunc=normDiff,
-                       writeProfiles=FALSE)
-```
+ADD SOME INTRO TEXT HERE
 
 `normDiff` is a function provided in the `netDx` package, but the user may define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
 
 ```{r,eval=TRUE}
-makeNets <- function(dataList, groupList, netDir,...) {
-	netList <- c() # initialize before is.null() check
-	# correlation-based similarity for mRNA, RPPA and methylation data
-	# (Pearson correlation)
-	for (nm in setdiff(names(groupList),"clinical")) {
-	   # NOTE: the check for is.null() is important!
-		if (!is.null(groupList[[nm]])) {
-		netList <- makePSN_NamedMatrix(dataList[[nm]],
-		             rownames(dataList[[nm]]),
-                   groupList[[nm]],netDir,verbose=FALSE,
-		             writeProfiles=TRUE,...) 
-		}
-	}
-	
-	# make clinical nets (normalized difference)
-	netList2 <- c()
-	if (!is.null(groupList[["clinical"]])) {
-	netList2 <- makePSN_NamedMatrix(dataList$clinical, 
-		rownames(dataList$clinical),
-		groupList[["clinical"]],netDir,
-		simMetric="custom",customFunc=normDiff, # custom function
-		writeProfiles=FALSE,
-		sparsify=TRUE,verbose=TRUE,...)
-	}
-	netList <- c(unlist(netList),unlist(netList2))
-	return(netList)
-}
-
+sims <- list(a="pearsonCorr",b="normDiff",c="pearsonCorr",d="pearsonCorr")
+names(sims) <- names(groupList)
 ```
 
 # Build predictor
@@ -147,64 +119,87 @@ makeNets <- function(dataList, groupList, netDir,...) {
 Finally we make the call to build the predictor. 
  
 ```{r,eval=TRUE}
-set.seed(42) # make results reproducible
-
-# location for intermediate work
-# set keepAllData to TRUE to not delete at the end of the 
-# predictor run.
-# This can be useful for debugging.
 nco <- round(parallel::detectCores()*0.75) # use 75% available cores
 message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
+
 outDir <- paste(tempdir(),"pred_output",sep=getFileSep()) # use absolute path
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 numSplits <- 2L
-out <- suppressMessages(
-   buildPredictor(dataList=brca,groupList=groupList,
-      makeNetFunc=makeNets,
-      outDir=outDir, ## netDx requires absolute path
-      numSplits=numSplits, featScoreMax=2L, featSelCutoff=1L,
-	  numCores=nco)
+t0 <- Sys.time()
+model <- suppressMessages(
+buildPredictor(
+	dataList=brca,			## your data
+	groupList=groupList,	## grouping strategy
+	sims=sims,
+	outDir=outDir, 			## output directory
+	trainProp=0.8,			## pct of samples to use to train model in
+							## each split
+	numSplits=2L,			## number of train/test splits
+ 	featSelCutoff=1L,		## threshold for calling something
+							## feature-selected
+	featScoreMax=2L,		## max score for feature selection
+ numCores=nco,			## set higher for parallelizing
+ debugMode=FALSE,
+ keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
+ logging="none"
+  ))
+t1 <- Sys.time()
+print(t1-t0)
+```
+
+
+```{r,eval=TRUE}
+results <- getResults(model,unique(colData(brca)$STATUS),
+	featureSelCutoff=2L,featureSelPct=0.50)
+```
+
+# Validate on independent samples
+Now we use `predict()` to classify samples in the independent dataset. We provide the model with feature design rules in `groupList`, the list of selected features to use in `featSelNet`, the function to convert data into patient similarity networks in `makeNets`, as well as the original and validated datasets in `brca` and `holdout` respectively.
+
+The training data needs to be provided because netDx creates a single patient similarity network with both training and test data. It then uses label propagation to "diffuse" patient labels from training samples to test samples, and labels the latter based on which class they are most similar to.
+
+```{r,eval=TRUE}
+outDir <- paste(tempdir(), randAlphanumString(), 
+  sep = getFileSep())
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+dir.create(outDir)
+
+predModel <- suppressMessages(
+  predict(trainMAE=brca, testMAE=holdout, 
+    groupList=groupList, 
+    selectedFeatures=results$selectedFeatures, 
+    sims=sims,
+    outDir=outDir, verbose = FALSE)
 )
 ```
 
-# Examine output
-The results are stored in the list object returned by the `buildPredictor()` call.
-This list contains:
+# Plot results of validation
 
-* `inputNets`: all input networks that the model started with. 
-* `Split<i>`: a list with results for each train-test split
-  * `featureScores`: feature scores for each label (list with `g` entries, where `g` is number of patient labels). Each entry contains the feature selection scores for the corresponding label.
-  * `featureSelected`: vector of features that pass feature selection. List of length `g`, with one entry per label.
-  * `predictions`: real and predicted labels for test patients
-  * `accuracy`: percent accuracy of predictions
+Finally we examine how well our model performed, using `getPerformance()`. 
 
+Compute performance:
 ```{r,eval=TRUE}
-summary(out)
-summary(out$Split1)
+perf <- getPerformance(predModel, 
+  unique(colData(brca)$STATUS))
+
+message(sprintf("AUROC=%1.2f*100", perf$auroc))
+message(sprintf("AUPR=%1.2f*100", perf$aupr))
+message(sprintf("Accuracy=%1.1f%%", perf$acc))
 ```
 
-Compute accuracy for three-way classificationL
+We plot the AUROC and AUPR curves using `plotPerf_multi()`.
 
 ```{r,eval=TRUE}
-# Average accuracy
-st <- unique(colData(brca)$STATUS) 
-acc <- matrix(NA,ncol=length(st),nrow=numSplits) 
-colnames(acc) <- st 
-for (k in 1:numSplits) { 
-	pred <- out[[sprintf("Split%i",k)]][["predictions"]];
-	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
-	                 sprintf("%s_SCORE",st))]
-	for (m in 1:length(st)) {
-	   tmp2 <- subset(tmp, STATUS==st[m])
-	   acc[k,m] <- sum(tmp2$PRED==tmp2$STATUS)/nrow(tmp2)
-	}
-}
-print(round(acc*100,2))
-```
-Also, examine the confusion matrix. We can see that the model perfectly classifies basal tumours, but performs poorly in distinguishing between the two types of luminal tumours. 
+plotPerf_multi(list(perf$rocCurve),
+  plotTitle = sprintf(
+    "BRCA Validation: %i samples", 
+    nrow(colData(holdout))))
+plotPerf_multi(list(perf$prCurve), 
+  plotType = "PR",
+  plotTitle = sprintf(
+    "BRCA Validation: %i samples", 
+    nrow(colData(holdout))))
 
-```{r, eval=TRUE}
-res <- out$Split1$predictions
-print(table(res[,c("STATUS","PRED_CLASS")]))
 ```
 
 # sessionInfo

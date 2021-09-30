@@ -12,11 +12,15 @@
 #' with internally-generated identifiers.
 #' @param netDir (char) path to directory where networks will be stored
 #' @param filterSet (char) vector of networks to include
-#' @param customFunc (function) custom user-function to create PSN. 
+#' @param makeNetFunc (function) custom user-function to create PSN. 
 #' Must take dataList,groupList,netDir as parameters. Must
 #' check if a given groupList is empty (no networks to create) before 
 #' the makePSN call for it. This is to avoid trying to make nets for datatypes
 #' that did not pass feature selection
+#' @param sims (list) Similarity metric settings for patient data. 
+#' Keys must be identical to those of groupList. 
+#' Values are either of type character, used for built-in similarity functions, 
+#' or are functions, when a custom function is provided.
 #' @param verbose (logical) print messages
 #' @param ... other parameters to makePSN_NamedMatrix() or makePSN_RangedSets()
 #' @return (char) vector of network names. Side effect of creating the nets
@@ -95,24 +99,24 @@
 #' pheno_id <- setupFeatureDB(colData(brca),netDir)
 #' createPSN_MultiData(dataList=datList2,groupList=groupList,
 #'  pheno=pheno_id,
-#'  netDir=netDir,customFunc=makeNets,numCores=1)
+#'  netDir=netDir,makeNetFunc=makeNets,numCores=1)
 #' @export
 createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(), 
 		filterSet = NULL, 
-    verbose = TRUE, customFunc, ...) {
+    verbose = TRUE, makeNetFunc=NULL, sims=NULL, ...) {
     
     if (missing(dataList)) 
         stop("dataList must be supplied.\n")
     if (missing(groupList)) 
         stop("groupList must be supplied.\n")
-    
+ 
     # resolve user-provided IDs with internal IDs
     dataList <- lapply(dataList, function(x) {
         midx <- match(colnames(x), pheno$ID)
         colnames(x) <- pheno$INTERNAL_ID[midx]
         x
     })
-    
+
     if (!is.null(filterSet)) {
         if (length(filterSet) < 1) {
           s1 <- "filterSet is empty."
@@ -120,8 +124,8 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(),
         	stop(paste(s1, s2, sep = " "))
 				}
     }
-    if (missing(customFunc)) 
-        stop("customFunc must be suppled.\n")
+
+    
     
     # Filter for nets (potentially feature-selected ones)
     if (!is.null(filterSet)) {
@@ -139,12 +143,22 @@ createPSN_MultiData <- function(dataList, groupList, pheno, netDir=tempdir(),
             }
         }
         groupList <- groupList2
+        sims <- sims[which(names(sims) %in% names(groupList))]
         rm(groupList2)
     }
     
+    if (!is.null(makeNetFunc)){
     # call user-defined function for making PSN
-    netList <- customFunc(dataList = dataList, groupList = groupList, 
+        netList <- makeNetFunc(dataList = dataList, groupList = groupList, 
 				netDir = netDir, ...)
+    } else {
+        netList <- createNetFuncFromSimList(dataList=dataList,
+            groupList = groupList, 
+            netDir = netDir,
+            sims = sims, 
+            ...
+            )
+    }
     
     if (length(netList) < 1) 
         stop("\n\nNo features created! Filters may be too stringent.\n")

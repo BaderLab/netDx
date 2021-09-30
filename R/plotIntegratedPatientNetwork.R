@@ -19,6 +19,7 @@
 #' list of lists, where the outer list corresponds to assay (e.g. mRNA,
 #' clinical) and inner list to features to generate from that datatype.
 #' @param makeNetFunc (function) function to create features
+#' @param sims (list) rules for creating PSN. Preferred over makeNetFunc
 #' @param setName (char) name to assign the network in Cytoscape
 #' @param numCores (integer) number of cores for parallel processing
 #' @param prune_pctX (numeric between 0 and 1) fraction of most/least 
@@ -59,13 +60,19 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom stats wilcox.test qexp density
 #' @export
-plotIntegratedPatientNetwork <- function(dataList,groupList,makeNetFunc,
+plotIntegratedPatientNetwork <- function(dataList,groupList,
+	makeNetFunc=NULL,sims=NULL,
 	setName="predictor",prune_pctX=0.05, prune_useTop=TRUE,
 	 aggFun="MAX",calcShortestPath=FALSE,
 	showStats=FALSE,
 	outDir=tempdir(),numCores=1L,nodeSize=50L,edgeTransparency=40L,
 	nodeTransparency=155L,plotCytoscape=FALSE,
 	verbose=FALSE) {
+
+
+# checks either/or provided, sets missing var to NULL
+checkMakeNetFuncSims(makeNetFunc=makeNetFunc, 
+    sims=sims,groupList=groupList)
 
 if (missing(dataList)) stop("dataList is missing.")
 
@@ -81,7 +88,9 @@ pheno_id <- setupFeatureDB(pheno,outDir)
 
 createPSN_MultiData(dataList=dat$assays,groupList=groupList,
 			pheno=pheno_id,
-			netDir=outDir,customFunc=makeNetFunc,numCores=numCores,
+			netDir=outDir,
+			makeNetFunc=makeNetFunc,sims=sims,
+			numCores=numCores,
 			verbose=FALSE)
 convertProfileToNetworks(
 		netDir=profDir,

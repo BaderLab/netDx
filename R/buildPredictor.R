@@ -29,6 +29,9 @@
 #' So keys(groupList[["rna"]]) would have pathway names, generating one PSN
 #' per pathways, and values(groupList[["rna"]]) would be genes that would be
 #' grouped for the corresponding pathwayList.
+#' @param sims (list) rules to create similarity networks from input data. Keys are names of
+#' data layers and should be identical to names(groupList). Values is either a character
+#' for built-in similarity functions; call allowedSims() to see full list; or a custom function.
 #' @param makeNetFunc (function) user-defined function for creating the set
 #' of input PSN provided to netDx. See createPSN_MultiData()::customFunc.
 #' @param outDir (char) directory where results will be stored. If this
@@ -171,7 +174,8 @@
 #' #   makeNetFunc=makeNets, ### custom network creation function
 #' #   outDir=paste(tempdir(),"pred_output",sep=getFileSep()), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
-buildPredictor <- function(dataList,groupList,outDir=tempdir(),makeNetFunc,
+buildPredictor <- function(dataList,groupList,outDir=tempdir(),
+	makeNetFunc=NULL,sims=NULL,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,
 	impute=FALSE,preFilterGroups=NULL, imputeGroups=NULL,logging="default",
@@ -196,7 +200,7 @@ if (logging == "all") {
 	verbose_predict <- FALSE
 }
 
-# Check input
+# Check input - error handling
 if (missing(dataList)) stop("dataList must be supplied.\n")
 if (missing(groupList)) stop("groupList must be supplied.\n")
 if (length(groupList)<1) stop("groupList must be of length 1+\n")
@@ -213,12 +217,17 @@ if (!is(groupList,"list") || not_list || names_nomatch ) {
 	stop(paste(msg,sep=""))
 }
 
+# checks either/or provided, sets missing var to NULL
+x <- checkMakeNetFuncSims(makeNetFunc=makeNetFunc, sims=sims,groupList=groupList)
+
 if (!is(dataList,"MultiAssayExperiment"))
 	stop("dataList must be a MultiAssayExperiment")
 
 if (trainProp <= 0 | trainProp >= 1) 
 		stop("trainProp must be greater than 0 and less than 1")
 if (startAt > numSplits) stop("startAt should be between 1 and numSplits")
+
+# end check input error handling
 
 megaDir <- outDir
 if (file.exists(megaDir)) {
@@ -279,7 +288,6 @@ if (verbose_default){
 	}
 }
 
-
 outList <- list()
 
 # create master list of possible networks
@@ -294,8 +302,14 @@ colnames(tmp) <- c("NetType","NetName")
 outList[["inputNets"]] <- tmp
 
 if (verbose_default) {
-	message("\n\nCustom function to generate input nets:")
-	print(makeNetFunc)
+	if (!is.null(makeNetFunc)){
+		message("\n\nCustom function to generate input nets:")
+		print(makeNetFunc)
+		
+	} else {
+		message("Similarity metrics provided:")
+		print(sims)
+	}
 	message(sprintf("-------------------------------\n"))
 }
 
@@ -391,8 +405,8 @@ for (rngNum in startAt:numSplits) {
 
 	if (verbose_default) message("** Creating features")
 	createPSN_MultiData(dataList=dats_train,groupList=groupList,
-			pheno=pheno_id,
-			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
+			pheno=pheno_id, 
+			netDir=netDir,makeNetFunc=makeNetFunc,sims=sims, numCores=numCores,
 			verbose=verbose_makeFeatures)
 	if (verbose_default) message("** Compiling features")
 	dbDir <- compileFeatures(netDir,outDir, numCores=numCores, 
@@ -517,7 +531,8 @@ for (rngNum in startAt:numSplits) {
 		pheno_id <- setupFeatureDB(pheno,netDir)
 		createPSN_MultiData(dataList=dats_tmp,groupList=groupList,
 			pheno=pheno_id,
-			netDir=netDir,customFunc=makeNetFunc,numCores=numCores,
+			netDir=netDir,makeNetFunc=makeNetFunc,sims=sims, 
+			numCores=numCores,
 			filterSet=pTally,verbose=verbose_default)
 		dbDir <- compileFeatures(netDir,outDir=pDir,numCores=numCores,
 			verbose=verbose_compileNets,debugMode=debugMode)

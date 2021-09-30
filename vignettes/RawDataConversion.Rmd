@@ -7,7 +7,7 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{05. Converting raw assay data/tables into format compatible with netDx algorithm}.
+    %\VignetteIndexEntry{02. Running netDx with data in table format}.
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---

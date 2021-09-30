@@ -24,8 +24,6 @@
 #' 
 #' MAE <- convertToMAE(myList)
 #' @export
-
-
 convertToMAE <- function(dataList) {
   
   # Check input data:

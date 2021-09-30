@@ -9,6 +9,8 @@ Authors@R: c(person("Shraddha", "Pai",
 	person("Ahmad","Shah", role="aut"),
 	person("Luca","Giudice",role="aut"),
 	person("Shirley","Hui",role="aut"),
+	person("Anne","Nøhr",role="ctb"),
+	person("Indy","Ng",role="ctb"),
 	person("Ruth","Isserlin",role="aut"),
 	person("Hussam","Kaka", role="aut"),
 	person("Gary","Bader",role="aut"))

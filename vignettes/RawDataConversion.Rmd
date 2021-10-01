@@ -244,7 +244,7 @@ We finally get the integrated PSN and visualize it using a tSNE plot:
 
 ```{r, fig.width=8,fig.height=8, eval=TRUE}
 ## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-psn <- getPSN(brca,groupList,makeNets,results$selectedFeatures)
+psn <- getPSN(brca,groupList,makeNetFunc=makeNets,selectedFeatures=results$selectedFeatures)
 
 require(Rtsne)
 tsne <- tSNEPlotter(

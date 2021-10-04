@@ -1,0 +1,40 @@
+# YAML 1.2
+---
+authors: 
+  -
+    family-names: Pai
+    given-names: Shraddha
+  -
+    family-names: Weber
+    given-names: Philipp
+  -
+    family-names: Shah
+    given-names: Ahmad
+  -
+    family-names: Giudice
+    given-names: Luca
+  -
+    family-names: Hui
+    given-names: Shirley
+  -
+    family-names: "Nøhr"
+    given-names: Anne
+  -
+    family-names: Ng
+    given-names: Indy
+  -
+    family-names: Isserlin
+    given-names: Ruth
+  -
+    family-names: Kaka
+    given-names: Hussam
+  -
+    family-names: Bader
+    given-names: Gary
+cff-version: "1.1.0"
+license: MIT
+message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/RealPaiLab/netDx"
+title: "netDx: Network-based patient classifier"
+version: "1.5.5"
+...

@@ -234,19 +234,6 @@ And here are selected features, which are those scoring 2 out of 2 in at least h
 results$selectedFeatures
 ```
 
-We finally get the integrated PSN and visualize it using a tSNE plot:
-
-```{r, fig.width=8,fig.height=8, eval=TRUE}
-## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-psn <- getPSN(brca,groupList,makeNetFunc=makeNets,selectedFeatures=results$selectedFeatures)
-
-require(Rtsne)
-tsne <- tSNEPlotter(
-	psn$patientSimNetwork_unpruned, 
-	colData(brca)
-	)
-```
-
 # sessionInfo
 ```{r}
 sessionInfo()

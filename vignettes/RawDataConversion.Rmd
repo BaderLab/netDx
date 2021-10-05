@@ -16,9 +16,7 @@ vignette: >
 
 In this example we will build a predictor to classify breast tumours as being either of Luminal A subtype or otherwise. The process is identical for classifying three or more labels, and the example uses minimal data for quick runtime.
 
-The netDx algorithm requires assay data to be provided in the form of a `MultiAssayExperiment` object, so we will also use the `convertToMAE()` wrapper function to transform raw experimental assay data/tables into a `MultiAssayExperiment` object, to illustrate how a typical netDx workflow might be initiated. 
-
-We will use data from The Cancer Genome Atlas to build the predictor, converting it from a `MultiAssayExperiment` object into a list to illustrate how to utilize the `convertToMAE()` wrapper function.
+Although the netDx algorithm requires assay data to be provided in the form of a `MultiAssayExperiment` object, the package comes equipped with the `convertToMAE()` wrapper function to transform raw experimental assay data/tables into a `MultiAssayExperiment` object. We will use data from The Cancer Genome Atlas to build the predictor, converting it from a `MultiAssayExperiment` object into a list to illustrate how to utilize the `convertToMAE()` wrapper function.
 
 We will integrate two types of -omic data:
 
@@ -54,7 +52,7 @@ brca <- suppressMessages(curatedTCGAData("BRCA",
                                          dry.run=FALSE, version="1.1.38"))
 ```
 
-The fetch command automatically brings in a `MultiAssayExperiment` object. 
+The fetch command automatically brings in a `MultiAssayExperiment` object.
 
 ```{r, eval = TRUE}
 summary(brca)
@@ -74,15 +72,15 @@ pID <- colData(brca)$patientID
 colData(brca)$ID <- pID
 ```
 
-# Create feature design rules
+# Create feature design rules (patient similarity networks)
 
 To build the predictor using the netDx algorithm, we call the `buildPredictor()` function which takes patient data and variable groupings, and returns a set of patient similarity networks (PSN) as an output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype.
 
 ## groupList object
 
-Our plan is to group gene expression data by pathways
+The `groupList` object tells the predictor how to group units when constructing a network. For examples, genes may be grouped into a network representing a pathway. This object is a list; the names match those of `dataList` while each value is itself a list and reflects a potential network.
 
-The 'groupList' object tells the predictor how to group units when constructing a network. For examples, genes may be grouped into a network representing a pathway. This object is a list; the names match those of `dataList` while each value is itself a list and reflects a potential network.
+In this simple example we just create a single PSN for each datatype (mRNA gene expression, and miRNA expression data), containing all measures from that datatype, where measures can be individual genes, proteins, CpG bases (in DNA methylation data), clinical variables, etc., 
 
 
 ```{r, eval=TRUE}
@@ -99,19 +97,36 @@ for (k in 1:length(expr)) {	# loop over all layers
 }
 ```
 
+## Define patient similarity for each network
+
+`sims` is a list that specifies the choice of similarity metric to use for each grouping we're passing to the netDx algorithm. You can choose between several built-in similarity functions provided in the `netDx` package:
+
+* `normDiff` (normalized difference)
+* `avgNormDiff` (average normalized difference)
+* `sim.pearscale` (Pearson correlation followed by exponential scaling)
+* `sim.eucscale` (Euclidean distance followed by exponential scaling) or
+* `pearsonCorr` (Pearson correlation)
+
+You may also define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
+
+```{r,eval=TRUE}
+sims <- list(a="pearsonCorr", b="pearsonCorr")
+names(sims) <- names(groupList)
+```
+
 # Conversion of raw assay data into MultiAssayExperiment format
 
-Data pulled from The Cancer Genome Atlas through the BioConductor `curatedTCGAData` package automatically fetches data in the form of a `MultiAssayExperiment` object. However, most workflows that might utilize the netDx algorithm will have experimental assay data and patient metadata in the form of data frames/matrices/tables. 
+Data pulled from The Cancer Genome Atlas through the BioConductor `curatedTCGAData` package automatically fetches data in the form of a `MultiAssayExperiment` object. However, most workflows that might utilize the netDx algorithm will have experimental assay data and patient metadata in the form of data frames/matrices/tables.
 
-To facilitate ease-of-use, the netDx package has a built-in wrapper function convertToMAE() that takes in an input list of key-value pairs of experimental assay data and patient metadata, converting it into a MultiAssayExperiment object compatible with further analysis using the netDx algorithm. 
+To facilitate ease-of-use, the netDx package has a built-in wrapper function `convertToMAE()` that takes in an input list of key-value pairs of experimental assay data and patient metadata, converting it into a `MultiAssayExperiment` object compatible with further analysis using the netDx algorithm. However, all relevant data engineering/preparation should be done before using the `convertToMAE()` wrapper function.
 
-This next code block converts the TCGA data into a list format.
+This next code block converts the TCGA data into a list format to illustrate how one might use the `convertToMAE()` wrapper function.
 
 ```{r, eval=TRUE}
 brcaData <- dataList2List(brca, groupList)
 ```
 
-The keys of the input list of key-value pairs should be labelled according to the type of data corresponding to the value pairs (methylation, mRNA, proteomic, etc) and there must be a key-value pair that corresponds to patient IDs/metadata labelled pheno.
+The keys of the input list of key-value pairs should be labelled according to the type of data corresponding to the value pairs (methylation, mRNA, proteomic, etc) and there must be a key-value pair that corresponds to patient IDs/metadata labelled `pheno`.
 
 ```{r, eval=TRUE}
 brcaList <- brcaData$assays
@@ -119,49 +134,13 @@ brcaList <- c(brcaList, list(brcaData$pheno))
 names(brcaList)[3] <- "pheno"
 ```
 
-We can now call the convertToMAE() wrapper function to convert the list containing experimental assay data and patient metadata into a MAE object.
+We can now call the `convertToMAE()` wrapper function to convert the list containing experimental assay data and patient metadata into a `MultiAssayExperiment` object.
 
 ```{r, eval=TRUE}
 brca <- convertToMAE(brcaList)
 ```
 
-The rest of the workflow follows the vignette "01: Build binary predictor and view performance, top features and integrated Patient Similarity Network".
-
-## Define patient similarity for each network
-The `makeNets` function tells the predictor how to create networks from provided input data.
-
-This function requires `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably `numCores` (number of parallel jobs).
-
-netDx requires that this function have:
-
-* `dataList`,`groupList`, and `netDir` as input variables. The residual `...` parameter is to pass additional variables to `makePSN_NamedMatrix()`, notably number of cores for parallel processing (`numCores`). 
-
-
-```{r,  eval=TRUE}
-makeNets <- function(dataList, groupList, netDir,...) {
-	netList <- c() # initialize before is.null() check
-	
-	layerNames <- c("BRCA_miRNASeqGene-20160128",
-		"BRCA_mRNAArray-20160128")
-	
-	for (nm in layerNames){  			## for each layer
-		if (!is.null(groupList[[nm]])){ ## must check for null for each layer
-			netList_cur <- makePSN_NamedMatrix(
-				dataList[[nm]],
-				rownames(dataList[[nm]]),	## names of measures (e.g. genes, CpGs)
-				groupList[[nm]],			## how to group measures in that layer
-				netDir,						## leave this as-is, netDx will figure out where this is.
-				verbose=FALSE, 			
-				writeProfiles=TRUE,   		## use Pearson correlation-based similarity
-				...
-				)
-
-			netList <- c(netList,netList_cur)	## just leave this in
-		}
-	}
-	return(unlist(netList))	## just leave this in 
-}
-```
+We can then proceed with the rest of the netDx workflow.
 
 # Build predictor
 
@@ -169,7 +148,7 @@ Finally we call the function that runs the netDx predictor. We provide:
 
 * patient data  (`dataList`)
 * grouping rules (`groupList`)
-* function to create PSN from data, includes choice of similarity metric (`makeNetFunc`)
+* list specifying choice of similarity metric to use for each grouping (`sims`)
 * number of train/test splits over which to collect feature scores and average performance (`numSplits`), 
 * maximum score for features in one round of feature selection  (`featScoreMax`, set to 10)
 * threshold to call feature-selected networks for each train/test split (`featSelCutoff`); only features scoring this value or higher will be used to classify test patients,
@@ -189,26 +168,26 @@ This step can take a few hours based on the current parameters, so we comment th
 ```{r lab1-buildpredictor ,eval=TRUE}
 nco <- round(parallel::detectCores()*0.75) # use 75% available cores
 message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
+
 t0 <- Sys.time()
 set.seed(42) # make results reproducible
 outDir <- paste(tempdir(),randAlphanumString(),
 	"pred_output",sep=getFileSep())
 if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
-model <- suppressMessages(buildPredictor(
-	dataList=brca,			## your data
-	groupList=groupList,	## grouping strategy
-	makeNetFunc=makeNets,	## function to build PSNs
-	outDir=outDir, 			## output directory
-	trainProp=0.8,			## pct of samples to use to train model in
-							## each split
-	numSplits=2L,			## number of train/test splits
- featSelCutoff=1L,		## threshold for calling something
-							## feature-selected
-	featScoreMax=2L,		## max score for feature selection
- numCores=nco,			## set higher for parallelizing
- debugMode=FALSE,
- keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
- logging="none"
+model <- suppressMessages(
+	buildPredictor(
+		dataList=brca,			## your data
+		groupList=groupList,	## grouping strategy
+		sims = sims,
+		outDir=outDir, 			## output directory
+		trainProp=0.8,			## pct of samples to use to train model in each split
+		numSplits=2L,			## number of train/test splits
+		featSelCutoff=1L,		## threshold for calling something feature-selected
+		featScoreMax=2L,		## max score for feature selection
+		numCores=nco,			## set higher for parallelizing
+		debugMode=FALSE,
+		keepAllData=FALSE,	## set to TRUE for debugging or low-level files used by the dictor
+		logging="none"
   ))
 t1 <- Sys.time()
 print(t1-t0)
@@ -217,7 +196,6 @@ print(t1-t0)
 # Examine results
 
 Now we get model output, including performance for various train/test splits and consistently high-scoring features. 
-
 
 In the function below, we define top-scoring features as those which score two out of two in at least half of the train/test splits:
 

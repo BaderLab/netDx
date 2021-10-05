@@ -117,7 +117,7 @@
 #'    name=genes[,4])
 #' 
 #' # create GRangesList of pathways
-#' pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
+#' pathFile <- fetchPathwayDefinitions("February",2021,verbose=TRUE)
 #' pathwayList <- readPathways(pathFile)
 #' path_GRList <- mapNamedRangesToSets(gene_GR,pathwayList)
 #' 

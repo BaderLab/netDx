@@ -32,7 +32,7 @@ cnv_GR    <- GRanges(pheno$seqnames,
 pheno <- pheno[!duplicated(pheno$ID),]
 
 pathFile <- fetchPathwayDefinitions(
-	"February",2018,verbose=TRUE)
+	"February",2020,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18
@@ -163,7 +163,7 @@ for the hg18 genome build are automatically fetched from a remote location, and 
 
 
 ```{r,eval=TRUE}
-pathFile <- fetchPathwayDefinitions("February",2018,verbose=TRUE)
+pathFile <- fetchPathwayDefinitions("February",2020,verbose=TRUE)
 pathwayList <- readPathways(pathFile)
 
 # get gene coordinates, use hg18

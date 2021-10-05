@@ -33,7 +33,7 @@ For details see Merico D, Isserlin R, Stueker O, Emili A and GD Bader.
 (2010). PLoS One. 5(11):e13984.
 }
 \examples{
-fetchPathwayDefinitions("October",2020)
-fetchPathwayDefinitions("January",2018)
-fetchPathwayDefinitions(month=10,year=2020)
+fetchPathwayDefinitions("October",2021)
+fetchPathwayDefinitions("October",2021)
+fetchPathwayDefinitions(month=10,year=2021)
 }

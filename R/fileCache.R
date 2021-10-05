@@ -72,7 +72,7 @@ fetchPathwayDefinitions <- function(month=NULL,year=NULL,day=1,verbose=FALSE){
 		month <- month.name[month]
 	}
 		pdate <- sprintf("%s_%02d_%i",month,day,year)
-    	pathwayURL <- paste("https://downloads.res.oicr.on.ca/pailab/EM_Genesets/", 
+    	pathwayURL <- paste("https://downloads.res.oicr.on.ca/pailab/public/EM_Genesets/", 
 		sprintf("%s/Human/symbol/",pdate),
         sprintf("Human_AllPathways_%s_symbol.gmt",pdate),
 		 sep = "")
@@ -83,7 +83,7 @@ fetchPathwayDefinitions <- function(month=NULL,year=NULL,day=1,verbose=FALSE){
 	if (chk$status_code==404) {
 		stop(paste(sprintf("The pathway file for %02d %s %i doesn't exist.",day,month,year),
 				"Select a different date. ",
-				"See https://downloads.res.oicr.on.ca/pailab/EM_Genesets/Human/symbol for options.",
+				"See https://downloads.res.oicr.on.ca/pailab/public/EM_Genesets/Human/symbol for options.",
 				sep=" "))
 	}
     bfcrpath(bfc, pathwayURL)

@@ -76,9 +76,7 @@ colData(brca)$ID <- pID
 
 # Create feature design rules
 
-To build the predictor using the netDx algorithm, we call the `buildPredictor()` function which takes patient data and variable groupings 
-
-## dataList object
+To build the predictor using the netDx algorithm, we call the `buildPredictor()` function which takes patient data and variable groupings, and returns a set of patient similarity networks (PSN) as an output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype.
 
 ## groupList object
 

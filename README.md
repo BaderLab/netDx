@@ -36,6 +36,7 @@ setwd("/home/rstudio/vignettes")
 rmarkdown::render("ThreeWayClassifier.Rmd")
 ```
 
+---
 
 ### Main repo for netDx dev work as of Sep 2021.
 

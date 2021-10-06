@@ -11,7 +11,7 @@ fetchPathwayDefinitions(month = NULL, year = NULL, day = 1, verbose = FALSE)
 numeric or text (e.g. "January","April"). If NULL, fails.}
 
 \item{year}{(numeric) year of pathway definition file. Must be in
-yyyy format (e.g. 2018). If NULL, fails.}
+yyyy format (e.g. 2020). If NULL, fails.}
 
 \item{day}{(integer)}
 

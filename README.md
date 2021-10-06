@@ -1,3 +1,8 @@
+# netDx: Network-based patient classifier
+[![Docker Build](https://github.com/RealPaiLab/netDx/actions/workflows/push-docker.yml/badge.svg)](https://github.com/RealPaiLab/netDx/actions/workflows/push-docker.yml)
+[![R CMD check bioc](https://github.com/RealPaiLab/netDx/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/RealPaiLab/netDx/actions/workflows/check-bioc.yml)
+
+
 ### Main repo for netDx dev work as of Sep 2021.
 
 netDx is a general-purpose algorithm for building patient classifiers by using patient similarity networks as features. It excels at interpretability and handling missing data. It also allows custom grouping rules for features, notably grouping genes into pathways. It integrates with RCy3 for network visualization of predictive pathways.

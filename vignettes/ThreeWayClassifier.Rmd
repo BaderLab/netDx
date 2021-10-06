@@ -64,7 +64,8 @@ pID <- colData(brca)$patientID
 colData(brca)$ID <- pID
 ```
 
-ADD HOLDOUT TEXT HERE
+The function `subSampleValidationData` partitions the TCGA data into two smaller datasets: a training and holdout validation dataset. This is to facilitate model validation after an initial model is built by the netDx algorithm - netDx will train a model on the training dataset through the `buildPredictor()` call, and this model can validate the held-out validation dataset through the `predict()` function call.
+
 ```{r}
 set.seed(123)
 dsets <- subsampleValidationData(brca,pctValidation=0.1)
@@ -105,9 +106,15 @@ groupList[[names(brca)[3]]] <- tmp
 
 ## Define patient similarity for each network
 
-ADD SOME INTRO TEXT HERE
+`sims` is a list that specifies the choice of similarity metric to use for each grouping we're passing to the netDx algorithm. You can choose between several built-in similarity functions provided in the `netDx` package:
 
-`normDiff` is a function provided in the `netDx` package, but the user may define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
+* `normDiff` (normalized difference)
+* `avgNormDiff` (average normalized difference)
+* `sim.pearscale` (Pearson correlation followed by exponential scaling)
+* `sim.eucscale` (Euclidean distance followed by exponential scaling) or
+* `pearsonCorr` (Pearson correlation)
+
+You may also define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
 
 ```{r,eval=TRUE}
 sims <- list(a="pearsonCorr",b="normDiff",c="pearsonCorr",d="pearsonCorr")

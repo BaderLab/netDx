@@ -414,23 +414,23 @@ plotPerf_multi(list(perf$prCurve),
 We finally get the integrated PSN and visualize it using a tSNE plot:
 
 ```{r, class.source="codeblock",fig.width=8,fig.height=8, eval=TRUE}
-### this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-#psn <- suppressMessages(getPSN(
-#  brca,
-#  groupList,
-#  sims=sims,
-#  selectedFeatures=results$selectedFeatures
-#))
+## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
+psn <- suppressMessages(getPSN(
+  brca,
+  groupList,
+  sims=sims,
+  selectedFeatures=results$selectedFeatures
+))
 ```
 
 We can plot a lower dimensional representation of the patient similarities using a tSNE plot. This call requires that you install the `Rtsne` package:
 
 ```{r}
-#library(Rtsne)
-#tsne <- tSNEPlotter(
-#	psn$patientSimNetwork_unpruned, 
-#	colData(brca)
-#	)
+library(Rtsne)
+tsne <- tSNEPlotter(
+	psn$patientSimNetwork_unpruned, 
+	colData(brca)
+	)
 ```
 
 # sessionInfo

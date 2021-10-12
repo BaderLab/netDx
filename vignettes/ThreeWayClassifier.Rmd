@@ -224,9 +224,13 @@ groupList[["clinical"]] <- list(
 )
 ```
 
-For methylation and proteomic data we create one feature each, where each feature contains all measures for that data type.
+For miRNA sequencing, methylation, and proteomic data we create one feature each, where each feature contains all measures for that data type.
 
 ```{r,eval=TRUE}
+tmp <- list(rownames(experiments(brca)[[1]]));
+names(tmp) <- names(brca)[1]
+groupList[[names(brca)[[1]]]] <- tmp
+
 tmp <- list(rownames(experiments(brca)[[2]]));
 names(tmp) <- names(brca)[2]
 groupList[[names(brca)[2]]] <- tmp
@@ -404,29 +408,6 @@ plotPerf_multi(list(perf$prCurve),
     "BRCA Validation: %i samples", 
     nrow(colData(holdout))))
 
-```
-
-## Integrated patient similarity network
-We finally get the integrated PSN and visualize it using a tSNE plot:
-
-```{r, class.source="codeblock",fig.width=8,fig.height=8, eval=TRUE}
-## this call doesn't work in Rstudio; for now we've commented this out and saved the PSN file. 
-psn <- suppressMessages(getPSN(
-  brca,
-  groupList,
-  sims=sims,
-  selectedFeatures=results$selectedFeatures
-))
-```
-
-We can plot a lower dimensional representation of the patient similarities using a tSNE plot. This call requires that you install the `Rtsne` package:
-
-```{r}
-library(Rtsne)
-tsne <- tSNEPlotter(
-	psn$patientSimNetwork_unpruned, 
-	colData(brca)
-	)
 ```
 
 # sessionInfo

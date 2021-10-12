@@ -267,11 +267,15 @@ topPath <- gsub("_cont.txt","",topPath)
 
 ## create groupList limited to top features
 g2 <- list();
+s2 <- list();
 for (nm in names(groupList)) {
 	cur <- groupList[[nm]]
 	idx <- which(names(cur) %in% topPath)
 	message(sprintf("%s: %i features", nm, length(idx)))
-	if (length(idx)>0) g2[[nm]] <- cur[idx]
+	if (length(idx)>0) {
+        g2[[nm]] <- cur[idx]
+        s2[[nm]] <- sims[[nm]]
+    }
 }
 
 message("* Making integrated PSN")
@@ -279,7 +283,7 @@ psn <-
    plotIntegratedPatientNetwork(
        dataList=dat,
   groupList=g2, makeNetFunc=makeNetFunc,
-  sims=sims,
+  sims=s2,
   aggFun=aggFun,
   prune_pctX=prune_pctX,
   prune_useTop=prune_useTop,

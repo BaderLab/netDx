@@ -1,5 +1,5 @@
 ---
-title: "Building a binary classifier from assay data using pathway level features"
+title: "Converting raw assay data/tables into format compatible with netDx algorithm"
 author: "Shraddha Pai & Indy Ng"
 package: netDx
 date: "`r Sys.Date()`"
@@ -7,7 +7,7 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{01. Build binary predictor and view performance, top features and integrated Patient Similarity Network}.
+    %\VignetteIndexEntry{02. Running netDx with data in table format}.
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
@@ -57,6 +57,7 @@ The fetch command automatically brings in a `MultiAssayExperiment` object.
 ```{r, eval = TRUE}
 summary(brca)
 ```
+## Prepare Data
 
 This next code block prepares the TCGA data. In practice you would do this once, and save the data before running netDx, but we run it here to see an end-to-end example. 
 
@@ -74,9 +75,17 @@ colData(brca)$ID <- pID
 
 # Create feature design rules (patient similarity networks)
 
-To build the predictor using the netDx algorithm, we call the `buildPredictor()` function which takes patient data and variable groupings, and returns a set of patient similarity networks (PSN) as an output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype.
+To build the predictor using the netDx algorithm, we call the `buildPredictor()` function which takes patient data and variable groupings, and returns a set of patient similarity networks (PSN) as an output. The user can customize what datatypes are used, how they are grouped, and what defines patient similarity for a given datatype. This is done specifically by telling the model how to:
 
-## groupList object
+* **group** different types of data and 
+* **define similarity** for each of these (e.g. Pearson correlation, normalized difference, etc.,).
+
+The relevant input parameters are:
+
+* `groupList`: sets of input data that would correspond to individual networks (e.g. genes grouped into pathways)
+* `sims`: a list specifying similarity metrics for each data layer
+
+## `groupList`: Grouping variables to define features
 
 The `groupList` object tells the predictor how to group units when constructing a network. For examples, genes may be grouped into a network representing a pathway. This object is a list; the names match those of `dataList` while each value is itself a list and reflects a potential network.
 
@@ -97,17 +106,20 @@ for (k in 1:length(expr)) {	# loop over all layers
 }
 ```
 
-## Define patient similarity for each network
+## `sims`: Define patient similarity for each network
 
-`sims` is a list that specifies the choice of similarity metric to use for each grouping we're passing to the netDx algorithm. You can choose between several built-in similarity functions provided in the `netDx` package:
+**What is this:** `sims` is used to define similarity metrics for each layer.
+This is done by providing a single list -  here, `sims` - that specifies the choice of similarity metric to use for each data layer. The `names()` for this list must match those in `groupList`. The corresponding value can either be a character if specifying a built-in similarity function, or a function. The latter is used if the user wishes to specify a custom similarity function.
 
-* `normDiff` (normalized difference)
-* `avgNormDiff` (average normalized difference)
-* `sim.pearscale` (Pearson correlation followed by exponential scaling)
-* `sim.eucscale` (Euclidean distance followed by exponential scaling) or
-* `pearsonCorr` (Pearson correlation)
+The current available options for built-in similarity measures are:
 
-You may also define custom similarity functions in this block of code and pass those to `makePSN_NamedMatrix()`, using the `customFunc` parameter.
+* `pearsonCorr`: Pearson correlation (n>5 measures in set)
+* `normDiff`: normalized difference (single measure such as age)
+* `avgNormDiff`: average normalized difference (small number of measures)
+* `sim.pearscale`: Pearson correlation followed by exponential scaling
+* `sim.eucscale`: Euclidean distance followed by exponential scaling
+
+In this example, we choose Pearson correlation similarity for all data layers.
 
 ```{r,eval=TRUE}
 sims <- list(a="pearsonCorr", b="pearsonCorr")
@@ -144,6 +156,17 @@ We can then proceed with the rest of the netDx workflow.
 
 # Build predictor
 
+Now we're ready to train our model. netDx uses parallel processing to speed up compute time. Let's use 75% available cores on the machine for this example. netDx also throws an error if provided an output directory that already has content, so let's clean that up as well.
+  
+```{r,eval=TRUE}
+nco <- round(parallel::detectCores()*0.75) # use 75% available cores
+message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
+
+outDir <- paste(tempdir(),"pred_output",sep=getFileSep()) # use absolute path
+if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
+numSplits <- 2L
+```
+
 Finally we call the function that runs the netDx predictor. We provide:
 
 * patient data  (`dataList`)
@@ -154,26 +177,17 @@ Finally we call the function that runs the netDx predictor. We provide:
 * threshold to call feature-selected networks for each train/test split (`featSelCutoff`); only features scoring this value or higher will be used to classify test patients,
 * number of cores to use for parallel processing (`numCores`).
 
-The call below runs 10 train/test splits. 
-Within each split, it:
+The call below runs two train/test splits. Within each split, it:
 
 * splits data into train/test using the default split of 80:20 (`trainProp=0.8`)
-* score networks between 0 to 10 (i.e. `featScoreMax=10L`)
-* uses networks that score >=9 out of 10 (`featSelCutoff=9L`) to classify test samples for that split.
+* score networks between 0 to 2 (i.e. `featScoreMax=2L`)
+* uses networks that score >=9 out of 10 (`featSelCutoff=1L`) to classify test samples for that split.
 
 In practice a good starting point is `featScoreMax=10`, `featSelCutoff=9` and `numSplits=10L`, but these parameters depend on the sample sizes in the dataset and heterogeneity of the samples. 
 
-This step can take a few hours based on the current parameters, so we comment this out for the tutorial and will simply load the results.
- 
-```{r lab1-buildpredictor ,eval=TRUE}
-nco <- round(parallel::detectCores()*0.75) # use 75% available cores
-message(sprintf("Using %i of %i cores", nco, parallel::detectCores()))
-
+```{r,eval=TRUE}
 t0 <- Sys.time()
 set.seed(42) # make results reproducible
-outDir <- paste(tempdir(),randAlphanumString(),
-	"pred_output",sep=getFileSep())
-if (file.exists(outDir)) unlink(outDir,recursive=TRUE)
 model <- suppressMessages(
 	buildPredictor(
 		dataList=brca,			## your data

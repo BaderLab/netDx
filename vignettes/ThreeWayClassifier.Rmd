@@ -224,9 +224,13 @@ groupList[["clinical"]] <- list(
 )
 ```
 
-For methylation and proteomic data we create one feature each, where each feature contains all measures for that data type.
+For miRNA sequencing, methylation, and proteomic data we create one feature each, where each feature contains all measures for that data type.
 
 ```{r,eval=TRUE}
+tmp <- list(rownames(experiments(brca)[[1]]));
+names(tmp) <- names(brca)[1]
+groupList[[names(brca)[[1]]]] <- tmp
+
 tmp <- list(rownames(experiments(brca)[[2]]));
 names(tmp) <- names(brca)[2]
 groupList[[names(brca)[2]]] <- tmp

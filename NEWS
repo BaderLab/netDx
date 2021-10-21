@@ -1,10 +1,14 @@
-netDx 1.5.3
+netDx 1.5.9
+==================
+* Ability to smooth somatic mutations over an interaction network via (smoothMutations_LabelProp) has been temporarily removed. This function made software install challenging on machines without C++ compilers as it relies on clusterExperiment. The latter can only be compiled from source. This functionality will be added back when doing so does not complicate the install. It is unclear whether users want to routinely use this functionality.
+
+netDx 1.5.8
 ==================
 * Moved RCy3, scater, clusterExperiment and netSmooth to "Suggests" to reduce dependency burden
 * Sped up vignettes by limiting all to binary classification and limiting number of layers
 * Removed TL;DR from vignettes as usefulness in question but maintainance high.
 
-Developers notes:
+Developer notes:
 -------------------
 * Added Dockerfile and Github Actions for automated testing
 * GHA auto-generates a Docker image with netDx which gets pushed to shraddhapai/netdx_devenv

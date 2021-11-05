@@ -12,6 +12,7 @@
 #' @param featureSelPct (numeric between 0 and 1) cutoff percent for feature selection.
 #' A feature must have minimum score of featureSelCutoff for featureSelPct of 
 #' train/test splits to pass.
+#' @param drawPerformancePlot (logical) if TRUE, draws AUROC and AUPR plots. Set to FALSE to suppress graphical output.
 #' @returns list of results.
 #' - selectedFeatures (list of character vectors): list, one per class
 #' - performance (list of mixed datatypes) including mean accuracy (meanAccuracy), 
@@ -24,65 +25,67 @@
 #' getResults(toymodel,patlabels,2,0.5)
 #' 
 #' @export
-getResults <- function(res, status, featureSelCutoff=1L, 
-    featureSelPct=0){
+getResults <- function(res, status, featureSelCutoff = 1L,
+    featureSelPct = 0, drawPerformancePlot = TRUE) {
 
-numSplits <- length(grep("^Split",names(res)))
-st <- status
-message(sprintf("Detected %i splits and %i classes", numSplits, length(st)))
+  numSplits <- length(grep("^Split", names(res)))
+  st <- status
+  message(sprintf("Detected %i splits and %i classes", numSplits, length(st)))
 
-acc <- c()         # accuracy
-predList <- list() # prediction tables
-featScores <- list() # feature scores per class
-for (cur in unique(st)) featScores[[cur]] <- list()
+  acc <- c() # accuracy
+  predList <- list() # prediction tables
+  featScores <- list() # feature scores per class
+  for (cur in unique(st))
+    featScores[[cur]] <- list()
 
-# collect accuracy and feature scores
-for (k in 1:numSplits) {
-	pred <- res[[sprintf("Split%i",k)]][["predictions"]];
-	# predictions table
-	tmp <- pred[,c("ID","STATUS","TT_STATUS","PRED_CLASS",
-	                 sprintf("%s_SCORE",st))]
-	predList[[k]] <- tmp
-	# accuracy
-	acc <- c(acc, sum(tmp$PRED==tmp$STATUS)/nrow(tmp))
-	# feature scores
-	for (cur in unique(st)) {
-	   tmp <- res[[sprintf("Split%i",k)]][["featureScores"]][[cur]]
-	   colnames(tmp) <- c("PATHWAY_NAME","SCORE")
-	   featScores[[cur]][[sprintf("Split%i",k)]] <- tmp
-	}
-}
+  # collect accuracy and feature scores
+  for (k in 1:numSplits) {
+    pred <- res[[sprintf("Split%i", k)]][["predictions"]];
+    # predictions table
+    tmp <- pred[, c("ID", "STATUS", "TT_STATUS", "PRED_CLASS",
+                   sprintf("%s_SCORE", st))]
+    predList[[k]] <- tmp
+    # accuracy
+    acc <- c(acc, sum(tmp$PRED == tmp$STATUS) / nrow(tmp))
+    # feature scores
+    for (cur in unique(st)) {
+      tmp <- res[[sprintf("Split%i", k)]][["featureScores"]][[cur]]
+      colnames(tmp) <- c("PATHWAY_NAME", "SCORE")
+      featScores[[cur]][[sprintf("Split%i", k)]] <- tmp
+    }
+  }
 
-# only plot ROC and PR curves 
-auroc <- NULL; aupr <- NULL
-if (length(st)==2) {
-message("* Plotting performance")
-predPerf <- plotPerf(predList, predClasses=st)
-auroc <- unlist(lapply(predPerf, function(x) x$auroc))
-aupr <- unlist(lapply(predPerf, function(x) x$aupr))
-}
+  # only plot ROC and PR curves 
+  auroc <- NULL;
+  aupr <- NULL
+  if (length(st) == 2) {
+    if (drawPerformancePlot) message("* Plotting performance")
+    predPerf <- plotPerf(predList, predClasses = st, drawPlot = drawPerformancePlot)
+    auroc <- unlist(lapply(predPerf, function(x) x$auroc))
+    aupr <- unlist(lapply(predPerf, function(x) x$aupr))
+  }
 
-message("* Compiling feature scores and calling selected features")
-feats <- callOverallSelectedFeatures(featScores, 
+  message("* Compiling feature scores and calling selected features")
+  feats <- callOverallSelectedFeatures(featScores,
     featureSelCutoff = featureSelCutoff,
     featureSelPct = featureSelPct,
     cleanNames = TRUE
-)
+  )
 
-#### Enrichment map
-###if (!is.null(pathwayList)){
-###    message("* Pathway List detected - creating input for EnrichmentMap")
-###    browser()
-###}
+  #### Enrichment map
+  ###if (!is.null(pathwayList)){
+  ###    message("* Pathway List detected - creating input for EnrichmentMap")
+  ###    browser()
+  ###}
 
-return(list(
-    selectedFeatures=feats$selectedFeatures,
-    featureScores=feats$featScores,
-    performance=list(meanAccuracy=mean(acc),
-                    splitAccuracy=acc,
-                    splitAUROC=auroc,
-                    splitAUPR=aupr)
-))
+  return(list(
+    selectedFeatures = feats$selectedFeatures,
+    featureScores = feats$featScores,
+    performance = list(meanAccuracy = mean(acc),
+                    splitAccuracy = acc,
+                    splitAUROC = auroc,
+                    splitAUPR = aupr)
+  ))
 
 }
 
@@ -125,30 +128,32 @@ return(list(
 #' featScores: (matrix) feature scores for each split
 #' selectedFeatures: (list) features passing selection for each class; one key per class
 #' @export
-callOverallSelectedFeatures <- function(featScores, featureSelCutoff, 
-    featureSelPct, cleanNames=TRUE){
-featScores2 <- lapply(featScores, getNetConsensus)
-if (cleanNames) {
-    featScores2 <- lapply(featScores2,function(x){
-        x$PATHWAY_NAME <- sub(".profile","",x$PATHWAY_NAME)
-        x$PATHWAY_NAME <- sub("_cont.txt","",x$PATHWAY_NAME)
-        colnames(x)[1] <- "Feature"
-        x
+callOverallSelectedFeatures <- function(featScores, featureSelCutoff,
+    featureSelPct, cleanNames = TRUE) {
+  featScores2 <- lapply(featScores, getNetConsensus)
+  if (cleanNames) {
+    featScores2 <- lapply(featScores2, function(x) {
+      x$PATHWAY_NAME <- sub(".profile", "", x$PATHWAY_NAME)
+      x$PATHWAY_NAME <- sub("_cont.txt", "", x$PATHWAY_NAME)
+      colnames(x)[1] <- "Feature"
+      x
     })
-}
-featSelNet <- lapply(featScores2, function(x) {
-    x <- callFeatSel(x, fsCutoff=featureSelCutoff, fsPctPass=featureSelPct)
-})
+  }
+  featSelNet <- lapply(featScores2, function(x) {
+    x <- callFeatSel(x, fsCutoff = featureSelCutoff, fsPctPass = featureSelPct)
+  })
 
-return(list(
-    featScores=featScores2,
-    selectedFeatures=featSelNet
-))
+  return(list(
+    featScores = featScores2,
+    selectedFeatures = featSelNet
+  ))
 }
 
 #' Wrapper to create input files for Enrichment Map
 #'
-#' @details An Enrichment Map is a network-based visualization of top-scoring pathway features
+#' @details Creates the input to visualize selected features and their relationships
+#' as a network in Cytoscape. The type of visualization is called an Enrichment Map.
+#' An Enrichment Map is a network-based visualization of top-scoring pathway features
 #' and themes. It is generated in Cytoscape. This script generates the input files needed
 #' for Cytoscape to create an Enrichment Map visualization.
 #' @param model (list) Output of training model, generated by running buildPredictor()
@@ -164,47 +169,46 @@ return(list(
 #' attributes include node fill, which indicates the highest consistent score for a given 
 #' feature. 
 #' @export 
-makeInputForEnrichmentMap <- function(model,results,pathwayList,
-    EMapMinScore=0L, EMapMaxScore=1L,
-    EMapPctPass=0.5,outDir)
-{
-    featScores <- results$featureScores
+createInputForFeatureNetworkView <- function(model, results, pathwayList,
+    EMapMinScore = 0L, EMapMaxScore = 1L,
+    EMapPctPass = 0.5, outDir) {
+  featScores <- results$featureScores
 
-message("* Creating input files for EnrichmentMap")
-Emap_res <- getEMapInput_many(featScores,
+  message("* Creating input files for feature network view")
+  Emap_res <- getEMapInput_many(featScores,
     pathwayList,
-    minScore=EMapMinScore,
-    maxScore=EMapMaxScore,
-    pctPass=EMapPctPass,
+    minScore = EMapMinScore,
+    maxScore = EMapMaxScore,
+    pctPass = EMapPctPass,
     model$inputNets,
-    verbose=FALSE
-)
+    verbose = FALSE
+  )
 
-gmtFiles <- list()
-nodeAttrFiles <- list()
+  gmtFiles <- list()
+  nodeAttrFiles <- list()
 
-message("* Writing files for network visualization")
-for (g in names(Emap_res)) {
-    outFile <- paste(outDir,sprintf("%s_nodeAttrs.txt",g),sep=getFileSep())
-    write.table(Emap_res[[g]][["nodeAttrs"]],file=outFile,
-        sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
+  message("* Writing files for network visualization")
+  for (g in names(Emap_res)) {
+    outFile <- paste(outDir, sprintf("%s_nodeAttrs.txt", g), sep = getFileSep())
+    write.table(Emap_res[[g]][["nodeAttrs"]], file = outFile,
+        sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
     nodeAttrFiles[[g]] <- outFile
 
-    outFile <- paste(outDir,sprintf("%s.gmt",g),sep=getFileSep())
+    outFile <- paste(outDir, sprintf("%s.gmt", g), sep = getFileSep())
     conn <- suppressWarnings(
-         suppressMessages(base::file(outFile,"w")))
+         suppressMessages(base::file(outFile, "w")))
     tmp <- Emap_res[[g]][["featureSets"]]
     gmtFiles[[g]] <- outFile
 
     for (cur in names(tmp)) {
-        curr <- sprintf("%s\t%s\t%s", cur,cur,
-            paste(tmp[[cur]],collapse="\t"))
-        writeLines(curr,con=conn)
+      curr <- sprintf("%s\t%s\t%s", cur, cur,
+            paste(tmp[[cur]], collapse = "\t"))
+      writeLines(curr, con = conn)
     }
-close(conn)
-}
+    close(conn)
+  }
 
-return(list(GMTfiles=gmtFiles,NodeStyles=nodeAttrFiles))
+  return(list(GMTfiles = gmtFiles, NodeStyles = nodeAttrFiles))
 }
 
 #' get the integrated patient similarity network made of selected features
@@ -250,50 +254,50 @@ return(list(GMTfiles=gmtFiles,NodeStyles=nodeAttrFiles))
 #' colours (colour)
 #' 6) outDir (char) value of outDir parameter
 #' @export
-getPSN <- function(dat, groupList, 
-    makeNetFunc=NULL, sims=NULL, 
-    selectedFeatures, plotCytoscape=FALSE,
-    aggFun="MEAN", prune_pctX=0.30, prune_useTop=TRUE,
-    numCores=1L,calcShortestPath=FALSE
-    ){
+getPSN <- function(dat, groupList,
+    makeNetFunc = NULL, sims = NULL,
+    selectedFeatures, plotCytoscape = FALSE,
+    aggFun = "MEAN", prune_pctX = 0.30, prune_useTop = TRUE,
+    numCores = 1L, calcShortestPath = FALSE
+    ) {
 
 
-# checks either/or provided, sets missing var to NULL
-x <- checkMakeNetFuncSims(makeNetFunc=makeNetFunc, 
-    sims=sims,groupList=groupList)
+  # checks either/or provided, sets missing var to NULL
+  x <- checkMakeNetFuncSims(makeNetFunc = makeNetFunc,
+    sims = sims, groupList = groupList)
 
-topPath <- gsub(".profile","", unique(unlist(selectedFeatures)))
-topPath <- gsub("_cont.txt","",topPath)
+  topPath <- gsub(".profile", "", unique(unlist(selectedFeatures)))
+  topPath <- gsub("_cont.txt", "", topPath)
 
-## create groupList limited to top features
-g2 <- list();
-s2 <- list();
-for (nm in names(groupList)) {
-	cur <- groupList[[nm]]
-	idx <- which(names(cur) %in% topPath)
-	message(sprintf("%s: %i features", nm, length(idx)))
-	if (length(idx)>0) {
-        g2[[nm]] <- cur[idx]
-        s2[[nm]] <- sims[[nm]]
+  ## create groupList limited to top features
+  g2 <- list()
+  s2 <- list()
+  for (nm in names(groupList)) {
+    cur <- groupList[[nm]]
+    idx <- which(names(cur) %in% topPath)
+    message(sprintf("%s: %i features", nm, length(idx)))
+    if (length(idx) > 0) {
+      g2[[nm]] <- cur[idx]
+      s2[[nm]] <- sims[[nm]]
     }
-}
+  }
 
-message("* Making integrated PSN")
-psn <- 
+  message("* Making integrated PSN")
+  psn <-
    plotIntegratedPatientNetwork(
-       dataList=dat,
-  groupList=g2, makeNetFunc=makeNetFunc,
-  sims=s2,
-  aggFun=aggFun,
-  prune_pctX=prune_pctX,
-  prune_useTop=prune_useTop,
-  numCores=numCores,
-  calcShortestPath=calcShortestPath,
-  showStats=FALSE,
-  verbose=TRUE, 
-  plotCytoscape=plotCytoscape)
+       dataList = dat,
+  groupList = g2, makeNetFunc = makeNetFunc,
+  sims = s2,
+  aggFun = aggFun,
+  prune_pctX = prune_pctX,
+  prune_useTop = prune_useTop,
+  numCores = numCores,
+  calcShortestPath = calcShortestPath,
+  showStats = FALSE,
+  verbose = TRUE,
+  plotCytoscape = plotCytoscape)
 
-return(psn)
+  return(psn)
 }
 
 #' Make confusion matrix
@@ -311,37 +315,38 @@ return(psn)
 #' @importFrom plotrix color2D.matplot
 #' @export
 confusionMatrix <- function(model) {
-    nmList <- names(model)[grep("Split",names(model))]
-    cl <- sort(unique(model$Split1$STATUS))
-    conf <- list()
-    mega <- NULL
-    for (nm in nmList){
-        pred <- model[[nm]][["predictions"]][,c("ID","STATUS","TT_STATUS","PRED_CLASS")]
-        m <- as.matrix(table(pred[,c("STATUS","PRED_CLASS")]))
-        conf[[nm]] <- m/colSums(m)
-        if (is.null(mega)) mega <- conf[[nm]] else mega <- mega + conf[[nm]]
-    }
-    
-        mega <- mega / length(conf) # average
-        mega <- round(mega*100,2)
-        mega <- t(mega)
-        metric <- "%% Accuracy"
-        
-        tbl <- table(model$Split1$predictions$STATUS)
-        nm <- names(tbl); val <- as.integer(tbl)
-        ttl <- sprintf("%s\n(N=%i)",rownames(mega),val[match(rownames(mega),nm)])
+  nmList <- names(model)[grep("Split", names(model))]
+  cl <- sort(unique(model$Split1$STATUS))
+  conf <- list()
+  mega <- NULL
+  for (nm in nmList) {
+    pred <- model[[nm]][["predictions"]][, c("ID", "STATUS", "TT_STATUS", "PRED_CLASS")]
+    m <- as.matrix(table(pred[, c("STATUS", "PRED_CLASS")]))
+    conf[[nm]] <- m / colSums(m)
+    if (is.null(mega)) mega <- conf[[nm]] else mega <- mega + conf[[nm]]
+  }
 
-    par(mar=c(4,8,2,2))
-    color2D.matplot(mega,show.values=TRUE, border="white", 
-        #cs1=c(1,1,1),cs2=c(1,0.5,0),cs3=c(0,0.5,0), 
-        extremes=c(1,2),
-        axes=FALSE,        
-        xlab="Predicted class",ylab="")
-    axis(1,at=seq_len(ncol(mega))-0.5,labels=colnames(mega))
-    axis(2,at=seq_len(ncol(mega))-0.5,labels=rev(ttl),las=2)
-    title(sprintf("Confusion matrix: Accuracy (avg of %i splits)",length(conf)))
+  mega <- mega / length(conf) # average
+  mega <- round(mega * 100, 2)
+  mega <- t(mega)
+  metric <- "%% Accuracy"
 
-    return(list(splitWiseConfMatrix=conf, average=mega))
+  tbl <- table(model$Split1$predictions$STATUS)
+  nm <- names(tbl)
+  val <- as.integer(tbl)
+  ttl <- sprintf("%s\n(N=%i)", rownames(mega), val[match(rownames(mega), nm)])
+
+  par(mar = c(4, 8, 2, 2))
+  color2D.matplot(mega, show.values = TRUE, border = "white",
+  #cs1=c(1,1,1),cs2=c(1,0.5,0),cs3=c(0,0.5,0), 
+        extremes = c(1, 2),
+        axes = FALSE,
+        xlab = "Predicted class", ylab = "")
+  axis(1, at = seq_len(ncol(mega)) - 0.5, labels = colnames(mega))
+  axis(2, at = seq_len(ncol(mega)) - 0.5, labels = rev(ttl), las = 2)
+  title(sprintf("Confusion matrix: Accuracy (avg of %i splits)", length(conf)))
+
+  return(list(splitWiseConfMatrix = conf, average = mega))
 }
 
 #' Plot tSNE
@@ -351,7 +356,7 @@ confusionMatrix <- function(model) {
 #' matrix (symmetric). Row and column names are patient IDs. Note that NA
 #' values will be replaced by very small number (effectively zero).
 #' @param pheno (data.frame) Patient labels. ID column is patient ID and 
-#' STATUS is patient label of interest. tSNE will colour-code nodes by 
+#' STATUS is patient label xof interest. tSNE will colour-code nodes by 
 #' patient label.
 #' @param ... Parameters for Rtsne() function.
 #' @return (Rtsne) output of Rtsne call. Side effect of tSNE plot
@@ -368,31 +373,31 @@ confusionMatrix <- function(model) {
 #' pheno <- data.frame(ID=pid,STATUS=c(rep("control",50),rep("case",50)))
 #' tSNEPlotter(psn2,pheno)
 #' @export
-tSNEPlotter <- function(psn,pheno,...) {
+tSNEPlotter <- function(psn, pheno, ...) {
 
-message("* Making symmetric matrix")
-symmForm <- suppressMessages(makeSymmetric(psn))
-symmForm[which(is.na(symmForm))] <- .Machine$double.eps
-message("* Running tSNE")
-x <- Rtsne(symmForm,...)
-dat <- x$Y
-samps <- rownames(symmForm)
-idx <- match(samps, pheno$ID)
-if (all.equal(pheno$ID[idx],samps)!=TRUE) {
-	stop("pheno IDs not matching psn rownames")
-}
-st <- pheno$STATUS[idx]
+  message("* Making symmetric matrix")
+  symmForm <- suppressMessages(makeSymmetric(psn))
+  symmForm[which(is.na(symmForm))] <- .Machine$double.eps
+  message("* Running tSNE")
+  x <- Rtsne(symmForm, ...)
+  dat <- x$Y
+  samps <- rownames(symmForm)
+  idx <- match(samps, pheno$ID)
+  if (all.equal(pheno$ID[idx], samps) != TRUE) {
+    stop("pheno IDs not matching psn rownames")
+  }
+  st <- pheno$STATUS[idx]
 
-# to eliminate the "no visible binding for global variable" problem
-y <- status <- NULL
+  # to eliminate the "no visible binding for global variable" problem
+  y <- status <- NULL
 
-message("* Plotting")
-colnames(dat) <- c("x","y")
-dat <- as.data.frame(dat,stringsAsFactors=TRUE)
-dat$status <- as.factor(st)
-p <- ggplot2::ggplot(dat,aes(x,y)) + geom_point(aes(colour=status))
-p <- p + xlab("") + ylab("") + ggtitle("Integrated PSN - tSNE")
-print(p)
+  message("* Plotting")
+  colnames(dat) <- c("x", "y")
+  dat <- as.data.frame(dat, stringsAsFactors = TRUE)
+  dat$status <- as.factor(st)
+  p <- ggplot2::ggplot(dat, aes(x, y)) + geom_point(aes(colour = status))
+  p <- p + xlab("") + ylab("") + ggtitle("Integrated PSN - tSNE")
+  print(p)
 
-return(x)
+  return(x)
 }

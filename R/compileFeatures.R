@@ -51,7 +51,7 @@
 #'					writeProfiles=TRUE,...)
 #'     unlist(netList)
 #' }
-#' tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
+#' tmpDir <- normalizePath(tempdir()); netDir <- paste(tmpDir,"nets",
 #'	sep=getFileSep())
 #' if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 #' dir.create(netDir,recursive=TRUE)
@@ -65,7 +65,7 @@
 #' dbDir <- compileFeatures(netDir,outDir)
 #' @import doParallel
 #' @export
-compileFeatures <- function(netDir, outDir = tempdir(),
+compileFeatures <- function(netDir, outDir = normalizePath(tempdir()),
     simMetric = "pearson",
     netSfx = "txt$", verbose = TRUE, numCores = 1L,
     P2N_threshType = "off", P2N_maxMissing = 100,
@@ -125,14 +125,17 @@ compileFeatures <- function(netDir, outDir = tempdir(),
 
     curProf <- ""
     `%myinfix%` <- ifelse(debugMode, `%do%`, `%dopar%`)
+
     foreach(curProf = dir(path = profDir, pattern = "profile$")) %myinfix% {
       args2 <- c("-in", paste(profDir, curProf, sep = getFileSep()))
       args2 <- c(args2, "-out",
-    paste(netOutDir, sub(".profile", ".txt", curProf),
+      paste(netOutDir, sub(".profile", ".txt", curProf),
       sep = getFileSep()))
+
       args2 <- c(args2, "-syn",
     paste(netDir, "1.synonyms", sep = getFileSep()),
       "-keepAllTies", "-limitTies")
+
       if (debugMode) {
         message("Making Java call")
         tmp <- paste(c(args, args2), collapse = " ")
@@ -214,18 +217,19 @@ compileFeatures <- function(netDir, outDir = tempdir(),
   unlink(olddir)
 
   # Check: need to replace commas used as decimal separators, into periods
-  tmp <- dir(path = sprintf("%s/INTERACTIONS", netDir), pattern = "txt$")[1]
-  tmp <- sprintf("%s/INTERACTIONS/%s", netDir, tmp)
+  tmp <- dir(path = paste(netDir,"INTERACTIONS", sep=getFileSep()), pattern = "txt$")[1]
+  tmp <- sprintf(paste(netDir,"INTERACTIONS",tmp,sep=getFileSep()))
   if (sum(grepl(pattern = ",", readLines(tmp, n = 1)) > 0)) {
     # detect comma
-    replacePattern(path = sprintf("%s/INTERACTIONS", netDir))
+    replacePattern(path = paste(netDir,"INTERACTIONS", sep=getFileSep()))
   }
 
   # Build GeneMANIA cache
   if (verbose)
     message("\t* Build GeneMANIA cache")
 
-  args <- c("-Xmx10G", "-cp", GM_jar,
+  args <- c("--illegal-access=permit", # needed for Java 9-16. Deprecated in Java 17
+      "-Xmx10G", "-cp", GM_jar,
         "org.genemania.engine.apps.CacheBuilder")
   args <- c(args, "-cachedir", "cache", "-indexDir", ".",
         "-networkDir",

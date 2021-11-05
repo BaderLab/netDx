@@ -4,7 +4,13 @@
 \alias{plotPerf}
 \title{Plots various measures of predictor performance for binary classifiers}
 \usage{
-plotPerf(resList = NULL, inFiles, predClasses, plotSEM = FALSE)
+plotPerf(
+  resList = NULL,
+  inFiles,
+  predClasses,
+  plotSEM = FALSE,
+  drawPlot = TRUE
+)
 }
 \arguments{
 \item{resList}{(list) list of prediction results. If provided, the method
@@ -17,6 +23,8 @@ A vector, each with absolute paths to predictionResults.txt}
 
 \item{plotSEM}{(logical) metric for error bars. If set to TRUE, plots SEM;
 else plots SD.}
+
+\item{drawPlot}{(logical) If TRUE, draws AUROC and AUPR curves.}
 }
 \value{
 (list) each key corresponds to an input file in inDir.

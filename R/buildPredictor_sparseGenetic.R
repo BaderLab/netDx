@@ -131,7 +131,7 @@
 #' #head(out$cumulativeFeatScores)
 #' 
 buildPredictor_sparseGenetic <- function(phenoDF,cnv_GR,predClass,
-	group_GRList,outDir=tempdir(),
+	group_GRList,outDir=normalizePath(tempdir()),
 	numSplits=3L, featScoreMax=10L,
 	filter_WtSum=100L,
 	enrichLabels=TRUE,enrichPthresh=0.07,numPermsEnrich=2500L,minEnr=-1,

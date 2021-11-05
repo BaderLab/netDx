@@ -6,7 +6,7 @@
 \usage{
 compileFeatures(
   netDir,
-  outDir = tempdir(),
+  outDir = normalizePath(tempdir()),
   simMetric = "pearson",
   netSfx = "txt$",
   verbose = TRUE,
@@ -90,7 +90,7 @@ makeNets <- function(dataList, groupList, netDir,...) {
 				writeProfiles=TRUE,...)
     unlist(netList)
 }
-tmpDir <- tempdir(); netDir <- paste(tmpDir,"nets",
+tmpDir <- normalizePath(tempdir()); netDir <- paste(tmpDir,"nets",
 sep=getFileSep())
 if (file.exists(netDir)) unlink(netDir,recursive=TRUE)
 dir.create(netDir,recursive=TRUE)

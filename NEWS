@@ -1,3 +1,21 @@
+3.14 RELEASE 
+==================
+
+netDx 1.7.1
+==================
+* Added vignette showing how to view top features as connected networks in Cytoscape (Enrichment Map). 
+* Improved Java support. Includes:
+  * Prompt to users to install Java if not installed, and requirement check for Java 16 or lower.
+  * Feature selection with Java 12+ resulted in an "illegal access" error due to a change in how Java handles reflection. netDx sidesteps
+  the error for Java 9-16 but cannot do so for Java 17. Java 12-16 should now work with feature selection.
+* plotPerf() now provides the option to not plot the ROC and PR curves with a drawPlot parameter.
+
+netDx 1.5.10
+==================
+* Functions to create network visualizations of top-scoring functions renamed to better reflect function.
+  * plotEMap() -> viewSelectedFeaturesAsNetworks 
+  * makeInputForEnrichmentMap() -> createInputForFeatureNetworkView()
+
 netDx 1.5.9
 ==================
 * Ability to smooth somatic mutations over an interaction network via (smoothMutations_LabelProp) has been temporarily removed. This function made software install challenging on machines without C++ compilers as it relies on clusterExperiment. The latter can only be compiled from source. This functionality will be added back when doing so does not complicate the install. It is unclear whether users want to routinely use this functionality.

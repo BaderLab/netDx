@@ -9,7 +9,7 @@ buildPredictor_sparseGenetic(
   cnv_GR,
   predClass,
   group_GRList,
-  outDir = tempdir(),
+  outDir = normalizePath(tempdir()),
   numSplits = 3L,
   featScoreMax = 10L,
   filter_WtSum = 100L,

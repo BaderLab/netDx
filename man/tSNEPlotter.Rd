@@ -12,7 +12,7 @@ matrix (symmetric). Row and column names are patient IDs. Note that NA
 values will be replaced by very small number (effectively zero).}
 
 \item{pheno}{(data.frame) Patient labels. ID column is patient ID and 
-STATUS is patient label of interest. tSNE will colour-code nodes by 
+STATUS is patient label xof interest. tSNE will colour-code nodes by 
 patient label.}
 
 \item{...}{Parameters for Rtsne() function.}

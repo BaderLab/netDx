@@ -1,13 +1,13 @@
 ---
-title: "Converting raw assay data/tables into format compatible with netDx algorithm"
-author: "Shraddha Pai & Indy Ng"
+title: "03. Creating MultiAssayExperiment input object from tables of patient data"
+author: "Indy Ng and Shraddha Pai"
 package: netDx
 date: "`r Sys.Date()`"
 output: 
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-    %\VignetteIndexEntry{02. Running netDx with data in table format}.
+    %\VignetteIndexEntry{03. Creating MultiAssayExperiment input object from tables of patient data}.
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---

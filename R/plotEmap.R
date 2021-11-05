@@ -55,98 +55,109 @@
 #' nodeAttrFile <- EMap_input[[1]][2]
 #' 
 #' # not run because requires Cytoscape to be installed and open
-#' # plotEmap(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, 
+#' # viewSelectedFeaturesAsNetworks(gmtFile = gmtFile, nodeAttrFile = nodeAttrFile, 
 #' #\t\tnetName='HighRisk')
-#' @return No value. Side effect of plotting the EnrichmentMap in an open 
+#' @return No value. Side effect of plotting the network view for features in an open 
 #' session of Cytoscape.
 #' @export
-plotEmap <- function(gmtFile, nodeAttrFile, netName = "generic", 
-	  scoreCol="maxScore",
-		minScore = 1, maxScore = 10, nodeFillStops=c(7,9),
-    colorScheme = "cont_heatmap", imageFormat = "png", verbose = FALSE, 
-		createStyle = TRUE, 
-    groupClusters = FALSE, hideNodeLabels=FALSE) {
+viewSelectedFeaturesAsNetworks <- function(gmtFile, nodeAttrFile, netName = "generic",
+    scoreCol = "maxScore",
+    minScore = 1, maxScore = 10, nodeFillStops = c(7, 9),
+    colorScheme = "cont_heatmap", imageFormat = "png", verbose = FALSE,
+    createStyle = TRUE,
+    groupClusters = FALSE, hideNodeLabels = FALSE) {
 
-  if (!requireNamespace("RCy3",quietly=TRUE)) {
-		stop("Package \"RCy3\" needed for plotEmap() to work. Please install it and then make your call.",
-		call.=FALSE)
-	}
-    
-    validColSchemes <- c("cont_heatmap", "netDx_ms")
-    if (!colorScheme %in% validColSchemes) {
-        stop(sprintf("colorScheme should be one of { %s }\n", 
-					paste(validColSchemes, 
+  if (!requireNamespace("RCy3", quietly = TRUE)) {
+    stop("Package \"RCy3\" needed for plotEmap() to work. Please install it and then make your call.",
+    call. = FALSE)
+  }
+
+  tryCatch({
+    RCy3::cytoscapePing()
+  }, error = function(ex) {
+    stop("Error while trying to ping Cytoscape. Are you sure you have Cytoscape installed and currently running?")
+  }, finally = {
+  })
+
+  validColSchemes <- c("cont_heatmap", "netDx_ms")
+  if (!colorScheme %in% validColSchemes) {
+    stop(sprintf("colorScheme should be one of { %s }\n",
+          paste(validColSchemes,
             collapse = ",")))
-    }
-    
-    ####################################### create EM using given parameters
-    if (netName %in% RCy3::getNetworkList()) {
-        RCy3::deleteNetwork(netName)
-    }
-    em_command <- paste("enrichmentmap build analysisType=\"generic\"", 
-				"gmtFile=", gmtFile, "pvalue=", 1, "qvalue=", 1, 
-				"similaritycutoff=", 0.05, "coefficients=", "JACCARD")
-    response <- RCy3::commandsGET(em_command)
-    RCy3::renameNetwork(netName, RCy3::getNetworkSuid())
-    
-    ### #annotate the network using AutoAnnotate app
-    aa_command <- paste("autoannotate annotate-clusterBoosted", 
-				"clusterAlgorithm=MCL", 
-        "labelColumn=name", "maxWords=3", "network=", netName)
-    print(aa_command)
-    response <- RCy3::commandsGET(aa_command)
-    
-    message("* Importing node attributes\n")
-    table_command <- sprintf(paste("table import file file=%s ", 
-				"keyColumnIndex=1 ", 
-        "firstRowAsColumnNames=true startLoadRow=1 TargetNetworkList=%s ", 
-				"WhereImportTable=To%%20selected%%20networks%%20only", 
-        sep = " "), nodeAttrFile, netName)
-    response <- RCy3::commandsGET(table_command)
-    
-    # apply style
-    message("* Creating or applying style\n")
-    all_unique_scores_int <- sort(unique(read.delim(nodeAttrFile)[, 2]))
-    all_unique_scores <- unlist(lapply(all_unique_scores_int, toString))
-    styleName <- "EMapStyle"
-    
-    # define colourmap
-    scoreVals <- minScore:maxScore
-    style_cols <- ""
-    if (colorScheme == "cont_heatmap") {
-        colfunc <- colorRampPalette(c("yellow", "red"))
-        gradient_cols <- colfunc(length(scoreVals))
-        style_cols <- colfunc(length(scoreVals))
-    } else if (colorScheme == "netDx_ms") {
-        style_cols <- rep("white", length(scoreVals))
-        style_cols[which(scoreVals >= nodeFillStops[1])] <- "orange"
-        style_cols[which(scoreVals >= nodeFillStops[2])] <- "red"
-    }
-    nodeLabels <- RCy3::mapVisualProperty("node label", "name", "p")
-    nodeFills <- RCy3::mapVisualProperty("node fill color", scoreCol, "d", 
-				scoreVals, style_cols)
-    defaults <- list(NODE_SHAPE = "ellipse", NODE_SIZE = 30, 
-				EDGE_TRANSPARENCY = 200, 
-        NODE_TRANSPARENCY = 255, EDGE_STROKE_UNSELECTED_PAINT = "#999999")
-    if (createStyle) {
-        message("Making style\n")
-        RCy3::createVisualStyle(styleName, defaults, list(nodeLabels, nodeFills))
-    }
-    RCy3::setVisualStyle(styleName)
-    if (groupClusters) {
-        RCy3::layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
-        redraw_command <- sprintf("autoannotate redraw network=%s", 
-					RCy3::getNetworkSuid())
-        response <- RCy3::commandsGET(redraw_command)
-        RCy3::fitContent()
-        
-        redraw_command <- sprintf("autoannotate redraw network=%s", 
-					RCy3::getNetworkSuid())
-        response <- RCy3::commandsGET(redraw_command)
-        RCy3::fitContent()
-    }
+  }
 
-		if (hideNodeLabels) {
-			RCy3::setNodeFontSizeDefault(0,styleName)
-	}
+  ####################################### create EM using given parameters
+  if (netName %in% RCy3::getNetworkList()) {
+    RCy3::deleteNetwork(netName)
+  }
+
+  em_command <- paste("enrichmentmap build analysisType=\"generic\"",
+        "gmtFile=", gmtFile, "pvalue=", 1, "qvalue=", 1,
+        "similaritycutoff=", 0.05, "coefficients=", "JACCARD")
+  response <- RCy3::commandsGET(em_command)
+  RCy3::renameNetwork(netName, RCy3::getNetworkSuid())
+
+  ### #annotate the network using AutoAnnotate app
+  aa_command <- paste("autoannotate annotate-clusterBoosted",
+        "clusterAlgorithm=MCL",
+        "labelColumn=name", "maxWords=3", "network=", netName)
+  #print(aa_command)
+  response <- RCy3::commandsGET(aa_command)
+
+  message("* Importing node attributes\n")
+  attrs <- read.delim(nodeAttrFile, header = T, as.is = T)
+  RCy3::loadTableData(attrs, data.key.column = "netName")
+
+  # apply style
+  message("* Creating or applying style\n")
+  all_unique_scores_int <- sort(unique(read.delim(nodeAttrFile)[, 2]))
+  all_unique_scores <- unlist(lapply(all_unique_scores_int, toString))
+  styleName <- "EMapStyle"
+
+  # define colourmap
+  scoreVals <- minScore:maxScore
+  style_cols <- ""
+  if (colorScheme == "cont_heatmap") {
+    colfunc <- colorRampPalette(c("yellow", "red"))
+    gradient_cols <- colfunc(length(scoreVals))
+    style_cols <- colfunc(length(scoreVals))
+  } else if (colorScheme == "netDx_ms") {
+    style_cols <- rep("white", length(scoreVals))
+    style_cols[which(scoreVals >= nodeFillStops[1])] <- "orange"
+    style_cols[which(scoreVals >= nodeFillStops[2])] <- "red"
+  }
+
+  nodeLabels <- RCy3::mapVisualProperty("node label", "name", "p")
+  nodeFills <- RCy3::mapVisualProperty("node fill color", scoreCol, "d",
+        scoreVals, style_cols)
+  defaults <- list(
+    "node shape" = "ellipse",
+    "node size" = 30,
+    "edge transparency" = 200,
+    "node transparency" = 255,
+    "edge stroke unselected paint" = "#999999"
+    )
+  if (createStyle) {
+    message("\tCreating style\n")
+    RCy3::createVisualStyle(styleName, defaults, list(nodeLabels, nodeFills))
+  }
+  RCy3::setVisualStyle(styleName)
+  if (groupClusters) {
+    RCy3::layoutNetwork("attributes-layout NodeAttribute=__mclCLuster")
+    redraw_command <- sprintf("autoannotate redraw network=%s",
+          RCy3::getNetworkSuid())
+    response <- RCy3::commandsGET(redraw_command)
+    RCy3::fitContent()
+
+    redraw_command <- sprintf("autoannotate redraw network=%s",
+          RCy3::getNetworkSuid())
+    response <- RCy3::commandsGET(redraw_command)
+    RCy3::fitContent()
+    RCy3::fitContent()
+  }
+
+  if (hideNodeLabels) {
+    RCy3::setNodeFontSizeDefault(0, styleName)
+    RCy3::fitContent()
+  }
 }

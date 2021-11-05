@@ -4,7 +4,13 @@
 \alias{getResults}
 \title{Compiles performance and selected features for a trained model.}
 \usage{
-getResults(res, status, featureSelCutoff = 1L, featureSelPct = 0)
+getResults(
+  res,
+  status,
+  featureSelCutoff = 1L,
+  featureSelPct = 0,
+  drawPerformancePlot = TRUE
+)
 }
 \arguments{
 \item{res}{(list) output of buildPredictor() function}
@@ -18,6 +24,8 @@ A feature must have minimum of this score for specified fraction of splits
 \item{featureSelPct}{(numeric between 0 and 1) cutoff percent for feature selection.
 A feature must have minimum score of featureSelCutoff for featureSelPct of 
 train/test splits to pass.}
+
+\item{drawPerformancePlot}{(logical) if TRUE, draws AUROC and AUPR plots. Set to FALSE to suppress graphical output.}
 }
 \value{
 list of results.

@@ -101,28 +101,31 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
         if (verbose) 
             message(sprintf("%i members", length(idx)))
         
-        oFile <- NULL
+      oFile <- NULL
+        
         # has sufficient connections to make network
         if (length(idx) >= minMembers) {
             if (writeProfiles) {
-                outFile <- paste(outDir,sprintf("%s.profile",curSet),
-					sep=getFileSep())
-                write.table(t(xpr[idx, , drop = FALSE]), file = outFile, 
-				sep = "\t",dec=".",
-                  col.names = FALSE, row.names = TRUE, quote = FALSE)
+              outFile <- paste(outDir, sprintf("%s.profile", curSet),
+                sep=getFileSep())
+              write.table(t(xpr[idx,, drop = FALSE]), file = outFile,
+                sep = "\t", dec = ".",
+                col.names = FALSE, row.names = TRUE, quote = FALSE)
+
             } else {
-                outFile <- paste(outDir,sprintf("%s_cont.txt", curSet),
-			sep=getFileSep())
+              outFile <- paste(outDir, sprintf("%s_cont.txt", curSet),
+                sep=getFileSep())
                 message(sprintf("computing sim for %s", curSet))
-                sim <- getSimilarity(xpr[idx, , drop = FALSE], 
-			type = simMetric, 
-                  ...)
+              sim <- getSimilarity(xpr[idx,, drop = FALSE],
+                type = simMetric,
+                ...)
                 if (is.null(sim)) {
-                  stop(sprintf(paste("makePSN_NamedMatrix:%s: ", 
-		"similarity matrix is empty (NULL).\n", 
-                "Check that there isn't a mistake in the ", 
-		"input data or similarity method of choice.\n", 
-                    sep = ""), curSet))
+                  stop(sprintf(paste("makePSN_NamedMatrix:%s: ",
+                  "similarity matrix is empty (NULL).\n",
+                  "Check that there isn't a mistake in the ",
+                  "input data or similarity method of choice.\n",
+                  sep = ""),
+                  curSet))
                 }
                 pat_pairs <- sim
                 
@@ -149,8 +152,8 @@ makePSN_NamedMatrix <- function(xpr, nm, namedSets, outDir = tempdir(),
                     })
                   }
                 } else {
-                  write.table(pat_pairs, file = outFile, sep = "\t", 
-					col.names = FALSE,
+                  write.table(pat_pairs, file = outFile, sep = "\t",
+                  col.names = FALSE,
                 	row.names = FALSE, quote = FALSE)
                   print(basename(outFile))
                   message("done")

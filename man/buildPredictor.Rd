@@ -7,7 +7,7 @@
 buildPredictor(
   dataList,
   groupList,
-  outDir = tempdir(),
+  outDir = normalizePath(tempdir()),
   makeNetFunc = NULL,
   sims = NULL,
   featScoreMax = 10L,
@@ -219,6 +219,6 @@ makeNets <- function(dataList, groupList, netDir,...) {
 # takes 10 minutes to run
 #out <- buildPredictor(dataList=brca,groupList=groupList,
 #   makeNetFunc=makeNets, ### custom network creation function
-#   outDir=paste(tempdir(),"pred_output",sep=getFileSep()), ## absolute path
+#   outDir=paste(normalizePath(tempdir()),"pred_output",sep=getFileSep()), ## absolute path
 #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
 }

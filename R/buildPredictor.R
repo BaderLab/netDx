@@ -172,9 +172,9 @@
 #' # takes 10 minutes to run
 #' #out <- buildPredictor(dataList=brca,groupList=groupList,
 #' #   makeNetFunc=makeNets, ### custom network creation function
-#' #   outDir=paste(tempdir(),"pred_output",sep=getFileSep()), ## absolute path
+#' #   outDir=paste(normalizePath(tempdir()),"pred_output",sep=getFileSep()), ## absolute path
 #' #   numCores=16L,featScoreMax=2L, featSelCutoff=1L,numSplits=2L)
-buildPredictor <- function(dataList,groupList,outDir=tempdir(),
+buildPredictor <- function(dataList,groupList,outDir=normalizePath(tempdir()),
 	makeNetFunc=NULL,sims=NULL,
 	featScoreMax=10L,trainProp=0.8,numSplits=10L,numCores,JavaMemory=4L,
 	featSelCutoff=9L,keepAllData=FALSE,startAt=1L, preFilter=FALSE,

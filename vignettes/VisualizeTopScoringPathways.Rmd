@@ -79,7 +79,7 @@ A Cytoscape tutorial is out of scope for this vignette but we refer you to [http
 
 This step will generate the following network-based view of top-scoring features.  (Note: Exact node/edge position may vary).
 
-```{r,eval=TRUE}
+```{r,eval=FALSE, echo=TRUE}
 viewSelectedFeaturesAsNetworks(
  vizmap$GMTfiles[[1]],
  vizmap$NodeStyles[[1]],

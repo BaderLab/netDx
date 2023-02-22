@@ -27,7 +27,10 @@ getGMjar_path <- function(verbose = FALSE) {
     any(grep(" 13", java_ver)) ||
     any(grep(" 14", java_ver)) ||
     any(grep(" 16", java_ver)) ||
-	any(grep(" 17", java_ver))
+	any(grep(" 17", java_ver)) || 
+	any(grep(" 18", java_ver)) ||
+	any(grep(" 19", java_ver)) ||
+	any(grep(" 20", java_ver)) 
     ) {
 		if (verbose) message("Java 11+ detected")
     	fileURL <- paste("https://downloads.res.oicr.on.ca/pailab/netDx/java11/", 

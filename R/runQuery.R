@@ -32,7 +32,11 @@ runQuery <- function(dbPath, queryFiles, resDir, verbose = TRUE,
       any(grep(" 12", java_ver)) ||
       any(grep(" 13", java_ver)) ||
       any(grep(" 14", java_ver)) ||
-      any(grep(" 16", java_ver))) {
+      any(grep(" 16", java_ver))) ||
+      any(grep(" 17", java_ver)) ||
+      any(grep(" 18", java_ver)) ||
+	    any(grep(" 19", java_ver)) ||
+	    any(grep(" 20", java_ver)) {
     if (verbose) message("Java 11 or later detected")
     args <- c("--illegal-access=permit") # needed for Java 9-16. Deprecated in Java 17)
   } else {
